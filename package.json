@@ -1,7 +1,10 @@
 {
   "name": "vue-plot-digitizer",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "license": "MIT",
+  "author": "MATO Tomoya",
+  "keywords": ["Vue", "Vue.js", "Data Collection"],
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
