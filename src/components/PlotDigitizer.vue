@@ -398,7 +398,6 @@ export default Vue.extend({
                 bList.push(imageRGB[i * 4 + 2])
               }
             } else {
-              this.$nuxt.$loading.finish()
               throw new TypeError(
                 'imageRGB is not instanceof Uint8ClampedArray'
               )
