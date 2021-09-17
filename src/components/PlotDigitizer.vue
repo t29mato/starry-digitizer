@@ -21,13 +21,15 @@
               @click="plot"
               @mousemove="mouseMove"
             ></canvas>
-            <v-btn @click="clearAxes">座標軸をクリア</v-btn>
+            <div>
+            <v-btn @click="clearAxes" :disabled="coordAxes.length === 0"> Clear Axes</v-btn>
             <!-- TODO: プロットの透明度を変更できるようにする -->
             <!-- TODO: プロットの色を変更できるようにする -->
-            <v-btn @click="clearPoints">プロットをクリア</v-btn>
-            <v-btn @click="shouldShowPoints = !shouldShowPoints">{{
-              shouldShowPoints ? 'プロットを非表示' : 'プロットを表示'
+            <v-btn @click="clearPoints" :disabled="points.length === 0">Clear Plots</v-btn>
+            <v-btn @click="shouldShowPoints = !shouldShowPoints" :disabled="points.length === 0">{{
+              shouldShowPoints ? 'Hide Plots' : 'Show Plots'
             }}</v-btn>
+            </div>
             <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
               <!-- INFO: 座標軸の点 -->
               <div
@@ -85,9 +87,25 @@
               {{ showAxisName(coordAxes.length) }}
             </div>
           </div>
+          <v-simple-table v-if="points.length > 0 && coordAxes.length === 4">
+            <template #default>
+              <thead>
+                <tr>
+                  <th>X</th>
+                  <th>Y</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="point in points" v-show="shouldShowPoints" :key="point.id">
+                  <td>{{ calculateValueFromPixel(point.xPx, point.yPx).xV }}</td>
+                  <td>{{ calculateValueFromPixel(point.xPx, point.yPx).yV }}</td>
+                </tr>
+              </tbody>
+            </template>
+          </v-simple-table>
         </v-col>
         <!-- INFO: 拡大鏡 -->
-        <v-col>
+        <v-col cols="3">
           <div
             :style="{
               overflow: 'hidden',
@@ -202,36 +220,13 @@
             thumb-label="always"
             max="10"
             min="2"
-            label="拡大鏡倍率"
+            label="Magnification"
+            thumb-size="25"
           ></v-slider>
-          <v-slider
-            v-model="detectRangePx"
-            thumb-label="always"
-            max="10"
-            min="2"
-            label="検出範囲（px）"
-          ></v-slider>
-          <v-slider
-            v-model="detectDifferencePct"
-            thumb-label="always"
-            max="100"
-            min="1"
-            label="検出色誤差（%）"
-          ></v-slider>
-          <v-slider
-            v-model="pointsDistancePx"
-            thumb-label="always"
-            max="100"
-            min="1"
-            label="点間距離 （px）"
-          ></v-slider>
-          <v-color-picker v-model="colorPicker" class="ma-2"></v-color-picker>
-          <v-btn :loading="isDetecting" @click="detectPointByColor"
-            >検出する</v-btn
-          >
-          <div v-if="coordAxes.length === 4">
+          <h3>Axes Values</h3>
+          <div>
             <v-row>
-              <v-col vols="6">
+              <v-col vols="6" class="ma-0 pb-0">
                 <v-text-field
                   label="x1"
                   type="number"
@@ -239,7 +234,7 @@
                   @input="inputX1Value"
                 ></v-text-field>
               </v-col>
-              <v-col vols="6">
+              <v-col vols="6" class="ma-0 pb-0">
                 <v-text-field
                   label="x2"
                   type="number"
@@ -249,15 +244,15 @@
               </v-col>
             </v-row>
             <v-row>
-              <v-col vols="6">
+              <v-col vols="6" class="ma-0 pt-0">
                 <v-text-field
-                  label="y1b"
+                  label="y1"
                   type="number"
                   :value="coordAxesValue[indexY1]"
                   @input="inputY1Value"
                 ></v-text-field>
               </v-col>
-              <v-col vols="6">
+              <v-col vols="6" class="ma-0 pt-0">
                 <v-text-field
                   label="y2"
                   type="number"
@@ -267,25 +262,38 @@
               </v-col>
             </v-row>
           </div>
+          <h3>Plot Automatically</h3>
+          <v-slider
+            v-model="detectRangePx"
+            thumb-label="always"
+            max="10"
+            min="2"
+            label="Detection Range"
+            thumb-size="25"
+          ></v-slider>
+          <v-slider
+            v-model="detectDifferencePct"
+            thumb-label="always"
+            max="100"
+            min="1"
+            label="Color Detection"
+            thumb-size="25"
+          ></v-slider>
+          <v-slider
+            v-model="pointsDistancePx"
+            thumb-label="always"
+            max="50"
+            min="1"
+            label="Two Plots Range"
+            thumb-size="25"
+          ></v-slider>
+          <v-color-picker v-model="colorPicker" class="ma-2"></v-color-picker>
+          <v-btn :loading="isDetecting" @click="detectPointByColor"
+            >検出する</v-btn
+          >
         </v-col>
       </v-row>
     </template>
-    <v-simple-table v-if="points.length > 0 && coordAxes.length === 4">
-      <template #default>
-        <thead>
-          <tr>
-            <th>X</th>
-            <th>Y</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="point in points" v-show="shouldShowPoints" :key="point.id">
-            <td>{{ calculateValueFromPixel(point.xPx, point.yPx).xV }}</td>
-            <td>{{ calculateValueFromPixel(point.xPx, point.yPx).yV }}</td>
-          </tr>
-        </tbody>
-      </template>
-    </v-simple-table>
   </v-container>
 </template>
 
@@ -544,6 +552,7 @@ export default Vue.extend({
     },
     clearPoints() {
       this.points = []
+      this.shouldShowPoints = true
     },
     mouseMove(e: MouseEvent) {
       this.cursorOnGraph = {
