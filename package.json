@@ -18,16 +18,19 @@
   },
   "devDependencies": {
     "@types/color-diff": "^1.2.1",
-    "@typescript-eslint/eslint-plugin": "^4.18.0",
-    "@typescript-eslint/parser": "^4.18.0",
+    "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "@typescript-eslint/parser": "^4.31.2",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-typescript": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "@vue/eslint-config-typescript": "^7.0.0",
     "babel-eslint": "^10.1.0",
-    "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^6.2.2",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-vue": "^7.0.0-beta.4",
+    "prettier": "^2.4.1",
     "sass": "~1.32.0",
     "sass-loader": "^10.0.0",
     "typescript": "~4.1.5",
@@ -43,16 +46,22 @@
     "extends": [
       "plugin:vue/essential",
       "eslint:recommended",
-      "@vue/typescript"
+      "@vue/typescript",
+      "prettier",
+      "plugin:prettier/recommended"
     ],
     "parserOptions": {
       "parser": "@typescript-eslint/parser"
     },
-    "rules": {}
+    "rules": {
+      "prettier/prettier": [
+        "error",
+        {
+          "singleQuote": true,
+          "semi": false
+        }
+      ]
+    }
   },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+  "browserslist": ["> 1%", "last 2 versions", "not dead"]
 }
