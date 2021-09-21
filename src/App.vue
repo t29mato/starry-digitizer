@@ -1,10 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar
-      app
-      color="primary"
-      dark
-    >
+    <v-app-bar app color="primary" dark>
       <div class="d-flex align-center">
         <v-img
           alt="Vuetify Logo"
@@ -38,14 +34,14 @@
     </v-app-bar>
 
     <v-main>
-      <PlotDigitizer/>
+      <PlotDigitizer />
     </v-main>
   </v-app>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import PlotDigitizer from './components/PlotDigitizer.vue';
+import Vue from 'vue'
+import PlotDigitizer from './components/PlotDigitizer.vue'
 
 export default Vue.extend({
   name: 'App',
@@ -57,5 +53,5 @@ export default Vue.extend({
   data: () => ({
     //
   }),
-});
+})
 </script>

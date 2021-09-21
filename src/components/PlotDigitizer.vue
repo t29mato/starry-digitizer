@@ -22,13 +22,19 @@
               @mousemove="mouseMove"
             ></canvas>
             <div>
-            <v-btn @click="clearAxes" :disabled="coordAxes.length === 0"> Clear Axes</v-btn>
-            <!-- TODO: プロットの透明度を変更できるようにする -->
-            <!-- TODO: プロットの色を変更できるようにする -->
-            <v-btn @click="clearPoints" :disabled="points.length === 0">Clear Plots</v-btn>
-            <v-btn @click="shouldShowPoints = !shouldShowPoints" :disabled="points.length === 0">{{
-              shouldShowPoints ? 'Hide Plots' : 'Show Plots'
-            }}</v-btn>
+              <v-btn :disabled="coordAxes.length === 0" @click="clearAxes">
+                Clear Axes</v-btn
+              >
+              <!-- TODO: プロットの透明度を変更できるようにする -->
+              <!-- TODO: プロットの色を変更できるようにする -->
+              <v-btn :disabled="points.length === 0" @click="clearPoints"
+                >Clear Plots</v-btn
+              >
+              <v-btn
+                :disabled="points.length === 0"
+                @click="shouldShowPoints = !shouldShowPoints"
+                >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
+              >
             </div>
             <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
               <!-- INFO: 座標軸の点 -->
@@ -96,9 +102,17 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="point in points" v-show="shouldShowPoints" :key="point.id">
-                  <td>{{ calculateValueFromPixel(point.xPx, point.yPx).xV }}</td>
-                  <td>{{ calculateValueFromPixel(point.xPx, point.yPx).yV }}</td>
+                <tr
+                  v-for="point in points"
+                  v-show="shouldShowPoints"
+                  :key="point.id"
+                >
+                  <td>
+                    {{ calculateValueFromPixel(point.xPx, point.yPx).xV }}
+                  </td>
+                  <td>
+                    {{ calculateValueFromPixel(point.xPx, point.yPx).yV }}
+                  </td>
                 </tr>
               </tbody>
             </template>
