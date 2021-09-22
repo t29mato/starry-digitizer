@@ -276,21 +276,21 @@
               </v-col>
             </v-row>
           </div>
-          <h3>Plot Automatically</h3>
+          <h3>Automatic Extraction</h3>
           <v-slider
             v-model="detectRangePx"
             thumb-label="always"
             max="10"
             min="2"
-            label="Detection Range"
+            label="Extraction Range (px)"
             thumb-size="25"
           ></v-slider>
           <v-slider
-            v-model="detectDifferencePct"
+            v-model="colorDistancePct"
             thumb-label="always"
             max="100"
             min="1"
-            label="Color Detection"
+            label="Color Distsance (%)"
             thumb-size="25"
           ></v-slider>
           <v-slider
@@ -298,13 +298,11 @@
             thumb-label="always"
             max="50"
             min="1"
-            label="Two Plots Range"
+            label="Plots Distance (px)"
             thumb-size="25"
           ></v-slider>
           <v-color-picker v-model="colorPicker" class="ma-2"></v-color-picker>
-          <v-btn :loading="isDetecting" @click="detectPointByColor"
-            >検出する</v-btn
-          >
+          <v-btn :loading="isDetecting" @click="detectPointByColor">Run</v-btn>
         </v-col>
       </v-row>
     </template>
@@ -342,7 +340,7 @@ export default Vue.extend({
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
       detectRangePx: 3,
-      detectDifferencePct: 20,
+      colorDistancePct: 20,
       pointsDistancePx: 10,
       colorPicker: '',
       isDetecting: false,
@@ -441,7 +439,7 @@ export default Vue.extend({
                 canvasColor,
                 this.targetColor
               )
-              if (colorDiffDistance < this.detectDifferencePct) {
+              if (colorDiffDistance < this.colorDistancePct) {
                 this.points.push({
                   id: this.points.length + 1,
                   xPx: w + this.detectRangePx / 2 - circleRadiusPx,
