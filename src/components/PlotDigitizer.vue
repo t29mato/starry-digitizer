@@ -44,8 +44,8 @@
                   top: `${axis.yPx}px`,
                   left: `${axis.xPx}px`,
                   'pointer-events': 'none',
-                  width: '10px',
-                  height: '10px',
+                  width: `${detectRangePx * 2}px`,
+                  height: `${detectRangePx * 2}px`,
                   'border-radius': '50%',
                   'background-color': coordAxes.length === 4 ? 'black' : 'red',
                 }"
@@ -73,8 +73,8 @@
                   top: `${point.yPx}px`,
                   left: `${point.xPx}px`,
                   'pointer-events': 'none',
-                  width: '10px',
-                  height: '10px',
+                  width: `${detectRangePx * 2}px`,
+                  height: `${detectRangePx * 2}px`,
                   'border-radius': '50%',
                   'background-color': 'red',
                 }"
@@ -93,6 +93,7 @@
               {{ showAxisName(coordAxes.length) }}
             </div>
           </div>
+          {{ points.length }}
           <v-simple-table v-if="points.length > 0 && coordAxes.length === 4">
             <template #default>
               <thead>
@@ -173,8 +174,8 @@
                     cursorOnGraph.xPx - circleRadiusScaledPx
                   }px, -${cursorOnGraph.yPx - circleRadiusScaledPx}px)`,
                   'transform-origin': 'top left',
-                  width: '10px',
-                  height: '10px',
+                  width: `${detectRangePx * 2}px`,
+                  height: `${detectRangePx * 2}px`,
                   'border-radius': '50%',
                   'background-color': coordAxes.length === 4 ? 'black' : 'red',
                 }"
@@ -209,8 +210,8 @@
                   }px, -${cursorOnGraph.yPx - circleRadiusScaledPx}px)`,
                   'transform-origin': 'top left',
                   'pointer-events': 'none',
-                  width: '10px',
-                  height: '10px',
+                  width: `${detectRangePx * 2}px`,
+                  height: `${detectRangePx * 2}px`,
                   'border-radius': '50%',
                   'background-color': 'red',
                 }"
@@ -301,6 +302,23 @@
             label="Plots Distance (px)"
             thumb-size="25"
           ></v-slider>
+          <div
+            :style="{
+              'background-color': 'black',
+              display: 'inline-block',
+              padding: `${pointsDistancePx - detectRangePx}px`,
+            }"
+          >
+            <div
+              :style="{
+                'pointer-events': 'none',
+                width: `${detectRangePx * 2}px`,
+                height: `${detectRangePx * 2}px`,
+                'border-radius': '50%',
+                'background-color': 'red',
+              }"
+            ></div>
+          </div>
           <v-color-picker v-model="colorPicker" class="ma-2"></v-color-picker>
           <v-btn :loading="isDetecting" @click="detectPointByColor">Run</v-btn>
         </v-col>
@@ -313,7 +331,7 @@
 import Vue from 'vue'
 import diff from 'color-diff'
 
-const circleRadiusPx = 5
+const circleRadiusPx = 3
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 
 export default Vue.extend({
@@ -341,9 +359,10 @@ export default Vue.extend({
       shouldShowPoints: true,
       detectRangePx: 3,
       colorDistancePct: 20,
-      pointsDistancePx: 10,
+      pointsDistancePx: 3,
       colorPicker: '',
       isDetecting: false,
+      circleRadiusPx,
     }
   },
   computed: {
@@ -442,11 +461,11 @@ export default Vue.extend({
               if (colorDiffDistance < this.colorDistancePct) {
                 this.points.push({
                   id: this.points.length + 1,
-                  xPx: w + this.detectRangePx / 2 - circleRadiusPx,
-                  yPx: h + this.detectRangePx / 2 - circleRadiusPx,
+                  xPx: w + this.detectRangePx / 2 - this.detectRangePx,
+                  yPx: h + this.detectRangePx / 2 - this.detectRangePx,
                 })
-                for (let i = 0; i < this.pointsDistancePx; i++) {
-                  for (let j = 0; j < this.pointsDistancePx; j++) {
+                for (let i = 0; i < this.detectRangePx * 2; i++) {
+                  for (let j = 0; j < this.detectRangePx * 2; j++) {
                     if (i + j === 0) {
                       continue
                     }
@@ -512,15 +531,15 @@ export default Vue.extend({
     plot(e: MouseEvent): void {
       if (this.coordAxes.length < 4) {
         this.coordAxes.push({
-          xPx: e.offsetX - circleRadiusPx,
-          yPx: e.offsetY - circleRadiusPx,
+          xPx: e.offsetX - this.detectRangePx,
+          yPx: e.offsetY - this.detectRangePx,
         })
         return
       }
       this.points.push({
         id: this.points.length + 1,
-        xPx: e.offsetX - circleRadiusPx,
-        yPx: e.offsetY - circleRadiusPx,
+        xPx: e.offsetX - this.detectRangePx,
+        yPx: e.offsetY - this.detectRangePx,
       })
     },
     calculateValueFromPixel(x: number, y: number): { xV: number; yV: number } {
