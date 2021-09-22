@@ -483,11 +483,27 @@ export default Vue.extend({
       this.color = color
     },
     loadImage(file: File) {
+      const element: HTMLCanvasElement | null = document.querySelector('#graph')
+      if (element === null) {
+        window.alert('element is null')
+        return
+      }
+      const ctx = element.getContext('2d')
+      const image = new Image()
+
       const fr = new FileReader()
       fr.readAsDataURL(file)
       fr.addEventListener('load', () => {
         if (typeof fr.result === 'string') {
           this.uploadImageUrl = fr.result
+          image.src = fr.result
+          image.onload = () => {
+            const widthPx = image.width
+            const heightPx = image.height
+            element.setAttribute('width', String(widthPx))
+            element.setAttribute('height', String(heightPx))
+            ctx?.drawImage(image, 0, 0)
+          }
         } else {
           window.alert('string以外の型')
         }
