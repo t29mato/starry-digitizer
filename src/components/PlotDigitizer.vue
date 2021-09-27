@@ -42,8 +42,8 @@
               <div
                 :style="{
                   position: 'absolute',
-                  top: `${axis.yPx}px`,
-                  left: `${axis.xPx}px`,
+                  top: `${axis.yPx - axesRadiusSizePx}px`,
+                  left: `${axis.xPx - axesRadiusSizePx}px`,
                   'pointer-events': 'none',
                   width: `${axesSizePx}px`,
                   height: `${axesSizePx}px`,
@@ -55,8 +55,8 @@
               <span
                 :style="{
                   position: 'absolute',
-                  top: `${axis.yPx - 7}px`,
-                  left: `${axis.xPx + 12}px`,
+                  top: `${axis.yPx - axesRadiusSizePx - 7}px`,
+                  left: `${axis.xPx - axesRadiusSizePx + 12}px`,
                   'pointer-events': 'none',
                 }"
                 >{{ showAxisName(index) }}</span
@@ -71,8 +71,8 @@
               <div
                 :style="{
                   position: 'absolute',
-                  top: `${point.yPx}px`,
-                  left: `${point.xPx}px`,
+                  top: `${point.yPx - plotRadiusSizePx}px`,
+                  left: `${point.xPx - plotRadiusSizePx}px`,
                   'pointer-events': 'none',
                   width: `${plotSizePx}px`,
                   height: `${plotSizePx}px`,
@@ -86,8 +86,8 @@
               v-if="coordAxes.length < 4"
               :style="{
                 position: 'absolute',
-                left: `${canvasCursor.xPx + 7}px`,
                 top: `${canvasCursor.yPx - 12}px`,
+                left: `${canvasCursor.xPx + 7}px`,
                 'pointer-events': 'none',
               }"
             >
@@ -172,8 +172,14 @@
               <div
                 :style="{
                   position: 'absolute',
-                  top: `${(axis.yPx / canvasScale) * magnifierScale}px`,
-                  left: `${(axis.xPx / canvasScale) * magnifierScale}px`,
+                  top: `${
+                    ((axis.yPx - axesRadiusSizePx) / canvasScale) *
+                    magnifierScale
+                  }px`,
+                  left: `${
+                    ((axis.xPx - axesRadiusSizePx) / canvasScale) *
+                    magnifierScale
+                  }px`,
                   'pointer-events': 'none',
                   transform: `scale(${magnifierScale}) translate(-${
                     canvasCursor.xPx / canvasScale -
@@ -193,10 +199,12 @@
                 :style="{
                   position: 'absolute',
                   top: `${
-                    ((axis.yPx - axesSizePx) / canvasScale) * magnifierScale
+                    ((axis.yPx - axesRadiusSizePx - axesSizePx) / canvasScale) *
+                    magnifierScale
                   }px`,
                   left: `${
-                    ((axis.xPx + axesSizePx) / canvasScale) * magnifierScale
+                    ((axis.xPx - axesRadiusSizePx + axesSizePx) / canvasScale) *
+                    magnifierScale
                   }px`,
                   'pointer-events': 'none',
                   transform: `scale(${magnifierScale}) translate(-${
@@ -220,8 +228,14 @@
               <div
                 :style="{
                   position: 'absolute',
-                  top: `${(point.yPx / canvasScale) * magnifierScale}px`,
-                  left: `${(point.xPx / canvasScale) * magnifierScale}px`,
+                  top: `${
+                    ((point.yPx - plotRadiusSizePx) / canvasScale) *
+                    magnifierScale
+                  }px`,
+                  left: `${
+                    ((point.xPx - plotRadiusSizePx) / canvasScale) *
+                    magnifierScale
+                  }px`,
                   transform: `scale(${magnifierScale}) translate(-${
                     canvasCursor.xPx / canvasScale -
                     magnificationRadiusSizePx / magnifierScale
@@ -581,21 +595,18 @@ export default Vue.extend({
     plot(e: MouseEvent): void {
       if (this.coordAxes.length < 4) {
         this.coordAxes.push({
-          xPx: e.offsetX - this.axesRadiusSizePx,
-          yPx: e.offsetY - this.axesRadiusSizePx,
+          xPx: e.offsetX,
+          yPx: e.offsetY,
         })
         return
       }
       this.points.push({
         id: this.points.length + 1,
-        xPx: e.offsetX - this.plotRadiusSizePx,
-        yPx: e.offsetY - this.plotRadiusSizePx,
+        xPx: e.offsetX,
+        yPx: e.offsetY,
       })
     },
     calculateValueFromPixel(x: number, y: number): { xV: number; yV: number } {
-      // INFO: xyの点はプロットの中心ではなくてカーソルの位置なので
-      x -= this.axesRadiusSizePx
-      y -= this.axesRadiusSizePx
       // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点のx値を計算
       const calculateVerticalCrossPoint = (
         x1x: number,
