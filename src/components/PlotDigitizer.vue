@@ -8,10 +8,10 @@
     <template v-if="uploadImageUrl">
       <v-row>
         <v-col cols="9">
-          <div :style="{ position: 'relative' }">
+          <div :style="{ position: 'relative' }" id="wrapper">
             <!-- INFO: plot対象画像 -->
             <canvas
-              id="graph"
+              id="canvas"
               :style="{
                 cursor: 'crosshair',
                 'user-drag': 'none',
@@ -44,8 +44,8 @@
                   top: `${axis.yPx}px`,
                   left: `${axis.xPx}px`,
                   'pointer-events': 'none',
-                  width: `${detectRangePx * 2}px`,
-                  height: `${detectRangePx * 2}px`,
+                  width: `${axesSizePx}px`,
+                  height: `${axesSizePx}px`,
                   'border-radius': '50%',
                   'background-color': coordAxes.length === 4 ? 'black' : 'red',
                 }"
@@ -73,8 +73,8 @@
                   top: `${point.yPx}px`,
                   left: `${point.xPx}px`,
                   'pointer-events': 'none',
-                  width: `${detectRangePx * 2}px`,
-                  height: `${detectRangePx * 2}px`,
+                  width: `${plotSizePx}px`,
+                  height: `${plotSizePx}px`,
                   'border-radius': '50%',
                   'background-color': 'red',
                 }"
@@ -85,8 +85,8 @@
               v-if="coordAxes.length < 4"
               :style="{
                 position: 'absolute',
-                left: `${cursorOnGraph.xPx + 7}px`,
-                top: `${cursorOnGraph.yPx - 12}px`,
+                left: `${canvasCursor.xPx + 7}px`,
+                top: `${canvasCursor.yPx - 12}px`,
                 'pointer-events': 'none',
               }"
             >
@@ -124,8 +124,8 @@
           <div
             :style="{
               overflow: 'hidden',
-              width: '200px',
-              height: '200px',
+              width: `${magnificationSizePx}px`,
+              height: `${magnificationSizePx}px`,
               position: 'relative',
               border: '1px solid grey',
             }"
@@ -134,9 +134,13 @@
             <img
               :src="uploadImageUrl"
               :style="{
-                transform: `scale(${scale}) translate(-${
-                  cursorOnGraph.xPx - circleRadiusScaledPx
-                }px, -${cursorOnGraph.yPx - circleRadiusScaledPx}px)`,
+                transform: `scale(${magnifierScale}) translate(-${
+                  canvasCursor.xPx / canvasScale -
+                  magnificationRadiusSizePx / magnifierScale
+                }px, -${
+                  canvasCursor.yPx / canvasScale -
+                  magnificationRadiusSizePx / magnifierScale
+                }px)`,
                 'transform-origin': 'top left',
               }"
             />
@@ -146,8 +150,8 @@
                 position: 'absolute',
                 top: '0px',
                 left: '0px',
-                width: '99px',
-                height: '200px',
+                width: `${magnificationRadiusSizePx}px`,
+                height: `${magnificationSizePx}px`,
                 'border-right': '1px solid grey',
               }"
             ></div>
@@ -157,8 +161,8 @@
                 position: 'absolute',
                 top: '0px',
                 left: '0px',
-                width: '200px',
-                height: '99px',
+                width: `${magnificationSizePx}px`,
+                height: `${magnificationRadiusSizePx}px`,
                 'border-bottom': '1px solid grey',
               }"
             ></div>
@@ -167,15 +171,19 @@
               <div
                 :style="{
                   position: 'absolute',
-                  top: `${axis.yPx * scale}px`,
-                  left: `${axis.xPx * scale}px`,
+                  top: `${(axis.yPx / canvasScale) * magnifierScale}px`,
+                  left: `${(axis.xPx / canvasScale) * magnifierScale}px`,
                   'pointer-events': 'none',
-                  transform: `scale(${scale}) translate(-${
-                    cursorOnGraph.xPx - circleRadiusScaledPx
-                  }px, -${cursorOnGraph.yPx - circleRadiusScaledPx}px)`,
+                  transform: `scale(${magnifierScale}) translate(-${
+                    canvasCursor.xPx / canvasScale -
+                    magnificationRadiusSizePx / magnifierScale
+                  }px, -${
+                    canvasCursor.yPx / canvasScale -
+                    magnificationRadiusSizePx / magnifierScale
+                  }px)`,
                   'transform-origin': 'top left',
-                  width: `${detectRangePx * 2}px`,
-                  height: `${detectRangePx * 2}px`,
+                  width: `${axesSizePx / canvasScale}px`,
+                  height: `${axesSizePx / canvasScale}px`,
                   'border-radius': '50%',
                   'background-color': coordAxes.length === 4 ? 'black' : 'red',
                 }"
@@ -183,12 +191,20 @@
               <span
                 :style="{
                   position: 'absolute',
-                  top: `${(axis.yPx - 7) * scale}px`,
-                  left: `${(axis.xPx + 12) * scale}px`,
+                  top: `${
+                    ((axis.yPx - axesSizePx) / canvasScale) * magnifierScale
+                  }px`,
+                  left: `${
+                    ((axis.xPx + axesSizePx) / canvasScale) * magnifierScale
+                  }px`,
                   'pointer-events': 'none',
-                  transform: `scale(${scale}) translate(-${
-                    cursorOnGraph.xPx - circleRadiusScaledPx
-                  }px, -${cursorOnGraph.yPx - circleRadiusScaledPx}px)`,
+                  transform: `scale(${magnifierScale}) translate(-${
+                    canvasCursor.xPx / canvasScale -
+                    magnificationRadiusSizePx / magnifierScale
+                  }px, -${
+                    canvasCursor.yPx / canvasScale -
+                    magnificationRadiusSizePx / magnifierScale
+                  }px)`,
                   'transform-origin': 'top left',
                 }"
                 >{{ showAxisName(index) }}</span
@@ -203,15 +219,19 @@
               <div
                 :style="{
                   position: 'absolute',
-                  top: `${point.yPx * scale}px`,
-                  left: `${point.xPx * scale}px`,
-                  transform: `scale(${scale}) translate(-${
-                    cursorOnGraph.xPx - circleRadiusScaledPx
-                  }px, -${cursorOnGraph.yPx - circleRadiusScaledPx}px)`,
+                  top: `${(point.yPx / canvasScale) * magnifierScale}px`,
+                  left: `${(point.xPx / canvasScale) * magnifierScale}px`,
+                  transform: `scale(${magnifierScale}) translate(-${
+                    canvasCursor.xPx / canvasScale -
+                    magnificationRadiusSizePx / magnifierScale
+                  }px, -${
+                    canvasCursor.yPx / canvasScale -
+                    magnificationRadiusSizePx / magnifierScale
+                  }px)`,
                   'transform-origin': 'top left',
                   'pointer-events': 'none',
-                  width: `${detectRangePx * 2}px`,
-                  height: `${detectRangePx * 2}px`,
+                  width: `${plotSizePx / canvasScale}px`,
+                  height: `${plotSizePx / canvasScale}px`,
                   'border-radius': '50%',
                   'background-color': 'red',
                 }"
@@ -221,17 +241,17 @@
           <div v-if="coordAxes.length === 4">
             {{
               `x: ${
-                calculateValueFromPixel(cursorOnGraph.xPx, cursorOnGraph.yPx).xV
+                calculateValueFromPixel(canvasCursor.xPx, canvasCursor.yPx).xV
               }`
             }}<br />
             {{
               `y: ${
-                calculateValueFromPixel(cursorOnGraph.xPx, cursorOnGraph.yPx).yV
+                calculateValueFromPixel(canvasCursor.xPx, canvasCursor.yPx).yV
               }`
             }}
           </div>
           <v-slider
-            v-model="scale"
+            v-model="magnifierScale"
             thumb-label="always"
             max="10"
             min="2"
@@ -278,12 +298,21 @@
             </v-row>
           </div>
           <h3>Automatic Extraction</h3>
+          <div
+            :style="{
+              'pointer-events': 'none',
+              width: `${plotSizePx}px`,
+              height: `${plotSizePx}px`,
+              'border-radius': '50%',
+              'background-color': 'red',
+            }"
+          ></div>
           <v-slider
-            v-model="detectRangePx"
+            v-model="plotSizePx"
             thumb-label="always"
-            max="10"
-            min="2"
-            label="Extraction Range (px)"
+            max="20"
+            min="1"
+            label="Plot Size (px)"
             thumb-size="25"
           ></v-slider>
           <v-slider
@@ -294,31 +323,6 @@
             label="Color Distsance (%)"
             thumb-size="25"
           ></v-slider>
-          <v-slider
-            v-model="pointsDistancePx"
-            thumb-label="always"
-            max="50"
-            min="1"
-            label="Plots Distance (px)"
-            thumb-size="25"
-          ></v-slider>
-          <div
-            :style="{
-              'background-color': 'black',
-              display: 'inline-block',
-              padding: `${pointsDistancePx - detectRangePx}px`,
-            }"
-          >
-            <div
-              :style="{
-                'pointer-events': 'none',
-                width: `${detectRangePx * 2}px`,
-                height: `${detectRangePx * 2}px`,
-                'border-radius': '50%',
-                'background-color': 'red',
-              }"
-            ></div>
-          </div>
           <v-color-picker v-model="colorPicker" class="ma-2"></v-color-picker>
           <v-btn :loading="isDetecting" @click="detectPointByColor">Run</v-btn>
         </v-col>
@@ -331,7 +335,7 @@
 import Vue from 'vue'
 import diff from 'color-diff'
 
-const circleRadiusPx = 3
+const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 
 export default Vue.extend({
@@ -343,12 +347,12 @@ export default Vue.extend({
         yPx: number
       }[],
       coordAxesValue: [0, 1, 0, 1] as number[],
-      cursorOnGraph: {
+      canvasCursor: {
         xPx: 0,
         yPx: 0,
       },
       color: 'red',
-      scale: 5,
+      magnifierScale: 5,
       // REFACTOR: points -> dots
       points: [] as { id: number; xPx: number; yPx: number }[],
       indexX1,
@@ -357,21 +361,16 @@ export default Vue.extend({
       indexY2,
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
-      detectRangePx: 3,
+      plotSizePx: 10,
       colorDistancePct: 20,
-      pointsDistancePx: 3,
       colorPicker: '',
       isDetecting: false,
-      circleRadiusPx,
+      axesSizePx,
+      canvasScale: 1,
+      magnificationSizePx: 200,
     }
   },
   computed: {
-    circleRadiusScaledPx(): number {
-      // INFO: 99をScaleで割るとMagnifierのプロットの位置がちょうど良くなる。
-      // DBに格納される数値ではなくstyle用のものなので、MagicNumberだがよしと考えてる。
-      const magicNumber = 99
-      return magicNumber / this.scale
-    },
     targetColor(): { R: number; G: number; B: number } {
       return {
         R: parseInt(this.colorPicker.slice(1, 3), 16),
@@ -379,59 +378,80 @@ export default Vue.extend({
         B: parseInt(this.colorPicker.slice(5, 7), 16),
       }
     },
+    magnificationRadiusSizePx(): number {
+      return this.magnificationSizePx / 2
+    },
+    axesRadiusSizePx(): number {
+      return this.axesSizePx / 2
+    },
+    plotRadiusSizePx(): number {
+      return this.plotSizePx / 2
+    },
   },
   mounted() {
-    const element: HTMLCanvasElement | null = document.querySelector('#graph')
-    if (element === null) {
-      window.alert('element is null')
+    // REFACTOR: DRY
+    const wrapper: HTMLDivElement | null = document.querySelector('#wrapper')
+    const canvas: HTMLCanvasElement | null = document.querySelector('#canvas')
+    if (canvas === null || wrapper === null) {
+      window.alert('canvas is null')
       return
     }
-    const ctx = element.getContext('2d')
+    const ctx = canvas.getContext('2d')
     const image = new Image()
     image.src = this.uploadImageUrl
     image.onload = () => {
-      const widthPx = image.width
-      const heightPx = image.height
-      element.setAttribute('width', String(widthPx))
-      element.setAttribute('height', String(heightPx))
-      ctx?.drawImage(image, 0, 0)
+      const wrapperWidthPx = wrapper.offsetWidth
+      const imageWidthPx = image.width
+      const imageHeightPx = image.height
+      const imageRatio = wrapperWidthPx / imageWidthPx
+      this.canvasScale = imageRatio
+      const wrapperHeightPx = imageHeightPx * imageRatio
+      canvas.setAttribute('width', String(wrapperWidthPx))
+      canvas.setAttribute('height', String(wrapperHeightPx))
+      ctx?.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
     }
   },
   created() {},
   methods: {
+    // TODO: Change all word detect to extract.
     detectPointByColor() {
       this.clearPoints()
       this.isDetecting = true
-      const element: HTMLCanvasElement | null = document.querySelector('#graph')
-      if (element === null) {
-        window.alert('element is null')
+      const wrapper: HTMLDivElement | null = document.querySelector('#wrapper')
+      const canvas: HTMLCanvasElement | null = document.querySelector('#canvas')
+      if (canvas === null || wrapper === null) {
+        window.alert('canvas is null')
         return
       }
-      const ctx = element.getContext('2d')
+      const ctx = canvas.getContext('2d')
       const image = new Image()
       image.src = this.uploadImageUrl
       image.onload = () => {
-        const widthPx = image.width
-        const heightPx = image.height
-        element.setAttribute('width', String(widthPx))
-        element.setAttribute('height', String(heightPx))
-        ctx?.drawImage(image, 0, 0)
+        const wrapperWidthPx = wrapper.offsetWidth
+        const imageWidthPx = image.width
+        const imageHeightPx = image.height
+        const imageRatio = wrapperWidthPx / imageWidthPx
+        this.canvasScale = imageRatio
+        const wrapperHeightPx = imageHeightPx * imageRatio
+        canvas.setAttribute('width', String(wrapperWidthPx))
+        canvas.setAttribute('height', String(wrapperHeightPx))
+        ctx?.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
         const paintedArea = [] as { w: number; h: number }[]
-        for (let h = 0; h < heightPx; h++) {
-          for (let w = 0; w < widthPx; w++) {
+        for (let h = 0; h < wrapperHeightPx; h++) {
+          for (let w = 0; w < wrapperWidthPx; w++) {
             if (paintedArea.some((area) => area.w === w && area.h === h)) {
               continue
             }
             const imageData = ctx?.getImageData(
               w,
               h,
-              this.detectRangePx,
-              this.detectRangePx
+              this.plotSizePx,
+              this.plotSizePx
             )
             const imageRGB = imageData?.data
             const [rList, gList, bList] = [[], [], []] as number[][]
             if (imageRGB instanceof Uint8ClampedArray) {
-              for (let i = 0; i < this.detectRangePx; i++) {
+              for (let i = 0; i < this.plotSizePx; i++) {
                 rList.push(imageRGB[i * 4])
                 gList.push(imageRGB[i * 4 + 1])
                 bList.push(imageRGB[i * 4 + 2])
@@ -461,11 +481,11 @@ export default Vue.extend({
               if (colorDiffDistance < this.colorDistancePct) {
                 this.points.push({
                   id: this.points.length + 1,
-                  xPx: w + this.detectRangePx / 2 - this.detectRangePx,
-                  yPx: h + this.detectRangePx / 2 - this.detectRangePx,
+                  xPx: w,
+                  yPx: h,
                 })
-                for (let i = 0; i < this.detectRangePx * 2; i++) {
-                  for (let j = 0; j < this.detectRangePx * 2; j++) {
+                for (let i = 0; i < this.plotSizePx; i++) {
+                  for (let j = 0; j < this.plotSizePx; j++) {
                     if (i + j === 0) {
                       continue
                     }
@@ -531,18 +551,21 @@ export default Vue.extend({
     plot(e: MouseEvent): void {
       if (this.coordAxes.length < 4) {
         this.coordAxes.push({
-          xPx: e.offsetX - this.detectRangePx,
-          yPx: e.offsetY - this.detectRangePx,
+          xPx: e.offsetX - this.axesRadiusSizePx,
+          yPx: e.offsetY - this.axesRadiusSizePx,
         })
         return
       }
       this.points.push({
         id: this.points.length + 1,
-        xPx: e.offsetX - this.detectRangePx,
-        yPx: e.offsetY - this.detectRangePx,
+        xPx: e.offsetX - this.plotRadiusSizePx,
+        yPx: e.offsetY - this.plotRadiusSizePx,
       })
     },
     calculateValueFromPixel(x: number, y: number): { xV: number; yV: number } {
+      // INFO: xyの点はプロットの中心ではなくてカーソルの位置なので
+      x -= this.axesRadiusSizePx
+      y -= this.axesRadiusSizePx
       // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点のx値を計算
       const calculateVerticalCrossPoint = (
         x1x: number,
@@ -602,7 +625,7 @@ export default Vue.extend({
       this.shouldShowPoints = true
     },
     mouseMove(e: MouseEvent) {
-      this.cursorOnGraph = {
+      this.canvasCursor = {
         xPx: e.offsetX,
         yPx: e.offsetY,
       }
