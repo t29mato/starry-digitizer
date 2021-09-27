@@ -8,6 +8,7 @@
     <template v-if="uploadImageUrl">
       <v-row>
         <v-col cols="9">
+          <v-btn @click="drawActualSizeCanvas">100%</v-btn>
           <div :style="{ position: 'relative' }" id="wrapper">
             <!-- INFO: plot対象画像 -->
             <canvas
@@ -413,6 +414,35 @@ export default Vue.extend({
   },
   created() {},
   methods: {
+    drawActualSizeCanvas() {
+      // REFACTOR: DRY
+      const wrapper: HTMLDivElement | null = document.querySelector('#wrapper')
+      const canvas: HTMLCanvasElement | null = document.querySelector('#canvas')
+      if (canvas === null || wrapper === null) {
+        window.alert('canvas is null')
+        return
+      }
+      const ctx = canvas.getContext('2d')
+      const image = new Image()
+      image.src = this.uploadImageUrl
+      image.onload = () => {
+        const imageWidthPx = image.width
+        const imageHeightPx = image.height
+        canvas.setAttribute('width', String(imageWidthPx))
+        canvas.setAttribute('height', String(imageHeightPx))
+        ctx?.drawImage(image, 0, 0, imageWidthPx, imageHeightPx)
+      }
+      if (this.canvasScale !== 1) {
+        this.points = this.points.map((point) => {
+          return {
+            id: point.id,
+            xPx: point.xPx / this.canvasScale,
+            yPx: point.yPx / this.canvasScale,
+          }
+        })
+        this.canvasScale = 1
+      }
+    },
     // TODO: Change all word detect to extract.
     detectPointByColor() {
       this.clearPoints()
