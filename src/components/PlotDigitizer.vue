@@ -126,99 +126,36 @@
           <div
             :style="{
               overflow: 'hidden',
-              width: `${magnificationSizePx}px`,
-              height: `${magnificationSizePx}px`,
+              width: `${magnifierSizePx}px`,
+              height: `${magnifierSizePx}px`,
               position: 'relative',
               border: '1px solid grey',
             }"
           >
-            <!-- INFO: 拡大鏡の画像 -->
-            <img
+            <magnifier-image
               :src="uploadImageUrl"
-              :style="{
-                transform: `scale(${magnifierScale}) translate(-${
-                  canvasCursor.xPx / canvasScale -
-                  magnificationRadiusSizePx / magnifierScale
-                }px, -${
-                  canvasCursor.yPx / canvasScale -
-                  magnificationRadiusSizePx / magnifierScale
-                }px)`,
-                'transform-origin': 'top left',
-              }"
-            />
-            <!-- INFO: 拡大鏡の縦線 -->
-            <div
-              :style="{
-                position: 'absolute',
-                top: '0px',
-                left: '0px',
-                width: `${magnificationRadiusSizePx}px`,
-                height: `${magnificationSizePx}px`,
-                'border-right': '1px solid grey',
-              }"
-            ></div>
-            <!-- INFO: 拡大鏡の横線 -->
-            <div
-              :style="{
-                position: 'absolute',
-                top: '0px',
-                left: '0px',
-                width: `${magnificationSizePx}px`,
-                height: `${magnificationRadiusSizePx}px`,
-                'border-bottom': '1px solid grey',
-              }"
-            ></div>
-            <!-- INFO: 拡大鏡の座標軸 -->
+              :scale="magnifierScale"
+              :cursorX="canvasCursor.xPx / canvasScale"
+              :cursorY="canvasCursor.yPx / canvasScale"
+              :size="magnifierSizePx"
+            ></magnifier-image>
+            <magnifier-vertical-line
+              :magnifierSize="magnifierSizePx"
+            ></magnifier-vertical-line>
+            <magnifier-horizontal-line
+              :magnifierSize="magnifierSizePx"
+            ></magnifier-horizontal-line>
             <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
-              <div
-                :style="{
-                  position: 'absolute',
-                  top: `${
-                    ((axis.yPx - axesRadiusSizePx) / canvasScale) *
-                    magnifierScale
-                  }px`,
-                  left: `${
-                    ((axis.xPx - axesRadiusSizePx) / canvasScale) *
-                    magnifierScale
-                  }px`,
-                  'pointer-events': 'none',
-                  transform: `scale(${magnifierScale}) translate(-${
-                    canvasCursor.xPx / canvasScale -
-                    magnificationRadiusSizePx / magnifierScale
-                  }px, -${
-                    canvasCursor.yPx / canvasScale -
-                    magnificationRadiusSizePx / magnifierScale
-                  }px)`,
-                  'transform-origin': 'top left',
-                  width: `${axesSizePx / canvasScale}px`,
-                  height: `${axesSizePx / canvasScale}px`,
-                  'border-radius': '50%',
-                  'background-color': coordAxes.length === 4 ? 'black' : 'red',
-                }"
-              ></div>
-              <span
-                :style="{
-                  position: 'absolute',
-                  top: `${
-                    ((axis.yPx - axesRadiusSizePx - axesSizePx) / canvasScale) *
-                    magnifierScale
-                  }px`,
-                  left: `${
-                    ((axis.xPx - axesRadiusSizePx + axesSizePx) / canvasScale) *
-                    magnifierScale
-                  }px`,
-                  'pointer-events': 'none',
-                  transform: `scale(${magnifierScale}) translate(-${
-                    canvasCursor.xPx / canvasScale -
-                    magnificationRadiusSizePx / magnifierScale
-                  }px, -${
-                    canvasCursor.yPx / canvasScale -
-                    magnificationRadiusSizePx / magnifierScale
-                  }px)`,
-                  'transform-origin': 'top left',
-                }"
-                >{{ showAxisName(index) }}</span
-              >
+              <magnifier-axes
+                :axis="axis"
+                :color="coordAxes.length === 4 ? 'black' : 'red'"
+                :index="index"
+                :axesSize="axesSizePx"
+                :canvasScale="canvasScale"
+                :canvasCursor="canvasCursor"
+                :magnifierScale="magnifierScale"
+                :magnifierSize="magnifierSizePx"
+              ></magnifier-axes>
             </div>
             <div
               v-for="point in points"
@@ -344,11 +281,21 @@
 <script lang="ts">
 import Vue from 'vue'
 import diff from 'color-diff'
+import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
+import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
+import MagnifierImage from './MagnifierImage.vue'
+import MagnifierAxes from './MagnifierAxes.vue'
 
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 
 export default Vue.extend({
+  components: {
+    MagnifierVerticalLine,
+    MagnifierHorizontalLine,
+    MagnifierImage,
+    MagnifierAxes,
+  },
   data() {
     return {
       uploadImageUrl: '/img/sample_graph.png',
@@ -377,7 +324,7 @@ export default Vue.extend({
       isDetecting: false,
       axesSizePx,
       canvasScale: 1,
-      magnificationSizePx: 200,
+      magnifierSizePx: 200,
     }
   },
   computed: {
@@ -389,7 +336,7 @@ export default Vue.extend({
       }
     },
     magnificationRadiusSizePx(): number {
-      return this.magnificationSizePx / 2
+      return this.magnifierSizePx / 2
     },
     axesRadiusSizePx(): number {
       return this.axesSizePx / 2
