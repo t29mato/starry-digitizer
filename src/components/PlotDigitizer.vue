@@ -9,6 +9,7 @@
       <v-row>
         <v-col cols="9">
           <v-btn @click="drawActualSizeCanvas">100%</v-btn>
+          <v-btn @click="drawFitSizeCanvas">Fit</v-btn>
           <div :style="{ position: 'relative' }" id="wrapper">
             <!-- INFO: plot対象画像 -->
             <canvas
@@ -454,7 +455,51 @@ export default Vue.extend({
             yPx: point.yPx / this.canvasScale,
           }
         })
+        this.coordAxes = this.coordAxes.map((axis) => {
+          return {
+            xPx: axis.xPx / this.canvasScale,
+            yPx: axis.yPx / this.canvasScale,
+          }
+        })
+        this.plotSizePx = this.plotSizePx / this.canvasScale
         this.canvasScale = 1
+      }
+    },
+    drawFitSizeCanvas() {
+      // REFACTOR: DRY
+      const wrapper: HTMLDivElement | null = document.querySelector('#wrapper')
+      const canvas: HTMLCanvasElement | null = document.querySelector('#canvas')
+      if (canvas === null || wrapper === null) {
+        window.alert('canvas is null')
+        return
+      }
+      const ctx = canvas.getContext('2d')
+      const image = new Image()
+      image.src = this.uploadImageUrl
+      image.onload = () => {
+        const wrapperWidthPx = wrapper.offsetWidth
+        const imageWidthPx = image.width
+        const imageHeightPx = image.height
+        const imageRatio = wrapperWidthPx / imageWidthPx
+        const wrapperHeightPx = imageHeightPx * imageRatio
+        canvas.setAttribute('width', String(wrapperWidthPx))
+        canvas.setAttribute('height', String(wrapperHeightPx))
+        ctx?.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
+        this.points = this.points.map((point) => {
+          return {
+            id: point.id,
+            xPx: (point.xPx / this.canvasScale) * imageRatio,
+            yPx: (point.yPx / this.canvasScale) * imageRatio,
+          }
+        })
+        this.coordAxes = this.coordAxes.map((axis) => {
+          return {
+            xPx: (axis.xPx / this.canvasScale) * imageRatio,
+            yPx: (axis.yPx / this.canvasScale) * imageRatio,
+          }
+        })
+        this.plotSizePx = (this.plotSizePx / this.canvasScale) * imageRatio
+        this.canvasScale = imageRatio
       }
     },
     // TODO: Change all word detect to extract.
