@@ -611,7 +611,8 @@ export default Vue.extend({
       this.color = color
     },
     loadImage(file: File) {
-      const element: HTMLCanvasElement | null = document.querySelector('#graph')
+      const element: HTMLCanvasElement | null =
+        document.querySelector('#canvas')
       if (element === null) {
         window.alert('element is null')
         return
