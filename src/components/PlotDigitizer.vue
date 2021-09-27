@@ -72,8 +72,8 @@
               <div
                 :style="{
                   position: 'absolute',
-                  top: `${point.yPx}px`,
-                  left: `${point.xPx}px`,
+                  top: `${point.yPx - plotRadiusSizePx}px`,
+                  left: `${point.xPx - plotRadiusSizePx}px`,
                   'pointer-events': 'none',
                   width: `${plotSizePx}px`,
                   height: `${plotSizePx}px`,
@@ -166,8 +166,14 @@
               <div
                 :style="{
                   position: 'absolute',
-                  top: `${(point.yPx / canvasScale) * magnifierScale}px`,
-                  left: `${(point.xPx / canvasScale) * magnifierScale}px`,
+                  top: `${
+                    ((point.yPx - plotRadiusSizePx) / canvasScale) *
+                    magnifierScale
+                  }px`,
+                  left: `${
+                    ((point.xPx - plotRadiusSizePx) / canvasScale) *
+                    magnifierScale
+                  }px`,
                   transform: `scale(${magnifierScale}) translate(-${
                     canvasCursor.xPx / canvasScale -
                     magnificationRadiusSizePx / magnifierScale
