@@ -163,32 +163,14 @@
               :key="point.id"
             >
               <!-- INFO: プロットデータ -->
-              <div
-                :style="{
-                  position: 'absolute',
-                  top: `${
-                    ((point.yPx - plotRadiusSizePx) / canvasScale) *
-                    magnifierScale
-                  }px`,
-                  left: `${
-                    ((point.xPx - plotRadiusSizePx) / canvasScale) *
-                    magnifierScale
-                  }px`,
-                  transform: `scale(${magnifierScale}) translate(-${
-                    canvasCursor.xPx / canvasScale -
-                    magnificationRadiusSizePx / magnifierScale
-                  }px, -${
-                    canvasCursor.yPx / canvasScale -
-                    magnificationRadiusSizePx / magnifierScale
-                  }px)`,
-                  'transform-origin': 'top left',
-                  'pointer-events': 'none',
-                  width: `${plotSizePx / canvasScale}px`,
-                  height: `${plotSizePx / canvasScale}px`,
-                  'border-radius': '50%',
-                  'background-color': 'red',
-                }"
-              ></div>
+              <magnifier-plots
+                :magnifierScale="magnifierScale"
+                :canvasScale="canvasScale"
+                :cursor="canvasCursor"
+                :plotSize="plotSizePx"
+                :point="point"
+                :magnifierSize="magnifierSizePx"
+              ></magnifier-plots>
             </div>
           </div>
           <div v-if="coordAxes.length === 4">
@@ -291,6 +273,7 @@ import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
 import MagnifierAxes from './MagnifierAxes.vue'
+import MagnifierPlots from './MagnifierPlots.vue'
 
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -301,6 +284,7 @@ export default Vue.extend({
     MagnifierHorizontalLine,
     MagnifierImage,
     MagnifierAxes,
+    MagnifierPlots,
   },
   data() {
     return {

@@ -1,0 +1,67 @@
+<template>
+  <!-- INFO: プロットデータ -->
+  <div
+    :style="{
+      position: 'absolute',
+      top: `${((point.yPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
+      left: `${((point.xPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
+      transform: `scale(${magnifierScale}) translate(-${
+        cursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
+      }px, -${
+        cursor.yPx / canvasScale - magnifierHalfSize / magnifierScale
+      }px)`,
+      'transform-origin': 'top left',
+      'pointer-events': 'none',
+      width: `${plotSize / canvasScale}px`,
+      height: `${plotSize / canvasScale}px`,
+      'border-radius': '50%',
+      'background-color': 'red',
+    }"
+  ></div>
+</template>
+
+<script lang="ts">
+import Vue from 'vue'
+export default Vue.extend({
+  computed: {
+    plotHalfSize(): number {
+      return this.plotSize / 2
+    },
+    magnifierHalfSize(): number {
+      return this.magnifierSize / 2
+    },
+  },
+  props: {
+    point: {
+      type: Object as () => {
+        xPx: Number
+        yPx: Number
+      },
+      required: true,
+    },
+    plotSize: {
+      type: Number,
+      required: true,
+    },
+    canvasScale: {
+      type: Number,
+      required: true,
+    },
+    cursor: {
+      type: Object as () => {
+        xPx: Number
+        yPx: Number
+      },
+      required: true,
+    },
+    magnifierScale: {
+      type: Number,
+      required: true,
+    },
+    magnifierSize: {
+      type: Number,
+      required: true,
+    },
+  },
+})
+</script>
