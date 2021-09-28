@@ -39,29 +39,12 @@
               >
             </div>
             <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
-              <!-- INFO: 座標軸の点 -->
-              <div
-                :style="{
-                  position: 'absolute',
-                  top: `${axis.yPx - axesRadiusSizePx}px`,
-                  left: `${axis.xPx - axesRadiusSizePx}px`,
-                  'pointer-events': 'none',
-                  width: `${axesSizePx}px`,
-                  height: `${axesSizePx}px`,
-                  'border-radius': '50%',
-                  'background-color': coordAxes.length === 4 ? 'black' : 'red',
-                }"
-              ></div>
-              <!-- INFO: 座標軸名 -->
-              <span
-                :style="{
-                  position: 'absolute',
-                  top: `${axis.yPx - axesRadiusSizePx - 7}px`,
-                  left: `${axis.xPx - axesRadiusSizePx + 12}px`,
-                  'pointer-events': 'none',
-                }"
-                >{{ showAxisName(index) }}</span
-              >
+              <canvas-axes
+                :axesSize="axesSizePx"
+                :axis="axis"
+                :color="coordAxes.length === 4 ? 'black' : 'red'"
+                :index="index"
+              ></canvas-axes>
             </div>
             <div
               v-for="point in points"
@@ -267,6 +250,7 @@ import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
 import MagnifierImage from './Magnifier/MagnifierImage.vue'
 import MagnifierAxes from './Magnifier/MagnifierAxes.vue'
 import MagnifierPlots from './Magnifier/MagnifierPlots.vue'
+import CanvasAxes from './CanvasAxes.vue'
 
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -278,6 +262,7 @@ export default Vue.extend({
     MagnifierImage,
     MagnifierAxes,
     MagnifierPlots,
+    CanvasAxes,
   },
   data() {
     return {
