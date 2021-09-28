@@ -182,7 +182,7 @@
               width: `${plotSizePx}px`,
               height: `${plotSizePx}px`,
               'border-radius': '50%',
-              'background-color': 'red',
+              'background-color': 'black',
             }"
           ></div>
           <v-slider
@@ -453,7 +453,6 @@ export default Vue.extend({
     },
     // TODO: Change all word detect to extract.
     detectPointByColor() {
-      this.clearPoints()
       this.isDetecting = true
       const wrapper: HTMLDivElement | null = document.querySelector('#wrapper')
       const canvas: HTMLCanvasElement | null = document.querySelector('#canvas')
