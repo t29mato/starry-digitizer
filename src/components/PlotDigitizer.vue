@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container v-on:keyup.enter="hoge('hoge')">
     <v-file-input
       accept="image/*"
       label="file input"
@@ -41,7 +41,11 @@
               <canvas-axes
                 :axesSize="axesSizePx"
                 :axis="axis"
-                :color="coordAxes.length === 4 ? 'black' : 'red'"
+                :color="
+                  isMovingAxis && movingAxisIndex === index
+                    ? 'limegreen'
+                    : 'black'
+                "
                 :index="index"
                 :label="showAxisName(index)"
               ></canvas-axes>
@@ -50,7 +54,7 @@
               <canvas-plot :plotSize="plotSizePx" :plot="plot"></canvas-plot>
             </div>
             <canvas-cursor
-              v-if="coordAxes.length < 4"
+              v-if="coordAxes.length < 4 && !isMovingAxis"
               :cursor="canvasCursor"
               :label="showAxisName(coordAxes.length)"
             ></canvas-cursor>
@@ -87,7 +91,11 @@
             <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
               <magnifier-axes
                 :axis="axis"
-                :color="coordAxes.length === 4 ? 'black' : 'red'"
+                :color="
+                  isMovingAxis && movingAxisIndex === index
+                    ? 'limegreen'
+                    : 'black'
+                "
                 :index="index"
                 :axesSize="axesSizePx"
                 :canvasScale="canvasScale"
@@ -191,6 +199,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import diff from 'color-diff'
+// REFACTOR: まとめてimportする
 import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
 import MagnifierImage from './Magnifier/MagnifierImage.vue'
@@ -244,6 +253,8 @@ export default Vue.extend({
       axesSizePx,
       canvasScale: 1,
       magnifierSizePx: 200,
+      isMovingAxis: false,
+      movingAxisIndex: 0,
     }
   },
   computed: {
@@ -301,9 +312,35 @@ export default Vue.extend({
       canvas.setAttribute('height', String(wrapperHeightPx))
       ctx?.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
     }
+    document.addEventListener('keydown', this.keyListener.bind(this))
   },
   created() {},
+  beforeDestroy() {
+    document.removeEventListener('keydown', this.keyListener)
+  },
   methods: {
+    keyListener(e: KeyboardEvent) {
+      if (this.isMovingAxis) {
+        e.preventDefault()
+        switch (e.key) {
+          case 'ArrowUp':
+            this.coordAxes[this.movingAxisIndex].yPx--
+            break
+          case 'ArrowRight':
+            this.coordAxes[this.movingAxisIndex].xPx++
+            break
+          case 'ArrowDown':
+            this.coordAxes[this.movingAxisIndex].yPx++
+            break
+          case 'ArrowLeft':
+            this.coordAxes[this.movingAxisIndex].xPx--
+            break
+          default:
+            break
+        }
+        this.canvasCursor = this.coordAxes[this.movingAxisIndex]
+      }
+    },
     drawActualSizeCanvas() {
       // REFACTOR: DRY
       const wrapper: HTMLDivElement | null = document.querySelector('#wrapper')
@@ -503,6 +540,8 @@ export default Vue.extend({
     },
     plot(e: MouseEvent): void {
       if (this.coordAxes.length < 4) {
+        this.isMovingAxis = true
+        this.movingAxisIndex = this.coordAxes.length
         this.coordAxes.push({
           xPx: e.offsetX,
           yPx: e.offsetY,
@@ -575,6 +614,7 @@ export default Vue.extend({
       this.shouldShowPoints = true
     },
     mouseMove(e: MouseEvent) {
+      this.isMovingAxis = false
       this.canvasCursor = {
         xPx: e.offsetX,
         yPx: e.offsetY,
