@@ -32,6 +32,16 @@
                 >Clear Plots</v-btn
               >
               <v-btn
+                :disabled="coordAxes.length === 0 || !isMovingAxis"
+                @click="removeAxis"
+                >Remove Active Axis</v-btn
+              >
+              <v-btn
+                :disabled="plots.length === 0 || !isMovingPlot"
+                @click="removePlot"
+                >Remove Active Plot</v-btn
+              >
+              <v-btn
                 :disabled="plots.length === 0"
                 @click="shouldShowPoints = !shouldShowPoints"
                 >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
@@ -62,7 +72,7 @@
               ></canvas-plot>
             </div>
             <canvas-cursor
-              v-if="coordAxes.length < 4 && !axisIsMoved"
+              v-if="coordAxes.length < 4 && !cursorIsMoved"
               :cursor="canvasCursor"
               :label="showAxisName(coordAxes.length)"
             ></canvas-cursor>
@@ -266,8 +276,9 @@ export default Vue.extend({
       axesSizePx,
       canvasScale: 1,
       magnifierSizePx: 200,
+      // REFACTOR: 変数名を変更 → axesIsActive
       isMovingAxis: false,
-      axisIsMoved: false,
+      cursorIsMoved: false,
       movingAxisIndex: 0,
       isMovingPlot: false,
       movingPlotId: 0,
@@ -304,6 +315,12 @@ export default Vue.extend({
         }
       })
       return newPlots
+    },
+    nextPlotId(): number {
+      if (this.plots.length === 0) {
+        return 0
+      }
+      return this.plots.slice(-1)[0].id + 1
     },
   },
   mounted() {
@@ -346,9 +363,9 @@ export default Vue.extend({
       if (![arrowUp, arrowRight, arrowDown, arrowLeft].includes(key)) {
         return
       }
+      e.preventDefault()
+      this.cursorIsMoved = true
       if (this.isMovingAxis) {
-        this.axisIsMoved = true
-        e.preventDefault()
         switch (key) {
           case arrowUp:
             this.coordAxes[this.movingAxisIndex].yPx--
@@ -368,7 +385,6 @@ export default Vue.extend({
         this.canvasCursor = this.coordAxes[this.movingAxisIndex]
       }
       if (this.isMovingPlot) {
-        e.preventDefault()
         switch (e.key) {
           case arrowUp:
             this.plots.filter((plot) => plot.id === this.movingPlotId)[0].yPx--
@@ -529,7 +545,7 @@ export default Vue.extend({
               )
               if (colorDiffDistance < this.colorDistancePct) {
                 this.plots.push({
-                  id: this.plots.length + 1,
+                  id: this.nextPlotId,
                   xPx: w + this.plotRadiusSizePx,
                   yPx: h + this.plotRadiusSizePx,
                 })
@@ -589,7 +605,7 @@ export default Vue.extend({
     plot(e: MouseEvent): void {
       if (this.coordAxes.length < 4) {
         this.isMovingAxis = true
-        this.axisIsMoved = false
+        this.cursorIsMoved = false
         this.movingAxisIndex = this.coordAxes.length
         this.coordAxes.push({
           xPx: e.offsetX,
@@ -599,11 +615,10 @@ export default Vue.extend({
       }
       this.isMovingAxis = false
 
-      const id = this.plots.length + 1
       this.isMovingPlot = true
-      this.movingPlotId = id
+      this.movingPlotId = this.nextPlotId
       this.plots.push({
-        id,
+        id: this.nextPlotId,
         xPx: e.offsetX,
         yPx: e.offsetY,
       })
@@ -662,13 +677,26 @@ export default Vue.extend({
     },
     clearAxes() {
       this.coordAxes = []
+      this.isMovingAxis = false
+      this.cursorIsMoved = false
     },
     clearPoints() {
       this.plots = []
       this.shouldShowPoints = true
+      this.isMovingPlot = false
+    },
+    removeAxis() {
+      this.coordAxes.pop()
+      this.isMovingAxis = false
+    },
+    removePlot() {
+      this.plots = this.plots.filter((plot) => {
+        return plot.id !== this.movingPlotId
+      })
+      this.isMovingPlot = false
     },
     mouseMove(e: MouseEvent) {
-      this.axisIsMoved = false
+      this.cursorIsMoved = false
       this.canvasCursor = {
         xPx: e.offsetX,
         yPx: e.offsetY,
