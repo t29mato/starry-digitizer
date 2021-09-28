@@ -57,30 +57,10 @@
             ></canvas-cursor>
           </div>
           {{ plots.length }}
-          <v-simple-table v-if="plots.length > 0 && coordAxes.length === 4">
-            <template #default>
-              <thead>
-                <tr>
-                  <th>X</th>
-                  <th>Y</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="plot in plots"
-                  v-show="shouldShowPoints"
-                  :key="plot.id"
-                >
-                  <td>
-                    {{ calculateXY(plot.xPx, plot.yPx).xV }}
-                  </td>
-                  <td>
-                    {{ calculateXY(plot.xPx, plot.yPx).yV }}
-                  </td>
-                </tr>
-              </tbody>
-            </template>
-          </v-simple-table>
+          <plots-table
+            v-if="plots.length > 0 && coordAxes.length === 4"
+            :plots="calculatedPlots"
+          ></plots-table>
         </v-col>
         <!-- INFO: 拡大鏡 -->
         <v-col cols="3">
@@ -227,6 +207,7 @@ import MagnifierPlots from './Magnifier/MagnifierPlots.vue'
 import CanvasAxes from './CanvasAxes.vue'
 import CanvasPlot from './CanvasPlot.vue'
 import CanvasCursor from './CanvasCursor.vue'
+import PlotsTable from './PlotsTable.vue'
 
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -241,6 +222,7 @@ export default Vue.extend({
     CanvasAxes,
     CanvasPlot,
     CanvasCursor,
+    PlotsTable,
   },
   data() {
     return {
@@ -288,6 +270,21 @@ export default Vue.extend({
     },
     plotRadiusSizePx(): number {
       return this.plotSizePx / 2
+    },
+    calculatedPlots(): {
+      id: number
+      xV: number
+      yV: number
+    }[] {
+      const newPlots = this.plots.map((plot) => {
+        const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
+        return {
+          id: plot.id,
+          xV,
+          yV,
+        }
+      })
+      return newPlots
     },
   },
   mounted() {
