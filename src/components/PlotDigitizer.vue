@@ -11,7 +11,6 @@
           <v-btn @click="drawActualSizeCanvas">100%</v-btn>
           <v-btn @click="drawFitSizeCanvas">Fit</v-btn>
           <div :style="{ position: 'relative' }" id="wrapper">
-            <!-- INFO: plot対象画像 -->
             <canvas
               id="canvas"
               :style="{
@@ -50,7 +49,6 @@
             <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
               <canvas-plot :plotSize="plotSizePx" :plot="plot"></canvas-plot>
             </div>
-            <!-- INFO: カーソル横の文字 -->
             <canvas-cursor
               v-if="coordAxes.length < 4"
               :cursor="canvasCursor"
@@ -63,7 +61,6 @@
             :plots="calculatedPlots"
           ></plots-table>
         </v-col>
-        <!-- INFO: 拡大鏡 -->
         <v-col cols="3">
           <div
             :style="{
@@ -101,7 +98,6 @@
               ></magnifier-axes>
             </div>
             <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
-              <!-- INFO: プロットデータ -->
               <magnifier-plots
                 :magnifierScale="magnifierScale"
                 :canvasScale="canvasScale"
