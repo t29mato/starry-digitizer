@@ -223,26 +223,19 @@
           ></v-slider>
           <v-color-picker v-model="colorPicker" class="ma-2"></v-color-picker>
 
-          <h3 class="mt-4">Settings</h3>
-          <p class="mb-0">Axes Color</p>
+          <h3 class="mt-4">Axes Color</h3>
           <v-color-picker
             v-model="axesColor"
             class="mb-2"
             hide-canvas
             hide-inputs
-            hide-sliders
-            show-swatches
-            swatches-max-height="60"
           ></v-color-picker>
-          <p class="mb-0">Plots Color</p>
+          <h3 class="mt-4">Plots Color</h3>
           <v-color-picker
             v-model="plotsColor"
             class="mb-2"
             hide-canvas
             hide-inputs
-            hide-sliders
-            show-swatches
-            swatches-max-height="60"
           ></v-color-picker>
         </v-col>
       </v-row>
@@ -313,8 +306,8 @@ export default Vue.extend({
       movingAxisIndex: 0,
       isMovingPlot: false,
       movingPlotId: 0,
-      axesColor: '#000000',
-      plotsColor: '#000000',
+      axesColor: '',
+      plotsColor: '',
     }
   },
   computed: {
