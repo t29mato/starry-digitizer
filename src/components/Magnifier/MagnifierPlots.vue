@@ -15,7 +15,7 @@
       width: `${plotSize / canvasScale}px`,
       height: `${plotSize / canvasScale}px`,
       'border-radius': '50%',
-      'background-color': 'red',
+      'background-color': color,
     }"
   ></div>
 </template>
@@ -45,6 +45,10 @@ export default Vue.extend({
     },
     canvasScale: {
       type: Number,
+      required: true,
+    },
+    color: {
+      type: String,
       required: true,
     },
     cursor: {

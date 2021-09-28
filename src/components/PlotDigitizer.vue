@@ -51,7 +51,15 @@
               ></canvas-axes>
             </div>
             <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
-              <canvas-plot :plotSize="plotSizePx" :plot="plot"></canvas-plot>
+              <canvas-plot
+                :plotSize="plotSizePx"
+                :plot="plot"
+                :color="
+                  isMovingPlot && movingPlotId === plot.id
+                    ? 'limegreen'
+                    : 'black'
+                "
+              ></canvas-plot>
             </div>
             <canvas-cursor
               v-if="coordAxes.length < 4 && !isMovingAxis"
@@ -113,6 +121,11 @@
                 :plotSize="plotSizePx"
                 :plot="plot"
                 :magnifierSize="magnifierSizePx"
+                :color="
+                  isMovingPlot && movingPlotId === plot.id
+                    ? 'limegreen'
+                    : 'black'
+                "
               ></magnifier-plots>
             </div>
           </div>
@@ -255,6 +268,8 @@ export default Vue.extend({
       magnifierSizePx: 200,
       isMovingAxis: false,
       movingAxisIndex: 0,
+      isMovingPlot: false,
+      movingPlotId: 0,
     }
   },
   computed: {
@@ -339,6 +354,28 @@ export default Vue.extend({
             break
         }
         this.canvasCursor = this.coordAxes[this.movingAxisIndex]
+      }
+      if (this.isMovingPlot) {
+        e.preventDefault()
+        switch (e.key) {
+          case 'ArrowUp':
+            this.plots.filter((plot) => plot.id === this.movingPlotId)[0].yPx--
+            break
+          case 'ArrowRight':
+            this.plots.filter((plot) => plot.id === this.movingPlotId)[0].xPx++
+            break
+          case 'ArrowDown':
+            this.plots.filter((plot) => plot.id === this.movingPlotId)[0].yPx++
+            break
+          case 'ArrowLeft':
+            this.plots.filter((plot) => plot.id === this.movingPlotId)[0].xPx--
+            break
+          default:
+            break
+        }
+        this.canvasCursor = this.plots.filter(
+          (plot) => plot.id === this.movingPlotId
+        )[0]
       }
     },
     drawActualSizeCanvas() {
@@ -548,8 +585,11 @@ export default Vue.extend({
         })
         return
       }
+      const id = this.plots.length + 1
+      this.isMovingPlot = true
+      this.movingPlotId = id
       this.plots.push({
-        id: this.plots.length + 1,
+        id,
         xPx: e.offsetX,
         yPx: e.offsetY,
       })
@@ -615,6 +655,7 @@ export default Vue.extend({
     },
     mouseMove(e: MouseEvent) {
       this.isMovingAxis = false
+      this.isMovingPlot = false
       this.canvasCursor = {
         xPx: e.offsetX,
         yPx: e.offsetY,

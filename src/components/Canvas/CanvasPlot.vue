@@ -8,7 +8,7 @@
       width: `${plotSize}px`,
       height: `${plotSize}px`,
       'border-radius': '50%',
-      'background-color': 'red',
+      'background-color': color,
     }"
   ></div>
 </template>
@@ -28,6 +28,10 @@ export default Vue.extend({
         xPx: Number
         yPx: Number
       },
+      required: true,
+    },
+    color: {
+      type: String,
       required: true,
     },
     plotSize: {
