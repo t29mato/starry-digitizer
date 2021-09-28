@@ -62,7 +62,7 @@
               ></canvas-plot>
             </div>
             <canvas-cursor
-              v-if="coordAxes.length < 4 && !isMovingAxis"
+              v-if="coordAxes.length < 4 && !axisIsMoved"
               :cursor="canvasCursor"
               :label="showAxisName(coordAxes.length)"
             ></canvas-cursor>
@@ -267,6 +267,7 @@ export default Vue.extend({
       canvasScale: 1,
       magnifierSizePx: 200,
       isMovingAxis: false,
+      axisIsMoved: false,
       movingAxisIndex: 0,
       isMovingPlot: false,
       movingPlotId: 0,
@@ -335,19 +336,30 @@ export default Vue.extend({
   },
   methods: {
     keyListener(e: KeyboardEvent) {
+      const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
+        'ArrowUp',
+        'ArrowRight',
+        'ArrowDown',
+        'ArrowLeft',
+      ]
+      const key = e.key
+      if (![arrowUp, arrowRight, arrowDown, arrowLeft].includes(key)) {
+        return
+      }
       if (this.isMovingAxis) {
+        this.axisIsMoved = true
         e.preventDefault()
-        switch (e.key) {
-          case 'ArrowUp':
+        switch (key) {
+          case arrowUp:
             this.coordAxes[this.movingAxisIndex].yPx--
             break
-          case 'ArrowRight':
+          case arrowRight:
             this.coordAxes[this.movingAxisIndex].xPx++
             break
-          case 'ArrowDown':
+          case arrowDown:
             this.coordAxes[this.movingAxisIndex].yPx++
             break
-          case 'ArrowLeft':
+          case arrowLeft:
             this.coordAxes[this.movingAxisIndex].xPx--
             break
           default:
@@ -358,16 +370,16 @@ export default Vue.extend({
       if (this.isMovingPlot) {
         e.preventDefault()
         switch (e.key) {
-          case 'ArrowUp':
+          case arrowUp:
             this.plots.filter((plot) => plot.id === this.movingPlotId)[0].yPx--
             break
-          case 'ArrowRight':
+          case arrowRight:
             this.plots.filter((plot) => plot.id === this.movingPlotId)[0].xPx++
             break
-          case 'ArrowDown':
+          case arrowDown:
             this.plots.filter((plot) => plot.id === this.movingPlotId)[0].yPx++
             break
-          case 'ArrowLeft':
+          case arrowLeft:
             this.plots.filter((plot) => plot.id === this.movingPlotId)[0].xPx--
             break
           default:
@@ -577,6 +589,7 @@ export default Vue.extend({
     plot(e: MouseEvent): void {
       if (this.coordAxes.length < 4) {
         this.isMovingAxis = true
+        this.axisIsMoved = false
         this.movingAxisIndex = this.coordAxes.length
         this.coordAxes.push({
           xPx: e.offsetX,
@@ -584,6 +597,8 @@ export default Vue.extend({
         })
         return
       }
+      this.isMovingAxis = false
+
       const id = this.plots.length + 1
       this.isMovingPlot = true
       this.movingPlotId = id
@@ -653,8 +668,7 @@ export default Vue.extend({
       this.shouldShowPoints = true
     },
     mouseMove(e: MouseEvent) {
-      this.isMovingAxis = false
-      this.isMovingPlot = false
+      this.axisIsMoved = false
       this.canvasCursor = {
         xPx: e.offsetX,
         yPx: e.offsetY,
