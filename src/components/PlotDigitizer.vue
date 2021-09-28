@@ -206,9 +206,9 @@ import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
 import MagnifierImage from './Magnifier/MagnifierImage.vue'
 import MagnifierAxes from './Magnifier/MagnifierAxes.vue'
 import MagnifierPlots from './Magnifier/MagnifierPlots.vue'
-import CanvasAxes from './CanvasAxes.vue'
-import CanvasPlot from './CanvasPlot.vue'
-import CanvasCursor from './CanvasCursor.vue'
+import CanvasAxes from './Canvas/CanvasAxes.vue'
+import CanvasPlot from './Canvas/CanvasPlot.vue'
+import CanvasCursor from './Canvas/CanvasCursor.vue'
 import PlotsTable from './PlotsTable.vue'
 
 const axesSizePx = 10
