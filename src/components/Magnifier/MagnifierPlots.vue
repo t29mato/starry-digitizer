@@ -3,8 +3,8 @@
   <div
     :style="{
       position: 'absolute',
-      top: `${((point.yPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
-      left: `${((point.xPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
+      top: `${((plot.yPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
+      left: `${((plot.xPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
       transform: `scale(${magnifierScale}) translate(-${
         cursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
       }px, -${
@@ -32,7 +32,7 @@ export default Vue.extend({
     },
   },
   props: {
-    point: {
+    plot: {
       type: Object as () => {
         xPx: Number
         yPx: Number

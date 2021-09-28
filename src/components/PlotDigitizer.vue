@@ -29,11 +29,11 @@
               >
               <!-- TODO: プロットの透明度を変更できるようにする -->
               <!-- TODO: プロットの色を変更できるようにする -->
-              <v-btn :disabled="points.length === 0" @click="clearPoints"
+              <v-btn :disabled="plots.length === 0" @click="clearPoints"
                 >Clear Plots</v-btn
               >
               <v-btn
-                :disabled="points.length === 0"
+                :disabled="plots.length === 0"
                 @click="shouldShowPoints = !shouldShowPoints"
                 >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
               >
@@ -46,12 +46,8 @@
                 :index="index"
               ></canvas-axes>
             </div>
-            <div
-              v-for="point in points"
-              v-show="shouldShowPoints"
-              :key="point.id"
-            >
-              <canvas-plot :plotSize="plotSizePx" :plot="point"></canvas-plot>
+            <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
+              <canvas-plot :plotSize="plotSizePx" :plot="plot"></canvas-plot>
             </div>
             <!-- INFO: カーソル横の文字 -->
             <canvas-cursor
@@ -60,8 +56,8 @@
               :label="showAxisName(coordAxes.length)"
             ></canvas-cursor>
           </div>
-          {{ points.length }}
-          <v-simple-table v-if="points.length > 0 && coordAxes.length === 4">
+          {{ plots.length }}
+          <v-simple-table v-if="plots.length > 0 && coordAxes.length === 4">
             <template #default>
               <thead>
                 <tr>
@@ -71,15 +67,15 @@
               </thead>
               <tbody>
                 <tr
-                  v-for="point in points"
+                  v-for="plot in plots"
                   v-show="shouldShowPoints"
-                  :key="point.id"
+                  :key="plot.id"
                 >
                   <td>
-                    {{ calculateXY(point.xPx, point.yPx).xV }}
+                    {{ calculateXY(plot.xPx, plot.yPx).xV }}
                   </td>
                   <td>
-                    {{ calculateXY(point.xPx, point.yPx).yV }}
+                    {{ calculateXY(plot.xPx, plot.yPx).yV }}
                   </td>
                 </tr>
               </tbody>
@@ -122,18 +118,14 @@
                 :magnifierSize="magnifierSizePx"
               ></magnifier-axes>
             </div>
-            <div
-              v-for="point in points"
-              v-show="shouldShowPoints"
-              :key="point.id"
-            >
+            <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
               <!-- INFO: プロットデータ -->
               <magnifier-plots
                 :magnifierScale="magnifierScale"
                 :canvasScale="canvasScale"
                 :cursor="canvasCursor"
                 :plotSize="plotSizePx"
-                :point="point"
+                :plot="plot"
                 :magnifierSize="magnifierSizePx"
               ></magnifier-plots>
             </div>
@@ -264,8 +256,7 @@ export default Vue.extend({
       },
       color: 'red',
       magnifierScale: 5,
-      // REFACTOR: points -> dots
-      points: [] as { id: number; xPx: number; yPx: number }[],
+      plots: [] as { id: number; xPx: number; yPx: number }[],
       indexX1,
       indexX2,
       indexY1,
@@ -343,11 +334,11 @@ export default Vue.extend({
         ctx?.drawImage(image, 0, 0, imageWidthPx, imageHeightPx)
       }
       if (this.canvasScale !== 1) {
-        this.points = this.points.map((point) => {
+        this.plots = this.plots.map((plot) => {
           return {
-            id: point.id,
-            xPx: point.xPx / this.canvasScale,
-            yPx: point.yPx / this.canvasScale,
+            id: plot.id,
+            xPx: plot.xPx / this.canvasScale,
+            yPx: plot.yPx / this.canvasScale,
           }
         })
         this.coordAxes = this.coordAxes.map((axis) => {
@@ -380,11 +371,11 @@ export default Vue.extend({
         canvas.setAttribute('width', String(wrapperWidthPx))
         canvas.setAttribute('height', String(wrapperHeightPx))
         ctx?.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
-        this.points = this.points.map((point) => {
+        this.plots = this.plots.map((plot) => {
           return {
-            id: point.id,
-            xPx: (point.xPx / this.canvasScale) * imageRatio,
-            yPx: (point.yPx / this.canvasScale) * imageRatio,
+            id: plot.id,
+            xPx: (plot.xPx / this.canvasScale) * imageRatio,
+            yPx: (plot.yPx / this.canvasScale) * imageRatio,
           }
         })
         this.coordAxes = this.coordAxes.map((axis) => {
@@ -463,8 +454,8 @@ export default Vue.extend({
                 this.targetColor
               )
               if (colorDiffDistance < this.colorDistancePct) {
-                this.points.push({
-                  id: this.points.length + 1,
+                this.plots.push({
+                  id: this.plots.length + 1,
                   xPx: w,
                   yPx: h,
                 })
@@ -541,8 +532,8 @@ export default Vue.extend({
         })
         return
       }
-      this.points.push({
-        id: this.points.length + 1,
+      this.plots.push({
+        id: this.plots.length + 1,
         xPx: e.offsetX,
         yPx: e.offsetY,
       })
@@ -603,7 +594,7 @@ export default Vue.extend({
       this.coordAxes = []
     },
     clearPoints() {
-      this.points = []
+      this.plots = []
       this.shouldShowPoints = true
     },
     mouseMove(e: MouseEvent) {
