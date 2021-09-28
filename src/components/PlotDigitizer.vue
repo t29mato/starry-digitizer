@@ -44,6 +44,7 @@
                 :axis="axis"
                 :color="coordAxes.length === 4 ? 'black' : 'red'"
                 :index="index"
+                :label="showAxisName(index)"
               ></canvas-axes>
             </div>
             <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
@@ -96,6 +97,7 @@
                 :canvasCursor="canvasCursor"
                 :magnifierScale="magnifierScale"
                 :magnifierSize="magnifierSizePx"
+                :label="showAxisName(index)"
               ></magnifier-axes>
             </div>
             <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">

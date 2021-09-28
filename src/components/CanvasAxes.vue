@@ -19,7 +19,7 @@
         left: `${axis.xPx - axesHalfSize + 12}px`,
         'pointer-events': 'none',
       }"
-      >{{ showAxisName(index) }}</span
+      >{{ label }}</span
     >
   </div>
 </template>
@@ -52,21 +52,9 @@ export default Vue.extend({
       type: Number,
       required: true,
     },
-  },
-  methods: {
-    showAxisName(index: number): string {
-      switch (index) {
-        case 0:
-          return 'x1'
-        case 1:
-          return 'x2'
-        case 2:
-          return 'y1'
-        case 3:
-          return 'y2'
-        default:
-          return '-'
-      }
+    label: {
+      type: String,
+      required: true,
     },
   },
 })
