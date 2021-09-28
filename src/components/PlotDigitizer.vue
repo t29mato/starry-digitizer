@@ -51,19 +51,7 @@
               v-show="shouldShowPoints"
               :key="point.id"
             >
-              <!-- INFO: プロットデータ -->
-              <div
-                :style="{
-                  position: 'absolute',
-                  top: `${point.yPx - plotRadiusSizePx}px`,
-                  left: `${point.xPx - plotRadiusSizePx}px`,
-                  'pointer-events': 'none',
-                  width: `${plotSizePx}px`,
-                  height: `${plotSizePx}px`,
-                  'border-radius': '50%',
-                  'background-color': 'red',
-                }"
-              ></div>
+              <canvas-plot :plotSize="plotSizePx" :plot="point"></canvas-plot>
             </div>
             <!-- INFO: カーソル横の文字 -->
             <div
@@ -251,6 +239,7 @@ import MagnifierImage from './Magnifier/MagnifierImage.vue'
 import MagnifierAxes from './Magnifier/MagnifierAxes.vue'
 import MagnifierPlots from './Magnifier/MagnifierPlots.vue'
 import CanvasAxes from './CanvasAxes.vue'
+import CanvasPlot from './CanvasPlot.vue'
 
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -263,6 +252,7 @@ export default Vue.extend({
     MagnifierAxes,
     MagnifierPlots,
     CanvasAxes,
+    CanvasPlot,
   },
   data() {
     return {
