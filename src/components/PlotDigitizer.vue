@@ -187,7 +187,15 @@
               ></v-text-field>
             </v-col>
           </v-row>
-          <h3>Automatic Extraction</h3>
+          <h3>
+            Automatic Extraction<v-btn
+              text
+              class="ml-2"
+              :loading="isDetecting"
+              @click="detectPointByColor"
+              >Run</v-btn
+            >
+          </h3>
           <div
             :style="{
               'pointer-events': 'none',
@@ -214,22 +222,22 @@
             thumb-size="25"
           ></v-slider>
           <v-color-picker v-model="colorPicker" class="ma-2"></v-color-picker>
-          <v-btn :loading="isDetecting" @click="detectPointByColor">Run</v-btn>
-          <h3>Settings</h3>
-          <h4>Axes Color</h4>
+
+          <h3 class="mt-4">Settings</h3>
+          <p class="mb-0">Axes Color</p>
           <v-color-picker
             v-model="axesColor"
-            class="ma-2"
+            class="mb-2"
             hide-canvas
             hide-inputs
             hide-sliders
             show-swatches
             swatches-max-height="60"
           ></v-color-picker>
-          <h4>Plots Color</h4>
+          <p class="mb-0">Plots Color</p>
           <v-color-picker
             v-model="plotsColor"
-            class="ma-2"
+            class="mb-2"
             hide-canvas
             hide-inputs
             hide-sliders
