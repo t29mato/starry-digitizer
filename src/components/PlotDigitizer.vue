@@ -54,17 +54,11 @@
               <canvas-plot :plotSize="plotSizePx" :plot="point"></canvas-plot>
             </div>
             <!-- INFO: カーソル横の文字 -->
-            <div
+            <canvas-cursor
               v-if="coordAxes.length < 4"
-              :style="{
-                position: 'absolute',
-                top: `${canvasCursor.yPx - 12}px`,
-                left: `${canvasCursor.xPx + 7}px`,
-                'pointer-events': 'none',
-              }"
-            >
-              {{ showAxisName(coordAxes.length) }}
-            </div>
+              :cursor="canvasCursor"
+              :label="showAxisName(coordAxes.length)"
+            ></canvas-cursor>
           </div>
           {{ points.length }}
           <v-simple-table v-if="points.length > 0 && coordAxes.length === 4">
@@ -240,6 +234,7 @@ import MagnifierAxes from './Magnifier/MagnifierAxes.vue'
 import MagnifierPlots from './Magnifier/MagnifierPlots.vue'
 import CanvasAxes from './CanvasAxes.vue'
 import CanvasPlot from './CanvasPlot.vue'
+import CanvasCursor from './CanvasCursor.vue'
 
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -253,6 +248,7 @@ export default Vue.extend({
     MagnifierPlots,
     CanvasAxes,
     CanvasPlot,
+    CanvasCursor,
   },
   data() {
     return {
