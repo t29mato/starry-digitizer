@@ -26,8 +26,6 @@
               <v-btn text :disabled="coordAxes.length === 0" @click="clearAxes">
                 Clear Axes</v-btn
               >
-              <!-- TODO: プロットの透明度を変更できるようにする -->
-              <!-- TODO: プロットの色を変更できるようにする -->
               <v-btn text :disabled="plots.length === 0" @click="clearPoints"
                 >Clear Plots</v-btn
               >
@@ -57,7 +55,7 @@
                 :color="
                   isMovingAxis && movingAxisIndex === index
                     ? 'limegreen'
-                    : 'black'
+                    : axesColor
                 "
                 :index="index"
                 :label="showAxisName(index)"
@@ -70,7 +68,7 @@
                 :color="
                   isMovingPlot && movingPlotId === plot.id
                     ? 'limegreen'
-                    : 'black'
+                    : plotsColor
                 "
                 :activatePlot="activatePlot"
               ></canvas-plot>
@@ -116,7 +114,7 @@
                 :color="
                   isMovingAxis && movingAxisIndex === index
                     ? 'limegreen'
-                    : 'black'
+                    : axesColor
                 "
                 :index="index"
                 :axesSize="axesSizePx"
@@ -138,7 +136,7 @@
                 :color="
                   isMovingPlot && movingPlotId === plot.id
                     ? 'limegreen'
-                    : 'black'
+                    : plotsColor
                 "
               ></magnifier-plots>
             </div>
@@ -196,7 +194,7 @@
               width: `${plotSizePx}px`,
               height: `${plotSizePx}px`,
               'border-radius': '50%',
-              'background-color': 'black',
+              'background-color': plotsColor,
             }"
           ></div>
           <v-slider
@@ -217,6 +215,27 @@
           ></v-slider>
           <v-color-picker v-model="colorPicker" class="ma-2"></v-color-picker>
           <v-btn :loading="isDetecting" @click="detectPointByColor">Run</v-btn>
+          <h3>Settings</h3>
+          <h4>Axes Color</h4>
+          <v-color-picker
+            v-model="axesColor"
+            class="ma-2"
+            hide-canvas
+            hide-inputs
+            hide-sliders
+            show-swatches
+            swatches-max-height="60"
+          ></v-color-picker>
+          <h4>Plots Color</h4>
+          <v-color-picker
+            v-model="plotsColor"
+            class="ma-2"
+            hide-canvas
+            hide-inputs
+            hide-sliders
+            show-swatches
+            swatches-max-height="60"
+          ></v-color-picker>
         </v-col>
       </v-row>
     </template>
@@ -286,6 +305,8 @@ export default Vue.extend({
       movingAxisIndex: 0,
       isMovingPlot: false,
       movingPlotId: 0,
+      axesColor: 'black',
+      plotsColor: 'black',
     }
   },
   computed: {
@@ -681,7 +702,6 @@ export default Vue.extend({
       }
     },
     activatePlot(id: number) {
-      console.log({ id })
       this.movingPlotId = id
       this.isMovingPlot = true
     },
