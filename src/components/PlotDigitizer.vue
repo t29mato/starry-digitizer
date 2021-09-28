@@ -173,7 +173,7 @@
             thumb-label="always"
             max="20"
             min="1"
-            label="Plot Size (px)"
+            label="Plot Size"
             thumb-size="25"
           ></v-slider>
           <v-slider
@@ -181,7 +181,7 @@
             thumb-label="always"
             max="100"
             min="1"
-            label="Color Distsance (%)"
+            label="Color Distsance"
             thumb-size="25"
           ></v-slider>
           <v-color-picker v-model="colorPicker" class="ma-2"></v-color-picker>
