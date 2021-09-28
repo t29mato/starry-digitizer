@@ -16,7 +16,7 @@
               :style="{
                 cursor: 'crosshair',
                 'user-drag': 'none',
-                border: 'solid 1px grey',
+                outline: 'solid 1px grey',
               }"
               :src="uploadImageUrl"
               @click="plot"
@@ -80,7 +80,7 @@
               width: `${magnifierSizePx}px`,
               height: `${magnifierSizePx}px`,
               position: 'relative',
-              border: '1px solid grey',
+              outline: '1px solid grey',
             }"
           >
             <magnifier-image
