@@ -111,10 +111,10 @@
                   :key="point.id"
                 >
                   <td>
-                    {{ calculateValueFromPixel(point.xPx, point.yPx).xV }}
+                    {{ calculateXY(point.xPx, point.yPx).xV }}
                   </td>
                   <td>
-                    {{ calculateValueFromPixel(point.xPx, point.yPx).yV }}
+                    {{ calculateXY(point.xPx, point.yPx).yV }}
                   </td>
                 </tr>
               </tbody>
@@ -174,16 +174,9 @@
             </div>
           </div>
           <div v-if="coordAxes.length === 4">
-            {{
-              `x: ${
-                calculateValueFromPixel(canvasCursor.xPx, canvasCursor.yPx).xV
-              }`
+            {{ `x: ${calculateXY(canvasCursor.xPx, canvasCursor.yPx).xV}`
             }}<br />
-            {{
-              `y: ${
-                calculateValueFromPixel(canvasCursor.xPx, canvasCursor.yPx).yV
-              }`
-            }}
+            {{ `y: ${calculateXY(canvasCursor.xPx, canvasCursor.yPx).yV}` }}
           </div>
           <v-slider
             v-model="magnifierScale"
@@ -269,11 +262,11 @@
 <script lang="ts">
 import Vue from 'vue'
 import diff from 'color-diff'
-import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
-import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
-import MagnifierImage from './MagnifierImage.vue'
-import MagnifierAxes from './MagnifierAxes.vue'
-import MagnifierPlots from './MagnifierPlots.vue'
+import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
+import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
+import MagnifierImage from './Magnifier/MagnifierImage.vue'
+import MagnifierAxes from './Magnifier/MagnifierAxes.vue'
+import MagnifierPlots from './Magnifier/MagnifierPlots.vue'
 
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -583,7 +576,7 @@ export default Vue.extend({
         yPx: e.offsetY,
       })
     },
-    calculateValueFromPixel(x: number, y: number): { xV: number; yV: number } {
+    calculateXY(x: number, y: number): { xV: number; yV: number } {
       // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点のx値を計算
       const calculateVerticalCrossPoint = (
         x1x: number,
