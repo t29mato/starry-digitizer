@@ -263,8 +263,8 @@ export default Vue.extend({
       indexY2,
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
-      plotSizePx: 10,
-      colorDistancePct: 20,
+      plotSizePx: 5,
+      colorDistancePct: 10,
       colorPicker: '',
       isDetecting: false,
       axesSizePx,
@@ -456,8 +456,8 @@ export default Vue.extend({
               if (colorDiffDistance < this.colorDistancePct) {
                 this.plots.push({
                   id: this.plots.length + 1,
-                  xPx: w,
-                  yPx: h,
+                  xPx: w + this.plotRadiusSizePx,
+                  yPx: h + this.plotRadiusSizePx,
                 })
                 for (let i = 0; i < this.plotSizePx; i++) {
                   for (let j = 0; j < this.plotSizePx; j++) {
