@@ -4,12 +4,12 @@
       position: 'absolute',
       top: `${plot.yPx - plotHalfSize}px`,
       left: `${plot.xPx - plotHalfSize}px`,
-      'pointer-events': 'none',
       width: `${plotSize}px`,
       height: `${plotSize}px`,
       'border-radius': '50%',
       'background-color': color,
     }"
+    @click="click(plot.id)"
   ></div>
 </template>
 
@@ -37,6 +37,15 @@ export default Vue.extend({
     plotSize: {
       type: Number,
       required: true,
+    },
+    activatePlot: {
+      type: Function,
+      required: true,
+    },
+  },
+  methods: {
+    click(id: number) {
+      this.activatePlot(id)
     },
   },
 })

@@ -72,6 +72,7 @@
                     ? 'limegreen'
                     : 'black'
                 "
+                :activatePlot="activatePlot"
               ></canvas-plot>
             </div>
             <canvas-cursor
@@ -679,9 +680,15 @@ export default Vue.extend({
           return '-'
       }
     },
+    activatePlot(id: number) {
+      console.log({ id })
+      this.movingPlotId = id
+      this.isMovingPlot = true
+    },
     clearAxes() {
       this.coordAxes = []
       this.isMovingAxis = false
+      this.isMovingPlot = false
       this.cursorIsMoved = false
     },
     clearPoints() {
