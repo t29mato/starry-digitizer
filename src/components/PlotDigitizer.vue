@@ -23,25 +23,28 @@
               @mousemove="mouseMove"
             ></canvas>
             <div>
-              <v-btn :disabled="coordAxes.length === 0" @click="clearAxes">
+              <v-btn text :disabled="coordAxes.length === 0" @click="clearAxes">
                 Clear Axes</v-btn
               >
               <!-- TODO: プロットの透明度を変更できるようにする -->
               <!-- TODO: プロットの色を変更できるようにする -->
-              <v-btn :disabled="plots.length === 0" @click="clearPoints"
+              <v-btn text :disabled="plots.length === 0" @click="clearPoints"
                 >Clear Plots</v-btn
               >
               <v-btn
+                text
                 :disabled="coordAxes.length === 0 || !isMovingAxis"
                 @click="removeAxis"
-                >Remove Active Axis</v-btn
+                >Clear Active Axis</v-btn
               >
               <v-btn
+                text
                 :disabled="plots.length === 0 || !isMovingPlot"
                 @click="removePlot"
-                >Remove Active Plot</v-btn
+                >Clear Active Plot</v-btn
               >
               <v-btn
+                text
                 :disabled="plots.length === 0"
                 @click="shouldShowPoints = !shouldShowPoints"
                 >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
@@ -622,6 +625,7 @@ export default Vue.extend({
         xPx: e.offsetX,
         yPx: e.offsetY,
       })
+      this.shouldShowPoints = true
     },
     calculateXY(x: number, y: number): { xV: number; yV: number } {
       // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点のx値を計算
