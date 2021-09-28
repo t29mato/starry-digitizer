@@ -305,8 +305,8 @@ export default Vue.extend({
       movingAxisIndex: 0,
       isMovingPlot: false,
       movingPlotId: 0,
-      axesColor: 'black',
-      plotsColor: 'black',
+      axesColor: '#000000',
+      plotsColor: '#000000',
     }
   },
   computed: {
