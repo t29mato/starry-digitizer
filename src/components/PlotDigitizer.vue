@@ -126,44 +126,38 @@
             thumb-size="25"
           ></v-slider>
           <h3>Axes Values</h3>
-          <div>
-            <v-row>
-              <v-col vols="6" class="ma-0 pb-0">
-                <v-text-field
-                  label="x1"
-                  type="number"
-                  :value="coordAxesValue[indexX1]"
-                  @input="inputX1Value"
-                ></v-text-field>
-              </v-col>
-              <v-col vols="6" class="ma-0 pb-0">
-                <v-text-field
-                  label="x2"
-                  type="number"
-                  :value="coordAxesValue[indexX2]"
-                  @input="inputX2Value"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col vols="6" class="ma-0 pt-0">
-                <v-text-field
-                  label="y1"
-                  type="number"
-                  :value="coordAxesValue[indexY1]"
-                  @input="inputY1Value"
-                ></v-text-field>
-              </v-col>
-              <v-col vols="6" class="ma-0 pt-0">
-                <v-text-field
-                  label="y2"
-                  type="number"
-                  :value="coordAxesValue[indexY2]"
-                  @input="inputY2Value"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </div>
+          <v-row>
+            <v-col vols="6" class="ma-0 pb-0">
+              <v-text-field
+                v-model="coordAxesValue[indexX1]"
+                label="x1"
+                type="number"
+              ></v-text-field>
+            </v-col>
+            <v-col vols="6" class="ma-0 pb-0">
+              <v-text-field
+                v-model="coordAxesValue[indexX2]"
+                label="x2"
+                type="number"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col vols="6" class="ma-0 pt-0">
+              <v-text-field
+                v-model="coordAxesValue[indexY1]"
+                label="y1"
+                type="number"
+              ></v-text-field>
+            </v-col>
+            <v-col vols="6" class="ma-0 pt-0">
+              <v-text-field
+                v-model="coordAxesValue[indexY2]"
+                label="y2"
+                type="number"
+              ></v-text-field>
+            </v-col>
+          </v-row>
           <h3>Automatic Extraction</h3>
           <div
             :style="{
@@ -479,18 +473,6 @@ export default Vue.extend({
       color2: { R: number; G: number; B: number }
     ): number {
       return diff.diff(diff.rgb_to_lab(color1), diff.rgb_to_lab(color2))
-    },
-    inputX1Value(input: string) {
-      this.coordAxesValue[indexX1] = Number(input)
-    },
-    inputX2Value(input: string) {
-      this.coordAxesValue[indexX2] = Number(input)
-    },
-    inputY1Value(input: string) {
-      this.coordAxesValue[indexY1] = Number(input)
-    },
-    inputY2Value(input: string) {
-      this.coordAxesValue[indexY2] = Number(input)
     },
     changeColor(color: string) {
       this.color = color
