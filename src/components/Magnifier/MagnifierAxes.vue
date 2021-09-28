@@ -3,13 +3,13 @@
     <div
       :style="{
         position: 'absolute',
-        top: `${((axis.yPx - axesSize / 2) / canvasScale) * magnifierScale}px`,
-        left: `${((axis.xPx - axesSize / 2) / canvasScale) * magnifierScale}px`,
+        top: `${((axis.yPx - axesHalfSize) / canvasScale) * magnifierScale}px`,
+        left: `${((axis.xPx - axesHalfSize) / canvasScale) * magnifierScale}px`,
         'pointer-events': 'none',
         transform: `scale(${magnifierScale}) translate(-${
-          canvasCursor.xPx / canvasScale - magnifierSize / 2 / magnifierScale
+          canvasCursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
         }px, -${
-          canvasCursor.yPx / canvasScale - magnifierSize / 2 / magnifierScale
+          canvasCursor.yPx / canvasScale - magnifierHalfSize / magnifierScale
         }px)`,
         'transform-origin': 'top left',
         width: `${axesSize / canvasScale}px`,
@@ -22,16 +22,16 @@
       :style="{
         position: 'absolute',
         top: `${
-          ((axis.yPx - axesSize / 2 - axesSize) / canvasScale) * magnifierScale
+          ((axis.yPx - axesHalfSize - axesSize) / canvasScale) * magnifierScale
         }px`,
         left: `${
-          ((axis.xPx - axesSize / 2 + axesSize) / canvasScale) * magnifierScale
+          ((axis.xPx - axesHalfSize + axesSize) / canvasScale) * magnifierScale
         }px`,
         'pointer-events': 'none',
         transform: `scale(${magnifierScale}) translate(-${
-          canvasCursor.xPx / canvasScale - magnifierSize / 2 / magnifierScale
+          canvasCursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
         }px, -${
-          canvasCursor.yPx / canvasScale - magnifierSize / 2 / magnifierScale
+          canvasCursor.yPx / canvasScale - magnifierHalfSize / magnifierScale
         }px)`,
         'transform-origin': 'top left',
       }"
@@ -43,6 +43,14 @@
 <script lang="ts">
 import Vue from 'vue'
 export default Vue.extend({
+  computed: {
+    axesHalfSize(): number {
+      return this.axesSize / 2
+    },
+    magnifierHalfSize(): number {
+      return this.magnifierSize / 2
+    },
+  },
   props: {
     axis: {
       type: Object as () => {
