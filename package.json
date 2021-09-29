@@ -1,13 +1,18 @@
 {
   "name": "vue-plot-digitizer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "license": "MIT",
   "author": "MATO Tomoya",
-  "keywords": ["Vue", "Vue.js", "Data Collection"],
+  "keywords": [
+    "Vue",
+    "Vue.js",
+    "Data Collection"
+  ],
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build:lib": "vue-cli-service build --target lib --name v-plot-digitizer ./src/library-main.js",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -63,5 +68,9 @@
       ]
     }
   },
-  "browserslist": ["> 1%", "last 2 versions", "not dead"]
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
 }
