@@ -84,6 +84,13 @@
             v-if="plots.length > 0 && coordAxes.length === 4"
             :plots="calculatedPlots"
           ></plots-table>
+          <div>
+            <v-textarea
+              readonly
+              v-model="convertPlotsIntoText"
+              outlined
+            ></v-textarea>
+          </div>
         </v-col>
         <v-col cols="3">
           <div
@@ -347,6 +354,13 @@ export default Vue.extend({
         return 0
       }
       return this.plots.slice(-1)[0].id + 1
+    },
+    convertPlotsIntoText(): string {
+      return this.calculatedPlots
+        .reduce((prev, cur) => {
+          return prev + `${cur.xV}, ${cur.yV}\n`
+        }, '')
+        .trim()
     },
   },
   mounted() {
