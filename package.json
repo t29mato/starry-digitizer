@@ -13,7 +13,7 @@
   "browser": "dist/vue-plot-digitizer.esm.js",
   "module": "dist/vue-plot-digitizer.esm.js",
   "unpkg": "dist/vue-plot-digitizer.min.js",
-  "types": "dist/types/src/entry.esm.d.ts",
+  "types": "dist/types/entry.esm.d.ts",
   "files": [
     "dist"
   ],
