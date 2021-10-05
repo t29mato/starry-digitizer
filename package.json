@@ -9,6 +9,17 @@
     "Vue.js",
     "Data Collection"
   ],
+  "main": "dist/vue-plot-digitizer.ssr.js",
+  "browser": "dist/vue-plot-digitizer.esm.js",
+  "module": "dist/vue-plot-digitizer.esm.js",
+  "unpkg": "dist/vue-plot-digitizer.min.js",
+  "types": "dist/types/src/entry.esm.d.ts",
+
+  "files": [
+    "dist/*",
+    "src/**/*.vue"
+  ],
+  "sideEffects": false,
   "scripts": {
     "serve": "vue-cli-service serve",
     "lint": "vue-cli-service lint",
