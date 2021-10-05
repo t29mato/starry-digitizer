@@ -3,13 +3,13 @@
     <v-file-input
       accept="image/*"
       label="file input"
-      @change="loadImage"
+      @change="uploadImage"
     ></v-file-input>
     <template v-if="uploadImageUrl">
       <v-row>
         <v-col cols="9">
-          <v-btn @click="drawActualSizeCanvas">100%</v-btn>
-          <v-btn @click="drawFitSizeCanvas">Fit</v-btn>
+          <v-btn @click="resizeCanvasToMax">100%</v-btn>
+          <v-btn @click="resizeCanvasToFit">Fit</v-btn>
           <div :style="{ position: 'relative' }" id="wrapper">
             <canvas
               id="canvas"
@@ -374,28 +374,21 @@ export default Vue.extend({
         }, '')
         .trim()
     },
+    imageIsFit(): boolean {
+      return this.canvasScale !== 1
+    },
   },
-  mounted() {
-    // REFACTOR: DRY
-    const wrapper: HTMLDivElement | null = document.querySelector('#wrapper')
-    const canvas: HTMLCanvasElement | null = document.querySelector('#canvas')
-    if (canvas === null || wrapper === null) {
-      window.alert('canvas is null')
-      return
-    }
-    const ctx = canvas.getContext('2d')
-    const image = new Image()
-    image.src = this.uploadImageUrl
-    image.onload = () => {
-      const wrapperWidthPx = wrapper.offsetWidth
-      const imageWidthPx = image.width
-      const imageHeightPx = image.height
-      const imageRatio = wrapperWidthPx / imageWidthPx
-      this.canvasScale = imageRatio
-      const wrapperHeightPx = imageHeightPx * imageRatio
-      canvas.setAttribute('width', String(wrapperWidthPx))
-      canvas.setAttribute('height', String(wrapperHeightPx))
-      ctx?.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
+  async mounted() {
+    try {
+      const wrapper = await this.getWrapperElement()
+      const canvas = await this.getCanvasElement()
+      const ctx = await this.getContext2D(canvas)
+      const image = await this.loadImage(this.uploadImageUrl)
+      this.drawFitSizeImage(wrapper, canvas, image, ctx)
+    } catch (error) {
+      //
+    } finally {
+      //
     }
     document.addEventListener('keydown', this.keyListener.bind(this))
   },
@@ -461,25 +454,17 @@ export default Vue.extend({
         )[0]
       }
     },
-    drawActualSizeCanvas() {
-      // REFACTOR: DRY
-      const wrapper: HTMLDivElement | null = document.querySelector('#wrapper')
-      const canvas: HTMLCanvasElement | null = document.querySelector('#canvas')
-      if (canvas === null || wrapper === null) {
-        window.alert('canvas is null')
+    async resizeCanvasToMax() {
+      if (!this.imageIsFit) {
+        // INFO: !サイズが異なるときは画像が最大の時しかないので、何もしない
         return
       }
-      const ctx = canvas.getContext('2d')
-      const image = new Image()
-      image.src = this.uploadImageUrl
-      image.onload = () => {
-        const imageWidthPx = image.width
-        const imageHeightPx = image.height
-        canvas.setAttribute('width', String(imageWidthPx))
-        canvas.setAttribute('height', String(imageHeightPx))
-        ctx?.drawImage(image, 0, 0, imageWidthPx, imageHeightPx)
-      }
-      if (this.canvasScale !== 1) {
+      try {
+        const wrapper = await this.getWrapperElement()
+        const canvas = await this.getCanvasElement()
+        const ctx = await this.getContext2D(canvas)
+        const image = await this.loadImage(this.uploadImageUrl)
+        this.drawMaxSizeImage(wrapper, canvas, image, ctx)
         this.plots = this.plots.map((plot) => {
           return {
             id: plot.id,
@@ -495,28 +480,19 @@ export default Vue.extend({
         })
         this.plotSizePx = this.plotSizePx / this.canvasScale
         this.canvasScale = 1
+      } catch (error) {
+        window.alert(error)
+      } finally {
+        //
       }
     },
-    drawFitSizeCanvas() {
-      // REFACTOR: DRY
-      const wrapper: HTMLDivElement | null = document.querySelector('#wrapper')
-      const canvas: HTMLCanvasElement | null = document.querySelector('#canvas')
-      if (canvas === null || wrapper === null) {
-        window.alert('canvas is null')
-        return
-      }
-      const ctx = canvas.getContext('2d')
-      const image = new Image()
-      image.src = this.uploadImageUrl
-      image.onload = () => {
-        const wrapperWidthPx = wrapper.offsetWidth
-        const imageWidthPx = image.width
-        const imageHeightPx = image.height
-        const imageRatio = wrapperWidthPx / imageWidthPx
-        const wrapperHeightPx = imageHeightPx * imageRatio
-        canvas.setAttribute('width', String(wrapperWidthPx))
-        canvas.setAttribute('height', String(wrapperHeightPx))
-        ctx?.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
+    async resizeCanvasToFit() {
+      try {
+        const wrapper = await this.getWrapperElement()
+        const canvas = await this.getCanvasElement()
+        const ctx = await this.getContext2D(canvas)
+        const image = await this.loadImage(this.uploadImageUrl)
+        const imageRatio = this.drawFitSizeImage(wrapper, canvas, image, ctx)
         this.plots = this.plots.map((plot) => {
           return {
             id: plot.id,
@@ -532,33 +508,24 @@ export default Vue.extend({
         })
         this.plotSizePx = (this.plotSizePx / this.canvasScale) * imageRatio
         this.canvasScale = imageRatio
+      } catch (error) {
+        window.alert(error)
+      } finally {
+        //
       }
     },
     // TODO: Change all word detect to extract.
-    detectPointByColor() {
+    async detectPointByColor() {
       this.isDetecting = true
-      const wrapper: HTMLDivElement | null = document.querySelector('#wrapper')
-      const canvas: HTMLCanvasElement | null = document.querySelector('#canvas')
-      if (canvas === null || wrapper === null) {
-        window.alert('canvas is null')
-        return
-      }
-      const ctx = canvas.getContext('2d')
-      const image = new Image()
-      image.src = this.uploadImageUrl
-      image.onload = () => {
-        const wrapperWidthPx = wrapper.offsetWidth
-        const imageWidthPx = image.width
-        const imageHeightPx = image.height
-        const imageRatio = wrapperWidthPx / imageWidthPx
-        this.canvasScale = imageRatio
-        const wrapperHeightPx = imageHeightPx * imageRatio
-        canvas.setAttribute('width', String(wrapperWidthPx))
-        canvas.setAttribute('height', String(wrapperHeightPx))
-        ctx?.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
+      try {
+        const wrapper = await this.getWrapperElement()
+        const canvas = await this.getCanvasElement()
+        const ctx = await this.getContext2D(canvas)
+        const image = await this.loadImage(this.uploadImageUrl)
+        this.drawFitSizeImage(wrapper, canvas, image, ctx)
         const paintedArea = [] as { w: number; h: number }[]
-        for (let h = 0; h < wrapperHeightPx; h++) {
-          for (let w = 0; w < wrapperWidthPx; w++) {
+        for (let h = 0; h < canvas.height; h++) {
+          for (let w = 0; w < canvas.width; w++) {
             if (paintedArea.some((area) => area.w === w && area.h === h)) {
               continue
             }
@@ -617,6 +584,9 @@ export default Vue.extend({
             }
           }
         }
+      } catch (error) {
+        //
+      } finally {
         this.isDetecting = false
       }
     },
@@ -629,32 +599,97 @@ export default Vue.extend({
     changeColor(color: string) {
       this.color = color
     },
-    loadImage(file: File) {
-      const element: HTMLCanvasElement | null =
-        document.querySelector('#canvas')
-      if (element === null) {
-        window.alert('element is null')
-        return
-      }
-      const ctx = element.getContext('2d')
-      const image = new Image()
-
-      const fr = new FileReader()
-      fr.readAsDataURL(file)
-      fr.addEventListener('load', () => {
-        if (typeof fr.result === 'string') {
-          this.uploadImageUrl = fr.result
-          image.src = fr.result
-          image.onload = () => {
-            const widthPx = image.width
-            const heightPx = image.height
-            element.setAttribute('width', String(widthPx))
-            element.setAttribute('height', String(heightPx))
-            ctx?.drawImage(image, 0, 0)
-          }
-        } else {
-          window.alert('string以外の型')
+    async uploadImage(file: File) {
+      try {
+        const wrapper = await this.getWrapperElement()
+        const canvas = await this.getCanvasElement()
+        const ctx = await this.getContext2D(canvas)
+        const fr = await this.readFile(file)
+        if (typeof fr.result !== 'string') {
+          throw new Error('file is not string type')
         }
+        const image = await this.loadImage(fr.result)
+        this.drawFitSizeImage(wrapper, canvas, image, ctx)
+        this.uploadImageUrl = fr.result
+      } catch (error) {
+        window.alert(error)
+      } finally {
+        //
+      }
+    },
+    getCanvasElement(): Promise<HTMLCanvasElement> {
+      return new Promise((resolve, reject) => {
+        const canvas = document.querySelector<HTMLCanvasElement>('#canvas')
+        if (canvas === null) {
+          reject('canvas is null')
+        } else {
+          resolve(canvas)
+        }
+      })
+    },
+    getWrapperElement(): Promise<HTMLDivElement> {
+      return new Promise((resolve, reject) => {
+        const wrapper = document.querySelector<HTMLDivElement>('#wrapper')
+        if (wrapper === null) {
+          reject('wrapper is null')
+        } else {
+          resolve(wrapper)
+        }
+      })
+    },
+    getContext2D(canvas: HTMLCanvasElement): Promise<CanvasRenderingContext2D> {
+      return new Promise((resolve, reject) => {
+        const ctx = canvas.getContext('2d')
+        if (ctx === null) {
+          reject('ctx is null')
+        } else {
+          resolve(ctx)
+        }
+      })
+    },
+    loadImage(src: string): Promise<HTMLImageElement> {
+      return new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = (error) => reject(error)
+        img.src = src
+      })
+    },
+    drawFitSizeImage(
+      wrapper: HTMLDivElement,
+      canvas: HTMLCanvasElement,
+      image: HTMLImageElement,
+      ctx: CanvasRenderingContext2D
+    ): number {
+      const wrapperWidthPx = wrapper.offsetWidth
+      const imageWidthPx = image.width
+      const imageHeightPx = image.height
+      const imageRatio = wrapperWidthPx / imageWidthPx
+      const wrapperHeightPx = imageHeightPx * imageRatio
+      canvas.setAttribute('width', String(wrapperWidthPx))
+      canvas.setAttribute('height', String(wrapperHeightPx))
+      ctx.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
+      return imageRatio
+    },
+    drawMaxSizeImage(
+      wrapper: HTMLDivElement,
+      canvas: HTMLCanvasElement,
+      image: HTMLImageElement,
+      ctx: CanvasRenderingContext2D
+    ): number {
+      const imageWidthPx = image.width
+      const imageHeightPx = image.height
+      canvas.setAttribute('width', String(imageWidthPx))
+      canvas.setAttribute('height', String(imageHeightPx))
+      ctx.drawImage(image, 0, 0, imageWidthPx, imageHeightPx)
+      return 1
+    },
+    readFile(file: File): Promise<FileReader> {
+      return new Promise((resolve, reject) => {
+        const fr = new FileReader()
+        fr.readAsDataURL(file)
+        fr.addEventListener('load', () => resolve(fr))
+        fr.addEventListener('error', (error) => reject(error))
       })
     },
     plot(e: MouseEvent): void {
