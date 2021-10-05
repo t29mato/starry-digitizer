@@ -80,16 +80,19 @@
             ></canvas-cursor>
           </div>
           {{ plots.length }}
-          <plots-table
-            v-if="plots.length > 0 && coordAxes.length === 4"
-            :plots="calculatedPlots"
-          ></plots-table>
           <div>
             <v-textarea
               readonly
               v-model="convertPlotsIntoText"
               outlined
+              hide-details="true"
             ></v-textarea>
+            <v-btn
+              @click="copy"
+              text
+              :disabled="convertPlotsIntoText.length === 0"
+              >Copy text to Clipboard</v-btn
+            >
           </div>
         </v-col>
         <v-col cols="3">
@@ -262,7 +265,6 @@ import MagnifierPlots from './Magnifier/MagnifierPlots.vue'
 import CanvasAxes from './Canvas/CanvasAxes.vue'
 import CanvasPlot from './Canvas/CanvasPlot.vue'
 import CanvasCursor from './Canvas/CanvasCursor.vue'
-import PlotsTable from './PlotsTable.vue'
 
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -277,7 +279,6 @@ export default Vue.extend({
     CanvasAxes,
     CanvasPlot,
     CanvasCursor,
-    PlotsTable,
   },
   data() {
     return {
@@ -392,6 +393,9 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
+    copy() {
+      navigator.clipboard.writeText(this.convertPlotsIntoText)
+    },
     keyListener(e: KeyboardEvent) {
       const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
         'ArrowUp',
