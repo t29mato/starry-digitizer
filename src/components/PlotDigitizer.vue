@@ -203,6 +203,7 @@
               class="ml-2"
               :loading="isDetecting"
               @click="detectPointByColor"
+              color="green"
               >Run</v-btn
             >
           </h3>
@@ -364,6 +365,9 @@ export default Vue.extend({
       return this.plots.slice(-1)[0].id + 1
     },
     convertPlotsIntoText(): string {
+      if (this.plots.length === 0) {
+        return ''
+      }
       return this.calculatedPlots
         .reduce((prev, cur) => {
           return prev + `${cur.xV}, ${cur.yV}\n`
