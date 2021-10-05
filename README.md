@@ -27,7 +27,7 @@ You need to import the component and then add to the components.
 
 ``` TypeScript
 <template>
-    <vue-plot-digitizer />
+  <vue-plot-digitizer />
 </template>
 
 <script lang="ts">
@@ -67,4 +67,4 @@ yarn lint
 5. Create a new Pull Request
 
 ## License
-This software is distributed under MIT license
+This software is distributed under [MIT license](https://raw.githubusercontent.com/t29mato/vue-plot-digitizer/main/LICENSE.txt)
