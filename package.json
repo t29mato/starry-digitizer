@@ -1,6 +1,6 @@
 {
   "name": "vue-plot-digitizer",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": false,
   "license": "MIT",
   "author": "MATO Tomoya",
@@ -14,7 +14,6 @@
   "module": "dist/vue-plot-digitizer.esm.js",
   "unpkg": "dist/vue-plot-digitizer.min.js",
   "types": "dist/types/src/entry.esm.d.ts",
-
   "files": [
     "dist/*",
     "src/**/*.vue"
