@@ -15,7 +15,8 @@
   "unpkg": "dist/vue-plot-digitizer.min.js",
   "types": "dist/types/entry.esm.d.ts",
   "files": [
-    "dist"
+    "dist/*",
+    "src/**/*.vue"
   ],
   "sideEffects": false,
   "scripts": {
