@@ -676,6 +676,10 @@ export default Vue.extend({
       this.shouldShowPoints = true
     },
     calculateXY(x: number, y: number): { xV: number; yV: number } {
+      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
+      if (this.coordAxes.length !== 4) {
+        return { xV: 0, yV: 0 }
+      }
       // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点のx値を計算
       const calculateVerticalCrossPoint = (
         x1x: number,
