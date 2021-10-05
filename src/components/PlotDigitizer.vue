@@ -268,6 +268,7 @@ import CanvasCursor from './Canvas/CanvasCursor.vue'
 
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
+const [black, red] = ['#000000ff', '#ff0000ff']
 
 export default Vue.extend({
   components: {
@@ -314,8 +315,8 @@ export default Vue.extend({
       movingAxisIndex: 0,
       isMovingPlot: false,
       movingPlotId: 0,
-      axesColor: '',
-      plotsColor: '',
+      axesColor: black,
+      plotsColor: red,
     }
   },
   computed: {
