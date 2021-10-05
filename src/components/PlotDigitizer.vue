@@ -80,7 +80,7 @@
             ></canvas-cursor>
           </div>
           {{ plots.length }}
-          <div>
+          <div v-if="!hideCSVText">
             <v-textarea
               readonly
               v-model="convertPlotsIntoText"
@@ -91,7 +91,7 @@
               @click="copy"
               text
               :disabled="convertPlotsIntoText.length === 0"
-              >Copy text to Clipboard</v-btn
+              >Copy to Clipboard</v-btn
             >
           </div>
         </v-col>
@@ -280,6 +280,12 @@ export default Vue.extend({
     CanvasAxes,
     CanvasPlot,
     CanvasCursor,
+  },
+  props: {
+    hideCSVText: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
