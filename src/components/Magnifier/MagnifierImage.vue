@@ -3,8 +3,8 @@
     :src="src"
     :style="{
       transform: `scale(${scale}) translate(-${
-        cursorX - size / 2 / scale
-      }px, -${cursorY - size / 2 / scale}px)`,
+        cursorX - halfSize / scale
+      }px, -${cursorY - halfSize / scale}px)`,
       'transform-origin': 'top left',
     }"
   />
@@ -13,6 +13,11 @@
 <script lang="ts">
 import Vue from 'vue'
 export default Vue.extend({
+  computed: {
+    halfSize(): number {
+      return this.size / 2
+    },
+  },
   props: {
     src: {
       type: String,
