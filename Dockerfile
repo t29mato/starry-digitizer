@@ -12,5 +12,7 @@ RUN yarn
 
 COPY . .
 
+RUN yarn ssg-build
+
 EXPOSE 8080
-CMD ["yarn", "serve", "--port", "8080"]
+CMD ["http-server", "dist"]
