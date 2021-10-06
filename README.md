@@ -4,7 +4,7 @@ VuePlotDigitizer is a Vue.js-based tool for extracting numeric data from plot im
 <img width="1180" alt="vpd-image" src="https://user-images.githubusercontent.com/30012556/136004973-33c3bf15-51ae-40f8-a598-c39209886988.png">
 
 ## Demo
-https://vue-plot-digitizer.vercel.app/
+https://vpd.vercel.app/
 
 ## Install
 
