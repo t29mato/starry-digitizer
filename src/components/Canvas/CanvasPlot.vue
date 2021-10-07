@@ -8,7 +8,7 @@
       height: `${plotSize}px`,
       'border-radius': '50%',
       'background-color': color,
-      'pointer-events': 'auto',
+      cursor: 'pointer',
     }"
     @click="click(plot.id)"
   ></div>

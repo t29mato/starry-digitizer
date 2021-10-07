@@ -35,18 +35,20 @@
                 :label="showAxisName(index)"
               ></canvas-axes>
             </div>
-            <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
-              <canvas-plot
-                :plotSize="plotSizePx"
-                :plot="plot"
-                :color="
-                  isMovingPlot && movingPlotId === plot.id
-                    ? 'limegreen'
-                    : plotsColor
-                "
-                :activatePlot="activatePlot"
-              ></canvas-plot>
-            </div>
+            <canvas-plot
+              id="canvas-plot"
+              v-for="plot in plots"
+              v-show="shouldShowPoints"
+              :key="plot.id"
+              :plotSize="plotSizePx"
+              :plot="plot"
+              :color="
+                isMovingPlot && movingPlotId === plot.id
+                  ? 'limegreen'
+                  : plotsColor
+              "
+              :activatePlot="activatePlot"
+            ></canvas-plot>
             <canvas-cursor
               v-if="coordAxes.length < 4 && !cursorIsMoved"
               :cursor="canvasCursor"
@@ -702,6 +704,11 @@ export default Vue.extend({
     plot(e: MouseEvent): void {
       const target = e.target as HTMLElement
       const isOnCanvas = target.id === 'canvas'
+      const isOnCanvasPlot = target.id === 'canvas-plot'
+      // INFO: canvas-plot element上の時は、plot edit modeになるので
+      if (isOnCanvasPlot) {
+        return
+      }
       if (this.coordAxes.length < 4) {
         this.isMovingAxis = true
         this.cursorIsMoved = false
