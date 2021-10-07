@@ -60,7 +60,7 @@ yarn lint
 ```
 
 ## Contributing
-1. Fork it (https://github.com/t29mato/vue-plot-digitizer.git)
+1. Fork it (`git clone https://github.com/t29mato/vue-plot-digitizer.git`)
 2. Create your feature branch (`git checkout -b your-new-feature`)
 3. Commit your changes (`git commit -am 'feat: add some feature'`)
 4. Push to the branch (`git push origin your-new-feature`)
