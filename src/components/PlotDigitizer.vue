@@ -82,6 +82,25 @@
             >
           </div>
           {{ plots.length }}
+          <!-- REFACTOR: make the table component -->
+          <v-simple-table>
+            <thead>
+              <tr>
+                <th>x (px)</th>
+                <th>y (px)</th>
+                <th>x (value)</th>
+                <th>y (value)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="plot in calculatedPlots" :key="plot.id">
+                <td>{{ plot.xPx }}</td>
+                <td>{{ plot.yPx }}</td>
+                <td>{{ plot.xV }}</td>
+                <td>{{ plot.yV }}</td>
+              </tr>
+            </tbody>
+          </v-simple-table>
           <div v-if="!hideCSVText">
             <v-textarea
               readonly
@@ -371,6 +390,8 @@ export default Vue.extend({
     },
     calculatedPlots(): {
       id: number
+      xPx: number
+      yPx: number
       xV: number
       yV: number
     }[] {
@@ -378,6 +399,8 @@ export default Vue.extend({
         const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
         return {
           id: plot.id,
+          xPx: plot.xPx,
+          yPx: plot.yPx,
           xV,
           yV,
         }
@@ -396,7 +419,7 @@ export default Vue.extend({
       }
       return this.calculatedPlots
         .reduce((prev, cur) => {
-          return prev + `${cur.xV}, ${cur.yV}\n`
+          return prev + `${cur.xPx}, ${cur.yPx}, ${cur.xV}, ${cur.yV}\n`
         }, '')
         .trim()
     },
