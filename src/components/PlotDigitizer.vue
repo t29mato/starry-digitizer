@@ -153,15 +153,34 @@
               ></magnifier-plots>
             </div>
           </div>
-          <div v-if="coordAxes.length === 4">
-            {{ `x: ${calculateXY(canvasCursor.xPx, canvasCursor.yPx).xV}`
-            }}<br />
-            {{ `y: ${calculateXY(canvasCursor.xPx, canvasCursor.yPx).yV}` }}
-          </div>
-          <div v-else>
-            {{ `x: ${canvasCursor.xPx}` }}<br />
-            {{ `y: ${canvasCursor.yPx}` }}
-          </div>
+          <!-- REFACTOR: make the table component -->
+          <v-simple-table dense>
+            <thead>
+              <tr>
+                <th></th>
+                <th>px</th>
+                <th>value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>X</th>
+                <td>{{ canvasCursor.xPx }}</td>
+                <td>
+                  {{ calculateXY(canvasCursor.xPx, canvasCursor.yPx).xV }}
+                </td>
+              </tr>
+              <tr>
+                <th>Y</th>
+                <td>
+                  {{ canvasCursor.yPx }}
+                </td>
+                <td>
+                  {{ calculateXY(canvasCursor.xPx, canvasCursor.yPx).yV }}
+                </td>
+              </tr>
+            </tbody>
+          </v-simple-table>
           <v-slider
             v-model="magnifierScale"
             thumb-label="always"
