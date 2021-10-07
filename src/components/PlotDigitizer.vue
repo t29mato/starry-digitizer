@@ -10,44 +10,18 @@
         <v-col cols="9">
           <v-btn @click="resizeCanvasToMax">100%</v-btn>
           <v-btn @click="resizeCanvasToFit">Fit</v-btn>
-          <div :style="{ position: 'relative' }" id="wrapper">
-            <canvas
-              id="canvas"
-              :style="{
-                cursor: 'crosshair',
-                'user-drag': 'none',
-                outline: 'solid 1px grey',
-              }"
-              :src="uploadImageUrl"
-              @click="plot"
-              @mousemove="mouseMove"
-            ></canvas>
-            <div>
-              <v-btn text :disabled="coordAxes.length === 0" @click="clearAxes">
-                Clear Axes</v-btn
-              >
-              <v-btn text :disabled="plots.length === 0" @click="clearPoints"
-                >Clear Plots</v-btn
-              >
-              <v-btn
-                text
-                :disabled="coordAxes.length === 0 || !isMovingAxis"
-                @click="removeAxis"
-                >Clear Active Axis</v-btn
-              >
-              <v-btn
-                text
-                :disabled="plots.length === 0 || !isMovingPlot"
-                @click="removePlot"
-                >Clear Active Plot</v-btn
-              >
-              <v-btn
-                text
-                :disabled="plots.length === 0"
-                @click="shouldShowPoints = !shouldShowPoints"
-                >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
-              >
-            </div>
+          <div
+            :style="{
+              position: 'relative',
+              cursor: 'crosshair',
+              'user-drag': 'none',
+              outline: 'solid 1px grey',
+            }"
+            id="wrapper"
+            @click="plot"
+            @mousemove="mouseMove"
+          >
+            <canvas id="canvas" :style="{}" :src="uploadImageUrl"></canvas>
             <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
               <canvas-axes
                 :axesSize="axesSizePx"
@@ -78,6 +52,32 @@
               :cursor="canvasCursor"
               :label="showAxisName(coordAxes.length)"
             ></canvas-cursor>
+          </div>
+          <div>
+            <v-btn text :disabled="coordAxes.length === 0" @click="clearAxes">
+              Clear Axes</v-btn
+            >
+            <v-btn text :disabled="plots.length === 0" @click="clearPoints"
+              >Clear Plots</v-btn
+            >
+            <v-btn
+              text
+              :disabled="coordAxes.length === 0 || !isMovingAxis"
+              @click="removeAxis"
+              >Clear Active Axis</v-btn
+            >
+            <v-btn
+              text
+              :disabled="plots.length === 0 || !isMovingPlot"
+              @click="removePlot"
+              >Clear Active Plot</v-btn
+            >
+            <v-btn
+              text
+              :disabled="plots.length === 0"
+              @click="shouldShowPoints = !shouldShowPoints"
+              >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
+            >
           </div>
           {{ plots.length }}
           <div v-if="!hideCSVText">
@@ -156,6 +156,10 @@
             }}<br />
             {{ `y: ${calculateXY(canvasCursor.xPx, canvasCursor.yPx).yV}` }}
           </div>
+          <div v-else>
+            {{ `x: ${canvasCursor.xPx}` }}<br />
+            {{ `y: ${canvasCursor.yPx}` }}
+          </div>
           <v-slider
             v-model="magnifierScale"
             thumb-label="always"
@@ -219,7 +223,7 @@
           <v-slider
             v-model="plotSizePx"
             thumb-label="always"
-            max="20"
+            max="200"
             min="1"
             label="Plot Size"
             thumb-size="25"
@@ -270,6 +274,7 @@ import CanvasCursor from './Canvas/CanvasCursor.vue'
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red] = ['#000000ff', '#ff0000ff']
+const adjustMagicNumberPx = -2
 
 export default Vue.extend({
   components: {
@@ -309,7 +314,7 @@ export default Vue.extend({
       indexY2,
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
-      plotSizePx: 5,
+      plotSizePx: 6,
       colorDistancePct: 10,
       colorPicker: '',
       isDetecting: false,
@@ -455,10 +460,6 @@ export default Vue.extend({
       }
     },
     async resizeCanvasToMax() {
-      if (!this.imageIsFit) {
-        // INFO: !サイズが異なるときは画像が最大の時しかないので、何もしない
-        return
-      }
       try {
         const wrapper = await this.getWrapperElement()
         const canvas = await this.getCanvasElement()
@@ -492,22 +493,22 @@ export default Vue.extend({
         const canvas = await this.getCanvasElement()
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
-        const imageRatio = this.drawFitSizeImage(wrapper, canvas, image, ctx)
+        const prevCanvasScale = this.canvasScale
+        this.drawFitSizeImage(wrapper, canvas, image, ctx)
         this.plots = this.plots.map((plot) => {
           return {
             id: plot.id,
-            xPx: (plot.xPx / this.canvasScale) * imageRatio,
-            yPx: (plot.yPx / this.canvasScale) * imageRatio,
+            xPx: (plot.xPx * this.canvasScale) / prevCanvasScale,
+            yPx: (plot.yPx * this.canvasScale) / prevCanvasScale,
           }
         })
         this.coordAxes = this.coordAxes.map((axis) => {
           return {
-            xPx: (axis.xPx / this.canvasScale) * imageRatio,
-            yPx: (axis.yPx / this.canvasScale) * imageRatio,
+            xPx: (axis.xPx * this.canvasScale) / prevCanvasScale,
+            yPx: (axis.yPx * this.canvasScale) / prevCanvasScale,
           }
         })
-        this.plotSizePx = (this.plotSizePx / this.canvasScale) * imageRatio
-        this.canvasScale = imageRatio
+        this.plotSizePx = (this.plotSizePx * this.canvasScale) / prevCanvasScale
       } catch (error) {
         window.alert(error)
       } finally {
@@ -660,7 +661,7 @@ export default Vue.extend({
       canvas: HTMLCanvasElement,
       image: HTMLImageElement,
       ctx: CanvasRenderingContext2D
-    ): number {
+    ) {
       const wrapperWidthPx = wrapper.offsetWidth
       const imageWidthPx = image.width
       const imageHeightPx = image.height
@@ -668,8 +669,14 @@ export default Vue.extend({
       const wrapperHeightPx = imageHeightPx * imageRatio
       canvas.setAttribute('width', String(wrapperWidthPx))
       canvas.setAttribute('height', String(wrapperHeightPx))
-      ctx.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
-      return imageRatio
+      ctx.drawImage(
+        image,
+        adjustMagicNumberPx,
+        0,
+        wrapperWidthPx,
+        wrapperHeightPx
+      )
+      this.canvasScale = imageRatio
     },
     drawMaxSizeImage(
       wrapper: HTMLDivElement,
@@ -681,7 +688,7 @@ export default Vue.extend({
       const imageHeightPx = image.height
       canvas.setAttribute('width', String(imageWidthPx))
       canvas.setAttribute('height', String(imageHeightPx))
-      ctx.drawImage(image, 0, 0, imageWidthPx, imageHeightPx)
+      ctx.drawImage(image, adjustMagicNumberPx, 0, imageWidthPx, imageHeightPx)
       return 1
     },
     readFile(file: File): Promise<FileReader> {
@@ -693,13 +700,19 @@ export default Vue.extend({
       })
     },
     plot(e: MouseEvent): void {
+      const target = e.target as HTMLElement
+      const isOnCanvas = target.id === 'canvas'
       if (this.coordAxes.length < 4) {
         this.isMovingAxis = true
         this.cursorIsMoved = false
         this.movingAxisIndex = this.coordAxes.length
         this.coordAxes.push({
-          xPx: e.offsetX,
-          yPx: e.offsetY,
+          xPx: isOnCanvas
+            ? e.offsetX
+            : e.offsetX + parseFloat(target.style.left),
+          yPx: isOnCanvas
+            ? e.offsetY
+            : e.offsetY + parseFloat(target.style.top),
         })
         return
       }
@@ -709,8 +722,8 @@ export default Vue.extend({
       this.movingPlotId = this.nextPlotId
       this.plots.push({
         id: this.nextPlotId,
-        xPx: e.offsetX,
-        yPx: e.offsetY,
+        xPx: isOnCanvas ? e.offsetX : e.offsetX + parseFloat(target.style.left),
+        yPx: isOnCanvas ? e.offsetY : e.offsetY + parseFloat(target.style.top),
       })
       this.shouldShowPoints = true
     },
@@ -796,10 +809,13 @@ export default Vue.extend({
       this.isMovingPlot = false
     },
     mouseMove(e: MouseEvent) {
+      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
+      const target = e.target as HTMLElement
+      const isOnCanvas = target.id === 'canvas'
       this.cursorIsMoved = false
       this.canvasCursor = {
-        xPx: e.offsetX,
-        yPx: e.offsetY,
+        xPx: isOnCanvas ? e.offsetX : e.offsetX + parseFloat(target.style.left),
+        yPx: isOnCanvas ? e.offsetY : e.offsetY + parseFloat(target.style.top),
       }
     },
   },

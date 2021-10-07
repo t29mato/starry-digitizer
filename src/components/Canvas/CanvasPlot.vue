@@ -3,19 +3,26 @@
     :style="{
       position: 'absolute',
       top: `${plot.yPx - plotHalfSize}px`,
-      left: `${plot.xPx - plotHalfSize}px`,
+      left: `${plot.xPx - plotHalfSize - adjustMagicNumberPx}px`,
       width: `${plotSize}px`,
       height: `${plotSize}px`,
       'border-radius': '50%',
       'background-color': color,
+      'pointer-events': 'auto',
     }"
     @click="click(plot.id)"
   ></div>
 </template>
 
 <script lang="ts">
+const adjustMagicNumberPx = 1
 import Vue from 'vue'
 export default Vue.extend({
+  data() {
+    return {
+      adjustMagicNumberPx,
+    }
+  },
   computed: {
     plotHalfSize(): number {
       return this.plotSize / 2

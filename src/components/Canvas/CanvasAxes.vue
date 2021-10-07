@@ -4,7 +4,7 @@
       :style="{
         position: 'absolute',
         top: `${axis.yPx - axesHalfSize}px`,
-        left: `${axis.xPx - axesHalfSize}px`,
+        left: `${axis.xPx - axesHalfSize - adjustMagicNumberPx}px`,
         'pointer-events': 'none',
         width: `${axesSize}px`,
         height: `${axesSize}px`,
@@ -25,8 +25,14 @@
 </template>
 
 <script lang="ts">
+const adjustMagicNumberPx = 1
 import Vue from 'vue'
 export default Vue.extend({
+  data() {
+    return {
+      adjustMagicNumberPx,
+    }
+  },
   computed: {
     axesHalfSize(): number {
       return this.axesSize / 2
