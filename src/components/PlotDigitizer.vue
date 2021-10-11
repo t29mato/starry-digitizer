@@ -335,7 +335,7 @@ export default Vue.extend({
   },
   data() {
     return {
-      uploadImageUrl: '/img/sample_graph.png',
+      uploadImageUrl: '/img/sample_graph_small.png',
       coordAxes: [] as {
         xPx: number
         yPx: number
@@ -369,6 +369,8 @@ export default Vue.extend({
       movingPlotId: 0,
       axesColor: black,
       plotsColor: red,
+      canvasWidth: 0,
+      canvasHeight: 0,
     }
   },
   computed: {
@@ -433,7 +435,7 @@ export default Vue.extend({
       const canvas = await this.getCanvasElement()
       const ctx = await this.getContext2D(canvas)
       const image = await this.loadImage(this.uploadImageUrl)
-      this.drawFitSizeImage(wrapper, canvas, image, ctx)
+      this.drawMaxSizeImage(wrapper, canvas, image, ctx)
     } catch (error) {
       //
     } finally {
@@ -567,16 +569,56 @@ export default Vue.extend({
         const canvas = await this.getCanvasElement()
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
-        this.drawFitSizeImage(wrapper, canvas, image, ctx)
+        this.drawMaxSizeImage(wrapper, canvas, image, ctx)
         const paintedArea = [] as { w: number; h: number }[]
-        for (let h = 0; h < canvas.height; h++) {
-          for (let w = 0; w < canvas.width; w++) {
+        const data = ctx.getImageData(
+          0,
+          0,
+          this.canvasHeight,
+          this.canvasWidth
+        ).data
+        console.log(data.length / 4)
+        console.log(this.canvasHeight, this.canvasWidth)
+        console.log(data)
+        const matrix = new Array()
+        for (let h = 0; h < this.canvasHeight; h++) {
+          matrix.push(new Array())
+          for (let w = 0; w < this.canvasHeight; w++) {
+            matrix[h].push(1)
+          }
+        }
+        for (let h = 0; h < this.canvasHeight; h++) {
+          for (let w = 0; w < this.canvasWidth; w++) {
+            const [r, g, b] = data.slice(
+              (h * this.canvasWidth + w) * 4,
+              (h * this.canvasWidth + w + 1) * 4
+            )
+            // console.log(
+            //   (h * this.canvasWidth + w) * 4,
+            //   (h * this.canvasWidth + w) * 4 + 4
+            // )
+            // // console.log(r, g, b)
+            if ((r + g + b) / 3 === 255) {
+              console.log('white', h, w)
+              matrix[h][w] = 0
+            } else {
+              console.log(h, w)
+              console.log(r, g, b)
+            }
+          }
+        }
+        console.log(matrix)
+        if (this.plotSizePx === 6) {
+          return
+        }
+        for (let h = this.plotRadiusSizePx; h < canvas.height; h++) {
+          for (let w = this.plotRadiusSizePx; w < canvas.width; w++) {
             if (paintedArea.some((area) => area.w === w && area.h === h)) {
               continue
             }
             const imageData = ctx?.getImageData(
-              w,
-              h,
+              w - this.plotRadiusSizePx,
+              h - this.plotRadiusSizePx,
               this.plotSizePx,
               this.plotSizePx
             )
@@ -613,8 +655,8 @@ export default Vue.extend({
               if (colorDiffDistance < this.colorDistancePct) {
                 this.plots.push({
                   id: this.nextPlotId,
-                  xPx: w + this.plotRadiusSizePx,
-                  yPx: h + this.plotRadiusSizePx,
+                  xPx: w,
+                  yPx: h,
                 })
                 for (let i = 0; i < this.plotSizePx; i++) {
                   for (let j = 0; j < this.plotSizePx; j++) {
@@ -720,6 +762,8 @@ export default Vue.extend({
         wrapperWidthPx,
         wrapperHeightPx
       )
+      this.canvasWidth = wrapperWidthPx
+      this.canvasHeight = wrapperHeightPx
       this.canvasScale = imageRatio
     },
     drawMaxSizeImage(
@@ -727,13 +771,14 @@ export default Vue.extend({
       canvas: HTMLCanvasElement,
       image: HTMLImageElement,
       ctx: CanvasRenderingContext2D
-    ): number {
+    ) {
       const imageWidthPx = image.width
       const imageHeightPx = image.height
       canvas.setAttribute('width', String(imageWidthPx))
       canvas.setAttribute('height', String(imageHeightPx))
       ctx.drawImage(image, adjustMagicNumberPx, 0, imageWidthPx, imageHeightPx)
-      return 1
+      this.canvasWidth = imageWidthPx
+      this.canvasHeight = imageHeightPx
     },
     readFile(file: File): Promise<FileReader> {
       return new Promise((resolve, reject) => {
