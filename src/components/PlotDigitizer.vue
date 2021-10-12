@@ -290,14 +290,6 @@
             :swatches="swatches"
             class="ma-2"
           ></v-color-picker>
-
-          <h3 class="mt-4">Axes Color</h3>
-          <v-color-picker
-            v-model="axesColor"
-            class="mb-2"
-            hide-canvas
-            hide-inputs
-          ></v-color-picker>
           <h3 class="mt-4">Plots Color</h3>
           <v-color-picker
             v-model="plotsColor"
