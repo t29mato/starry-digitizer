@@ -245,8 +245,8 @@
             Automatic Extraction<v-btn
               text
               class="ml-2"
-              :loading="isDetecting"
-              @click="detectPointByColor"
+              :loading="isExtracting"
+              @click="extractPlotsByColor"
               color="green"
               >Run</v-btn
             >
@@ -357,7 +357,7 @@ export default Vue.extend({
       plotSizePx: 6,
       colorDistancePct: 10,
       colorPicker: '',
-      isDetecting: false,
+      isExtracting: false,
       axesSizePx,
       canvasScale: 1,
       magnifierSizePx: 200,
@@ -567,10 +567,9 @@ export default Vue.extend({
         //
       }
     },
-    // TODO: Change all word detect to extract.
-    async detectPointByColor() {
+    async extractPlotsByColor() {
       const begin_ms = new Date().getTime()
-      this.isDetecting = true
+      this.isExtracting = true
       try {
         const wrapper = await this.getWrapperElement()
         const canvas = await this.getCanvasElement()
@@ -673,7 +672,7 @@ export default Vue.extend({
       } finally {
         const end_ms = new Date().getTime()
         console.debug('time:', end_ms - begin_ms + 'ms')
-        this.isDetecting = false
+        this.isExtracting = false
       }
     },
     isWhite(r: number, g: number, b: number, a: number): boolean {
