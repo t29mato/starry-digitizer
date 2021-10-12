@@ -369,6 +369,8 @@ export default Vue.extend({
       movingPlotId: 0,
       axesColor: black,
       plotsColor: red,
+      canvasWidth: 0,
+      canvasHeight: 0,
     }
   },
   computed: {
@@ -425,6 +427,12 @@ export default Vue.extend({
     },
     imageIsFit(): boolean {
       return this.canvasScale !== 1
+    },
+    canvasHeightInt(): number {
+      return Math.floor(this.canvasHeight)
+    },
+    canvasWidthInt(): number {
+      return Math.floor(this.canvasWidth)
     },
   },
   async mounted() {
@@ -561,6 +569,7 @@ export default Vue.extend({
     },
     // TODO: Change all word detect to extract.
     async detectPointByColor() {
+      const begin_ms = new Date().getTime()
       this.isDetecting = true
       try {
         const wrapper = await this.getWrapperElement()
@@ -568,15 +577,36 @@ export default Vue.extend({
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
         this.drawFitSizeImage(wrapper, canvas, image, ctx)
-        const paintedArea = [] as { w: number; h: number }[]
-        for (let h = 0; h < canvas.height; h++) {
-          for (let w = 0; w < canvas.width; w++) {
-            if (paintedArea.some((area) => area.w === w && area.h === h)) {
+        const data = ctx.getImageData(
+          0,
+          0,
+          this.canvasHeight,
+          this.canvasWidth
+        ).data
+        // INFO: 空の多次元配列を作成
+        const ignoreArea = [...Array(this.canvasHeightInt)].map(() =>
+          Array(this.canvasWidthInt).fill(1)
+        )
+        for (let h = 0; h < this.canvasHeight; h++) {
+          for (let w = 0; w < this.canvasWidth; w++) {
+            const [r, g, b, a] = data.slice(
+              (h * this.canvasWidth + w) * 4,
+              (h * this.canvasWidth + w + 1) * 4
+            )
+            if (this.isWhite(r, g, b, a)) {
+              ignoreArea[h][w] = 0
+            }
+          }
+        }
+        for (let h = this.plotRadiusSizePx; h < this.canvasHeight; h++) {
+          for (let w = this.plotRadiusSizePx; w < this.canvasWidth; w++) {
+            // INFO: 背景色白色はスキップ
+            if (ignoreArea[h][w] === 0) {
               continue
             }
             const imageData = ctx?.getImageData(
-              w,
-              h,
+              w - this.plotRadiusSizePx,
+              h - this.plotRadiusSizePx,
               this.plotSizePx,
               this.plotSizePx
             )
@@ -613,16 +643,16 @@ export default Vue.extend({
               if (colorDiffDistance < this.colorDistancePct) {
                 this.plots.push({
                   id: this.nextPlotId,
-                  xPx: w + this.plotRadiusSizePx,
-                  yPx: h + this.plotRadiusSizePx,
+                  xPx: w,
+                  yPx: h,
                 })
                 for (let i = 0; i < this.plotSizePx; i++) {
                   for (let j = 0; j < this.plotSizePx; j++) {
                     if (i + j === 0) {
                       continue
                     }
-                    paintedArea.push({ w: w - i, h: h + j })
-                    paintedArea.push({ w: w + i, h: h + j })
+                    ignoreArea[h + j][w - i] = 0
+                    ignoreArea[h + j][w + i] = 0
                   }
                 }
               }
@@ -632,8 +662,13 @@ export default Vue.extend({
       } catch (error) {
         //
       } finally {
+        const end_ms = new Date().getTime()
+        console.debug(end_ms - begin_ms + 'ms')
         this.isDetecting = false
       }
+    },
+    isWhite(r: number, g: number, b: number, a: number): boolean {
+      return (r + g + b + a) / 4 === 255
     },
     diffColor(
       color1: { R: number; G: number; B: number },
@@ -720,6 +755,8 @@ export default Vue.extend({
         wrapperWidthPx,
         wrapperHeightPx
       )
+      this.canvasWidth = wrapperWidthPx
+      this.canvasHeight = wrapperHeightPx
       this.canvasScale = imageRatio
     },
     drawMaxSizeImage(
@@ -727,13 +764,14 @@ export default Vue.extend({
       canvas: HTMLCanvasElement,
       image: HTMLImageElement,
       ctx: CanvasRenderingContext2D
-    ): number {
+    ) {
       const imageWidthPx = image.width
       const imageHeightPx = image.height
       canvas.setAttribute('width', String(imageWidthPx))
       canvas.setAttribute('height', String(imageHeightPx))
       ctx.drawImage(image, adjustMagicNumberPx, 0, imageWidthPx, imageHeightPx)
-      return 1
+      this.canvasWidth = imageWidthPx
+      this.canvasHeight = imageHeightPx
     },
     readFile(file: File): Promise<FileReader> {
       return new Promise((resolve, reject) => {
