@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-const adjustMagicNumberPx = 1
+const adjustMagicNumberPx = 2
 import Vue from 'vue'
 export default Vue.extend({
   data() {
