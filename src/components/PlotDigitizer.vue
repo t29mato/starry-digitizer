@@ -263,7 +263,7 @@
           <v-slider
             v-model="plotSizePx"
             thumb-label="always"
-            max="200"
+            max="30"
             min="1"
             label="Plot Size"
             thumb-size="25"
@@ -596,30 +596,23 @@ export default Vue.extend({
             }
           }
         }
-        for (let h = this.plotRadiusSizePx; h < this.canvasHeightInt; h++) {
-          for (let w = this.plotRadiusSizePx; w < this.canvasWidthInt; w++) {
+        for (let h = this.plotSizePx; h < this.canvasHeightInt; h++) {
+          for (let w = this.plotSizePx; w < this.canvasWidthInt; w++) {
             // INFO: 背景色白色はスキップ
             if (!targetArea[h][w]) {
               continue
             }
-            const imageData = ctx?.getImageData(
+            const imageData = ctx.getImageData(
               w - this.plotRadiusSizePx,
               h - this.plotRadiusSizePx,
               this.plotSizePx,
               this.plotSizePx
-            )
-            const imageRGB = imageData?.data
+            ).data
             const [rList, gList, bList] = [[], [], []] as number[][]
-            if (imageRGB instanceof Uint8ClampedArray) {
-              for (let i = 0; i < this.plotSizePx; i++) {
-                rList.push(imageRGB[i * 4])
-                gList.push(imageRGB[i * 4 + 1])
-                bList.push(imageRGB[i * 4 + 2])
-              }
-            } else {
-              throw new TypeError(
-                'imageRGB is not instanceof Uint8ClampedArray'
-              )
+            for (let i = 0; i < this.plotSizePx ** 2; i++) {
+              rList.push(imageData[i * 4])
+              gList.push(imageData[i * 4 + 1])
+              bList.push(imageData[i * 4 + 2])
             }
             const calcAverage = (numbers: number[]): number => {
               return (
