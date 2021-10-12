@@ -381,6 +381,7 @@ export default Vue.extend({
       canvasWidth: 0,
       canvasHeight: 0,
       swatches: [...Array(5)].map(() => []) as string[][],
+      isFit: true,
     }
   },
   computed: {
@@ -451,7 +452,7 @@ export default Vue.extend({
       const canvas = await this.getCanvasElement()
       const ctx = await this.getContext2D(canvas)
       const image = await this.loadImage(this.uploadImageUrl)
-      this.drawFitSizeImage(wrapper, canvas, image, ctx)
+      this.drawImage(wrapper, canvas, image, ctx)
       this.updateSwatches(image)
     } catch (error) {
       console.error('failed mounted script', error)
@@ -535,12 +536,13 @@ export default Vue.extend({
       }
     },
     async resizeCanvasToMax() {
+      this.isFit = false
       try {
         const wrapper = await this.getWrapperElement()
         const canvas = await this.getCanvasElement()
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
-        this.drawMaxSizeImage(wrapper, canvas, image, ctx)
+        this.drawImage(wrapper, canvas, image, ctx)
         this.plots = this.plots.map((plot) => {
           return {
             id: plot.id,
@@ -563,13 +565,14 @@ export default Vue.extend({
       }
     },
     async resizeCanvasToFit() {
+      this.isFit = true
       try {
         const wrapper = await this.getWrapperElement()
         const canvas = await this.getCanvasElement()
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
         const prevCanvasScale = this.canvasScale
-        this.drawFitSizeImage(wrapper, canvas, image, ctx)
+        this.drawImage(wrapper, canvas, image, ctx)
         this.plots = this.plots.map((plot) => {
           return {
             id: plot.id,
@@ -598,7 +601,7 @@ export default Vue.extend({
         const canvas = await this.getCanvasElement()
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
-        this.drawFitSizeImage(wrapper, canvas, image, ctx)
+        this.drawImage(wrapper, canvas, image, ctx)
         const data = ctx.getImageData(
           0,
           0,
@@ -713,7 +716,7 @@ export default Vue.extend({
           throw new Error('file is not string type')
         }
         const image = await this.loadImage(fr.result)
-        this.drawFitSizeImage(wrapper, canvas, image, ctx)
+        this.drawImage(wrapper, canvas, image, ctx)
         this.updateSwatches(image)
         this.uploadImageUrl = fr.result
       } catch (error) {
@@ -759,6 +762,17 @@ export default Vue.extend({
         img.onerror = (error) => reject(error)
         img.src = src
       })
+    },
+    drawImage(
+      wrapper: HTMLDivElement,
+      canvas: HTMLCanvasElement,
+      image: HTMLImageElement,
+      ctx: CanvasRenderingContext2D
+    ) {
+      if (this.isFit) {
+        return this.drawFitSizeImage(wrapper, canvas, image, ctx)
+      }
+      this.drawMaxSizeImage(wrapper, canvas, image, ctx)
     },
     drawFitSizeImage(
       wrapper: HTMLDivElement,
