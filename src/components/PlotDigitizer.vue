@@ -276,7 +276,14 @@
             label="Color Distsance"
             thumb-size="25"
           ></v-slider>
-          <v-color-picker v-model="colorPicker" class="ma-2"></v-color-picker>
+          <v-color-picker
+            v-model="colorPicker"
+            hide-canvas
+            hide-inputs
+            show-swatches
+            :swatches="swatches"
+            class="ma-2"
+          ></v-color-picker>
 
           <h3 class="mt-4">Axes Color</h3>
           <v-color-picker
@@ -301,6 +308,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import diff from 'color-diff'
+import ColorThief from 'colorthief'
 // REFACTOR: まとめてimportする
 import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
@@ -315,6 +323,7 @@ const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red] = ['#000000ff', '#ff0000ff']
 const adjustMagicNumberPx = -2
+const colorThief = new ColorThief()
 
 export default Vue.extend({
   components: {
@@ -371,6 +380,7 @@ export default Vue.extend({
       plotsColor: red,
       canvasWidth: 0,
       canvasHeight: 0,
+      swatches: [...Array(5)].map(() => []) as string[][],
     }
   },
   computed: {
@@ -442,8 +452,19 @@ export default Vue.extend({
       const ctx = await this.getContext2D(canvas)
       const image = await this.loadImage(this.uploadImageUrl)
       this.drawFitSizeImage(wrapper, canvas, image, ctx)
+
+      const palette = colorThief.getPalette(image).map((color) => {
+        // INFO: rgbからhexへの切り替え
+        return color.reduce((prev, cur) => {
+          return prev + cur.toString(16)
+        }, '#')
+      })
+
+      palette.forEach((color, index) => {
+        this.swatches[index % this.swatches.length].push(color)
+      })
     } catch (error) {
-      //
+      console.error('failed mounted script', error)
     } finally {
       //
     }
