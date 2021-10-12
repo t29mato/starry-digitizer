@@ -206,7 +206,7 @@
             thumb-label="always"
             max="10"
             min="2"
-            label="Magnification"
+            label="Magnifier"
             thumb-size="25"
           ></v-slider>
           <h3>Axes Values</h3>
