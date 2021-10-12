@@ -475,6 +475,7 @@ export default Vue.extend({
           return prev + cur.toString(16)
         }, '#')
       })
+      this.swatches = [...Array(5)].map(() => [])
       palette.forEach((color, index) => {
         this.swatches[index % this.swatches.length].push(color)
       })
@@ -713,6 +714,7 @@ export default Vue.extend({
         }
         const image = await this.loadImage(fr.result)
         this.drawFitSizeImage(wrapper, canvas, image, ctx)
+        this.updateSwatches(image)
         this.uploadImageUrl = fr.result
       } catch (error) {
         window.alert(error)
