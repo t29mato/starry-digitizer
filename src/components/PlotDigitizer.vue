@@ -251,6 +251,11 @@
               >Run</v-btn
             >
           </h3>
+          <v-checkbox
+            v-model="shouldClearPlots"
+            label="clear plots"
+            class="mt-0"
+          ></v-checkbox>
           <div
             :style="{
               'pointer-events': 'none',
@@ -382,6 +387,7 @@ export default Vue.extend({
       canvasHeight: 0,
       swatches: [...Array(5)].map(() => []) as string[][],
       isFit: true,
+      shouldClearPlots: true,
     }
   },
   computed: {
@@ -596,6 +602,9 @@ export default Vue.extend({
     async extractPlotsByColor() {
       const begin_ms = new Date().getTime()
       this.isExtracting = true
+      if (this.shouldClearPlots) {
+        this.plots = []
+      }
       try {
         const wrapper = await this.getWrapperElement()
         const canvas = await this.getCanvasElement()
