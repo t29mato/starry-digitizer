@@ -1,11 +1,12 @@
 <template>
-  <v-container v-on:keyup.enter="hoge('hoge')">
-    <v-file-input
-      accept="image/*"
-      label="file input"
-      @change="uploadImage"
-    ></v-file-input>
-    <template v-if="uploadImageUrl">
+  <v-container>
+    <template>
+      <v-file-input
+        accept="image/*"
+        label="file input"
+        @change="uploadImage"
+        class="ma-0"
+      ></v-file-input>
       <v-row>
         <v-col cols="9">
           <v-btn @click="resizeCanvasToMax">100%</v-btn>
