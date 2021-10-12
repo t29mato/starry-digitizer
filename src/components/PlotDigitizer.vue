@@ -452,17 +452,7 @@ export default Vue.extend({
       const ctx = await this.getContext2D(canvas)
       const image = await this.loadImage(this.uploadImageUrl)
       this.drawFitSizeImage(wrapper, canvas, image, ctx)
-
-      const palette = colorThief.getPalette(image).map((color) => {
-        // INFO: rgbからhexへの切り替え
-        return color.reduce((prev, cur) => {
-          return prev + cur.toString(16)
-        }, '#')
-      })
-
-      palette.forEach((color, index) => {
-        this.swatches[index % this.swatches.length].push(color)
-      })
+      this.updateSwatches(image)
     } catch (error) {
       console.error('failed mounted script', error)
     } finally {
@@ -477,6 +467,17 @@ export default Vue.extend({
   methods: {
     copy() {
       navigator.clipboard.writeText(this.convertPlotsIntoText)
+    },
+    updateSwatches(imageElement: HTMLImageElement) {
+      const palette = colorThief.getPalette(imageElement).map((color) => {
+        // INFO: rgbからhexへの切り替え
+        return color.reduce((prev, cur) => {
+          return prev + cur.toString(16)
+        }, '#')
+      })
+      palette.forEach((color, index) => {
+        this.swatches[index % this.swatches.length].push(color)
+      })
     },
     keyListener(e: KeyboardEvent) {
       const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
