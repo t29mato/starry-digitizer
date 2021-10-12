@@ -598,8 +598,8 @@ export default Vue.extend({
             }
           }
         }
-        for (let h = this.plotRadiusSizePx; h < this.canvasHeight; h++) {
-          for (let w = this.plotRadiusSizePx; w < this.canvasWidth; w++) {
+        for (let h = this.plotRadiusSizePx; h < this.canvasHeightInt; h++) {
+          for (let w = this.plotRadiusSizePx; w < this.canvasWidthInt; w++) {
             // INFO: 背景色白色はスキップ
             if (ignoreArea[h][w] === 0) {
               continue
@@ -659,11 +659,21 @@ export default Vue.extend({
             }
           }
         }
+        console.debug(
+          'target count:',
+          this.canvasWidthInt * this.canvasHeightInt
+        )
+        console.debug(
+          'skipped count:',
+          ignoreArea.reduce((prev, cur) => {
+            return prev + cur.filter((item) => item === 0).length
+          }, 0)
+        )
       } catch (error) {
-        //
+        console.error(error)
       } finally {
         const end_ms = new Date().getTime()
-        console.debug(end_ms - begin_ms + 'ms')
+        console.debug('time:', end_ms - begin_ms + 'ms')
         this.isDetecting = false
       }
     },
