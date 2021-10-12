@@ -583,9 +583,8 @@ export default Vue.extend({
           this.canvasHeight,
           this.canvasWidth
         ).data
-        // INFO: 空の多次元配列を作成
-        const ignoreArea = [...Array(this.canvasHeightInt)].map(() =>
-          Array(this.canvasWidthInt).fill(1)
+        const targetArea = [...Array(this.canvasHeightInt)].map(() =>
+          Array(this.canvasWidthInt).fill(true)
         )
         for (let h = 0; h < this.canvasHeight; h++) {
           for (let w = 0; w < this.canvasWidth; w++) {
@@ -594,14 +593,14 @@ export default Vue.extend({
               (h * this.canvasWidth + w + 1) * 4
             )
             if (this.isWhite(r, g, b, a)) {
-              ignoreArea[h][w] = 0
+              targetArea[h][w] = false
             }
           }
         }
         for (let h = this.plotRadiusSizePx; h < this.canvasHeightInt; h++) {
           for (let w = this.plotRadiusSizePx; w < this.canvasWidthInt; w++) {
             // INFO: 背景色白色はスキップ
-            if (ignoreArea[h][w] === 0) {
+            if (!targetArea[h][w]) {
               continue
             }
             const imageData = ctx?.getImageData(
@@ -651,8 +650,8 @@ export default Vue.extend({
                     if (i + j === 0) {
                       continue
                     }
-                    ignoreArea[h + j][w - i] = 0
-                    ignoreArea[h + j][w + i] = 0
+                    targetArea[h + j][w - i] = false
+                    targetArea[h + j][w + i] = false
                   }
                 }
               }
@@ -665,8 +664,8 @@ export default Vue.extend({
         )
         console.debug(
           'skipped count:',
-          ignoreArea.reduce((prev, cur) => {
-            return prev + cur.filter((item) => item === 0).length
+          targetArea.reduce((prev, cur) => {
+            return prev + cur.filter((item) => !item).length
           }, 0)
         )
       } catch (error) {
