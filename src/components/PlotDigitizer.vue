@@ -264,7 +264,7 @@
             v-model="plotSizePx"
             thumb-label="always"
             max="30"
-            min="1"
+            min="4"
             label="Plot Size"
             thumb-size="25"
           ></v-slider>
@@ -364,7 +364,7 @@ export default Vue.extend({
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
       plotSizePx: 6,
-      colorDistancePct: 10,
+      colorDistancePct: 20,
       colorPicker: '',
       isExtracting: false,
       axesSizePx,
@@ -623,6 +623,7 @@ export default Vue.extend({
           }
         }
         for (let h = this.plotSizePx; h < this.canvasHeightInt; h++) {
+          // if (h === this.plotSizePx + 300) return
           for (let w = this.plotSizePx; w < this.canvasWidthInt; w++) {
             // INFO: 背景色白色はスキップ
             if (!targetArea[h][w]) {
@@ -634,53 +635,31 @@ export default Vue.extend({
               this.plotSizePx,
               this.plotSizePx
             ).data
-            const [rList, gList, bList] = [[], [], []] as number[][]
-            for (let i = 0; i < this.plotSizePx ** 2; i++) {
-              rList.push(imageData[i * 4])
-              gList.push(imageData[i * 4 + 1])
-              bList.push(imageData[i * 4 + 2])
-            }
-            const calcAverage = (numbers: number[]): number => {
-              return (
-                numbers.reduce((prev, cur) => prev + cur, 0) / numbers.length
-              )
-            }
-            const canvasColor = {
-              R: calcAverage(rList),
-              B: calcAverage(bList),
-              G: calcAverage(gList),
-            }
-            if (!imageData) {
-              window.alert('カラーの読み込みに失敗')
-            } else {
-              const colorDiffDistance = this.diffColor(
-                canvasColor,
-                this.targetColor
-              )
-              if (colorDiffDistance < this.colorDistancePct) {
-                this.plots.push({
-                  id: this.nextPlotId,
-                  xPx: w,
-                  yPx: h,
-                })
-                for (let i = 0; i < this.plotSizePx; i++) {
-                  for (let j = 0; j < this.plotSizePx; j++) {
-                    if (i + j === 0) {
-                      continue
-                    }
-                    targetArea[h + j][w - i] = false
-                    targetArea[h + j][w + i] = false
+            const matchRatio = this.diffColorShape(imageData)
+            if (matchRatio > 10) console.log(Math.floor(matchRatio), h, w)
+            if (matchRatio > 80) {
+              this.plots.push({
+                id: this.nextPlotId,
+                xPx: w,
+                yPx: h,
+              })
+              for (let i = 0; i < this.plotSizePx; i++) {
+                for (let j = 0; j < this.plotSizePx; j++) {
+                  if (i + j === 0) {
+                    continue
                   }
+                  targetArea[h + j][w - i] = false
+                  targetArea[h + j][w + i] = false
                 }
               }
             }
           }
         }
-        console.debug(
+        console.info(
           'target count:',
           this.canvasWidthInt * this.canvasHeightInt
         )
-        console.debug(
+        console.info(
           'skipped count:',
           targetArea.reduce((prev, cur) => {
             return prev + cur.filter((item) => !item).length
@@ -690,9 +669,31 @@ export default Vue.extend({
         console.error(error)
       } finally {
         const end_ms = new Date().getTime()
-        console.debug('time:', end_ms - begin_ms + 'ms')
+        console.info('time:', end_ms - begin_ms + 'ms')
         this.isExtracting = false
       }
+    },
+    diffColorShape(colors: Uint8ClampedArray): number {
+      const countColors = colors.length / 4
+      const sideLength = Math.sqrt(countColors)
+      // INFO: 対象が円だとした場合、emptyLengthのエリアは円かどうかが入り混じっている
+      const emptyLength = Math.ceil(((2 - Math.sqrt(2)) / 4) * sideLength)
+      const actualSideLength = sideLength - emptyLength * 2
+      const countTargetColors = actualSideLength ** 2
+      let count = 0
+      for (let h = emptyLength; h < actualSideLength + emptyLength; h++) {
+        for (let w = emptyLength; w < actualSideLength + emptyLength; w++) {
+          const color = {
+            R: colors[(h * sideLength + w) * 4],
+            G: colors[(h * sideLength + w) * 4 + 1],
+            B: colors[(h * sideLength + w) * 4 + 2],
+          }
+          if (this.diffColor(color, this.targetColor) < this.colorDistancePct) {
+            count++
+          }
+        }
+      }
+      return (count / countTargetColors) * 100
     },
     isWhite(r: number, g: number, b: number, a: number): boolean {
       return (r + g + b + a) / 4 === 255
