@@ -213,45 +213,65 @@
             label="Magnifier"
             thumb-size="25"
           ></v-slider>
-          <h3>Axes Values</h3>
-          <v-row>
-            <v-col vols="4" class="ma-0 pb-0">
-              <v-text-field
-                v-model="coordAxesValue[indexX1]"
-                label="x1"
-                type="number"
-              ></v-text-field>
-            </v-col>
-            <v-col vols="4" class="ma-0 pb-0">
-              <v-text-field
-                v-model="coordAxesValue[indexX2]"
-                label="x2"
-                type="number"
-              ></v-text-field>
-            </v-col>
-            <v-col vols="4" class="ma-0 pb-0">
-              <v-checkbox v-model="xIsLog" label="Log"></v-checkbox>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col vols="6" class="ma-0 pt-0">
-              <v-text-field
-                v-model="coordAxesValue[indexY1]"
-                label="y1"
-                type="number"
-              ></v-text-field>
-            </v-col>
-            <v-col vols="6" class="ma-0 pt-0">
-              <v-text-field
-                v-model="coordAxesValue[indexY2]"
-                label="y2"
-                type="number"
-              ></v-text-field>
-            </v-col>
-            <v-col vols="4" class="ma-0 pb-0">
-              <v-checkbox v-model="yIsLog" label="Log"></v-checkbox>
-            </v-col>
-          </v-row>
+          <h3>XY Axes</h3>
+          <v-simple-table dense>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Value</th>
+                <th>Value</th>
+                <th>Log</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>X</th>
+                <td>
+                  <v-text-field
+                    v-model="coordAxesValue[indexX1]"
+                    type="number"
+                    class="ma-0 pa-0"
+                    hide-details
+                    label="x1"
+                  ></v-text-field>
+                </td>
+                <td>
+                  <v-text-field
+                    v-model="coordAxesValue[indexX2]"
+                    type="number"
+                    class="ma-0 pa-0"
+                    hide-details
+                    label="x2"
+                  ></v-text-field>
+                </td>
+                <td><v-checkbox v-model="xIsLog"></v-checkbox></td>
+              </tr>
+              <tr>
+                <th>Y</th>
+                <td>
+                  <v-text-field
+                    v-model="coordAxesValue[indexY1]"
+                    type="number"
+                    class="ma-0 pa-0"
+                    hide-details
+                    label="y1"
+                  ></v-text-field>
+                </td>
+                <td>
+                  <v-text-field
+                    v-model="coordAxesValue[indexY2]"
+                    type="number"
+                    class="ma-0 pa-0"
+                    hide-details
+                    label="y2"
+                  ></v-text-field>
+                </td>
+                <td>
+                  <v-checkbox v-model="yIsLog"></v-checkbox>
+                </td>
+              </tr>
+            </tbody>
+          </v-simple-table>
           <h3>
             Automatic Extraction<v-btn
               text
