@@ -943,7 +943,9 @@ export default Vue.extend({
       const isOnCanvas = target.id === 'canvas'
       this.cursorIsMoved = false
       this.canvasCursor = {
-        xPx: isOnCanvas ? e.offsetX : e.offsetX + parseFloat(target.style.left),
+        xPx: isOnCanvas
+          ? e.offsetX - magicNumberPx
+          : e.offsetX - magicNumberPx + parseFloat(target.style.left),
         yPx: isOnCanvas ? e.offsetY : e.offsetY + parseFloat(target.style.top),
       }
     },
