@@ -267,7 +267,7 @@
               width: `${plotSizePx}px`,
               height: `${plotSizePx}px`,
               'border-radius': '50%',
-              'background-color': plotsColor,
+              'background-color': targetColorHex,
             }"
           ></div>
           <v-slider
@@ -395,6 +395,14 @@ export default Vue.extend({
         G: parseInt(this.colorPicker.slice(3, 5), 16),
         B: parseInt(this.colorPicker.slice(5, 7), 16),
       }
+    },
+    targetColorHex(): string {
+      return (
+        '#' +
+        this.targetColor.R.toString(16) +
+        this.targetColor.G.toString(16) +
+        this.targetColor.B.toString(16)
+      )
     },
     magnificationRadiusSizePx(): number {
       return this.magnifierSizePx / 2
