@@ -277,7 +277,7 @@
           <v-slider
             v-model="colorDistancePct"
             thumb-label="always"
-            max="100"
+            max="20"
             min="1"
             label="Color Distsance"
             thumb-size="25"
@@ -362,7 +362,7 @@ export default Vue.extend({
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
       plotSizePx: 6,
-      colorDistancePct: 20,
+      colorDistancePct: 5,
       colorPicker: '',
       isExtracting: false,
       axesSizePx,
@@ -637,9 +637,7 @@ export default Vue.extend({
               this.plotSizePx,
               this.plotSizePx
             ).data
-            const matchRatio = this.diffColorShape(imageData)
-            if (matchRatio > 10) console.log(Math.floor(matchRatio), h, w)
-            if (matchRatio > 80) {
+            if (this.matchShapeAndColor(imageData)) {
               this.plots.push({
                 id: this.nextPlotId,
                 xPx: w,
@@ -675,28 +673,28 @@ export default Vue.extend({
         this.isExtracting = false
       }
     },
-    diffColorShape(colors: Uint8ClampedArray): number {
+    matchShapeAndColor(colors: Uint8ClampedArray): boolean {
       const countColors = colors.length / 4
       const sideLength = Math.sqrt(countColors)
       // INFO: 対象が円だとした場合、emptyLengthのエリアは円かどうかが入り混じっている
       const emptyLength = Math.ceil(((2 - Math.sqrt(2)) / 4) * sideLength)
       const actualSideLength = sideLength - emptyLength * 2
-      const countTargetColors = actualSideLength ** 2
-      let count = 0
+      const [rList, gList, bList] = [[], [], []] as number[][]
       for (let h = emptyLength; h < actualSideLength + emptyLength; h++) {
         for (let w = emptyLength; w < actualSideLength + emptyLength; w++) {
-          const color = {
-            R: colors[(h * sideLength + w) * 4],
-            G: colors[(h * sideLength + w) * 4 + 1],
-            B: colors[(h * sideLength + w) * 4 + 2],
-          }
-          if (this.diffColor(color, this.targetColor) < this.colorDistancePct) {
-            count++
-          }
+          rList.push(colors[(h * sideLength + w) * 4])
+          gList.push(colors[(h * sideLength + w) * 4 + 1])
+          bList.push(colors[(h * sideLength + w) * 4 + 2])
         }
       }
-      return (count / countTargetColors) * 100
+      const color = {
+        R: rList.reduce((prev, cur) => prev + cur, 0) / rList.length,
+        G: gList.reduce((prev, cur) => prev + cur, 0) / gList.length,
+        B: bList.reduce((prev, cur) => prev + cur, 0) / bList.length,
+      }
+      return this.diffColor(color, this.targetColor) < this.colorDistancePct
     },
+    // TODO: 背景色をスキップするか選択できるようにする
     isWhite(r: number, g: number, b: number, a: number): boolean {
       return (r + g + b + a) / 4 === 255
     },
