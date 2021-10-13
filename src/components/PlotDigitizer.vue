@@ -215,19 +215,22 @@
           ></v-slider>
           <h3>Axes Values</h3>
           <v-row>
-            <v-col vols="6" class="ma-0 pb-0">
+            <v-col vols="4" class="ma-0 pb-0">
               <v-text-field
                 v-model="coordAxesValue[indexX1]"
                 label="x1"
                 type="number"
               ></v-text-field>
             </v-col>
-            <v-col vols="6" class="ma-0 pb-0">
+            <v-col vols="4" class="ma-0 pb-0">
               <v-text-field
                 v-model="coordAxesValue[indexX2]"
                 label="x2"
                 type="number"
               ></v-text-field>
+            </v-col>
+            <v-col vols="4" class="ma-0 pb-0">
+              <v-checkbox v-model="xIsLog" label="Log"></v-checkbox>
             </v-col>
           </v-row>
           <v-row>
@@ -244,6 +247,9 @@
                 label="y2"
                 type="number"
               ></v-text-field>
+            </v-col>
+            <v-col vols="4" class="ma-0 pb-0">
+              <v-checkbox v-model="yIsLog" label="Log"></v-checkbox>
             </v-col>
           </v-row>
           <h3>
@@ -346,6 +352,8 @@ export default Vue.extend({
   },
   data() {
     return {
+      xIsLog: false,
+      yIsLog: false,
       magicNumberPx,
       uploadImageUrl: '/img/sample_graph.png',
       coordAxes: [] as {
@@ -902,8 +910,20 @@ export default Vue.extend({
       ]
       const xPx = calculateVerticalCrossPoint(x1x, x1y, x2x, x2y, x, y)
       const yPx = calculateVerticalCrossPoint(y1x, y1y, y2x, y2y, x, y)
-      const xV = ((xPx - x1x) / (x2x - x1x)) * (x2v - x1v) + x1v
-      const yV = ((yPx - y1x) / (y2x - y1x)) * (y2v - y1v) + y1v
+      const xV = this.xIsLog
+        ? Math.pow(
+            10,
+            ((xPx - x1x) / (x2x - x1x)) * (Math.log10(x2v) - Math.log10(x1v)) +
+              Math.log10(x1v)
+          )
+        : ((xPx - x1x) / (x2x - x1x)) * (x2v - x1v) + x1v
+      const yV = this.yIsLog
+        ? Math.pow(
+            10,
+            ((yPx - y1x) / (y2x - y1x)) * (Math.log10(y2v) - Math.log10(y1v)) +
+              Math.log10(y1v)
+          )
+        : ((yPx - y1x) / (y2x - y1x)) * (y2v - y1v) + y1v
       return { xV, yV }
     },
     showAxisName(index: number): string {
