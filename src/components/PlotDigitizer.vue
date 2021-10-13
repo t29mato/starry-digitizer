@@ -84,7 +84,7 @@
           </div>
           {{ plots.length }}
           <!-- REFACTOR: make the table component -->
-          <v-simple-table>
+          <v-simple-table height="300" fixed-header dense>
             <thead>
               <tr>
                 <th>x (px)</th>
