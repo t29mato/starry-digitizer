@@ -605,26 +605,27 @@ export default Vue.extend({
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
         this.drawImage(wrapper, canvas, image, ctx)
-        const data = ctx.getImageData(
-          0,
-          0,
-          this.canvasHeight,
-          this.canvasWidth
-        ).data
+        // const data = ctx.getImageData(
+        //   0,
+        //   0,
+        //   this.canvasHeight,
+        //   this.canvasWidth
+        // ).data
         const targetArea = [...Array(this.canvasHeightInt)].map(() =>
           Array(this.canvasWidthInt).fill(true)
         )
-        for (let h = 0; h < this.canvasHeight; h++) {
-          for (let w = 0; w < this.canvasWidth; w++) {
-            const [r, g, b, a] = data.slice(
-              (h * this.canvasWidth + w) * 4,
-              (h * this.canvasWidth + w + 1) * 4
-            )
-            if (this.isWhite(r, g, b, a)) {
-              targetArea[h][w] = false
-            }
-          }
-        }
+        // FIX: 背景色スキップの精度が低いので修正する
+        // for (let h = 0; h < this.canvasHeight; h++) {
+        //   for (let w = 0; w < this.canvasWidth; w++) {
+        //     const [r, g, b, a] = data.slice(
+        //       (h * this.canvasWidth + w) * 4,
+        //       (h * this.canvasWidth + w + 1) * 4
+        //     )
+        //     if (this.isWhite(r, g, b, a)) {
+        //       targetArea[h][w] = false
+        //     }
+        //   }
+        // }
         for (let h = this.plotSizePx; h < this.canvasHeightInt; h++) {
           // if (h === this.plotSizePx + 300) return
           for (let w = this.plotSizePx; w < this.canvasWidthInt; w++) {
