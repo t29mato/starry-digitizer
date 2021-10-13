@@ -320,7 +320,7 @@ import CanvasCursor from './Canvas/CanvasCursor.vue'
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red] = ['#000000ff', '#ff0000ff']
-const adjustMagicNumberPx = -2
+const magicNumberPx = 1
 const colorThief = new ColorThief()
 
 export default Vue.extend({
@@ -342,6 +342,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      magicNumberPx,
       uploadImageUrl: '/img/sample_graph.png',
       coordAxes: [] as {
         xPx: number
@@ -788,13 +789,7 @@ export default Vue.extend({
       const wrapperHeightPx = imageHeightPx * imageRatio
       canvas.setAttribute('width', String(wrapperWidthPx))
       canvas.setAttribute('height', String(wrapperHeightPx))
-      ctx.drawImage(
-        image,
-        adjustMagicNumberPx,
-        0,
-        wrapperWidthPx,
-        wrapperHeightPx
-      )
+      ctx.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
       this.canvasWidth = wrapperWidthPx
       this.canvasHeight = wrapperHeightPx
       this.canvasScale = imageRatio
@@ -809,7 +804,7 @@ export default Vue.extend({
       const imageHeightPx = image.height
       canvas.setAttribute('width', String(imageWidthPx))
       canvas.setAttribute('height', String(imageHeightPx))
-      ctx.drawImage(image, adjustMagicNumberPx, 0, imageWidthPx, imageHeightPx)
+      ctx.drawImage(image, 0, 0, imageWidthPx, imageHeightPx)
       this.canvasWidth = imageWidthPx
       this.canvasHeight = imageHeightPx
     },
@@ -835,8 +830,8 @@ export default Vue.extend({
         this.movingAxisIndex = this.coordAxes.length
         this.coordAxes.push({
           xPx: isOnCanvas
-            ? e.offsetX
-            : e.offsetX + parseFloat(target.style.left),
+            ? e.offsetX - magicNumberPx
+            : e.offsetX - magicNumberPx + parseFloat(target.style.left),
           yPx: isOnCanvas
             ? e.offsetY
             : e.offsetY + parseFloat(target.style.top),
@@ -849,7 +844,9 @@ export default Vue.extend({
       this.movingPlotId = this.nextPlotId
       this.plots.push({
         id: this.nextPlotId,
-        xPx: isOnCanvas ? e.offsetX : e.offsetX + parseFloat(target.style.left),
+        xPx: isOnCanvas
+          ? e.offsetX - magicNumberPx
+          : e.offsetX - magicNumberPx + parseFloat(target.style.left),
         yPx: isOnCanvas ? e.offsetY : e.offsetY + parseFloat(target.style.top),
       })
       this.shouldShowPoints = true

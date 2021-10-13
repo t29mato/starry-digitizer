@@ -3,7 +3,7 @@
     :style="{
       position: 'absolute',
       top: `${plot.yPx - plotHalfSize}px`,
-      left: `${plot.xPx - plotHalfSize - adjustMagicNumberPx}px`,
+      left: `${plot.xPx - plotHalfSize}px`,
       width: `${plotSize}px`,
       height: `${plotSize}px`,
       'border-radius': '50%',
@@ -15,14 +15,8 @@
 </template>
 
 <script lang="ts">
-const adjustMagicNumberPx = 2
 import Vue from 'vue'
 export default Vue.extend({
-  data() {
-    return {
-      adjustMagicNumberPx,
-    }
-  },
   computed: {
     plotHalfSize(): number {
       return this.plotSize / 2
