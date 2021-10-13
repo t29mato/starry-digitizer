@@ -87,10 +87,10 @@
           <v-simple-table height="300" fixed-header dense>
             <thead>
               <tr>
-                <th>x (px)</th>
-                <th>y (px)</th>
-                <th>x (value)</th>
-                <th>y (value)</th>
+                <th>X Pixel</th>
+                <th>Y Pixel</th>
+                <th>X Value</th>
+                <th>Y Value</th>
               </tr>
             </thead>
             <tbody>
@@ -182,8 +182,8 @@
             <thead>
               <tr>
                 <th></th>
-                <th>px</th>
-                <th>value</th>
+                <th>Pixel</th>
+                <th>Value</th>
               </tr>
             </thead>
             <tbody>
@@ -284,7 +284,7 @@
           </h3>
           <v-checkbox
             v-model="shouldClearPlots"
-            label="clear plots"
+            label="Clear Plots"
             class="mt-0"
           ></v-checkbox>
           <div
