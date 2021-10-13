@@ -94,7 +94,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="plot in calculatedPlots" :key="plot.id">
+              <tr
+                v-for="plot in calculatedPlots"
+                :key="plot.id"
+                @click="activatePlot(plot.id)"
+              >
                 <td>{{ plot.xPx }}</td>
                 <td>{{ plot.yPx }}</td>
                 <td>{{ plot.xV }}</td>
