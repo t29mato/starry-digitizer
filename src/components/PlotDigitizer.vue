@@ -22,7 +22,18 @@
             @click="plot"
             @mousemove="mouseMove"
           >
-            <canvas id="canvas" :style="{}" :src="uploadImageUrl"></canvas>
+            <canvas id="imageCanvas" :src="uploadImageUrl" :style="{}"></canvas>
+            <canvas
+              id="filterCanvas"
+              :style="{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+              }"
+              :width="canvasWidth"
+              :height="canvasHeight"
+              @mousemove="mouseMoveOnRange"
+            ></canvas>
             <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
               <canvas-axes
                 :axesSize="axesSizePx"
@@ -385,6 +396,10 @@ export default Vue.extend({
         xPx: 0,
         yPx: 0,
       },
+      cursorOnFilterCanvas: {
+        x: 0,
+        y: 0,
+      },
       color: 'red',
       magnifierScale: 5,
       plots: [] as { id: number; xPx: number; yPx: number }[],
@@ -489,7 +504,7 @@ export default Vue.extend({
   async mounted() {
     try {
       const wrapper = await this.getWrapperElement()
-      const canvas = await this.getCanvasElement()
+      const canvas = await this.getCanvasElement('#imageCanvas')
       const ctx = await this.getContext2D(canvas)
       const image = await this.loadImage(this.uploadImageUrl)
       this.drawImage(wrapper, canvas, image, ctx)
@@ -579,7 +594,7 @@ export default Vue.extend({
       this.isFit = false
       try {
         const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement()
+        const canvas = await this.getCanvasElement('#imageCanvas')
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
         this.drawImage(wrapper, canvas, image, ctx)
@@ -608,7 +623,7 @@ export default Vue.extend({
       this.isFit = true
       try {
         const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement()
+        const canvas = await this.getCanvasElement('#imageCanvas')
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
         const prevCanvasScale = this.canvasScale
@@ -641,7 +656,7 @@ export default Vue.extend({
       }
       try {
         const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement()
+        const canvas = await this.getCanvasElement('#imageCanvas')
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
         this.drawImage(wrapper, canvas, image, ctx)
@@ -752,7 +767,7 @@ export default Vue.extend({
     async uploadImage(file: File) {
       try {
         const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement()
+        const canvas = await this.getCanvasElement('#imageCanvas')
         const ctx = await this.getContext2D(canvas)
         const fr = await this.readFile(file)
         if (typeof fr.result !== 'string') {
@@ -768,9 +783,9 @@ export default Vue.extend({
         //
       }
     },
-    getCanvasElement(): Promise<HTMLCanvasElement> {
+    getCanvasElement(canvasIdName: string): Promise<HTMLCanvasElement> {
       return new Promise((resolve, reject) => {
-        const canvas = document.querySelector<HTMLCanvasElement>('#canvas')
+        const canvas = document.querySelector<HTMLCanvasElement>(canvasIdName)
         if (canvas === null) {
           reject('canvas is null')
         } else {
@@ -996,6 +1011,30 @@ export default Vue.extend({
           : e.offsetX - magicNumberPx + parseFloat(target.style.left),
         yPx: isOnCanvas ? e.offsetY : e.offsetY + parseFloat(target.style.top),
       }
+    },
+    mouseMoveOnRange(e: MouseEvent) {
+      // INFO: 左クリックされるてる状態
+      if (e.buttons === 1) {
+        return this.draw(e.offsetX, e.offsetY)
+      }
+      this.cursorOnFilterCanvas = { x: 0, y: 0 }
+    },
+    async draw(x: number, y: number) {
+      const filterCanvas = await this.getCanvasElement('#filterCanvas')
+      const ctx = await this.getContext2D(filterCanvas)
+      ctx.beginPath()
+      if (this.cursorOnFilterCanvas.x === 0) {
+        ctx.moveTo(x, y)
+      } else {
+        ctx.moveTo(this.cursorOnFilterCanvas.x, this.cursorOnFilterCanvas.y)
+      }
+      console.log(this.cursorOnFilterCanvas.x, x)
+      console.log(this.cursorOnFilterCanvas.y, y)
+      ctx.lineTo(x, y)
+      ctx.lineCap = 'round'
+      ctx.lineWidth = 5
+      ctx.stroke()
+      this.cursorOnFilterCanvas = { x, y }
     },
   },
 })
