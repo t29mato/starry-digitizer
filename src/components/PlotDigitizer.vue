@@ -75,13 +75,6 @@
             <v-btn text :disabled="plots.length === 0" @click="clearPoints"
               >Clear Plots</v-btn
             >
-            <!-- TODO: わざわざボタン設けるまでもないので、削除する -->
-            <v-btn
-              text
-              :disabled="coordAxes.length === 0 || !isMovingAxis"
-              @click="removeAxis"
-              >Clear Active Axis</v-btn
-            >
             <v-btn
               text
               :disabled="plots.length === 0 || !isMovingPlot"
