@@ -368,7 +368,7 @@ import CanvasAxes from './Canvas/CanvasAxes.vue'
 import CanvasPlot from './Canvas/CanvasPlot.vue'
 import CanvasCursor from './Canvas/CanvasCursor.vue'
 
-const axesSizePx = 10
+const axesSizePx = 8
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
 const magicNumberPx = 1

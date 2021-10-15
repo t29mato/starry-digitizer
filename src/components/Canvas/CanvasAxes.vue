@@ -10,12 +10,13 @@
         height: `${axesSize}px`,
         'border-radius': '50%',
         'background-color': color,
+        outline: '1px solid white',
       }"
     ></div>
     <span
       :style="{
         position: 'absolute',
-        top: `${axis.yPx - axesHalfSize - 7}px`,
+        top: `${axis.yPx - axesHalfSize - 9}px`,
         left: `${axis.xPx - axesHalfSize + 12}px`,
         'pointer-events': 'none',
       }"

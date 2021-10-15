@@ -16,6 +16,7 @@
       height: `${plotSize / canvasScale}px`,
       'border-radius': '50%',
       'background-color': color,
+      outline: '1px solid white',
     }"
   ></div>
 </template>

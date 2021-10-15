@@ -16,16 +16,19 @@
         height: `${axesSize / canvasScale}px`,
         'border-radius': '50%',
         'background-color': color,
+        outline: '1px solid white',
       }"
     ></div>
     <span
       :style="{
         position: 'absolute',
         top: `${
-          ((axis.yPx - axesHalfSize - axesSize) / canvasScale) * magnifierScale
+          ((axis.yPx - axesHalfSize - axesSize) / canvasScale - 3) *
+          magnifierScale
         }px`,
         left: `${
-          ((axis.xPx - axesHalfSize + axesSize) / canvasScale) * magnifierScale
+          ((axis.xPx - axesHalfSize + axesSize) / canvasScale + 3) *
+          magnifierScale
         }px`,
         'pointer-events': 'none',
         transform: `scale(${magnifierScale}) translate(-${

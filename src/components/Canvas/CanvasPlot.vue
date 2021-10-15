@@ -9,13 +9,13 @@
       'border-radius': '50%',
       'background-color': color,
       cursor: 'pointer',
+      outline: '1px solid white',
     }"
     @click="click(plot.id)"
   ></div>
 </template>
 
 <script lang="ts">
-// TODO: outline: '1px solid white' を追加する
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
