@@ -279,7 +279,6 @@
               </tr>
             </tbody>
           </v-simple-table>
-          <!-- TODO: Runしたら、PlotsがHideの場合も表示モードに強制的に切り替える -->
           <h3>
             Automatic Extraction<v-btn
               text
@@ -763,6 +762,7 @@ export default Vue.extend({
           '(' + Math.round((searchedCount / allCount) * 1000) / 10 + '%)'
         )
         console.info('extracted count: ', this.plots.length)
+        this.shouldShowPoints = true
       } catch (error) {
         console.error(error)
       } finally {
