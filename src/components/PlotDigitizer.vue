@@ -412,7 +412,6 @@ export default Vue.extend({
         y: 0,
       },
       color: 'red',
-      // TODO: HTML上でmagnifierScaleは5ではなく、x5にする
       magnifierScale: 5,
       plots: [] as { id: number; xPx: number; yPx: number }[],
       indexX1,
