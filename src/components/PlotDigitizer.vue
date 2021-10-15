@@ -225,9 +225,8 @@
             <thead>
               <tr>
                 <th></th>
-                <!-- TODO: Value1, 2に分ける -->
-                <th>Value</th>
-                <th>Value</th>
+                <th>Value 1</th>
+                <th>Value 2</th>
                 <th>Log</th>
               </tr>
             </thead>
