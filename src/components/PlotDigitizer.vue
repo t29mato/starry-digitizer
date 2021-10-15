@@ -22,7 +22,19 @@
             @click="plot"
             @mousemove="mouseMove"
           >
-            <canvas id="canvas" :style="{}" :src="uploadImageUrl"></canvas>
+            <canvas id="imageCanvas" :src="uploadImageUrl" :style="{}"></canvas>
+            <canvas
+              id="maskCanvas"
+              :style="{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                opacity: 0.5,
+              }"
+              :width="canvasWidth"
+              :height="canvasHeight"
+              @mousemove="mouseMoveOnMask"
+            ></canvas>
             <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
               <canvas-axes
                 :axesSize="axesSizePx"
@@ -51,7 +63,7 @@
               :activatePlot="activatePlot"
             ></canvas-plot>
             <canvas-cursor
-              v-if="coordAxes.length < 4 && !cursorIsMoved"
+              v-if="coordAxes.length < 4 && !cursorIsMoved && !isDrawingMask"
               :cursor="canvasCursor"
               :label="showAxisName(coordAxes.length)"
             ></canvas-cursor>
@@ -63,6 +75,7 @@
             <v-btn text :disabled="plots.length === 0" @click="clearPoints"
               >Clear Plots</v-btn
             >
+            <!-- TODO: わざわざボタン設けるまでもないので、削除する -->
             <v-btn
               text
               :disabled="coordAxes.length === 0 || !isMovingAxis"
@@ -81,6 +94,7 @@
               @click="shouldShowPoints = !shouldShowPoints"
               >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
             >
+            <v-btn text @click="clearMask"> Clear Mask </v-btn>
           </div>
           {{ plots.length }}
           <!-- REFACTOR: make the table component -->
@@ -211,13 +225,14 @@
             max="10"
             min="2"
             label="Magnifier"
-            thumb-size="25"
+            thumb-size="20"
           ></v-slider>
           <h3>XY Axes</h3>
           <v-simple-table dense>
             <thead>
               <tr>
                 <th></th>
+                <!-- TODO: Value1, 2に分ける -->
                 <th>Value</th>
                 <th>Value</th>
                 <th>Log</th>
@@ -272,6 +287,7 @@
               </tr>
             </tbody>
           </v-simple-table>
+          <!-- TODO: Runしたら、PlotsがHideの場合も表示モードに強制的に切り替える -->
           <h3>
             Automatic Extraction<v-btn
               text
@@ -285,8 +301,37 @@
           <v-checkbox
             v-model="shouldClearPlots"
             label="Clear Plots"
-            class="mt-0"
+            dense
+            hide-details
           ></v-checkbox>
+          <v-checkbox
+            v-model="shouldBeMasked"
+            label="Mask"
+            hide-details
+            dense
+          ></v-checkbox>
+          <span>Draw Mask</span>
+          <v-btn-toggle v-model="maskMode" dense class="pl-2">
+            <v-btn text color="green" disabled> Box </v-btn>
+            <v-btn text color="green"> Pen </v-btn>
+          </v-btn-toggle>
+          <v-slider
+            v-model="plotSizePx"
+            thumb-label="always"
+            max="30"
+            min="4"
+            label="Plot Size"
+            thumb-size="20"
+          ></v-slider>
+          <v-slider
+            v-model="colorDistancePct"
+            thumb-label="always"
+            max="20"
+            min="1"
+            label="Color Diff."
+            thumb-size="20"
+          ></v-slider>
+          <!-- TODO: 4つ表示させて、プロット間隔の拡大・縮小を直感的にする -->
           <div
             :style="{
               'pointer-events': 'none',
@@ -296,27 +341,12 @@
               'background-color': targetColorHex,
             }"
           ></div>
-          <v-slider
-            v-model="plotSizePx"
-            thumb-label="always"
-            max="30"
-            min="4"
-            label="Plot Size"
-            thumb-size="25"
-          ></v-slider>
-          <v-slider
-            v-model="colorDistancePct"
-            thumb-label="always"
-            max="20"
-            min="1"
-            label="Color Distsance"
-            thumb-size="25"
-          ></v-slider>
           <v-color-picker
             v-model="colorPicker"
             hide-canvas
             hide-inputs
             show-swatches
+            hide-sliders
             :swatches="swatches"
             class="ma-2"
           ></v-color-picker>
@@ -349,7 +379,7 @@ import CanvasCursor from './Canvas/CanvasCursor.vue'
 
 const axesSizePx = 10
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
-const [black, red] = ['#000000ff', '#ff0000ff']
+const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
 const magicNumberPx = 1
 const colorThief = new ColorThief()
 
@@ -372,6 +402,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      maskMode: undefined as undefined | number,
       xIsLog: false,
       yIsLog: false,
       magicNumberPx,
@@ -385,7 +416,12 @@ export default Vue.extend({
         xPx: 0,
         yPx: 0,
       },
+      cursorOnFilterCanvas: {
+        x: 0,
+        y: 0,
+      },
       color: 'red',
+      // TODO: HTML上でmagnifierScaleは5ではなく、x5にする
       magnifierScale: 5,
       plots: [] as { id: number; xPx: number; yPx: number }[],
       indexX1,
@@ -414,6 +450,7 @@ export default Vue.extend({
       swatches: [...Array(5)].map(() => []) as string[][],
       isFit: true,
       shouldClearPlots: true,
+      shouldBeMasked: false,
     }
   },
   computed: {
@@ -485,11 +522,20 @@ export default Vue.extend({
     canvasWidthInt(): number {
       return Math.floor(this.canvasWidth)
     },
+    isDrawingMask(): boolean {
+      switch (this.maskMode) {
+        case 0:
+        case 1:
+          return true
+        default:
+          return false
+      }
+    },
   },
   async mounted() {
     try {
       const wrapper = await this.getWrapperElement()
-      const canvas = await this.getCanvasElement()
+      const canvas = await this.getCanvasElement('#imageCanvas')
       const ctx = await this.getContext2D(canvas)
       const image = await this.loadImage(this.uploadImageUrl)
       this.drawImage(wrapper, canvas, image, ctx)
@@ -520,6 +566,7 @@ export default Vue.extend({
       palette.forEach((color, index) => {
         this.swatches[index % this.swatches.length].push(color)
       })
+      this.colorPicker = palette[0]
     },
     keyListener(e: KeyboardEvent) {
       const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
@@ -579,7 +626,7 @@ export default Vue.extend({
       this.isFit = false
       try {
         const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement()
+        const canvas = await this.getCanvasElement('#imageCanvas')
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
         this.drawImage(wrapper, canvas, image, ctx)
@@ -608,7 +655,7 @@ export default Vue.extend({
       this.isFit = true
       try {
         const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement()
+        const canvas = await this.getCanvasElement('#imageCanvas')
         const ctx = await this.getContext2D(canvas)
         const image = await this.loadImage(this.uploadImageUrl)
         const prevCanvasScale = this.canvasScale
@@ -641,31 +688,47 @@ export default Vue.extend({
       }
       try {
         const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement()
-        const ctx = await this.getContext2D(canvas)
+        const imageCanvas = await this.getCanvasElement('#imageCanvas')
+        const imageCanvasCtx = await this.getContext2D(imageCanvas)
+        const maskCanvas = await this.getCanvasElement('#maskCanvas')
+        const filterCanvasCtx = await this.getContext2D(maskCanvas)
         const image = await this.loadImage(this.uploadImageUrl)
-        this.drawImage(wrapper, canvas, image, ctx)
-        // const data = ctx.getImageData(
-        //   0,
-        //   0,
-        //   this.canvasHeight,
-        //   this.canvasWidth
-        // ).data
-        const targetArea = [...Array(this.canvasHeightInt)].map(() =>
-          Array(this.canvasWidthInt).fill(true)
+        this.drawImage(wrapper, imageCanvas, image, imageCanvasCtx)
+        const filterCanvasColors = filterCanvasCtx.getImageData(
+          0,
+          0,
+          maskCanvas.width,
+          maskCanvas.height
+        ).data
+        const imageCanvasColors = imageCanvasCtx.getImageData(
+          0,
+          0,
+          maskCanvas.width,
+          maskCanvas.height
+        ).data
+        const targetArea = [...Array(maskCanvas.height)].map(() =>
+          Array(maskCanvas.width).fill(false)
         )
-        // FIX: 背景色スキップの精度が低いので修正する
-        // for (let h = 0; h < this.canvasHeight; h++) {
-        //   for (let w = 0; w < this.canvasWidth; w++) {
-        //     const [r, g, b, a] = data.slice(
-        //       (h * this.canvasWidth + w) * 4,
-        //       (h * this.canvasWidth + w + 1) * 4
-        //     )
-        //     if (this.isWhite(r, g, b, a)) {
-        //       targetArea[h][w] = false
-        //     }
-        //   }
-        // }
+        for (let h = 0; h < maskCanvas.height; h++) {
+          for (let w = 0; w < maskCanvas.width; w++) {
+            const [r1, g1, b1, a1] = imageCanvasColors.slice(
+              (h * maskCanvas.width + w) * 4,
+              (h * maskCanvas.width + w + 1) * 4
+            )
+            if (this.isWhite(r1, g1, b1, a1)) {
+              continue
+            }
+            const [r2, g2, b2, a2] = filterCanvasColors.slice(
+              (h * maskCanvas.width + w) * 4,
+              (h * maskCanvas.width + w + 1) * 4
+            )
+            if (this.shouldBeMasked && !this.isOnMask(r2, g2, b2, a2)) {
+              continue
+            }
+            targetArea[h][w] = true
+          }
+        }
+
         for (let h = this.plotSizePx; h < this.canvasHeightInt; h++) {
           // if (h === this.plotSizePx + 300) return
           for (let w = this.plotSizePx; w < this.canvasWidthInt; w++) {
@@ -673,7 +736,7 @@ export default Vue.extend({
             if (!targetArea[h][w]) {
               continue
             }
-            const imageData = ctx.getImageData(
+            const imageData = imageCanvasCtx.getImageData(
               w - this.plotRadiusSizePx,
               h - this.plotRadiusSizePx,
               this.plotSizePx,
@@ -697,16 +760,17 @@ export default Vue.extend({
             }
           }
         }
+        const allCount = this.canvasWidthInt * this.canvasHeightInt
+        console.info('all count:', allCount)
+        const searchedCount = targetArea.reduce((prev, cur) => {
+          return prev + cur.filter((item) => item).length
+        }, 0)
         console.info(
-          'target count:',
-          this.canvasWidthInt * this.canvasHeightInt
+          'searched count:',
+          searchedCount,
+          '(' + Math.round((searchedCount / allCount) * 1000) / 10 + '%)'
         )
-        console.info(
-          'skipped count:',
-          targetArea.reduce((prev, cur) => {
-            return prev + cur.filter((item) => !item).length
-          }, 0)
-        )
+        console.info('extracted count: ', this.plots.length)
       } catch (error) {
         console.error(error)
       } finally {
@@ -737,8 +801,11 @@ export default Vue.extend({
       return this.diffColor(color, this.targetColor) < this.colorDistancePct
     },
     // TODO: 背景色をスキップするか選択できるようにする
+    isOnMask(r: number, g: number, b: number, a: number): boolean {
+      return r === 255 && g === 255 && b === 0 && a > 0
+    },
     isWhite(r: number, g: number, b: number, a: number): boolean {
-      return (r + g + b + a) / 4 === 255
+      return r === 255 && g === 255 && b === 255 && a > 0
     },
     diffColor(
       color1: { R: number; G: number; B: number },
@@ -752,7 +819,7 @@ export default Vue.extend({
     async uploadImage(file: File) {
       try {
         const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement()
+        const canvas = await this.getCanvasElement('#imageCanvas')
         const ctx = await this.getContext2D(canvas)
         const fr = await this.readFile(file)
         if (typeof fr.result !== 'string') {
@@ -768,9 +835,9 @@ export default Vue.extend({
         //
       }
     },
-    getCanvasElement(): Promise<HTMLCanvasElement> {
+    getCanvasElement(canvasIdName: string): Promise<HTMLCanvasElement> {
       return new Promise((resolve, reject) => {
-        const canvas = document.querySelector<HTMLCanvasElement>('#canvas')
+        const canvas = document.querySelector<HTMLCanvasElement>(canvasIdName)
         if (canvas === null) {
           reject('canvas is null')
         } else {
@@ -858,6 +925,10 @@ export default Vue.extend({
       })
     },
     plot(e: MouseEvent): void {
+      // IFNO: マスク描画モード中につき
+      if (this.isDrawingMask) {
+        return
+      }
       const target = e.target as HTMLElement
       const isOnCanvas = target.id === 'canvas'
       const isOnCanvasPlot = target.id === 'canvas-plot'
@@ -996,6 +1067,34 @@ export default Vue.extend({
           : e.offsetX - magicNumberPx + parseFloat(target.style.left),
         yPx: isOnCanvas ? e.offsetY : e.offsetY + parseFloat(target.style.top),
       }
+    },
+    mouseMoveOnMask(e: MouseEvent) {
+      // INFO: 左クリックされるてる状態
+      if (e.buttons === 1 && this.maskMode === 1) {
+        return this.draw(e.offsetX, e.offsetY)
+      }
+      this.cursorOnFilterCanvas = { x: 0, y: 0 }
+    },
+    async draw(x: number, y: number) {
+      const maskCanvas = await this.getCanvasElement('#maskCanvas')
+      const ctx = await this.getContext2D(maskCanvas)
+      ctx.beginPath()
+      if (this.cursorOnFilterCanvas.x === 0) {
+        ctx.moveTo(x, y)
+      } else {
+        ctx.moveTo(this.cursorOnFilterCanvas.x, this.cursorOnFilterCanvas.y)
+      }
+      ctx.lineTo(x, y)
+      ctx.lineCap = 'round'
+      ctx.lineWidth = 50
+      ctx.stroke()
+      ctx.strokeStyle = yellow
+      this.cursorOnFilterCanvas = { x, y }
+    },
+    async clearMask() {
+      const maskCanvas = await this.getCanvasElement('#maskCanvas')
+      const ctx = await this.getContext2D(maskCanvas)
+      ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height)
     },
   },
 })

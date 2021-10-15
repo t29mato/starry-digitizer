@@ -15,6 +15,7 @@
 </template>
 
 <script lang="ts">
+// TODO: outline: '1px solid white' を追加する
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
