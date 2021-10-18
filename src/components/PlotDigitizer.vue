@@ -315,6 +315,14 @@
             thumb-size="20"
           ></v-slider>
           <v-slider
+            v-model="plotInlineSizePx"
+            thumb-label="always"
+            max="10"
+            min="0"
+            label="Plot Outline Size"
+            thumb-size="20"
+          ></v-slider>
+          <v-slider
             v-model="colorDistancePct"
             thumb-label="always"
             max="20"
@@ -329,7 +337,9 @@
               width: `${plotSizePx}px`,
               height: `${plotSizePx}px`,
               'border-radius': '50%',
-              'background-color': targetColorHex,
+              'background-color': `${plotBackgroundColor}`,
+              border: `${plotBorderSize}px solid ${targetColorHex}`,
+              'box-sizing': 'border-box',
             }"
           ></div>
           <v-color-picker
@@ -358,7 +368,7 @@
 import Vue from 'vue'
 import diff from 'color-diff'
 import ColorThief from 'colorthief'
-import { circle2array } from 'symbol2array'
+import { circle, circleOutline } from 'symbol2array'
 // REFACTOR: まとめてimportする
 import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
@@ -422,6 +432,7 @@ export default Vue.extend({
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
       plotSizePx: 6,
+      plotInlineSizePx: 0,
       colorDistancePct: 5,
       colorPicker: '',
       isExtracting: false,
@@ -445,6 +456,12 @@ export default Vue.extend({
     }
   },
   computed: {
+    plotBackgroundColor(): string {
+      return this.plotInlineSizePx > 0 ? 'white' : this.targetColorHex
+    },
+    plotBorderSize(): number {
+      return Math.min(this.plotInlineSizePx, this.plotSizePx)
+    },
     targetColor(): { R: number; G: number; B: number } {
       return {
         R: parseInt(this.colorPicker.slice(1, 3), 16),
@@ -774,7 +791,10 @@ export default Vue.extend({
       const countColors = colors.length / 4
       const sideLength = Math.sqrt(countColors)
       const [rList, gList, bList] = [[], [], []] as number[][]
-      const circleArray = circle2array(sideLength)
+      const circleArray =
+        this.plotInlineSizePx > 0
+          ? circleOutline(sideLength, this.plotInlineSizePx)
+          : circle(sideLength)
       for (let h = 0; h < sideLength; h++) {
         for (let w = 0; w < sideLength; w++) {
           if (!circleArray[h][w]) {
