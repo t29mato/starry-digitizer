@@ -301,6 +301,12 @@
             hide-details
             dense
           ></v-checkbox>
+          <v-checkbox
+            v-model="isPrecisionMode"
+            label="Precision (Slow)"
+            hide-details
+            dense
+          ></v-checkbox>
           <span>Draw Mask</span>
           <v-btn-toggle v-model="maskMode" dense class="pl-2">
             <v-btn text color="green" disabled> Box </v-btn>
@@ -368,7 +374,7 @@
 import Vue from 'vue'
 import diff from 'color-diff'
 import ColorThief from 'colorthief'
-import { circle, circleOutline } from 'symbol2array'
+import { circle, circleInline } from 'symbol2array'
 // REFACTOR: まとめてimportする
 import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
@@ -453,6 +459,7 @@ export default Vue.extend({
       isFit: true,
       shouldClearPlots: true,
       shouldBeMasked: false,
+      isPrecisionMode: false,
     }
   },
   computed: {
@@ -791,13 +798,35 @@ export default Vue.extend({
       const countColors = colors.length / 4
       const sideLength = Math.sqrt(countColors)
       const [rList, gList, bList] = [[], [], []] as number[][]
-      const circleArray =
+      const { data, count } =
         this.plotInlineSizePx > 0
-          ? circleOutline(sideLength, this.plotInlineSizePx)
+          ? circleInline(sideLength, this.plotInlineSizePx)
           : circle(sideLength)
+
+      if (this.isPrecisionMode) {
+        let hitCount = 0
+        for (let h = 0; h < sideLength; h++) {
+          for (let w = 0; w < sideLength; w++) {
+            const color = {
+              R: colors[(h * sideLength + w) * 4],
+              G: colors[(h * sideLength + w) * 4 + 1],
+              B: colors[(h * sideLength + w) * 4 + 2],
+            }
+            if (data[h][w]) {
+              if (
+                this.diffColor(color, this.targetColor) < this.colorDistancePct
+              ) {
+                hitCount++
+              }
+            }
+          }
+        }
+        if ((hitCount / count) * 100 > 30) console.log((hitCount / count) * 100)
+        return (hitCount / count) * 100 > 50
+      }
       for (let h = 0; h < sideLength; h++) {
         for (let w = 0; w < sideLength; w++) {
-          if (!circleArray[h][w]) {
+          if (!data[h][w]) {
             continue
           }
           rList.push(colors[(h * sideLength + w) * 4])
@@ -817,7 +846,7 @@ export default Vue.extend({
       return r === 255 && g === 255 && b === 0 && a > 0
     },
     isWhite(r: number, g: number, b: number, a: number): boolean {
-      return r === 255 && g === 255 && b === 255 && a > 0
+      return r > 244 && g > 244 && b > 244 && a > 0
     },
     diffColor(
       color1: { R: number; G: number; B: number },
