@@ -358,6 +358,7 @@
 import Vue from 'vue'
 import diff from 'color-diff'
 import ColorThief from 'colorthief'
+import { circle2array } from 'symbol2array'
 // REFACTOR: まとめてimportする
 import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
@@ -720,7 +721,6 @@ export default Vue.extend({
         }
 
         for (let h = this.plotSizePx; h < this.canvasHeightInt; h++) {
-          // if (h === this.plotSizePx + 300) return
           for (let w = this.plotSizePx; w < this.canvasWidthInt; w++) {
             // INFO: 背景色白色はスキップ
             if (!targetArea[h][w]) {
@@ -773,12 +773,13 @@ export default Vue.extend({
     matchShapeAndColor(colors: Uint8ClampedArray): boolean {
       const countColors = colors.length / 4
       const sideLength = Math.sqrt(countColors)
-      // INFO: 対象が円だとした場合、emptyLengthのエリアは円かどうかが入り混じっている
-      const emptyLength = Math.ceil(((2 - Math.sqrt(2)) / 4) * sideLength)
-      const actualSideLength = sideLength - emptyLength * 2
       const [rList, gList, bList] = [[], [], []] as number[][]
-      for (let h = emptyLength; h < actualSideLength + emptyLength; h++) {
-        for (let w = emptyLength; w < actualSideLength + emptyLength; w++) {
+      const circleArray = circle2array(sideLength)
+      for (let h = 0; h < sideLength; h++) {
+        for (let w = 0; w < sideLength; w++) {
+          if (!circleArray[h][w]) {
+            continue
+          }
           rList.push(colors[(h * sideLength + w) * 4])
           gList.push(colors[(h * sideLength + w) * 4 + 1])
           bList.push(colors[(h * sideLength + w) * 4 + 2])
