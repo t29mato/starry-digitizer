@@ -1,19 +1,18 @@
 <template>
   <v-container>
     <template>
-      <v-file-input
-        accept="image/*"
-        label="file input"
-        @change="uploadImage"
-        class="ma-0"
-      ></v-file-input>
       <v-row>
         <v-col cols="9">
           <div class="d-flex justify-space-between">
-            <div>TODO: file input</div>
-            <div>
-              <v-btn @click="resizeCanvasToMax">100%</v-btn>
-              <v-btn @click="resizeCanvasToFit">Fit</v-btn>
+            <v-file-input
+              accept="image/*"
+              label="file input"
+              @change="uploadImage"
+              dense
+            ></v-file-input>
+            <div class="ml-2">
+              <v-btn text @click="resizeCanvasToMax">100%</v-btn>
+              <v-btn text @click="resizeCanvasToFit">Fit</v-btn>
             </div>
           </div>
           <div
