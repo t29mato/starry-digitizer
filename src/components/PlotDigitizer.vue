@@ -314,6 +314,7 @@
             min="4"
             label="Plot Size"
             thumb-size="20"
+            dense
           ></v-slider>
           <v-slider
             v-model="plotInlineSizePx"
@@ -322,6 +323,7 @@
             min="0"
             label="Plot Inline Size"
             thumb-size="20"
+            dense
           ></v-slider>
           <v-slider
             v-model="colorDistancePct"
@@ -330,6 +332,7 @@
             min="1"
             label="Color Diff."
             thumb-size="20"
+            dense
           ></v-slider>
           <!-- TODO: 4つ表示させて、プロット間隔の拡大・縮小を直感的にする -->
           <div
