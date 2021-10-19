@@ -9,7 +9,6 @@
       'border-radius': '50%',
       'background-color': color,
       cursor: 'pointer',
-      outline: '1px solid white',
     }"
     @click="click(plot.id)"
   ></div>
