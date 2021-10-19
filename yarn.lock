@@ -8954,10 +8954,10 @@ svgo@^1.0.0:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
-symbol2array@1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/symbol2array/-/symbol2array-1.2.3.tgz#d2873bd3f66ec1f176954dd11f583048b864a1f6"
-  integrity sha512-uPB4ziSX8e7Wdeys20aELqbVbhAxgp4TUiOIhbzpwvVBhuFYUtm4XMthJb291eylaLSAqsbPBF5ZJ6pU98fA3w==
+symbol2array@1.3.3:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/symbol2array/-/symbol2array-1.3.3.tgz#0b46490a7fa3dd51fa6b2b9c58af555ebe1cdb7c"
+  integrity sha512-hIjkwp6M/KXTnhYaEwIITw3Oz8Zf1XoannpxC0cuDGbt31w/2QbHKaWeSv/DUJeC7XMGBelVay+SinlMROM8tQ==
   dependencies:
     "@types/node" "^16.11.1"
     typescript "^4.4.4"

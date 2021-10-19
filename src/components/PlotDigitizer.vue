@@ -48,6 +48,7 @@
                 :label="showAxisName(index)"
               ></canvas-axes>
             </div>
+            <!-- TODO: PlotsのInlineのサイズに合わせる -->
             <canvas-plot
               id="canvas-plot"
               v-for="plot in plots"
@@ -319,7 +320,7 @@
             thumb-label="always"
             max="10"
             min="0"
-            label="Plot Outline Size"
+            label="Plot Inline Size"
             thumb-size="20"
           ></v-slider>
           <v-slider
@@ -351,6 +352,7 @@
             :swatches="swatches"
             class="ma-2"
           ></v-color-picker>
+          <!-- TODO: プロットカラー変更したい要望は少ないだろうと考えて消す -->
           <h3 class="mt-4">Plots Color</h3>
           <v-color-picker
             v-model="plotsColor"
@@ -368,7 +370,7 @@
 import Vue from 'vue'
 import diff from 'color-diff'
 import ColorThief from 'colorthief'
-import { circle, circleOutline } from 'symbol2array'
+import { circle, circleInline } from 'symbol2array'
 // REFACTOR: まとめてimportする
 import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
@@ -791,13 +793,13 @@ export default Vue.extend({
       const countColors = colors.length / 4
       const sideLength = Math.sqrt(countColors)
       const [rList, gList, bList] = [[], [], []] as number[][]
-      const circleArray =
+      const { data } =
         this.plotInlineSizePx > 0
-          ? circleOutline(sideLength, this.plotInlineSizePx)
+          ? circleInline(sideLength, this.plotInlineSizePx)
           : circle(sideLength)
       for (let h = 0; h < sideLength; h++) {
         for (let w = 0; w < sideLength; w++) {
-          if (!circleArray[h][w]) {
+          if (!data[h][w]) {
             continue
           }
           rList.push(colors[(h * sideLength + w) * 4])
