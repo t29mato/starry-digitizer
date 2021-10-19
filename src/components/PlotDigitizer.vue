@@ -474,7 +474,7 @@ export default Vue.extend({
       return this.plotInlineSizePx > 0 ? 'white' : this.targetColorHex
     },
     plotBorderSize(): number {
-      return Math.min(this.plotInlineSizePx, this.plotSizePx)
+      return Math.min(this.plotInlineSizePx, this.plotRadiusSizePx)
     },
     targetColor(): { R: number; G: number; B: number } {
       return {
