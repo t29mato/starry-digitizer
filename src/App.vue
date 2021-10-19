@@ -2,6 +2,7 @@
   <v-app>
     <v-app-bar app color="primary" dark>
       <h1 class="d-flex align-center">Vue Plot Digitizer</h1>
+      <span class="ml-2 mt-3">{{ version }}</span>
 
       <v-spacer></v-spacer>
 
@@ -24,6 +25,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import PlotDigitizer from './components/PlotDigitizer.vue'
+import { version } from '../package.json'
 
 export default Vue.extend({
   name: 'App',
@@ -33,7 +35,7 @@ export default Vue.extend({
   },
 
   data: () => ({
-    //
+    version,
   }),
 })
 </script>
