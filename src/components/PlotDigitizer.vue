@@ -9,8 +9,13 @@
       ></v-file-input>
       <v-row>
         <v-col cols="9">
-          <v-btn @click="resizeCanvasToMax">100%</v-btn>
-          <v-btn @click="resizeCanvasToFit">Fit</v-btn>
+          <div class="d-flex justify-space-between">
+            <div>TODO: file input</div>
+            <div>
+              <v-btn @click="resizeCanvasToMax">100%</v-btn>
+              <v-btn @click="resizeCanvasToFit">Fit</v-btn>
+            </div>
+          </div>
           <div
             :style="{
               position: 'relative',
@@ -64,9 +69,8 @@
               :activatePlot="activatePlot"
             ></canvas-plot>
             <canvas-cursor
-              v-if="coordAxes.length < 4 && !cursorIsMoved && !isDrawingMask"
               :cursor="canvasCursor"
-              :label="showAxisName(coordAxes.length)"
+              :label="cursorLabel"
             ></canvas-cursor>
           </div>
           <div>
@@ -303,7 +307,12 @@
             dense
           ></v-checkbox>
           <span>Draw Mask</span>
-          <v-btn-toggle v-model="maskMode" dense class="pl-2">
+          <v-btn-toggle
+            v-model="maskMode"
+            @click="isColorPickerMode = false"
+            dense
+            class="pl-2"
+          >
             <v-btn text color="green" disabled> Box </v-btn>
             <v-btn text color="green"> Pen </v-btn>
           </v-btn-toggle>
@@ -463,6 +472,18 @@ export default Vue.extend({
     }
   },
   computed: {
+    cursorLabel(): string {
+      if (this.isColorPickerMode) {
+        return 'Color'
+      }
+      if (this.isDrawingMask) {
+        return 'Mask'
+      }
+      if (this.coordAxes.length < 4) {
+        return this.showAxisName(this.coordAxes.length)
+      }
+      return ''
+    },
     plotBackgroundColor(): string {
       return this.plotInlineSizePx > 0 ? 'white' : this.targetColorHex
     },
@@ -569,6 +590,7 @@ export default Vue.extend({
   methods: {
     switchColorPickerMode() {
       this.isColorPickerMode = !this.isColorPickerMode
+      this.maskMode = undefined
     },
     copy() {
       navigator.clipboard.writeText(this.convertPlotsIntoText)
@@ -964,6 +986,7 @@ export default Vue.extend({
       }, '#')
       console.log(color)
       this.colorPicker = color
+      this.isColorPickerMode = false
     },
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
