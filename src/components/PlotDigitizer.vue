@@ -61,9 +61,7 @@
               :plotSize="plotSizePx"
               :plot="plot"
               :color="
-                isMovingPlot && movingPlotId === plot.id
-                  ? 'limegreen'
-                  : plotsColor
+                isMovingPlot && movingPlotId === plot.id ? 'limegreen' : red
               "
               :activatePlot="activatePlot"
             ></canvas-plot>
@@ -181,9 +179,7 @@
                 :plot="plot"
                 :magnifierSize="magnifierSizePx"
                 :color="
-                  isMovingPlot && movingPlotId === plot.id
-                    ? 'limegreen'
-                    : plotsColor
+                  isMovingPlot && movingPlotId === plot.id ? 'limegreen' : red
                 "
               ></magnifier-plots>
             </div>
@@ -354,6 +350,7 @@
               'box-sizing': 'border-box',
             }"
           ></div>
+          <v-btn text @click="switchColorPickerMode">Color Picker</v-btn>
           <v-color-picker
             v-model="colorPicker"
             hide-canvas
@@ -361,16 +358,6 @@
             show-swatches
             hide-sliders
             :swatches="swatches"
-            class="ma-2"
-          ></v-color-picker>
-          <v-btn text @click="switchColorPickerMode">Color Picker</v-btn>
-          <!-- TODO: プロットカラー変更したい要望は少ないだろうと考えて消す -->
-          <h3 class="mt-4">Plots Color</h3>
-          <v-color-picker
-            v-model="plotsColor"
-            class="mb-2"
-            hide-canvas
-            hide-inputs
           ></v-color-picker>
         </v-col>
       </v-row>
@@ -461,7 +448,7 @@ export default Vue.extend({
       isMovingPlot: false,
       movingPlotId: 0,
       axesColor: black,
-      plotsColor: red,
+      red,
       canvasWidth: 0,
       canvasHeight: 0,
       swatches: [...Array(5)].map(() => []) as string[][],
