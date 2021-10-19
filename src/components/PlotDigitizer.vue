@@ -359,6 +359,19 @@
             hide-sliders
             :swatches="swatches"
           ></v-color-picker>
+          <h3>Export Settings</h3>
+          <v-checkbox
+            label="show Pixel"
+            v-model="shouldShowPixel"
+            dense
+            hide-details
+          ></v-checkbox>
+          <v-checkbox
+            label="show Value"
+            v-model="shouldShowValue"
+            dense
+            hide-details
+          ></v-checkbox>
         </v-col>
       </v-row>
     </template>
@@ -405,6 +418,8 @@ export default Vue.extend({
   },
   data() {
     return {
+      shouldShowPixel: true,
+      shouldShowValue: true,
       isColorPickerMode: false,
       maskMode: undefined as undefined | number,
       xIsLog: false,
@@ -531,7 +546,16 @@ export default Vue.extend({
       }
       return this.calculatedPlots
         .reduce((prev, cur) => {
-          return prev + `${cur.xPx}, ${cur.yPx}, ${cur.xV}, ${cur.yV}\n`
+          if (this.shouldShowPixel && this.shouldShowValue) {
+            return prev + `${cur.xPx}, ${cur.yPx}, ${cur.xV}, ${cur.yV}\n`
+          }
+          if (this.shouldShowPixel) {
+            return prev + `${cur.xPx}, ${cur.yPx}\n`
+          }
+          if (this.shouldShowValue) {
+            return prev + `${cur.xV}, ${cur.yV}\n`
+          }
+          return prev
         }, '')
         .trim()
     },
