@@ -352,6 +352,7 @@
             :swatches="swatches"
             class="ma-2"
           ></v-color-picker>
+          <v-btn text @click="switchColorPickerMode">Color Picker</v-btn>
           <!-- TODO: プロットカラー変更したい要望は少ないだろうと考えて消す -->
           <h3 class="mt-4">Plots Color</h3>
           <v-color-picker
@@ -406,6 +407,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      isColorPickerMode: false,
       maskMode: undefined as undefined | number,
       xIsLog: false,
       yIsLog: false,
@@ -562,6 +564,9 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
+    switchColorPickerMode() {
+      this.isColorPickerMode = !this.isColorPickerMode
+    },
     copy() {
       navigator.clipboard.writeText(this.convertPlotsIntoText)
     },
@@ -938,7 +943,31 @@ export default Vue.extend({
         fr.addEventListener('error', (error) => reject(error))
       })
     },
+    async pickColor(e: MouseEvent) {
+      const imageCanvas = await this.getCanvasElement('#imageCanvas')
+      const ctx = await this.getContext2D(imageCanvas)
+      const colors = ctx.getImageData(
+        e.offsetX - magicNumberPx,
+        e.offsetY - magicNumberPx,
+        1,
+        1
+      ).data
+      const color = colors.slice(0, 3).reduce((prev, cur) => {
+        let hex = cur.toString(16)
+        if (hex.length === 1) {
+          hex = '0' + hex
+        }
+        return prev + hex
+      }, '#')
+      console.log(color)
+      this.colorPicker = color
+    },
+    // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
+      if (this.isColorPickerMode) {
+        this.pickColor(e)
+        return
+      }
       // IFNO: マスク描画モード中につき
       if (this.isDrawingMask) {
         return
