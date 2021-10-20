@@ -1007,7 +1007,6 @@ export default Vue.extend({
         }
         return prev + hex
       }, '#')
-      console.log(color)
       this.colorPicker = color
       this.isColorPickerMode = false
     },
