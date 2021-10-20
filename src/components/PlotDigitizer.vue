@@ -430,7 +430,8 @@ export default Vue.extend({
         xPx: number
         yPx: number
       }[],
-      coordAxesValue: [0, 1, 0, 1] as number[],
+      // REFACOTR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
+      coordAxesValue: ['0', '1', '0', '1'] as string[],
       canvasCursor: {
         xPx: 0,
         yPx: 0,
@@ -1069,14 +1070,14 @@ export default Vue.extend({
         this.coordAxes[indexX1].yPx,
         this.coordAxes[indexX2].xPx,
         this.coordAxes[indexX2].yPx,
-        this.coordAxesValue[indexX1],
-        this.coordAxesValue[indexX2],
+        parseInt(this.coordAxesValue[indexX1]),
+        parseInt(this.coordAxesValue[indexX2]),
         this.coordAxes[indexY1].xPx,
         this.coordAxes[indexY1].yPx,
         this.coordAxes[indexY2].xPx,
         this.coordAxes[indexY2].yPx,
-        this.coordAxesValue[indexY1],
-        this.coordAxesValue[indexY2],
+        parseInt(this.coordAxesValue[indexY1]),
+        parseInt(this.coordAxesValue[indexY2]),
       ]
       const xPx = calculateVerticalCrossPoint(x1x, x1y, x2x, x2y, x, y)
       const yPx = calculateVerticalCrossPoint(y1x, y1y, y2x, y2y, x, y)
