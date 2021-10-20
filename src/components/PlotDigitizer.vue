@@ -601,6 +601,11 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
+    sortPlots() {
+      this.plots.sort((a, b) => {
+        return a.xPx - b.xPx
+      })
+    },
     switchColorPickerMode() {
       this.isColorPickerMode = !this.isColorPickerMode
       this.maskMode = undefined
@@ -812,6 +817,7 @@ export default Vue.extend({
             }
           }
         }
+        this.sortPlots()
         const allCount = this.canvasWidthInt * this.canvasHeightInt
         console.info('all count:', allCount)
         const searchedCount = targetArea.reduce((prev, cur) => {
