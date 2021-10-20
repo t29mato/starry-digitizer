@@ -8,6 +8,7 @@
     }"
   >
     {{ label }}
+    <v-icon v-if="icon">{{ icon }}</v-icon>
   </div>
 </template>
 
@@ -25,6 +26,10 @@ export default Vue.extend({
     label: {
       type: String,
       required: true,
+    },
+    icon: {
+      type: String,
+      required: false,
     },
   },
 })

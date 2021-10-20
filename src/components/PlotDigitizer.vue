@@ -68,6 +68,7 @@
             <canvas-cursor
               :cursor="canvasCursor"
               :label="cursorLabel"
+              :icon="isColorPickerMode ? 'mdi-eyedropper-variant' : ''"
             ></canvas-cursor>
           </div>
           <div>
@@ -352,7 +353,9 @@
               'box-sizing': 'border-box',
             }"
           ></div>
-          <v-btn text @click="switchColorPickerMode">Color Picker</v-btn>
+          <v-btn @click="switchColorPickerMode" icon
+            ><v-icon> mdi-eyedropper-variant </v-icon></v-btn
+          >
           <v-color-picker
             v-model="colorPicker"
             hide-canvas
@@ -476,9 +479,10 @@ export default Vue.extend({
     }
   },
   computed: {
+    // REFACTOR: もう少し状態管理綺麗に
     cursorLabel(): string {
       if (this.isColorPickerMode) {
-        return 'Color'
+        return ''
       }
       if (this.isDrawingMask) {
         return 'Mask'
