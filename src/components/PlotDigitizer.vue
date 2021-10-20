@@ -309,7 +309,9 @@
             class="pl-2"
           >
             <v-btn text color="green" disabled> Box </v-btn>
-            <v-btn text color="green"> Pen </v-btn>
+            <v-btn text color="green" @click="shouldBeMasked = true">
+              Pen
+            </v-btn>
           </v-btn-toggle>
           <v-slider
             v-model="plotSizePx"
