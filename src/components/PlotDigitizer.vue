@@ -387,7 +387,7 @@
 import Vue from 'vue'
 import diff from 'color-diff'
 import ColorThief from 'colorthief'
-import { circle, circleInline } from 'symbol2array'
+import { CircleCreator } from 'symbol2array'
 // REFACTOR: まとめてimportする
 import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
@@ -403,6 +403,7 @@ const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
 const magicNumberPx = 1
 const colorThief = new ColorThief()
+const circleCreator = new CircleCreator()
 
 export default Vue.extend({
   components: {
@@ -846,10 +847,9 @@ export default Vue.extend({
       const countColors = colors.length / 4
       const sideLength = Math.sqrt(countColors)
       const [rList, gList, bList] = [[], [], []] as number[][]
-      const { data } =
-        this.plotInlineSizePx > 0
-          ? circleInline(sideLength, this.plotInlineSizePx)
-          : circle(sideLength)
+      const { data } = circleCreator
+        .createSymbol(sideLength, this.plotInlineSizePx)
+        .toArray()
       for (let h = 0; h < sideLength; h++) {
         for (let w = 0; w < sideLength; w++) {
           if (!data[h][w]) {
