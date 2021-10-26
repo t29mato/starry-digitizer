@@ -24,8 +24,24 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import * as Sentry from '@sentry/vue'
+import { Integrations } from '@sentry/tracing'
+
 import PlotDigitizer from './components/PlotDigitizer.vue'
 import { version } from '../package.json'
+
+if (process.env.NODE_ENV === 'production') {
+  Sentry.init({
+    Vue,
+    dsn: process.env.VUE_APP_SENTRY_DSN,
+    integrations: [
+      new Integrations.BrowserTracing({
+        tracingOrigins: ['vpd.vercel.app', /^\//],
+      }),
+    ],
+    tracesSampleRate: 1.0,
+  })
+}
 
 export default Vue.extend({
   name: 'App',

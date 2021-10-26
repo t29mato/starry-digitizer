@@ -32,10 +32,12 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
+    "@sentry/tracing": "^6.13.3",
+    "@sentry/vue": "^6.13.3",
     "color-diff": "^1.2.0",
     "colorthief": "^2.3.2",
     "core-js": "^3.6.5",
-    "symbol2array": "1.4.3",
+    "symbol2array": "1.4.7",
     "vue": "^2.6.11",
     "vuetify": "^2.4.0"
   },
