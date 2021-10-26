@@ -34,6 +34,7 @@ if (process.env.NODE_ENV === 'production') {
   Sentry.init({
     Vue,
     dsn: process.env.VUE_APP_SENTRY_DSN,
+    release: `vue-plot-digitizer@${version}`,
     integrations: [
       new Integrations.BrowserTracing({
         tracingOrigins: ['vpd.vercel.app', /^\//],
