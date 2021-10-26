@@ -30,6 +30,8 @@ import { Integrations } from '@sentry/tracing'
 import PlotDigitizer from './components/PlotDigitizer.vue'
 import { version } from '../package.json'
 
+console.info('NODE_ENV', process.env.NODE_ENV)
+console.info('VUE_APP_SENTRY_DSN', process.env.VUE_APP_SENTRY_DSN)
 if (process.env.NODE_ENV === 'production') {
   Sentry.init({
     Vue,
