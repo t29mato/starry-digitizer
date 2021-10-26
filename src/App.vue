@@ -30,8 +30,6 @@ import { Integrations } from '@sentry/tracing'
 import PlotDigitizer from './components/PlotDigitizer.vue'
 import { version } from '../package.json'
 
-console.info('NODE_ENV', process.env.NODE_ENV)
-console.info('VUE_APP_SENTRY_DSN', process.env.VUE_APP_SENTRY_DSN)
 if (process.env.NODE_ENV === 'production') {
   Sentry.init({
     Vue,
@@ -44,6 +42,21 @@ if (process.env.NODE_ENV === 'production') {
     tracesSampleRate: 1.0,
   })
 }
+
+Vue.config.errorHandler = (err) => {
+  alert(err)
+  Sentry.captureException(err)
+}
+
+window.addEventListener('error', (event) => {
+  alert(event.error)
+  Sentry.captureException(event)
+})
+
+window.addEventListener('unhandledrejection', (event) => {
+  alert(event.reason)
+  Sentry.captureException(event)
+})
 
 export default Vue.extend({
   name: 'App',

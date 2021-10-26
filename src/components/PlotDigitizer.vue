@@ -594,8 +594,6 @@ export default Vue.extend({
       const image = await this.loadImage(this.uploadImageUrl)
       this.drawImage(wrapper, canvas, image, ctx)
       this.updateSwatches(image)
-    } catch (error) {
-      console.error('failed mounted script', error)
     } finally {
       //
     }
@@ -708,8 +706,6 @@ export default Vue.extend({
         })
         this.plotSizePx = this.plotSizePx / this.canvasScale
         this.canvasScale = 1
-      } catch (error) {
-        window.alert(error)
       } finally {
         //
       }
@@ -737,8 +733,6 @@ export default Vue.extend({
           }
         })
         this.plotSizePx = (this.plotSizePx * this.canvasScale) / prevCanvasScale
-      } catch (error) {
-        window.alert(error)
       } finally {
         //
       }
@@ -835,8 +829,6 @@ export default Vue.extend({
         )
         console.info('extracted count: ', this.plots.length)
         this.shouldShowPoints = true
-      } catch (error) {
-        console.error(error)
       } finally {
         const end_ms = new Date().getTime()
         console.info('time:', end_ms - begin_ms + 'ms')
@@ -896,8 +888,6 @@ export default Vue.extend({
         this.drawImage(wrapper, canvas, image, ctx)
         this.updateSwatches(image)
         this.uploadImageUrl = fr.result
-      } catch (error) {
-        window.alert(error)
       } finally {
         //
       }
