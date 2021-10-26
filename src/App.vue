@@ -45,16 +45,19 @@ if (process.env.NODE_ENV === 'production') {
 
 Vue.config.errorHandler = (err) => {
   alert(err)
+  console.error(err)
   Sentry.captureException(err)
 }
 
 window.addEventListener('error', (event) => {
   alert(event.error)
+  console.error(event)
   Sentry.captureException(event)
 })
 
 window.addEventListener('unhandledrejection', (event) => {
   alert(event.reason)
+  console.error(event)
   Sentry.captureException(event)
 })
 
