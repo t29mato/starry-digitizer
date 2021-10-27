@@ -9029,10 +9029,10 @@ svgo@^1.0.0:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
-symbol2array@1.4.7:
-  version "1.4.7"
-  resolved "https://registry.yarnpkg.com/symbol2array/-/symbol2array-1.4.7.tgz#ced1da8ffbb9fe475c2fa43cc1c54e3d6c9fd04e"
-  integrity sha512-RzV2UpW96qva+DoVLWbiuDzKgesSV5VqsF8mWasEUaV67oLe9C8smir/EYJ+qlCNCThJmo661zF7v0jBwC5u3Q==
+symbol2array@1.4.8:
+  version "1.4.8"
+  resolved "https://registry.yarnpkg.com/symbol2array/-/symbol2array-1.4.8.tgz#ef8510e1c164e11fc8bfda11ceaf3b090315a0cc"
+  integrity sha512-7AG2KizaXfFZ+/eKNhLioeGboxzmvLHxf0TOck5WwnBLK6EkLvGgOOzNFyUO1MAPvFRNCHXY0iKZOBssDG4Mrg==
   dependencies:
     "@types/node" "^16.11.1"
     typescript "^4.4.4"

@@ -285,7 +285,7 @@
               text
               class="ml-2"
               :loading="isExtracting"
-              @click="extractPlotsByColor"
+              @click="extractPlots"
               color="green"
               >Run</v-btn
             >
@@ -309,15 +309,22 @@
             dense
             class="pl-2"
           >
-            <v-btn text color="green" disabled> Box </v-btn>
-            <v-btn text color="green" @click="shouldBeMasked = true">
-              Pen
-            </v-btn>
+            <v-btn text disabled> Box </v-btn>
+            <v-btn text @click="shouldBeMasked = true"> Pen </v-btn>
           </v-btn-toggle>
+          <br />
+          <span>Shape</span>
+          <v-btn-toggle v-model="plotShapeToggle" dense class="pl-2 pt-2">
+            <v-btn icon><v-icon small>mdi-circle</v-icon> </v-btn>
+            <v-btn icon><v-icon small>mdi-square</v-icon> </v-btn>
+            <v-btn icon><v-icon small>mdi-rhombus</v-icon> </v-btn>
+            <v-btn icon><v-icon small>mdi-triangle</v-icon> </v-btn>
+          </v-btn-toggle>
+
           <v-slider
             v-model="plotSizePx"
             thumb-label="always"
-            max="30"
+            :max="plotMaxSizePx"
             min="4"
             label="Plot Size"
             thumb-size="20"
@@ -332,6 +339,8 @@
             thumb-size="20"
             dense
           ></v-slider>
+          <!-- TODO: 4つ表示させて、プロット間隔の拡大・縮小を直感的にする -->
+          <canvas id="plotCanvas"></canvas>
           <v-slider
             v-model="colorDistancePct"
             thumb-label="always"
@@ -341,18 +350,6 @@
             thumb-size="20"
             dense
           ></v-slider>
-          <!-- TODO: 4つ表示させて、プロット間隔の拡大・縮小を直感的にする -->
-          <div
-            :style="{
-              'pointer-events': 'none',
-              width: `${plotSizePx}px`,
-              height: `${plotSizePx}px`,
-              'border-radius': '50%',
-              'background-color': `${plotBackgroundColor}`,
-              border: `${plotBorderSize}px solid ${targetColorHex}`,
-              'box-sizing': 'border-box',
-            }"
-          ></div>
           <v-btn @click="switchColorPickerMode" icon
             ><v-icon> mdi-eyedropper-variant </v-icon></v-btn
           >
@@ -387,7 +384,13 @@
 import Vue from 'vue'
 import diff from 'color-diff'
 import ColorThief from 'colorthief'
-import { CircleCreator } from 'symbol2array'
+import {
+  CircleCreator,
+  SquareCreator,
+  DiamondCreator,
+  TriangleCreator,
+  SymbolClass,
+} from 'symbol2array'
 // REFACTOR: まとめてimportする
 import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
@@ -404,6 +407,9 @@ const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
 const magicNumberPx = 1
 const colorThief = new ColorThief()
 const circleCreator = new CircleCreator()
+const squareCreator = new SquareCreator()
+const diamondCreator = new DiamondCreator()
+const triangleCreator = new TriangleCreator()
 
 export default Vue.extend({
   components: {
@@ -424,9 +430,11 @@ export default Vue.extend({
   },
   data() {
     return {
+      plotShapeToggle: 0,
       shouldShowPixel: true,
       shouldShowValue: true,
       isColorPickerMode: false,
+      // TODO: changes variable name from mode to toggle for readbility
       maskMode: undefined as undefined | number,
       xIsLog: false,
       yIsLog: false,
@@ -455,10 +463,11 @@ export default Vue.extend({
       indexY2,
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
-      plotSizePx: 6,
+      plotSizePx: 15,
+      plotMaxSizePx: 30,
       plotInlineSizePx: 0,
       colorDistancePct: 5,
-      colorPicker: '',
+      colorPicker: black,
       isExtracting: false,
       axesSizePx,
       canvasScale: 1,
@@ -492,9 +501,6 @@ export default Vue.extend({
         return this.showAxisName(this.coordAxes.length)
       }
       return ''
-    },
-    plotBackgroundColor(): string {
-      return this.plotInlineSizePx > 0 ? 'white' : this.targetColorHex
     },
     plotBorderSize(): number {
       return Math.min(this.plotInlineSizePx, this.plotRadiusSizePx)
@@ -585,6 +591,35 @@ export default Vue.extend({
           return false
       }
     },
+    symbol(): SymbolClass {
+      switch (this.plotShapeToggle) {
+        case 0:
+          return circleCreator.createSymbol(
+            this.plotSizePx,
+            this.plotInlineSizePx
+          )
+        case 1:
+          return squareCreator.createSymbol(
+            this.plotSizePx,
+            this.plotInlineSizePx
+          )
+        case 2:
+          return diamondCreator.createSymbol(
+            this.plotSizePx,
+            this.plotInlineSizePx
+          )
+        case 3:
+          return triangleCreator.createSymbol(
+            this.plotSizePx,
+            this.plotInlineSizePx
+          )
+        default:
+          return circleCreator.createSymbol(
+            this.plotSizePx,
+            this.plotInlineSizePx
+          )
+      }
+    },
   },
   async mounted() {
     try {
@@ -594,6 +629,7 @@ export default Vue.extend({
       const image = await this.loadImage(this.uploadImageUrl)
       this.drawImage(wrapper, canvas, image, ctx)
       this.updateSwatches(image)
+      this.drawPlot()
     } finally {
       //
     }
@@ -603,7 +639,36 @@ export default Vue.extend({
   beforeDestroy() {
     document.removeEventListener('keydown', this.keyListener)
   },
+  watch: {
+    plotSizePx() {
+      this.drawPlot()
+    },
+    plotShapeToggle() {
+      this.drawPlot()
+    },
+    plotInlineSizePx() {
+      this.drawPlot()
+    },
+    colorPicker() {
+      this.drawPlot()
+    },
+  },
   methods: {
+    async drawPlot() {
+      const plotCanvas = await this.getCanvasElement('#plotCanvas')
+      plotCanvas.width = plotCanvas.height = this.plotMaxSizePx
+      const plotCtx = await this.getContext2D(plotCanvas)
+      plotCtx.clearRect(0, 0, this.plotMaxSizePx, this.plotMaxSizePx)
+      plotCtx.fillStyle = this.colorPicker
+      const symbolArray = this.symbol.toArray().data
+      for (let y = 0; y < this.plotSizePx; y++) {
+        for (let x = 0; x < this.plotSizePx; x++) {
+          if (symbolArray[y][x]) {
+            plotCtx.fillRect(x, y, 1, 1)
+          }
+        }
+      }
+    },
     sortPlots() {
       this.plots.sort((a, b) => {
         return a.xPx - b.xPx
@@ -737,7 +802,7 @@ export default Vue.extend({
         //
       }
     },
-    async extractPlotsByColor() {
+    async extractPlots() {
       const begin_ms = new Date().getTime()
       this.isExtracting = true
       if (this.shouldClearPlots) {
@@ -839,12 +904,10 @@ export default Vue.extend({
       const countColors = colors.length / 4
       const sideLength = Math.sqrt(countColors)
       const [rList, gList, bList] = [[], [], []] as number[][]
-      const { data } = circleCreator
-        .createSymbol(sideLength, this.plotInlineSizePx)
-        .toArray()
+      const symbolArray = this.symbol.toArray().data
       for (let h = 0; h < sideLength; h++) {
         for (let w = 0; w < sideLength; w++) {
-          if (!data[h][w]) {
+          if (!symbolArray[h][w]) {
             continue
           }
           rList.push(colors[(h * sideLength + w) * 4])
