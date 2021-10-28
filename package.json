@@ -37,7 +37,7 @@
     "color-diff": "^1.2.0",
     "colorthief": "^2.3.2",
     "core-js": "^3.6.5",
-    "symbol2array": "1.4.8",
+    "symbol2array": "1.4.13",
     "vue": "^2.6.11",
     "vuetify": "^2.4.0"
   },

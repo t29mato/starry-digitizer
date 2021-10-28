@@ -384,13 +384,7 @@
 import Vue from 'vue'
 import diff from 'color-diff'
 import ColorThief from 'colorthief'
-import {
-  CircleCreator,
-  SquareCreator,
-  DiamondCreator,
-  TriangleCreator,
-  SymbolClass,
-} from 'symbol2array'
+import { SymbolClass, SymbolCreator } from 'symbol2array'
 // REFACTOR: まとめてimportする
 import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
@@ -406,10 +400,7 @@ const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
 const magicNumberPx = 1
 const colorThief = new ColorThief()
-const circleCreator = new CircleCreator()
-const squareCreator = new SquareCreator()
-const diamondCreator = new DiamondCreator()
-const triangleCreator = new TriangleCreator()
+const symbolCreator = new SymbolCreator()
 
 export default Vue.extend({
   components: {
@@ -594,30 +585,31 @@ export default Vue.extend({
     symbol(): SymbolClass {
       switch (this.plotShapeToggle) {
         case 0:
-          return circleCreator.createSymbol(
+          return symbolCreator.createSymbol(
+            'circle',
             this.plotSizePx,
             this.plotInlineSizePx
           )
         case 1:
-          return squareCreator.createSymbol(
+          return symbolCreator.createSymbol(
+            'square',
             this.plotSizePx,
             this.plotInlineSizePx
           )
         case 2:
-          return diamondCreator.createSymbol(
+          return symbolCreator.createSymbol(
+            'diamond',
             this.plotSizePx,
             this.plotInlineSizePx
           )
         case 3:
-          return triangleCreator.createSymbol(
+          return symbolCreator.createSymbol(
+            'triangle',
             this.plotSizePx,
             this.plotInlineSizePx
           )
         default:
-          return circleCreator.createSymbol(
-            this.plotSizePx,
-            this.plotInlineSizePx
-          )
+          throw new Error('unexpected plot shape')
       }
     },
   },
