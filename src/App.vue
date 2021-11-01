@@ -1,8 +1,18 @@
 <template>
   <v-app>
     <v-app-bar app color="primary" dark>
-      <h1 class="d-flex align-center">Vue Plot Digitizer</h1>
-      <span class="ml-2 mt-3">{{ version }}</span>
+      <div class="d-flex align-center">
+        <v-img
+          alt="Vuetify Logo"
+          class="shrink mr-2"
+          contain
+          src="https://user-images.githubusercontent.com/30012556/139611246-756466ff-b3ed-4403-a75c-8a9be600ec1a.png"
+          transition="scale-transition"
+          width="40"
+        />
+        <h2>VuePlotDigitizer</h2>
+        <span class="ml-1 mt-2">{{ version }}</span>
+      </div>
 
       <v-spacer></v-spacer>
 
