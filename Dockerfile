@@ -15,4 +15,5 @@ COPY . .
 RUN yarn ssg-build
 
 EXPOSE 8080
+EXPOSE 6006
 CMD ["http-server", "dist"]
