@@ -421,6 +421,8 @@ export default Vue.extend({
   },
   data() {
     return {
+      // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
+      significantDigits: 4,
       plotShapeToggle: 0,
       shouldShowPixel: true,
       shouldShowValue: true,
@@ -533,8 +535,8 @@ export default Vue.extend({
           id: plot.id,
           xPx: plot.xPx,
           yPx: plot.yPx,
-          xV,
-          yV,
+          xV: parseFloat(xV.toPrecision(this.significantDigits)),
+          yV: parseFloat(yV.toPrecision(this.significantDigits)),
         }
       })
       return newPlots
@@ -1126,14 +1128,14 @@ export default Vue.extend({
         this.coordAxes[indexX1].yPx,
         this.coordAxes[indexX2].xPx,
         this.coordAxes[indexX2].yPx,
-        parseInt(this.coordAxesValue[indexX1]),
-        parseInt(this.coordAxesValue[indexX2]),
+        parseFloat(this.coordAxesValue[indexX1]),
+        parseFloat(this.coordAxesValue[indexX2]),
         this.coordAxes[indexY1].xPx,
         this.coordAxes[indexY1].yPx,
         this.coordAxes[indexY2].xPx,
         this.coordAxes[indexY2].yPx,
-        parseInt(this.coordAxesValue[indexY1]),
-        parseInt(this.coordAxesValue[indexY2]),
+        parseFloat(this.coordAxesValue[indexY1]),
+        parseFloat(this.coordAxesValue[indexY2]),
       ]
       const xPx = calculateVerticalCrossPoint(x1x, x1y, x2x, x2y, x, y)
       const yPx = calculateVerticalCrossPoint(y1x, y1y, y2x, y2y, x, y)
