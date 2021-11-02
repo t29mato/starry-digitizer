@@ -132,59 +132,22 @@
           </div>
         </v-col>
         <v-col cols="3">
-          <div
-            :style="{
-              overflow: 'hidden',
-              width: `${magnifierSizePx}px`,
-              height: `${magnifierSizePx}px`,
-              position: 'relative',
-              outline: '1px solid grey',
-            }"
-          >
-            <magnifier-image
-              :src="uploadImageUrl"
-              :scale="magnifierScale"
-              :cursorX="canvasCursor.xPx / canvasScale"
-              :cursorY="canvasCursor.yPx / canvasScale"
-              :size="magnifierSizePx"
-            ></magnifier-image>
-            <magnifier-vertical-line
-              :magnifierSize="magnifierSizePx"
-            ></magnifier-vertical-line>
-            <magnifier-horizontal-line
-              :magnifierSize="magnifierSizePx"
-            ></magnifier-horizontal-line>
-            <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
-              <magnifier-axes
-                :axis="axis"
-                :color="
-                  isMovingAxis && movingAxisIndex === index
-                    ? 'limegreen'
-                    : axesColor
-                "
-                :index="index"
-                :axesSize="axesSizePx"
-                :canvasScale="canvasScale"
-                :canvasCursor="canvasCursor"
-                :magnifierScale="magnifierScale"
-                :magnifierSize="magnifierSizePx"
-                :label="showAxisName(index)"
-              ></magnifier-axes>
-            </div>
-            <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
-              <magnifier-plots
-                :magnifierScale="magnifierScale"
-                :canvasScale="canvasScale"
-                :cursor="canvasCursor"
-                :plotSize="plotSizePx"
-                :plot="plot"
-                :magnifierSize="magnifierSizePx"
-                :color="
-                  isMovingPlot && movingPlotId === plot.id ? 'limegreen' : red
-                "
-              ></magnifier-plots>
-            </div>
-          </div>
+          <magnifier
+            :magnifierSizePx="magnifierSizePx"
+            :uploadImageUrl="uploadImageUrl"
+            :canvasCursor="canvasCursor"
+            :axes="coordAxes"
+            :isMovingAxis="isMovingAxis"
+            :movingAxisIndex="movingAxisIndex"
+            :axesSizePx="axesSizePx"
+            :canvasScale="canvasScale"
+            :magnifierScale="magnifierScale"
+            :plots="plots"
+            :plotSizePx="plotSizePx"
+            :isMovingPlot="isMovingPlot"
+            :movingPlotId="movingPlotId"
+            :shouldShowPoints="shouldShowPoints"
+          ></magnifier>
           <!-- REFACTOR: make the table component -->
           <v-simple-table dense>
             <thead>
@@ -386,11 +349,7 @@ import diff from 'color-diff'
 import ColorThief from 'colorthief'
 import { SymbolClass, SymbolCreator } from 'symbol2array'
 // REFACTOR: まとめてimportする
-import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
-import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
-import MagnifierImage from './Magnifier/MagnifierImage.vue'
-import MagnifierAxes from './Magnifier/MagnifierAxes.vue'
-import MagnifierPlots from './Magnifier/MagnifierPlots.vue'
+import { Magnifier } from './Magnifier'
 import CanvasAxes from './Canvas/CanvasAxes.vue'
 import CanvasPlot from './Canvas/CanvasPlot.vue'
 import CanvasCursor from './Canvas/CanvasCursor.vue'
@@ -404,11 +363,7 @@ const symbolCreator = new SymbolCreator()
 
 export default Vue.extend({
   components: {
-    MagnifierVerticalLine,
-    MagnifierHorizontalLine,
-    MagnifierImage,
-    MagnifierAxes,
-    MagnifierPlots,
+    Magnifier,
     CanvasAxes,
     CanvasPlot,
     CanvasCursor,
