@@ -141,49 +141,13 @@
             :movingAxisIndex="movingAxisIndex"
             :axesSizePx="axesSizePx"
             :canvasScale="canvasScale"
-            :magnifierScale="magnifierScale"
             :plots="plots"
             :plotSizePx="plotSizePx"
             :isMovingPlot="isMovingPlot"
             :movingPlotId="movingPlotId"
             :shouldShowPoints="shouldShowPoints"
+            :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
           ></magnifier>
-          <!-- REFACTOR: make the table component -->
-          <v-simple-table dense>
-            <thead>
-              <tr>
-                <th></th>
-                <th>Pixel</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>X</th>
-                <td>{{ canvasCursor.xPx }}</td>
-                <td>
-                  {{ calculateXY(canvasCursor.xPx, canvasCursor.yPx).xV }}
-                </td>
-              </tr>
-              <tr>
-                <th>Y</th>
-                <td>
-                  {{ canvasCursor.yPx }}
-                </td>
-                <td>
-                  {{ calculateXY(canvasCursor.xPx, canvasCursor.yPx).yV }}
-                </td>
-              </tr>
-            </tbody>
-          </v-simple-table>
-          <v-slider
-            v-model="magnifierScale"
-            thumb-label="always"
-            max="10"
-            min="2"
-            label="Magnifier"
-            thumb-size="20"
-          ></v-slider>
           <h3>XY Axes</h3>
           <v-simple-table dense>
             <thead>
@@ -348,7 +312,6 @@ import Vue from 'vue'
 import diff from 'color-diff'
 import ColorThief from 'colorthief'
 import { SymbolClass, SymbolCreator } from 'symbol2array'
-// REFACTOR: まとめてimportする
 import { Magnifier } from './Magnifier'
 import CanvasAxes from './Canvas/CanvasAxes.vue'
 import CanvasPlot from './Canvas/CanvasPlot.vue'
@@ -403,7 +366,6 @@ export default Vue.extend({
         y: 0,
       },
       color: 'red',
-      magnifierScale: 5,
       plots: [] as { id: number; xPx: number; yPx: number }[],
       indexX1,
       indexX2,

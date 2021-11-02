@@ -12,9 +12,6 @@ export default {
     uploadImageUrl: {
       defaultValue: '/img/sample_graph.png',
     },
-    magnifierScale: {
-      defaultValue: 5,
-    },
     canvasScale: {
       defaultValue: 1,
     },
@@ -25,6 +22,12 @@ export default {
     },
     axesSizePx: {
       defaultValue: 8,
+    },
+    xyValue: {
+      defaultValue: {
+        xV: 100,
+        yV: 100,
+      },
     },
   },
 }
@@ -69,7 +72,6 @@ Axes.args = {
     xPx: 48,
     yPx: 380,
   },
-  magnifierScale: 3,
   axes: [
     { xPx: 48, yPx: 380 },
     { xPx: 348, yPx: 380 },
@@ -84,7 +86,6 @@ AxesActive.args = {
     xPx: 48,
     yPx: 380,
   },
-  magnifierScale: 3,
   axes: [
     { xPx: 48, yPx: 380 },
     { xPx: 348, yPx: 380 },

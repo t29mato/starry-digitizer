@@ -1,52 +1,91 @@
 <template>
-  <div
-    :style="{
-      overflow: 'hidden',
-      width: `${magnifierSizePx}px`,
-      height: `${magnifierSizePx}px`,
-      position: 'relative',
-      outline: '1px solid grey',
-    }"
-  >
-    <magnifier-image
-      :src="uploadImageUrl"
-      :scale="magnifierScale"
-      :cursorX="canvasCursor.xPx / canvasScale"
-      :cursorY="canvasCursor.yPx / canvasScale"
-      :size="magnifierSizePx"
-    ></magnifier-image>
-    <magnifier-vertical-line
-      :magnifierSize="magnifierSizePx"
-    ></magnifier-vertical-line>
-    <magnifier-horizontal-line
-      :magnifierSize="magnifierSizePx"
-    ></magnifier-horizontal-line>
-    <div v-for="(axis, index) in axes" :key="'axes' + index">
-      <magnifier-axes
-        :axis="axis"
-        :color="
-          isMovingAxis && movingAxisIndex === index ? 'limegreen' : 'black'
-        "
-        :index="index"
-        :axesSize="axesSizePx"
-        :canvasScale="canvasScale"
-        :canvasCursor="canvasCursor"
-        :magnifierScale="magnifierScale"
+  <div>
+    <div
+      :style="{
+        overflow: 'hidden',
+        width: `${magnifierSizePx}px`,
+        height: `${magnifierSizePx}px`,
+        position: 'relative',
+        outline: '1px solid grey',
+      }"
+    >
+      <magnifier-image
+        :src="uploadImageUrl"
+        :scale="magnifierScale"
+        :cursorX="canvasCursor.xPx / canvasScale"
+        :cursorY="canvasCursor.yPx / canvasScale"
+        :size="magnifierSizePx"
+      ></magnifier-image>
+      <magnifier-vertical-line
         :magnifierSize="magnifierSizePx"
-        :label="showAxisName(index)"
-      ></magnifier-axes>
-    </div>
-    <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
-      <magnifier-plots
-        :magnifierScale="magnifierScale"
-        :canvasScale="canvasScale"
-        :cursor="canvasCursor"
-        :plotSize="plotSizePx"
-        :plot="plot"
+      ></magnifier-vertical-line>
+      <magnifier-horizontal-line
         :magnifierSize="magnifierSizePx"
-        :color="isMovingPlot && movingPlotId === plot.id ? 'limegreen' : 'red'"
-      ></magnifier-plots>
+      ></magnifier-horizontal-line>
+      <div v-for="(axis, index) in axes" :key="'axes' + index">
+        <magnifier-axes
+          :axis="axis"
+          :color="
+            isMovingAxis && movingAxisIndex === index ? 'limegreen' : 'black'
+          "
+          :index="index"
+          :axesSize="axesSizePx"
+          :canvasScale="canvasScale"
+          :canvasCursor="canvasCursor"
+          :magnifierScale="magnifierScale"
+          :magnifierSize="magnifierSizePx"
+          :label="showAxisName(index)"
+        ></magnifier-axes>
+      </div>
+      <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
+        <magnifier-plots
+          :magnifierScale="magnifierScale"
+          :canvasScale="canvasScale"
+          :cursor="canvasCursor"
+          :plotSize="plotSizePx"
+          :plot="plot"
+          :magnifierSize="magnifierSizePx"
+          :color="
+            isMovingPlot && movingPlotId === plot.id ? 'limegreen' : 'red'
+          "
+        ></magnifier-plots>
+      </div>
     </div>
+    <v-simple-table dense>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Pixel</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>X</th>
+          <td>{{ canvasCursor.xPx }}</td>
+          <td>
+            {{ xyValue.xV }}
+          </td>
+        </tr>
+        <tr>
+          <th>Y</th>
+          <td>
+            {{ canvasCursor.yPx }}
+          </td>
+          <td>
+            {{ xyValue.yV }}
+          </td>
+        </tr>
+      </tbody>
+    </v-simple-table>
+    <v-slider
+      v-model="magnifierScale"
+      thumb-label="always"
+      max="10"
+      min="2"
+      label="Magnifier"
+      thumb-size="20"
+    ></v-slider>
   </div>
 </template>
 
@@ -59,6 +98,11 @@ import MagnifierAxes from './MagnifierAxes.vue'
 import MagnifierPlots from './MagnifierPlots.vue'
 
 export default Vue.extend({
+  data() {
+    return {
+      magnifierScale: 5,
+    }
+  },
   components: {
     MagnifierVerticalLine,
     MagnifierHorizontalLine,
@@ -78,10 +122,6 @@ export default Vue.extend({
     },
     uploadImageUrl: {
       type: String,
-      required: true,
-    },
-    magnifierScale: {
-      type: Number,
       required: true,
     },
     canvasCursor: {
@@ -133,6 +173,9 @@ export default Vue.extend({
     movingPlotId: {
       type: Number,
       required: true,
+    },
+    xyValue: {
+      type: Object as PropType<{ xV: number; yV: number }>,
     },
   },
   methods: {
