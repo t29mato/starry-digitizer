@@ -3,18 +3,11 @@
     <template>
       <v-row>
         <v-col cols="9">
-          <div class="d-flex justify-space-between">
-            <v-file-input
-              accept="image/*"
-              label="file input"
-              @change="uploadImage"
-              dense
-            ></v-file-input>
-            <div class="ml-2">
-              <v-btn text @click="resizeCanvasToMax">100%</v-btn>
-              <v-btn text @click="resizeCanvasToFit">Fit</v-btn>
-            </div>
-          </div>
+          <canvas-header
+            :resizeCanvasToFit="resizeCanvasToFit"
+            :resizeCanvasToMax="resizeCanvasToMax"
+            :uploadImage="uploadImage"
+          ></canvas-header>
           <div
             :style="{
               position: 'relative',
@@ -316,6 +309,7 @@ import { Magnifier } from './Magnifier'
 import CanvasAxes from './Canvas/CanvasAxes.vue'
 import CanvasPlot from './Canvas/CanvasPlot.vue'
 import CanvasCursor from './Canvas/CanvasCursor.vue'
+import CanvasHeader from './Canvas/CanvasHeader.vue'
 
 const axesSizePx = 8
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -330,6 +324,7 @@ export default Vue.extend({
     CanvasAxes,
     CanvasPlot,
     CanvasCursor,
+    CanvasHeader,
   },
   props: {
     hideCSVText: {
