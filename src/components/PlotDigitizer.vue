@@ -76,29 +76,10 @@
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
           {{ plots.length }}
-          <!-- REFACTOR: make the table component -->
-          <v-simple-table height="300" fixed-header dense>
-            <thead>
-              <tr>
-                <th>X Pixel</th>
-                <th>Y Pixel</th>
-                <th>X Value</th>
-                <th>Y Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="plot in calculatedPlots"
-                :key="plot.id"
-                @click="activatePlot(plot.id)"
-              >
-                <td>{{ plot.xPx }}</td>
-                <td>{{ plot.yPx }}</td>
-                <td>{{ plot.xV }}</td>
-                <td>{{ plot.yV }}</td>
-              </tr>
-            </tbody>
-          </v-simple-table>
+          <plots-table
+            :activatePlot="activatePlot"
+            :calculatedPlots="calculatedPlots"
+          ></plots-table>
           <div v-if="!hideCSVText">
             <v-textarea
               readonly
@@ -301,6 +282,7 @@ import CanvasPlot from './Canvas/CanvasPlot.vue'
 import CanvasCursor from './Canvas/CanvasCursor.vue'
 import CanvasHeader from './Canvas/CanvasHeader.vue'
 import CanvasFooter from './Canvas/CanvasFooter.vue'
+import PlotsTable from './Export/PlotsTable.vue'
 
 const axesSizePx = 8
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -317,6 +299,7 @@ export default Vue.extend({
     CanvasCursor,
     CanvasHeader,
     CanvasFooter,
+    PlotsTable,
   },
   props: {
     hideCSVText: {
