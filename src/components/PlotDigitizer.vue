@@ -309,7 +309,6 @@ export default Vue.extend({
       maskModeToggle: -1,
       xIsLog: false,
       yIsLog: false,
-      magicNumberPx,
       uploadImageUrl: '/img/sample_graph.png',
       coordAxes: [] as {
         xPx: number
