@@ -13,6 +13,9 @@ export default {
         { id: 1, xPx: 220, yPx: 220, xV: 220, yV: 220 },
       ],
     },
+    movingPlotId: {
+      defaultValue: 1,
+    },
   },
 }
 

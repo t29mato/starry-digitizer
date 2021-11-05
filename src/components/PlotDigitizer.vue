@@ -79,6 +79,7 @@
           <plots-table
             :activatePlot="activatePlot"
             :calculatedPlots="calculatedPlots"
+            :movingPlotId="movingPlotId"
           ></plots-table>
           <div v-if="!hideCSVText">
             <v-textarea
@@ -357,6 +358,7 @@ export default Vue.extend({
       cursorIsMoved: false,
       movingAxisIndex: 0,
       isMovingPlot: false,
+      // REFACTOR: 変数名をactiveなどにする
       movingPlotId: 0,
       axesColor: black,
       red,
