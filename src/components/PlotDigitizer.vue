@@ -82,18 +82,7 @@
             :movingPlotId="movingPlotId"
           ></plots-table>
           <div v-if="!hideCSVText">
-            <v-textarea
-              readonly
-              v-model="convertPlotsIntoText"
-              outlined
-              hide-details="true"
-            ></v-textarea>
-            <v-btn
-              @click="copy"
-              text
-              :disabled="convertPlotsIntoText.length === 0"
-              >Copy to Clipboard</v-btn
-            >
+            <clipboard :text="convertPlotsIntoText"></clipboard>
           </div>
         </v-col>
         <v-col cols="3">
@@ -284,6 +273,7 @@ import CanvasCursor from './Canvas/CanvasCursor.vue'
 import CanvasHeader from './Canvas/CanvasHeader.vue'
 import CanvasFooter from './Canvas/CanvasFooter.vue'
 import PlotsTable from './Export/PlotsTable.vue'
+import Clipboard from './Export/Clipboard.vue'
 
 const axesSizePx = 8
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -301,6 +291,7 @@ export default Vue.extend({
     CanvasHeader,
     CanvasFooter,
     PlotsTable,
+    Clipboard,
   },
   props: {
     hideCSVText: {
@@ -563,9 +554,6 @@ export default Vue.extend({
     switchColorPickerMode() {
       this.isColorPickerMode = !this.isColorPickerMode
       this.maskMode = undefined
-    },
-    copy() {
-      navigator.clipboard.writeText(this.convertPlotsIntoText)
     },
     updateSwatches(imageElement: HTMLImageElement) {
       const palette = colorThief.getPalette(imageElement).map((color) => {
