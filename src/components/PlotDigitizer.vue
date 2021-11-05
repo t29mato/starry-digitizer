@@ -275,7 +275,6 @@ import CanvasFooter from './Canvas/CanvasFooter.vue'
 import PlotsTable from './Export/PlotsTable.vue'
 import Clipboard from './Export/Clipboard.vue'
 
-const axesSizePx = 8
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
 const magicNumberPx = 1
@@ -341,7 +340,7 @@ export default Vue.extend({
       colorDistancePct: 5,
       colorPicker: black,
       isExtracting: false,
-      axesSizePx,
+      axesSizePx: 8,
       canvasScale: 1,
       magnifierSizePx: 200,
       // REFACTOR: 変数名を変更 → axesIsActive
