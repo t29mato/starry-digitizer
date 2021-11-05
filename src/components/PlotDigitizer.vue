@@ -64,27 +64,17 @@
               :icon="isColorPickerMode ? 'mdi-eyedropper-variant' : ''"
             ></canvas-cursor>
           </div>
-          <div>
-            <v-btn text :disabled="coordAxes.length === 0" @click="clearAxes">
-              Clear Axes</v-btn
-            >
-            <v-btn text :disabled="plots.length === 0" @click="clearPoints"
-              >Clear Plots</v-btn
-            >
-            <v-btn
-              text
-              :disabled="plots.length === 0 || !isMovingPlot"
-              @click="removePlot"
-              >Clear Active Plot</v-btn
-            >
-            <v-btn
-              text
-              :disabled="plots.length === 0"
-              @click="shouldShowPoints = !shouldShowPoints"
-              >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
-            >
-            <v-btn text @click="clearMask"> Clear Mask </v-btn>
-          </div>
+          <canvas-footer
+            :axes="coordAxes"
+            :isMovingPlot="isMovingPlot"
+            :shouldShowPoints="shouldShowPoints"
+            :clearPoints="clearPoints"
+            :clearAxes="clearAxes"
+            :clearMask="clearMask"
+            :plots="plots"
+            :removePlot="removePlot"
+            :switchShowPlots="switchShowPlots"
+          ></canvas-footer>
           {{ plots.length }}
           <!-- REFACTOR: make the table component -->
           <v-simple-table height="300" fixed-header dense>
@@ -310,6 +300,7 @@ import CanvasAxes from './Canvas/CanvasAxes.vue'
 import CanvasPlot from './Canvas/CanvasPlot.vue'
 import CanvasCursor from './Canvas/CanvasCursor.vue'
 import CanvasHeader from './Canvas/CanvasHeader.vue'
+import CanvasFooter from './Canvas/CanvasFooter.vue'
 
 const axesSizePx = 8
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
@@ -325,6 +316,7 @@ export default Vue.extend({
     CanvasPlot,
     CanvasCursor,
     CanvasHeader,
+    CanvasFooter,
   },
   props: {
     hideCSVText: {
@@ -560,6 +552,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    switchShowPlots(): void {
+      this.shouldShowPoints = !this.shouldShowPoints
+    },
     async drawPlot() {
       const plotCanvas = await this.getCanvasElement('#plotCanvas')
       plotCanvas.width = plotCanvas.height = this.plotMaxSizePx
