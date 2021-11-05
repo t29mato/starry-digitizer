@@ -185,7 +185,7 @@
           ></v-checkbox>
           <span>Draw Mask</span>
           <v-btn-toggle
-            v-model="maskMode"
+            v-model="maskModeToggle"
             @click="isColorPickerMode = false"
             dense
             class="pl-2"
@@ -306,8 +306,7 @@ export default Vue.extend({
       shouldShowPixel: true,
       shouldShowValue: true,
       isColorPickerMode: false,
-      // TODO: changes variable name from mode to toggle for readbility
-      maskMode: undefined as undefined | number,
+      maskModeToggle: -1,
       xIsLog: false,
       yIsLog: false,
       magicNumberPx,
@@ -455,7 +454,7 @@ export default Vue.extend({
       return Math.floor(this.canvasWidth)
     },
     isDrawingMask(): boolean {
-      switch (this.maskMode) {
+      switch (this.maskModeToggle) {
         case 0:
         case 1:
           return true
@@ -552,7 +551,7 @@ export default Vue.extend({
     },
     switchColorPickerMode() {
       this.isColorPickerMode = !this.isColorPickerMode
-      this.maskMode = undefined
+      this.maskModeToggle = -1
     },
     updateSwatches(imageElement: HTMLImageElement) {
       const palette = colorThief.getPalette(imageElement).map((color) => {
@@ -1087,7 +1086,7 @@ export default Vue.extend({
     },
     mouseMoveOnMask(e: MouseEvent) {
       // INFO: 左クリックされるてる状態
-      if (e.buttons === 1 && this.maskMode === 1) {
+      if (e.buttons === 1 && this.maskModeToggle === 1) {
         return this.draw(e.offsetX, e.offsetY)
       }
       this.cursorOnFilterCanvas = { x: 0, y: 0 }
