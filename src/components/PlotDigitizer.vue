@@ -116,7 +116,7 @@
                 <th>X</th>
                 <td>
                   <v-text-field
-                    v-model="coordAxesValue[indexX1]"
+                    v-model="axesValues.x1"
                     type="number"
                     class="ma-0 pa-0"
                     hide-details
@@ -125,7 +125,7 @@
                 </td>
                 <td>
                   <v-text-field
-                    v-model="coordAxesValue[indexX2]"
+                    v-model="axesValues.x2"
                     type="number"
                     class="ma-0 pa-0"
                     hide-details
@@ -138,7 +138,7 @@
                 <th>Y</th>
                 <td>
                   <v-text-field
-                    v-model="coordAxesValue[indexY1]"
+                    v-model="axesValues.y1"
                     type="number"
                     class="ma-0 pa-0"
                     hide-details
@@ -147,7 +147,7 @@
                 </td>
                 <td>
                   <v-text-field
-                    v-model="coordAxesValue[indexY2]"
+                    v-model="axesValues.y2"
                     type="number"
                     class="ma-0 pa-0"
                     hide-details
@@ -312,7 +312,12 @@ export default Vue.extend({
       uploadImageUrl: '/img/sample_graph.png',
       axesPos: [] as Position[],
       // REFACOTR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
-      coordAxesValue: ['0', '1', '0', '1'] as string[],
+      axesValues: {
+        x1: '0',
+        x2: '1',
+        y1: '0',
+        y2: '1',
+      },
       canvasCursor: {
         xPx: 0,
         yPx: 0,
@@ -1020,14 +1025,14 @@ export default Vue.extend({
         this.axesPos[indexX1].yPx,
         this.axesPos[indexX2].xPx,
         this.axesPos[indexX2].yPx,
-        parseFloat(this.coordAxesValue[indexX1]),
-        parseFloat(this.coordAxesValue[indexX2]),
+        parseFloat(this.axesValues.x1),
+        parseFloat(this.axesValues.x2),
         this.axesPos[indexY1].xPx,
         this.axesPos[indexY1].yPx,
         this.axesPos[indexY2].xPx,
         this.axesPos[indexY2].yPx,
-        parseFloat(this.coordAxesValue[indexY1]),
-        parseFloat(this.coordAxesValue[indexY2]),
+        parseFloat(this.axesValues.y1),
+        parseFloat(this.axesValues.y2),
       ]
       const xPx = calculateVerticalCrossPoint(x1x, x1y, x2x, x2y, x, y)
       const yPx = calculateVerticalCrossPoint(y1x, y1y, y2x, y2y, x, y)
