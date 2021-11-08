@@ -32,7 +32,7 @@
               :height="canvasHeight"
               @mousemove="mouseMoveOnMask"
             ></canvas>
-            <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
+            <div v-for="(axis, index) in axesPos" :key="'axesPos' + index">
               <canvas-axes
                 :axesSize="axesSizePx"
                 :axis="axis"
@@ -42,7 +42,6 @@
                     : axesColor
                 "
                 :index="index"
-                :label="showAxisName(index)"
               ></canvas-axes>
             </div>
             <!-- TODO: PlotsのInlineのサイズに合わせる -->
@@ -65,7 +64,7 @@
             ></canvas-cursor>
           </div>
           <canvas-footer
-            :axes="coordAxes"
+            :axes="axesPos"
             :isMovingPlot="isMovingPlot"
             :shouldShowPoints="shouldShowPoints"
             :clearPoints="clearPoints"
@@ -90,7 +89,7 @@
             :magnifierSizePx="magnifierSizePx"
             :uploadImageUrl="uploadImageUrl"
             :canvasCursor="canvasCursor"
-            :axes="coordAxes"
+            :axes="axesPos"
             :isMovingAxis="isMovingAxis"
             :movingAxisIndex="movingAxisIndex"
             :axesSizePx="axesSizePx"
@@ -311,7 +310,7 @@ export default Vue.extend({
       xIsLog: false,
       yIsLog: false,
       uploadImageUrl: '/img/sample_graph.png',
-      coordAxes: [] as Position[],
+      axesPos: [] as Position[],
       // REFACOTR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
       coordAxesValue: ['0', '1', '0', '1'] as string[],
       canvasCursor: {
@@ -357,6 +356,24 @@ export default Vue.extend({
     }
   },
   computed: {
+    axesIsSet(): boolean {
+      return this.axesPos.length === 4
+    },
+    // REFACTOR: canvas-cursorコンポーネントの中に閉じ込めたい
+    showNextAxisName(): string {
+      switch (this.axesPos.length) {
+        case 0:
+          return 'x1'
+        case 1:
+          return 'x2'
+        case 2:
+          return 'y1'
+        case 3:
+          return 'y2'
+        default:
+          throw new Error('Maximum count of axes is 4')
+      }
+    },
     // REFACTOR: もう少し状態管理綺麗に
     cursorLabel(): string {
       if (this.isColorPickerMode) {
@@ -365,8 +382,8 @@ export default Vue.extend({
       if (this.isDrawingMask) {
         return 'Mask'
       }
-      if (this.coordAxes.length < 4) {
-        return this.showAxisName(this.coordAxes.length)
+      if (!this.axesIsSet) {
+        return this.showNextAxisName
       }
       return ''
     },
@@ -579,21 +596,21 @@ export default Vue.extend({
       if (this.isMovingAxis) {
         switch (key) {
           case arrowUp:
-            this.coordAxes[this.movingAxisIndex].yPx--
+            this.axesPos[this.movingAxisIndex].yPx--
             break
           case arrowRight:
-            this.coordAxes[this.movingAxisIndex].xPx++
+            this.axesPos[this.movingAxisIndex].xPx++
             break
           case arrowDown:
-            this.coordAxes[this.movingAxisIndex].yPx++
+            this.axesPos[this.movingAxisIndex].yPx++
             break
           case arrowLeft:
-            this.coordAxes[this.movingAxisIndex].xPx--
+            this.axesPos[this.movingAxisIndex].xPx--
             break
           default:
             break
         }
-        this.canvasCursor = this.coordAxes[this.movingAxisIndex]
+        this.canvasCursor = this.axesPos[this.movingAxisIndex]
       }
       if (this.isMovingPlot) {
         switch (e.key) {
@@ -632,7 +649,7 @@ export default Vue.extend({
             yPx: plot.yPx / this.canvasScale,
           }
         })
-        this.coordAxes = this.coordAxes.map((axis) => {
+        this.axesPos = this.axesPos.map((axis) => {
           return {
             xPx: axis.xPx / this.canvasScale,
             yPx: axis.yPx / this.canvasScale,
@@ -660,7 +677,7 @@ export default Vue.extend({
             yPx: (plot.yPx * this.canvasScale) / prevCanvasScale,
           }
         })
-        this.coordAxes = this.coordAxes.map((axis) => {
+        this.axesPos = this.axesPos.map((axis) => {
           return {
             xPx: (axis.xPx * this.canvasScale) / prevCanvasScale,
             yPx: (axis.yPx * this.canvasScale) / prevCanvasScale,
@@ -949,11 +966,11 @@ export default Vue.extend({
       if (isOnCanvasPlot) {
         return
       }
-      if (this.coordAxes.length < 4) {
+      if (!this.axesIsSet) {
         this.isMovingAxis = true
         this.cursorIsMoved = false
-        this.movingAxisIndex = this.coordAxes.length
-        this.coordAxes.push({
+        this.movingAxisIndex = this.axesPos.length
+        this.axesPos.push({
           xPx: isOnCanvas
             ? e.offsetX - magicNumberPx
             : e.offsetX - magicNumberPx + parseFloat(target.style.left),
@@ -978,7 +995,7 @@ export default Vue.extend({
     },
     calculateXY(x: number, y: number): { xV: number; yV: number } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (this.coordAxes.length !== 4) {
+      if (!this.axesIsSet) {
         return { xV: 0, yV: 0 }
       }
       // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点のx値を計算
@@ -999,16 +1016,16 @@ export default Vue.extend({
         )
       }
       const [x1x, x1y, x2x, x2y, x1v, x2v, y1x, y1y, y2x, y2y, y1v, y2v] = [
-        this.coordAxes[indexX1].xPx,
-        this.coordAxes[indexX1].yPx,
-        this.coordAxes[indexX2].xPx,
-        this.coordAxes[indexX2].yPx,
+        this.axesPos[indexX1].xPx,
+        this.axesPos[indexX1].yPx,
+        this.axesPos[indexX2].xPx,
+        this.axesPos[indexX2].yPx,
         parseFloat(this.coordAxesValue[indexX1]),
         parseFloat(this.coordAxesValue[indexX2]),
-        this.coordAxes[indexY1].xPx,
-        this.coordAxes[indexY1].yPx,
-        this.coordAxes[indexY2].xPx,
-        this.coordAxes[indexY2].yPx,
+        this.axesPos[indexY1].xPx,
+        this.axesPos[indexY1].yPx,
+        this.axesPos[indexY2].xPx,
+        this.axesPos[indexY2].yPx,
         parseFloat(this.coordAxesValue[indexY1]),
         parseFloat(this.coordAxesValue[indexY2]),
       ]
@@ -1030,26 +1047,12 @@ export default Vue.extend({
         : ((yPx - y1x) / (y2x - y1x)) * (y2v - y1v) + y1v
       return { xV, yV }
     },
-    showAxisName(index: number): string {
-      switch (index) {
-        case 0:
-          return 'x1'
-        case 1:
-          return 'x2'
-        case 2:
-          return 'y1'
-        case 3:
-          return 'y2'
-        default:
-          return '-'
-      }
-    },
     activatePlot(id: number) {
       this.movingPlotId = id
       this.isMovingPlot = true
     },
     clearAxes() {
-      this.coordAxes = []
+      this.axesPos = []
       this.isMovingAxis = false
       this.isMovingPlot = false
       this.cursorIsMoved = false
@@ -1060,7 +1063,7 @@ export default Vue.extend({
       this.isMovingPlot = false
     },
     removeAxis() {
-      this.coordAxes.pop()
+      this.axesPos.pop()
       this.isMovingAxis = false
     },
     removePlot() {
