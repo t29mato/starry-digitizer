@@ -184,7 +184,7 @@
           ></v-checkbox>
           <span>Draw Mask</span>
           <v-btn-toggle
-            v-model="maskModeToggle"
+            v-model="maskMode"
             @click="isColorPickerMode = false"
             dense
             class="pl-2"
@@ -194,7 +194,7 @@
           </v-btn-toggle>
           <br />
           <span>Shape</span>
-          <v-btn-toggle v-model="plotShapeToggle" dense class="pl-2 pt-2">
+          <v-btn-toggle v-model="plotShapeMode" dense class="pl-2 pt-2">
             <v-btn icon><v-icon small>mdi-circle</v-icon> </v-btn>
             <v-btn icon><v-icon small>mdi-square</v-icon> </v-btn>
             <v-btn icon><v-icon small>mdi-rhombus</v-icon> </v-btn>
@@ -301,12 +301,13 @@ export default Vue.extend({
   data() {
     return {
       // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
+      // TODO: 有効数字はaxesValuesの値に合わせて変更する必要あり
       significantDigits: 4,
-      plotShapeToggle: 0,
+      plotShapeMode: 0,
       shouldShowPixel: true,
       shouldShowValue: true,
       isColorPickerMode: false,
-      maskModeToggle: -1,
+      maskMode: -1,
       xIsLog: false,
       yIsLog: false,
       uploadImageUrl: '/img/sample_graph.png',
@@ -473,7 +474,7 @@ export default Vue.extend({
       return Math.floor(this.canvasWidth)
     },
     isDrawingMask(): boolean {
-      switch (this.maskModeToggle) {
+      switch (this.maskMode) {
         case 0:
         case 1:
           return true
@@ -482,7 +483,7 @@ export default Vue.extend({
       }
     },
     symbol(): SymbolClass {
-      switch (this.plotShapeToggle) {
+      switch (this.plotShapeMode) {
         case 0:
           return symbolCreator.createSymbol(
             'circle',
@@ -534,7 +535,7 @@ export default Vue.extend({
     plotSizePx() {
       this.drawPlot()
     },
-    plotShapeToggle() {
+    plotShapeMode() {
       this.drawPlot()
     },
     plotInlineSizePx() {
@@ -570,7 +571,7 @@ export default Vue.extend({
     },
     switchColorPickerMode() {
       this.isColorPickerMode = !this.isColorPickerMode
-      this.maskModeToggle = -1
+      this.maskMode = -1
     },
     updateSwatches(imageElement: HTMLImageElement) {
       const palette = colorThief.getPalette(imageElement).map((color) => {
@@ -1091,7 +1092,7 @@ export default Vue.extend({
     },
     mouseMoveOnMask(e: MouseEvent) {
       // INFO: 左クリックされるてる状態
-      if (e.buttons === 1 && this.maskModeToggle === 1) {
+      if (e.buttons === 1 && this.maskMode === 1) {
         return this.draw(e.offsetX, e.offsetY)
       }
       this.cursorOnFilterCanvas = { xPx: 0, yPx: 0 }
