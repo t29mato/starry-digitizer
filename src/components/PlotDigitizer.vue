@@ -273,7 +273,7 @@ import CanvasHeader from './Canvas/CanvasHeader.vue'
 import CanvasFooter from './Canvas/CanvasFooter.vue'
 import PlotsTable from './Export/PlotsTable.vue'
 import Clipboard from './Export/Clipboard.vue'
-import { Position } from '../types'
+import { Plot, Position } from '../types'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
@@ -327,7 +327,7 @@ export default Vue.extend({
         xPx: 0,
         yPx: 0,
       } as Position,
-      plots: [] as { id: number; xPx: number; yPx: number }[],
+      plots: [] as Plot[],
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
       plotSizePx: 15,
