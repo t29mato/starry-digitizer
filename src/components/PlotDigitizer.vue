@@ -274,6 +274,7 @@ import CanvasHeader from './Canvas/CanvasHeader.vue'
 import CanvasFooter from './Canvas/CanvasFooter.vue'
 import PlotsTable from './Export/PlotsTable.vue'
 import Clipboard from './Export/Clipboard.vue'
+import { Position } from '../types'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
@@ -310,20 +311,17 @@ export default Vue.extend({
       xIsLog: false,
       yIsLog: false,
       uploadImageUrl: '/img/sample_graph.png',
-      coordAxes: [] as {
-        xPx: number
-        yPx: number
-      }[],
+      coordAxes: [] as Position[],
       // REFACOTR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
       coordAxesValue: ['0', '1', '0', '1'] as string[],
       canvasCursor: {
         xPx: 0,
         yPx: 0,
-      },
+      } as Position,
       cursorOnFilterCanvas: {
-        x: 0,
-        y: 0,
-      },
+        xPx: 0,
+        yPx: 0,
+      } as Position,
       color: 'red',
       plots: [] as { id: number; xPx: number; yPx: number }[],
       indexX1,
@@ -1088,23 +1086,23 @@ export default Vue.extend({
       if (e.buttons === 1 && this.maskModeToggle === 1) {
         return this.draw(e.offsetX, e.offsetY)
       }
-      this.cursorOnFilterCanvas = { x: 0, y: 0 }
+      this.cursorOnFilterCanvas = { xPx: 0, yPx: 0 }
     },
-    async draw(x: number, y: number) {
+    async draw(xPx: number, yPx: number) {
       const maskCanvas = await this.getCanvasElement('#maskCanvas')
       const ctx = await this.getContext2D(maskCanvas)
       ctx.beginPath()
-      if (this.cursorOnFilterCanvas.x === 0) {
-        ctx.moveTo(x, y)
+      if (this.cursorOnFilterCanvas.xPx === 0) {
+        ctx.moveTo(xPx, yPx)
       } else {
-        ctx.moveTo(this.cursorOnFilterCanvas.x, this.cursorOnFilterCanvas.y)
+        ctx.moveTo(this.cursorOnFilterCanvas.xPx, this.cursorOnFilterCanvas.yPx)
       }
-      ctx.lineTo(x, y)
+      ctx.lineTo(xPx, yPx)
       ctx.lineCap = 'round'
       ctx.lineWidth = 50
       ctx.stroke()
       ctx.strokeStyle = yellow
-      this.cursorOnFilterCanvas = { x, y }
+      this.cursorOnFilterCanvas = { xPx, yPx }
     },
     async clearMask() {
       const maskCanvas = await this.getCanvasElement('#maskCanvas')
