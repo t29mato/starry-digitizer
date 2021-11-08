@@ -327,7 +327,6 @@ export default Vue.extend({
         xPx: 0,
         yPx: 0,
       } as Position,
-      color: 'red',
       plots: [] as { id: number; xPx: number; yPx: number }[],
       indexX1,
       indexX2,
@@ -826,9 +825,6 @@ export default Vue.extend({
       color2: { R: number; G: number; B: number }
     ): number {
       return diff.diff(diff.rgb_to_lab(color1), diff.rgb_to_lab(color2))
-    },
-    changeColor(color: string) {
-      this.color = color
     },
     async uploadImage(file: File) {
       try {
