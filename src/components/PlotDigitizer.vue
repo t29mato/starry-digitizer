@@ -3,18 +3,11 @@
     <template>
       <v-row>
         <v-col cols="9">
-          <div class="d-flex justify-space-between">
-            <v-file-input
-              accept="image/*"
-              label="file input"
-              @change="uploadImage"
-              dense
-            ></v-file-input>
-            <div class="ml-2">
-              <v-btn text @click="resizeCanvasToMax">100%</v-btn>
-              <v-btn text @click="resizeCanvasToFit">Fit</v-btn>
-            </div>
-          </div>
+          <canvas-header
+            :resizeCanvasToFit="resizeCanvasToFit"
+            :resizeCanvasToMax="resizeCanvasToMax"
+            :uploadImage="uploadImage"
+          ></canvas-header>
           <div
             :style="{
               position: 'relative',
@@ -39,7 +32,7 @@
               :height="canvasHeight"
               @mousemove="mouseMoveOnMask"
             ></canvas>
-            <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
+            <div v-for="(axis, index) in axesPos" :key="'axesPos' + index">
               <canvas-axes
                 :axesSize="axesSizePx"
                 :axis="axis"
@@ -49,7 +42,6 @@
                     : axesColor
                 "
                 :index="index"
-                :label="showAxisName(index)"
               ></canvas-axes>
             </div>
             <!-- TODO: PlotsのInlineのサイズに合わせる -->
@@ -71,156 +63,44 @@
               :icon="isColorPickerMode ? 'mdi-eyedropper-variant' : ''"
             ></canvas-cursor>
           </div>
-          <div>
-            <v-btn text :disabled="coordAxes.length === 0" @click="clearAxes">
-              Clear Axes</v-btn
-            >
-            <v-btn text :disabled="plots.length === 0" @click="clearPoints"
-              >Clear Plots</v-btn
-            >
-            <v-btn
-              text
-              :disabled="plots.length === 0 || !isMovingPlot"
-              @click="removePlot"
-              >Clear Active Plot</v-btn
-            >
-            <v-btn
-              text
-              :disabled="plots.length === 0"
-              @click="shouldShowPoints = !shouldShowPoints"
-              >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
-            >
-            <v-btn text @click="clearMask"> Clear Mask </v-btn>
-          </div>
+          <canvas-footer
+            :axes="axesPos"
+            :isMovingPlot="isMovingPlot"
+            :shouldShowPoints="shouldShowPoints"
+            :clearPoints="clearPoints"
+            :clearAxes="clearAxes"
+            :clearMask="clearMask"
+            :plots="plots"
+            :removePlot="removePlot"
+            :switchShowPlots="switchShowPlots"
+          ></canvas-footer>
           {{ plots.length }}
-          <!-- REFACTOR: make the table component -->
-          <v-simple-table height="300" fixed-header dense>
-            <thead>
-              <tr>
-                <th>X Pixel</th>
-                <th>Y Pixel</th>
-                <th>X Value</th>
-                <th>Y Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="plot in calculatedPlots"
-                :key="plot.id"
-                @click="activatePlot(plot.id)"
-              >
-                <td>{{ plot.xPx }}</td>
-                <td>{{ plot.yPx }}</td>
-                <td>{{ plot.xV }}</td>
-                <td>{{ plot.yV }}</td>
-              </tr>
-            </tbody>
-          </v-simple-table>
+          <plots-table
+            :activatePlot="activatePlot"
+            :calculatedPlots="calculatedPlots"
+            :movingPlotId="movingPlotId"
+          ></plots-table>
           <div v-if="!hideCSVText">
-            <v-textarea
-              readonly
-              v-model="convertPlotsIntoText"
-              outlined
-              hide-details="true"
-            ></v-textarea>
-            <v-btn
-              @click="copy"
-              text
-              :disabled="convertPlotsIntoText.length === 0"
-              >Copy to Clipboard</v-btn
-            >
+            <clipboard :text="convertPlotsIntoText"></clipboard>
           </div>
         </v-col>
         <v-col cols="3">
-          <div
-            :style="{
-              overflow: 'hidden',
-              width: `${magnifierSizePx}px`,
-              height: `${magnifierSizePx}px`,
-              position: 'relative',
-              outline: '1px solid grey',
-            }"
-          >
-            <magnifier-image
-              :src="uploadImageUrl"
-              :scale="magnifierScale"
-              :cursorX="canvasCursor.xPx / canvasScale"
-              :cursorY="canvasCursor.yPx / canvasScale"
-              :size="magnifierSizePx"
-            ></magnifier-image>
-            <magnifier-vertical-line
-              :magnifierSize="magnifierSizePx"
-            ></magnifier-vertical-line>
-            <magnifier-horizontal-line
-              :magnifierSize="magnifierSizePx"
-            ></magnifier-horizontal-line>
-            <div v-for="(axis, index) in coordAxes" :key="'coordAxes' + index">
-              <magnifier-axes
-                :axis="axis"
-                :color="
-                  isMovingAxis && movingAxisIndex === index
-                    ? 'limegreen'
-                    : axesColor
-                "
-                :index="index"
-                :axesSize="axesSizePx"
-                :canvasScale="canvasScale"
-                :canvasCursor="canvasCursor"
-                :magnifierScale="magnifierScale"
-                :magnifierSize="magnifierSizePx"
-                :label="showAxisName(index)"
-              ></magnifier-axes>
-            </div>
-            <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
-              <magnifier-plots
-                :magnifierScale="magnifierScale"
-                :canvasScale="canvasScale"
-                :cursor="canvasCursor"
-                :plotSize="plotSizePx"
-                :plot="plot"
-                :magnifierSize="magnifierSizePx"
-                :color="
-                  isMovingPlot && movingPlotId === plot.id ? 'limegreen' : red
-                "
-              ></magnifier-plots>
-            </div>
-          </div>
-          <!-- REFACTOR: make the table component -->
-          <v-simple-table dense>
-            <thead>
-              <tr>
-                <th></th>
-                <th>Pixel</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>X</th>
-                <td>{{ canvasCursor.xPx }}</td>
-                <td>
-                  {{ calculateXY(canvasCursor.xPx, canvasCursor.yPx).xV }}
-                </td>
-              </tr>
-              <tr>
-                <th>Y</th>
-                <td>
-                  {{ canvasCursor.yPx }}
-                </td>
-                <td>
-                  {{ calculateXY(canvasCursor.xPx, canvasCursor.yPx).yV }}
-                </td>
-              </tr>
-            </tbody>
-          </v-simple-table>
-          <v-slider
-            v-model="magnifierScale"
-            thumb-label="always"
-            max="10"
-            min="2"
-            label="Magnifier"
-            thumb-size="20"
-          ></v-slider>
+          <magnifier
+            :magnifierSizePx="magnifierSizePx"
+            :uploadImageUrl="uploadImageUrl"
+            :canvasCursor="canvasCursor"
+            :axes="axesPos"
+            :isMovingAxis="isMovingAxis"
+            :movingAxisIndex="movingAxisIndex"
+            :axesSizePx="axesSizePx"
+            :canvasScale="canvasScale"
+            :plots="plots"
+            :plotSizePx="plotSizePx"
+            :isMovingPlot="isMovingPlot"
+            :movingPlotId="movingPlotId"
+            :shouldShowPoints="shouldShowPoints"
+            :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
+          ></magnifier>
           <h3>XY Axes</h3>
           <v-simple-table dense>
             <thead>
@@ -236,7 +116,7 @@
                 <th>X</th>
                 <td>
                   <v-text-field
-                    v-model="coordAxesValue[indexX1]"
+                    v-model="axesValues.x1"
                     type="number"
                     class="ma-0 pa-0"
                     hide-details
@@ -245,7 +125,7 @@
                 </td>
                 <td>
                   <v-text-field
-                    v-model="coordAxesValue[indexX2]"
+                    v-model="axesValues.x2"
                     type="number"
                     class="ma-0 pa-0"
                     hide-details
@@ -258,7 +138,7 @@
                 <th>Y</th>
                 <td>
                   <v-text-field
-                    v-model="coordAxesValue[indexY1]"
+                    v-model="axesValues.y1"
                     type="number"
                     class="ma-0 pa-0"
                     hide-details
@@ -267,7 +147,7 @@
                 </td>
                 <td>
                   <v-text-field
-                    v-model="coordAxesValue[indexY2]"
+                    v-model="axesValues.y2"
                     type="number"
                     class="ma-0 pa-0"
                     hide-details
@@ -314,7 +194,7 @@
           </v-btn-toggle>
           <br />
           <span>Shape</span>
-          <v-btn-toggle v-model="plotShapeToggle" dense class="pl-2 pt-2">
+          <v-btn-toggle v-model="plotShapeMode" dense class="pl-2 pt-2">
             <v-btn icon><v-icon small>mdi-circle</v-icon> </v-btn>
             <v-btn icon><v-icon small>mdi-square</v-icon> </v-btn>
             <v-btn icon><v-icon small>mdi-rhombus</v-icon> </v-btn>
@@ -385,17 +265,16 @@ import Vue from 'vue'
 import diff from 'color-diff'
 import ColorThief from 'colorthief'
 import { SymbolClass, SymbolCreator } from 'symbol2array'
-// REFACTOR: まとめてimportする
-import MagnifierVerticalLine from './Magnifier/MagnifierVerticalLine.vue'
-import MagnifierHorizontalLine from './Magnifier/MagnifierHorizontalLine.vue'
-import MagnifierImage from './Magnifier/MagnifierImage.vue'
-import MagnifierAxes from './Magnifier/MagnifierAxes.vue'
-import MagnifierPlots from './Magnifier/MagnifierPlots.vue'
+import { Magnifier } from './Magnifier'
 import CanvasAxes from './Canvas/CanvasAxes.vue'
 import CanvasPlot from './Canvas/CanvasPlot.vue'
 import CanvasCursor from './Canvas/CanvasCursor.vue'
+import CanvasHeader from './Canvas/CanvasHeader.vue'
+import CanvasFooter from './Canvas/CanvasFooter.vue'
+import PlotsTable from './Export/PlotsTable.vue'
+import Clipboard from './Export/Clipboard.vue'
+import { Plot, Position } from '../types'
 
-const axesSizePx = 8
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
 const magicNumberPx = 1
@@ -404,14 +283,14 @@ const symbolCreator = new SymbolCreator()
 
 export default Vue.extend({
   components: {
-    MagnifierVerticalLine,
-    MagnifierHorizontalLine,
-    MagnifierImage,
-    MagnifierAxes,
-    MagnifierPlots,
+    Magnifier,
     CanvasAxes,
     CanvasPlot,
     CanvasCursor,
+    CanvasHeader,
+    CanvasFooter,
+    PlotsTable,
+    Clipboard,
   },
   props: {
     hideCSVText: {
@@ -422,38 +301,34 @@ export default Vue.extend({
   data() {
     return {
       // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
+      // TODO: 有効数字はaxesValuesの値に合わせて変更する必要あり
       significantDigits: 4,
-      plotShapeToggle: 0,
+      plotShapeMode: 0,
       shouldShowPixel: true,
       shouldShowValue: true,
       isColorPickerMode: false,
-      // TODO: changes variable name from mode to toggle for readbility
-      maskMode: undefined as undefined | number,
+      maskMode: -1,
       xIsLog: false,
       yIsLog: false,
-      magicNumberPx,
       uploadImageUrl: '/img/sample_graph.png',
-      coordAxes: [] as {
-        xPx: number
-        yPx: number
-      }[],
+      axesPos: [] as Position[],
       // REFACOTR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
-      coordAxesValue: ['0', '1', '0', '1'] as string[],
+      axesValues: {
+        x1: '0',
+        x2: '1',
+        y1: '0',
+        y2: '1',
+      },
       canvasCursor: {
         xPx: 0,
         yPx: 0,
-      },
+      } as Position,
       cursorOnFilterCanvas: {
-        x: 0,
-        y: 0,
-      },
-      color: 'red',
-      magnifierScale: 5,
-      plots: [] as { id: number; xPx: number; yPx: number }[],
-      indexX1,
-      indexX2,
-      indexY1,
-      indexY2,
+        xPx: 0,
+        yPx: 0,
+      } as Position,
+      plots: [] as Plot[],
+      // REFACTOR: color typeを作成する
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
       plotSizePx: 15,
@@ -462,7 +337,7 @@ export default Vue.extend({
       colorDistancePct: 5,
       colorPicker: black,
       isExtracting: false,
-      axesSizePx,
+      axesSizePx: 8,
       canvasScale: 1,
       magnifierSizePx: 200,
       // REFACTOR: 変数名を変更 → axesIsActive
@@ -470,6 +345,7 @@ export default Vue.extend({
       cursorIsMoved: false,
       movingAxisIndex: 0,
       isMovingPlot: false,
+      // REFACTOR: 変数名をactiveなどにする
       movingPlotId: 0,
       axesColor: black,
       red,
@@ -482,6 +358,24 @@ export default Vue.extend({
     }
   },
   computed: {
+    axesIsSet(): boolean {
+      return this.axesPos.length === 4
+    },
+    // REFACTOR: canvas-cursorコンポーネントの中に閉じ込めたい
+    showNextAxisName(): string {
+      switch (this.axesPos.length) {
+        case 0:
+          return 'x1'
+        case 1:
+          return 'x2'
+        case 2:
+          return 'y1'
+        case 3:
+          return 'y2'
+        default:
+          throw new Error('Maximum count of axes is 4')
+      }
+    },
     // REFACTOR: もう少し状態管理綺麗に
     cursorLabel(): string {
       if (this.isColorPickerMode) {
@@ -490,8 +384,8 @@ export default Vue.extend({
       if (this.isDrawingMask) {
         return 'Mask'
       }
-      if (this.coordAxes.length < 4) {
-        return this.showAxisName(this.coordAxes.length)
+      if (!this.axesIsSet) {
+        return this.showNextAxisName
       }
       return ''
     },
@@ -585,7 +479,7 @@ export default Vue.extend({
       }
     },
     symbol(): SymbolClass {
-      switch (this.plotShapeToggle) {
+      switch (this.plotShapeMode) {
         case 0:
           return symbolCreator.createSymbol(
             'circle',
@@ -637,7 +531,7 @@ export default Vue.extend({
     plotSizePx() {
       this.drawPlot()
     },
-    plotShapeToggle() {
+    plotShapeMode() {
       this.drawPlot()
     },
     plotInlineSizePx() {
@@ -648,6 +542,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    switchShowPlots(): void {
+      this.shouldShowPoints = !this.shouldShowPoints
+    },
     async drawPlot() {
       const plotCanvas = await this.getCanvasElement('#plotCanvas')
       plotCanvas.width = plotCanvas.height = this.plotMaxSizePx
@@ -670,10 +567,7 @@ export default Vue.extend({
     },
     switchColorPickerMode() {
       this.isColorPickerMode = !this.isColorPickerMode
-      this.maskMode = undefined
-    },
-    copy() {
-      navigator.clipboard.writeText(this.convertPlotsIntoText)
+      this.maskMode = -1
     },
     updateSwatches(imageElement: HTMLImageElement) {
       const palette = colorThief.getPalette(imageElement).map((color) => {
@@ -704,21 +598,21 @@ export default Vue.extend({
       if (this.isMovingAxis) {
         switch (key) {
           case arrowUp:
-            this.coordAxes[this.movingAxisIndex].yPx--
+            this.axesPos[this.movingAxisIndex].yPx--
             break
           case arrowRight:
-            this.coordAxes[this.movingAxisIndex].xPx++
+            this.axesPos[this.movingAxisIndex].xPx++
             break
           case arrowDown:
-            this.coordAxes[this.movingAxisIndex].yPx++
+            this.axesPos[this.movingAxisIndex].yPx++
             break
           case arrowLeft:
-            this.coordAxes[this.movingAxisIndex].xPx--
+            this.axesPos[this.movingAxisIndex].xPx--
             break
           default:
             break
         }
-        this.canvasCursor = this.coordAxes[this.movingAxisIndex]
+        this.canvasCursor = this.axesPos[this.movingAxisIndex]
       }
       if (this.isMovingPlot) {
         switch (e.key) {
@@ -757,7 +651,7 @@ export default Vue.extend({
             yPx: plot.yPx / this.canvasScale,
           }
         })
-        this.coordAxes = this.coordAxes.map((axis) => {
+        this.axesPos = this.axesPos.map((axis) => {
           return {
             xPx: axis.xPx / this.canvasScale,
             yPx: axis.yPx / this.canvasScale,
@@ -785,7 +679,7 @@ export default Vue.extend({
             yPx: (plot.yPx * this.canvasScale) / prevCanvasScale,
           }
         })
-        this.coordAxes = this.coordAxes.map((axis) => {
+        this.axesPos = this.axesPos.map((axis) => {
           return {
             xPx: (axis.xPx * this.canvasScale) / prevCanvasScale,
             yPx: (axis.yPx * this.canvasScale) / prevCanvasScale,
@@ -929,9 +823,6 @@ export default Vue.extend({
     ): number {
       return diff.diff(diff.rgb_to_lab(color1), diff.rgb_to_lab(color2))
     },
-    changeColor(color: string) {
-      this.color = color
-    },
     async uploadImage(file: File) {
       try {
         const wrapper = await this.getWrapperElement()
@@ -1074,11 +965,11 @@ export default Vue.extend({
       if (isOnCanvasPlot) {
         return
       }
-      if (this.coordAxes.length < 4) {
+      if (!this.axesIsSet) {
         this.isMovingAxis = true
         this.cursorIsMoved = false
-        this.movingAxisIndex = this.coordAxes.length
-        this.coordAxes.push({
+        this.movingAxisIndex = this.axesPos.length
+        this.axesPos.push({
           xPx: isOnCanvas
             ? e.offsetX - magicNumberPx
             : e.offsetX - magicNumberPx + parseFloat(target.style.left),
@@ -1103,7 +994,7 @@ export default Vue.extend({
     },
     calculateXY(x: number, y: number): { xV: number; yV: number } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (this.coordAxes.length !== 4) {
+      if (!this.axesIsSet) {
         return { xV: 0, yV: 0 }
       }
       // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点のx値を計算
@@ -1124,18 +1015,18 @@ export default Vue.extend({
         )
       }
       const [x1x, x1y, x2x, x2y, x1v, x2v, y1x, y1y, y2x, y2y, y1v, y2v] = [
-        this.coordAxes[indexX1].xPx,
-        this.coordAxes[indexX1].yPx,
-        this.coordAxes[indexX2].xPx,
-        this.coordAxes[indexX2].yPx,
-        parseFloat(this.coordAxesValue[indexX1]),
-        parseFloat(this.coordAxesValue[indexX2]),
-        this.coordAxes[indexY1].xPx,
-        this.coordAxes[indexY1].yPx,
-        this.coordAxes[indexY2].xPx,
-        this.coordAxes[indexY2].yPx,
-        parseFloat(this.coordAxesValue[indexY1]),
-        parseFloat(this.coordAxesValue[indexY2]),
+        this.axesPos[indexX1].xPx,
+        this.axesPos[indexX1].yPx,
+        this.axesPos[indexX2].xPx,
+        this.axesPos[indexX2].yPx,
+        parseFloat(this.axesValues.x1),
+        parseFloat(this.axesValues.x2),
+        this.axesPos[indexY1].xPx,
+        this.axesPos[indexY1].yPx,
+        this.axesPos[indexY2].xPx,
+        this.axesPos[indexY2].yPx,
+        parseFloat(this.axesValues.y1),
+        parseFloat(this.axesValues.y2),
       ]
       const xPx = calculateVerticalCrossPoint(x1x, x1y, x2x, x2y, x, y)
       const yPx = calculateVerticalCrossPoint(y1x, y1y, y2x, y2y, x, y)
@@ -1155,26 +1046,12 @@ export default Vue.extend({
         : ((yPx - y1x) / (y2x - y1x)) * (y2v - y1v) + y1v
       return { xV, yV }
     },
-    showAxisName(index: number): string {
-      switch (index) {
-        case 0:
-          return 'x1'
-        case 1:
-          return 'x2'
-        case 2:
-          return 'y1'
-        case 3:
-          return 'y2'
-        default:
-          return '-'
-      }
-    },
     activatePlot(id: number) {
       this.movingPlotId = id
       this.isMovingPlot = true
     },
     clearAxes() {
-      this.coordAxes = []
+      this.axesPos = []
       this.isMovingAxis = false
       this.isMovingPlot = false
       this.cursorIsMoved = false
@@ -1185,7 +1062,7 @@ export default Vue.extend({
       this.isMovingPlot = false
     },
     removeAxis() {
-      this.coordAxes.pop()
+      this.axesPos.pop()
       this.isMovingAxis = false
     },
     removePlot() {
@@ -1211,23 +1088,23 @@ export default Vue.extend({
       if (e.buttons === 1 && this.maskMode === 1) {
         return this.draw(e.offsetX, e.offsetY)
       }
-      this.cursorOnFilterCanvas = { x: 0, y: 0 }
+      this.cursorOnFilterCanvas = { xPx: 0, yPx: 0 }
     },
-    async draw(x: number, y: number) {
+    async draw(xPx: number, yPx: number) {
       const maskCanvas = await this.getCanvasElement('#maskCanvas')
       const ctx = await this.getContext2D(maskCanvas)
       ctx.beginPath()
-      if (this.cursorOnFilterCanvas.x === 0) {
-        ctx.moveTo(x, y)
+      if (this.cursorOnFilterCanvas.xPx === 0) {
+        ctx.moveTo(xPx, yPx)
       } else {
-        ctx.moveTo(this.cursorOnFilterCanvas.x, this.cursorOnFilterCanvas.y)
+        ctx.moveTo(this.cursorOnFilterCanvas.xPx, this.cursorOnFilterCanvas.yPx)
       }
-      ctx.lineTo(x, y)
+      ctx.lineTo(xPx, yPx)
       ctx.lineCap = 'round'
       ctx.lineWidth = 50
       ctx.stroke()
       ctx.strokeStyle = yellow
-      this.cursorOnFilterCanvas = { x, y }
+      this.cursorOnFilterCanvas = { xPx, yPx }
     },
     async clearMask() {
       const maskCanvas = await this.getCanvasElement('#maskCanvas')

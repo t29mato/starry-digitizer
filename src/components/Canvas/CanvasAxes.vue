@@ -20,7 +20,7 @@
         left: `${axis.xPx - axesHalfSize + 12}px`,
         'pointer-events': 'none',
       }"
-      >{{ label }}</span
+      >{{ showAxisName }}</span
     >
   </div>
 </template>
@@ -31,6 +31,20 @@ export default Vue.extend({
   computed: {
     axesHalfSize(): number {
       return this.axesSize / 2
+    },
+    showAxisName(): string {
+      switch (this.index) {
+        case 0:
+          return 'x1'
+        case 1:
+          return 'x2'
+        case 2:
+          return 'y1'
+        case 3:
+          return 'y2'
+        default:
+          throw new Error('Maximum count of axes is 4')
+      }
     },
   },
   props: {
@@ -51,10 +65,6 @@ export default Vue.extend({
     },
     axesSize: {
       type: Number,
-      required: true,
-    },
-    label: {
-      type: String,
       required: true,
     },
   },
