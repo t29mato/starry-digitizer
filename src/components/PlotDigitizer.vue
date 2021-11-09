@@ -1005,14 +1005,16 @@ export default Vue.extend({
         x2y: number,
         tx: number,
         ty: number
-      ): number => {
-        return (
+      ): { x: number; y: number } => {
+        const x =
           (x2x * x1y * (x1y - x2y - ty) +
             x1x * x2y * (x2y - x1y - ty) +
             tx * (x2x - x1x) ** 2 +
             ty * (x1x * x1y + x2x * x2y)) /
           ((x2x - x1x) ** 2 + (x2y - x1y) ** 2)
-        )
+        // INFO: a1 = x1x, a2 = x2x, b1 = x1y, b2 = x2y
+        const y = ((x2y - x1y) * x + x2x * x1y - x1x * x2y) / (x2x - x1x)
+        return { x, y }
       }
       const [x1x, x1y, x2x, x2y, x1v, x2v, y1x, y1y, y2x, y2y, y1v, y2v] = [
         this.axesPos[indexX1].xPx,
@@ -1028,8 +1030,8 @@ export default Vue.extend({
         parseFloat(this.axesValues.y1),
         parseFloat(this.axesValues.y2),
       ]
-      const xPx = calculateVerticalCrossPoint(x1x, x1y, x2x, x2y, x, y)
-      const yPx = calculateVerticalCrossPoint(y1x, y1y, y2x, y2y, x, y)
+      const xPx = calculateVerticalCrossPoint(x1x, x1y, x2x, x2y, x, y).x
+      const yPx = calculateVerticalCrossPoint(y1x, y1y, y2x, y2y, x, y).y
       const xV = this.xIsLog
         ? Math.pow(
             10,
@@ -1040,10 +1042,10 @@ export default Vue.extend({
       const yV = this.yIsLog
         ? Math.pow(
             10,
-            ((yPx - y1x) / (y2x - y1x)) * (Math.log10(y2v) - Math.log10(y1v)) +
+            ((yPx - y1y) / (y2y - y1y)) * (Math.log10(y2v) - Math.log10(y1v)) +
               Math.log10(y1v)
           )
-        : ((yPx - y1x) / (y2x - y1x)) * (y2v - y1v) + y1v
+        : ((yPx - y1y) / (y2y - y1y)) * (y2v - y1v) + y1v
       return { xV, yV }
     },
     activatePlot(id: number) {
