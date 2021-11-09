@@ -997,7 +997,7 @@ export default Vue.extend({
       if (!this.axesIsSet) {
         return { xV: 0, yV: 0 }
       }
-      // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点のx値を計算
+      // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点の(x,y)値を計算
       const calculateVerticalCrossPoint = (
         x1x: number,
         x1y: number,
@@ -1006,14 +1006,19 @@ export default Vue.extend({
         tx: number,
         ty: number
       ): { x: number; y: number } => {
-        const x =
-          (x2x * x1y * (x1y - x2y - ty) +
-            x1x * x2y * (x2y - x1y - ty) +
-            tx * (x2x - x1x) ** 2 +
-            ty * (x1x * x1y + x2x * x2y)) /
-          ((x2x - x1x) ** 2 + (x2y - x1y) ** 2)
+        const isParallel = x2y - x1y === 0
+        const isVertical = x2x - x1x === 0
+        const x = isParallel
+          ? tx
+          : (x2x * x1y * (x1y - x2y - ty) +
+              x1x * x2y * (x2y - x1y - ty) +
+              tx * (x2x - x1x) ** 2 +
+              ty * (x1x * x1y + x2x * x2y)) /
+            ((x2x - x1x) ** 2 + (x2y - x1y) ** 2)
         // INFO: a1 = x1x, a2 = x2x, b1 = x1y, b2 = x2y
-        const y = ((x2y - x1y) * x + x2x * x1y - x1x * x2y) / (x2x - x1x)
+        const y = isVertical
+          ? ty
+          : ((x2y - x1y) * x + x2x * x1y - x1x * x2y) / (x2x - x1x)
         return { x, y }
       }
       const [x1x, x1y, x2x, x2y, x1v, x2v, y1x, y1y, y2x, y2y, y1v, y2v] = [
