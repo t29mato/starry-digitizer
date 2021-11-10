@@ -518,7 +518,7 @@ export default Vue.extend({
       const image = await this.loadImage(this.uploadImageUrl)
       this.drawImage(wrapper, canvas, image, ctx)
       this.updateSwatches(image)
-      this.drawPlot()
+      this.drawSamplePlot()
     } finally {
       //
     }
@@ -530,19 +530,19 @@ export default Vue.extend({
   },
   watch: {
     plotSizePx() {
-      this.drawPlot()
+      this.drawSamplePlot()
       this.drawPlots()
     },
     plotShapeMode() {
-      this.drawPlot()
+      this.drawSamplePlot()
       this.drawPlots()
     },
     plotInlineSizePx() {
-      this.drawPlot()
+      this.drawSamplePlot()
       this.drawPlots()
     },
     colorPicker() {
-      this.drawPlot()
+      this.drawSamplePlot()
     },
     plots() {
       this.drawPlots()
@@ -587,7 +587,7 @@ export default Vue.extend({
         })
       })
     },
-    drawPlot() {
+    drawSamplePlot() {
       const plotCanvas = document.getElementById(
         'plotCanvas'
       ) as HTMLCanvasElement
