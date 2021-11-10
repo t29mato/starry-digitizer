@@ -1,6 +1,7 @@
 <template>
   <!-- INFO: プロットデータ -->
-  <div
+  <canvas
+    class="magnifier-plots"
     :style="{
       position: 'absolute',
       top: `${((plot.yPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
@@ -12,12 +13,9 @@
       }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      width: `${plotSize / canvasScale}px`,
-      height: `${plotSize / canvasScale}px`,
-      'border-radius': '50%',
-      'background-color': color,
+      outline: '1px dotted red',
     }"
-  ></div>
+  ></canvas>
 </template>
 
 <script lang="ts">
@@ -47,11 +45,8 @@ export default Vue.extend({
       type: Number,
       required: true,
     },
-    color: {
-      type: String,
-      required: true,
-    },
     cursor: {
+      // REFACTOR: Position typeを利用する
       type: Object as () => {
         xPx: Number
         yPx: Number

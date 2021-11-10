@@ -45,9 +45,6 @@
           :plotSize="plotSizePx"
           :plot="plot"
           :magnifierSize="magnifierSizePx"
-          :color="
-            isMovingPlot && movingPlotId === plot.id ? 'limegreen' : 'red'
-          "
         ></magnifier-plots>
       </div>
     </div>

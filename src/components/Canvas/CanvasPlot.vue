@@ -1,17 +1,15 @@
 <template>
-  <div
+  <canvas
+    class="canvas-plot"
     :style="{
       position: 'absolute',
       top: `${plot.yPx - plotHalfSize}px`,
       left: `${plot.xPx - plotHalfSize}px`,
-      width: `${plotSize}px`,
-      height: `${plotSize}px`,
-      'border-radius': '50%',
-      'background-color': color,
       cursor: 'pointer',
+      outline: '1px dotted red',
     }"
     @click="click(plot.id)"
-  ></div>
+  ></canvas>
 </template>
 
 <script lang="ts">
@@ -29,10 +27,6 @@ export default Vue.extend({
         xPx: Number
         yPx: Number
       },
-      required: true,
-    },
-    color: {
-      type: String,
       required: true,
     },
     plotSize: {

@@ -46,7 +46,6 @@
             </div>
             <!-- TODO: PlotsのInlineのサイズに合わせる -->
             <canvas-plot
-              id="canvas-plot"
               v-for="plot in plots"
               v-show="shouldShowPoints"
               :key="plot.id"
@@ -220,7 +219,9 @@
             dense
           ></v-slider>
           <!-- TODO: 4つ表示させて、プロット間隔の拡大・縮小を直感的にする -->
-          <canvas id="plotCanvas"></canvas>
+          <div :style="{ height: plotMaxSizePx }">
+            <canvas id="plotCanvas"></canvas>
+          </div>
           <v-slider
             v-model="colorDistancePct"
             thumb-label="always"
@@ -511,9 +512,9 @@ export default Vue.extend({
   },
   async mounted() {
     try {
-      const wrapper = await this.getWrapperElement()
-      const canvas = await this.getCanvasElement('#imageCanvas')
-      const ctx = await this.getContext2D(canvas)
+      const wrapper = document.getElementById('wrapper') as HTMLDivElement
+      const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement
+      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
       const image = await this.loadImage(this.uploadImageUrl)
       this.drawImage(wrapper, canvas, image, ctx)
       this.updateSwatches(image)
@@ -530,25 +531,61 @@ export default Vue.extend({
   watch: {
     plotSizePx() {
       this.drawPlot()
+      this.drawPlots()
     },
     plotShapeMode() {
       this.drawPlot()
+      this.drawPlots()
     },
     plotInlineSizePx() {
       this.drawPlot()
+      this.drawPlots()
     },
     colorPicker() {
       this.drawPlot()
+    },
+    plots() {
+      this.drawPlots()
     },
   },
   methods: {
     switchShowPlots(): void {
       this.shouldShowPoints = !this.shouldShowPoints
     },
-    async drawPlot() {
-      const plotCanvas = await this.getCanvasElement('#plotCanvas')
-      plotCanvas.width = plotCanvas.height = this.plotMaxSizePx
-      const plotCtx = await this.getContext2D(plotCanvas)
+    drawPlots() {
+      this.$nextTick(() => {
+        const canvasPlots = Array.from(
+          document.getElementsByClassName('canvas-plot')
+        ) as Array<HTMLCanvasElement>
+        const magnifierPlots = Array.from(
+          document.getElementsByClassName('magnifier-plots')
+        ) as Array<HTMLCanvasElement>
+        console.log(magnifierPlots)
+        const plotCanvas = document.getElementById(
+          'plotCanvas'
+        ) as HTMLCanvasElement
+        // REFACTOR: forEach2つを綺麗にする
+        canvasPlots.forEach((canvas) => {
+          const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+          canvas.width = plotCanvas.width
+          canvas.height = plotCanvas.height
+          ctx.drawImage(plotCanvas, 0, 0)
+        })
+        magnifierPlots.forEach((canvas) => {
+          const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+          canvas.width = plotCanvas.width / this.canvasScale
+          canvas.height = plotCanvas.height / this.canvasScale
+          ctx.scale(1 / this.canvasScale, 1 / this.canvasScale)
+          ctx.drawImage(plotCanvas, 0, 0)
+        })
+      })
+    },
+    drawPlot() {
+      const plotCanvas = document.getElementById(
+        'plotCanvas'
+      ) as HTMLCanvasElement
+      plotCanvas.width = plotCanvas.height = this.plotSizePx
+      const plotCtx = plotCanvas.getContext('2d') as CanvasRenderingContext2D
       plotCtx.clearRect(0, 0, this.plotMaxSizePx, this.plotMaxSizePx)
       plotCtx.fillStyle = this.colorPicker
       const symbolArray = this.symbol.toArray().data
@@ -639,9 +676,11 @@ export default Vue.extend({
     async resizeCanvasToMax() {
       this.isFit = false
       try {
-        const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement('#imageCanvas')
-        const ctx = await this.getContext2D(canvas)
+        const wrapper = document.getElementById('wrapper') as HTMLDivElement
+        const canvas = document.getElementById(
+          'imageCanvas'
+        ) as HTMLCanvasElement
+        const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
         const image = await this.loadImage(this.uploadImageUrl)
         this.drawImage(wrapper, canvas, image, ctx)
         this.plots = this.plots.map((plot) => {
@@ -666,9 +705,11 @@ export default Vue.extend({
     async resizeCanvasToFit() {
       this.isFit = true
       try {
-        const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement('#imageCanvas')
-        const ctx = await this.getContext2D(canvas)
+        const wrapper = document.getElementById('wrapper') as HTMLDivElement
+        const canvas = document.getElementById(
+          'imageCanvas'
+        ) as HTMLCanvasElement
+        const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
         const image = await this.loadImage(this.uploadImageUrl)
         const prevCanvasScale = this.canvasScale
         this.drawImage(wrapper, canvas, image, ctx)
@@ -697,14 +738,22 @@ export default Vue.extend({
         this.plots = []
       }
       try {
-        const wrapper = await this.getWrapperElement()
-        const imageCanvas = await this.getCanvasElement('#imageCanvas')
-        const imageCanvasCtx = await this.getContext2D(imageCanvas)
-        const maskCanvas = await this.getCanvasElement('#maskCanvas')
-        const filterCanvasCtx = await this.getContext2D(maskCanvas)
+        const wrapper = document.getElementById('wrapper') as HTMLDivElement
+        const imageCanvas = document.getElementById(
+          'imageCanvas'
+        ) as HTMLCanvasElement
+        const imageCanvasCtx = imageCanvas.getContext(
+          '2d'
+        ) as CanvasRenderingContext2D
+        const maskCanvas = document.getElementById(
+          'maskCanvas'
+        ) as HTMLCanvasElement
+        const maskCanvasCtx = maskCanvas.getContext(
+          '2d'
+        ) as CanvasRenderingContext2D
         const image = await this.loadImage(this.uploadImageUrl)
         this.drawImage(wrapper, imageCanvas, image, imageCanvasCtx)
-        const filterCanvasColors = filterCanvasCtx.getImageData(
+        const maskCanvasColors = maskCanvasCtx.getImageData(
           0,
           0,
           maskCanvas.width,
@@ -728,7 +777,7 @@ export default Vue.extend({
             if (this.isWhite(r1, g1, b1, a1)) {
               continue
             }
-            const [r2, g2, b2, a2] = filterCanvasColors.slice(
+            const [r2, g2, b2, a2] = maskCanvasColors.slice(
               (h * maskCanvas.width + w) * 4,
               (h * maskCanvas.width + w + 1) * 4
             )
@@ -825,9 +874,11 @@ export default Vue.extend({
     },
     async uploadImage(file: File) {
       try {
-        const wrapper = await this.getWrapperElement()
-        const canvas = await this.getCanvasElement('#imageCanvas')
-        const ctx = await this.getContext2D(canvas)
+        const wrapper = document.getElementById('wrapper') as HTMLDivElement
+        const canvas = document.getElementById(
+          'imageCanvas'
+        ) as HTMLCanvasElement
+        const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
         const fr = await this.readFile(file)
         if (typeof fr.result !== 'string') {
           throw new Error('file is not string type')
@@ -839,36 +890,6 @@ export default Vue.extend({
       } finally {
         //
       }
-    },
-    getCanvasElement(canvasIdName: string): Promise<HTMLCanvasElement> {
-      return new Promise((resolve, reject) => {
-        const canvas = document.querySelector<HTMLCanvasElement>(canvasIdName)
-        if (canvas === null) {
-          reject('canvas is null')
-        } else {
-          resolve(canvas)
-        }
-      })
-    },
-    getWrapperElement(): Promise<HTMLDivElement> {
-      return new Promise((resolve, reject) => {
-        const wrapper = document.querySelector<HTMLDivElement>('#wrapper')
-        if (wrapper === null) {
-          reject('wrapper is null')
-        } else {
-          resolve(wrapper)
-        }
-      })
-    },
-    getContext2D(canvas: HTMLCanvasElement): Promise<CanvasRenderingContext2D> {
-      return new Promise((resolve, reject) => {
-        const ctx = canvas.getContext('2d')
-        if (ctx === null) {
-          reject('ctx is null')
-        } else {
-          resolve(ctx)
-        }
-      })
     },
     loadImage(src: string): Promise<HTMLImageElement> {
       return new Promise((resolve, reject) => {
@@ -930,8 +951,10 @@ export default Vue.extend({
       })
     },
     async pickColor(e: MouseEvent) {
-      const imageCanvas = await this.getCanvasElement('#imageCanvas')
-      const ctx = await this.getContext2D(imageCanvas)
+      const imageCanvas = document.getElementById(
+        'imageCanvas'
+      ) as HTMLCanvasElement
+      const ctx = imageCanvas.getContext('2d') as CanvasRenderingContext2D
       const colors = ctx.getImageData(
         e.offsetX - magicNumberPx,
         e.offsetY - magicNumberPx,
@@ -960,7 +983,7 @@ export default Vue.extend({
       }
       const target = e.target as HTMLElement
       const isOnCanvas = target.id === 'canvas'
-      const isOnCanvasPlot = target.id === 'canvas-plot'
+      const isOnCanvasPlot = target.className === 'canvas-plot'
       // INFO: canvas-plot element上の時は、plot edit modeになるので
       if (isOnCanvasPlot) {
         return
@@ -1097,9 +1120,11 @@ export default Vue.extend({
       }
       this.cursorOnFilterCanvas = { xPx: 0, yPx: 0 }
     },
-    async draw(xPx: number, yPx: number) {
-      const maskCanvas = await this.getCanvasElement('#maskCanvas')
-      const ctx = await this.getContext2D(maskCanvas)
+    draw(xPx: number, yPx: number) {
+      const maskCanvas = document.getElementById(
+        'maskCanvas'
+      ) as HTMLCanvasElement
+      const ctx = maskCanvas.getContext('2d') as CanvasRenderingContext2D
       ctx.beginPath()
       if (this.cursorOnFilterCanvas.xPx === 0) {
         ctx.moveTo(xPx, yPx)
@@ -1113,9 +1138,11 @@ export default Vue.extend({
       ctx.strokeStyle = yellow
       this.cursorOnFilterCanvas = { xPx, yPx }
     },
-    async clearMask() {
-      const maskCanvas = await this.getCanvasElement('#maskCanvas')
-      const ctx = await this.getContext2D(maskCanvas)
+    clearMask() {
+      const maskCanvas = document.getElementById(
+        'maskCanvas'
+      ) as HTMLCanvasElement
+      const ctx = maskCanvas.getContext('2d') as CanvasRenderingContext2D
       ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height)
     },
   },
