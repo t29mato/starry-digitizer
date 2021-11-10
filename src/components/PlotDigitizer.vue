@@ -566,14 +566,7 @@ export default Vue.extend({
           canvas.width = canvas.height = this.plotSizePx
           if (index === 0) {
             ctx.fillStyle = 'red'
-            const symbolArray = this.symbol.toArray().data
-            for (let y = 0; y < this.plotSizePx; y++) {
-              for (let x = 0; x < this.plotSizePx; x++) {
-                if (symbolArray[y][x]) {
-                  ctx.fillRect(x, y, 1, 1)
-                }
-              }
-            }
+            this.drawSymbol(ctx)
           } else {
             ctx.drawImage(canvases[0], 0, 0)
           }
@@ -584,14 +577,7 @@ export default Vue.extend({
           if (index === 0) {
             ctx.fillStyle = 'red'
             ctx.scale(1 / this.canvasScale, 1 / this.canvasScale)
-            const symbolArray = this.symbol.toArray().data
-            for (let y = 0; y < this.plotSizePx; y++) {
-              for (let x = 0; x < this.plotSizePx; x++) {
-                if (symbolArray[y][x]) {
-                  ctx.fillRect(x, y, 1, 1)
-                }
-              }
-            }
+            this.drawSymbol(ctx)
           } else {
             ctx.drawImage(canvases[0], 0, 0)
           }
@@ -606,11 +592,14 @@ export default Vue.extend({
       const plotCtx = plotCanvas.getContext('2d') as CanvasRenderingContext2D
       plotCtx.clearRect(0, 0, this.plotMaxSizePx, this.plotMaxSizePx)
       plotCtx.fillStyle = this.colorPicker
+      this.drawSymbol(plotCtx)
+    },
+    drawSymbol(ctx: CanvasRenderingContext2D) {
       const symbolArray = this.symbol.toArray().data
       for (let y = 0; y < this.plotSizePx; y++) {
         for (let x = 0; x < this.plotSizePx; x++) {
           if (symbolArray[y][x]) {
-            plotCtx.fillRect(x, y, 1, 1)
+            ctx.fillRect(x, y, 1, 1)
           }
         }
       }
