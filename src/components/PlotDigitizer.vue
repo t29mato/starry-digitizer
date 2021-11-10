@@ -311,7 +311,7 @@ export default Vue.extend({
       maskMode: -1,
       xIsLog: false,
       yIsLog: false,
-      uploadImageUrl: '/img/sample_graph.png',
+      uploadImageUrl: '/img/test-graph-4-triangles.png',
       axesPos: [] as Position[],
       // REFACOTR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
       axesValues: {
@@ -560,23 +560,41 @@ export default Vue.extend({
         const magnifierPlots = Array.from(
           document.getElementsByClassName('magnifier-plots')
         ) as Array<HTMLCanvasElement>
-        console.log(magnifierPlots)
-        const plotCanvas = document.getElementById(
-          'plotCanvas'
-        ) as HTMLCanvasElement
         // REFACTOR: forEach2つを綺麗にする
-        canvasPlots.forEach((canvas) => {
+        canvasPlots.forEach((canvas, index, canvases) => {
           const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-          canvas.width = plotCanvas.width
-          canvas.height = plotCanvas.height
-          ctx.drawImage(plotCanvas, 0, 0)
+          canvas.width = canvas.height = this.plotSizePx
+          if (index === 0) {
+            ctx.fillStyle = 'red'
+            const symbolArray = this.symbol.toArray().data
+            for (let y = 0; y < this.plotSizePx; y++) {
+              for (let x = 0; x < this.plotSizePx; x++) {
+                if (symbolArray[y][x]) {
+                  ctx.fillRect(x, y, 1, 1)
+                }
+              }
+            }
+          } else {
+            ctx.drawImage(canvases[0], 0, 0)
+          }
         })
-        magnifierPlots.forEach((canvas) => {
+        magnifierPlots.forEach((canvas, index, canvases) => {
           const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-          canvas.width = plotCanvas.width / this.canvasScale
-          canvas.height = plotCanvas.height / this.canvasScale
-          ctx.scale(1 / this.canvasScale, 1 / this.canvasScale)
-          ctx.drawImage(plotCanvas, 0, 0)
+          canvas.width = canvas.height = this.plotSizePx / this.canvasScale
+          if (index === 0) {
+            ctx.fillStyle = 'red'
+            ctx.scale(1 / this.canvasScale, 1 / this.canvasScale)
+            const symbolArray = this.symbol.toArray().data
+            for (let y = 0; y < this.plotSizePx; y++) {
+              for (let x = 0; x < this.plotSizePx; x++) {
+                if (symbolArray[y][x]) {
+                  ctx.fillRect(x, y, 1, 1)
+                }
+              }
+            }
+          } else {
+            ctx.drawImage(canvases[0], 0, 0)
+          }
         })
       })
     },

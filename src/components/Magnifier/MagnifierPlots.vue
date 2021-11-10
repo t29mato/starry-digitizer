@@ -13,7 +13,6 @@
       }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      outline: '1px dotted red',
     }"
   ></canvas>
 </template>

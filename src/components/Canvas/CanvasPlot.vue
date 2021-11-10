@@ -6,7 +6,6 @@
       top: `${plot.yPx - plotHalfSize}px`,
       left: `${plot.xPx - plotHalfSize}px`,
       cursor: 'pointer',
-      outline: '1px dotted red',
     }"
     @click="click(plot.id)"
   ></canvas>

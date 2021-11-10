@@ -6,25 +6,8 @@ export default {
   component: PlotDigitizer,
   // More on argTypes: https://storybook.js.org/docs/vue/api/argtypes
   argTypes: {
-    magnifierSizePx: {
-      defaultValue: 200,
-    },
-    uploadImageUrl: {
-      defaultValue: '/img/sample_graph.png',
-    },
-    magnifierScale: {
-      defaultValue: 5,
-    },
-    canvasScale: {
-      defaultValue: 1,
-    },
-    plots: {},
-    shouldShowPoints: {},
-    plotSizePx: {
-      defaultValue: 5,
-    },
-    axesSizePx: {
-      defaultValue: 8,
+    hideCSVText: {
+      defaultValue: false,
     },
   },
 }
