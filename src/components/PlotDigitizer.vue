@@ -560,27 +560,30 @@ export default Vue.extend({
         const magnifierPlots = Array.from(
           document.getElementsByClassName('magnifier-plots')
         ) as Array<HTMLCanvasElement>
-        // REFACTOR: forEach2つを綺麗にする
         canvasPlots.forEach((canvas, index, canvases) => {
-          const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-          canvas.width = canvas.height = this.plotSizePx
-          if (index === 0) {
-            ctx.fillStyle = 'red'
-            this.drawSymbol(ctx)
-          } else {
-            ctx.drawImage(canvases[0], 0, 0)
-          }
+          return Promise.resolve().then(() => {
+            const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+            canvas.width = canvas.height = this.plotSizePx
+            if (index === 0) {
+              ctx.fillStyle = 'red'
+              this.drawSymbol(ctx)
+            } else {
+              ctx.drawImage(canvases[0], 0, 0)
+            }
+          })
         })
         magnifierPlots.forEach((canvas, index, canvases) => {
-          const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-          canvas.width = canvas.height = this.plotSizePx / this.canvasScale
-          if (index === 0) {
-            ctx.fillStyle = 'red'
-            ctx.scale(1 / this.canvasScale, 1 / this.canvasScale)
-            this.drawSymbol(ctx)
-          } else {
-            ctx.drawImage(canvases[0], 0, 0)
-          }
+          return Promise.resolve().then(() => {
+            const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+            canvas.width = canvas.height = this.plotSizePx / this.canvasScale
+            if (index === 0) {
+              ctx.fillStyle = 'red'
+              ctx.scale(1 / this.canvasScale, 1 / this.canvasScale)
+              this.drawSymbol(ctx)
+            } else {
+              ctx.drawImage(canvases[0], 0, 0)
+            }
+          })
         })
       })
     },
