@@ -361,10 +361,23 @@ export default Vue.extend({
         this.numDigit(parseInt(this.axesValues.x2)) -
         this.numDigit(
           parseInt(this.axesValues.x2) - parseInt(this.axesValues.x1)
-        )
+        ) +
+        this.effectiveDigits
       )
     },
-    axesIsSet(): boolean {
+    validateAxes(): boolean {
+      if (this.axesValues.x1 === this.axesValues.x2) {
+        alert('x1 and x2 should not be same value')
+        return false
+      }
+      if (this.axesValues.y1 === this.axesValues.y2) {
+        alert('y1 and y2 should not be same value')
+        return false
+      }
+      if (Object.values(this.axesValues).includes('')) {
+        console.warn('axes values should not be empty')
+        return false
+      }
       return this.axesPos.length === 4
     },
     // REFACTOR: canvas-cursorコンポーネントの中に閉じ込めたい
@@ -378,8 +391,12 @@ export default Vue.extend({
           return 'y1'
         case 3:
           return 'y2'
+        case 4:
+          return ''
         default:
-          throw new Error('Maximum count of axes is 4')
+          throw new Error(
+            `count of axes is ${this.axesPos.length}, but the maximum must be 4`
+          )
       }
     },
     // REFACTOR: もう少し状態管理綺麗に
@@ -387,7 +404,7 @@ export default Vue.extend({
       if (this.isDrawingMask) {
         return 'Mask'
       }
-      if (!this.axesIsSet) {
+      if (!this.validateAxes) {
         return this.showNextAxisName
       }
       return ''
@@ -423,8 +440,8 @@ export default Vue.extend({
       id: number
       xPx: number
       yPx: number
-      xV: number
-      yV: number
+      xV: string
+      yV: string
     }[] {
       const newPlots = this.plots.map((plot) => {
         const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
@@ -552,7 +569,7 @@ export default Vue.extend({
   },
   methods: {
     numDigit(num: number): number {
-      return Math.max(Math.floor(Math.log10(Math.abs(num))), 0)
+      return Math.floor(Math.log10(Math.abs(num)))
     },
     switchShowPlots(): void {
       this.shouldShowPoints = !this.shouldShowPoints
@@ -974,7 +991,7 @@ export default Vue.extend({
       if (isOnCanvasPlot) {
         return
       }
-      if (!this.axesIsSet) {
+      if (!this.validateAxes) {
         this.isMovingAxis = true
         this.cursorIsMoved = false
         this.movingAxisIndex = this.axesPos.length
@@ -1001,10 +1018,10 @@ export default Vue.extend({
       })
       this.shouldShowPoints = true
     },
-    calculateXY(x: number, y: number): { xV: number; yV: number } {
+    calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (!this.axesIsSet) {
-        return { xV: 0, yV: 0 }
+      if (!this.validateAxes) {
+        return { xV: '0', yV: '0' }
       }
       // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点の(x,y)値を計算
       const calculateVerticalCrossPoint = (
@@ -1062,11 +1079,11 @@ export default Vue.extend({
         : ((yPx - y1y) / (y2y - y1y)) * (y2v - y1v) + y1v
       return {
         xV: parseFloat(
-          xV.toPrecision(this.effectiveDigits + this.additionalEffectiveDigits)
-        ),
+          xV.toPrecision(this.additionalEffectiveDigits)
+        ).toExponential(),
         yV: parseFloat(
-          yV.toPrecision(this.effectiveDigits + this.additionalEffectiveDigits)
-        ),
+          yV.toPrecision(this.additionalEffectiveDigits)
+        ).toExponential(),
       }
     },
     activatePlot(id: number) {
