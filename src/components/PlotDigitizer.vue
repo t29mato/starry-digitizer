@@ -301,8 +301,7 @@ export default Vue.extend({
   data() {
     return {
       // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
-      // TODO: 有効数字はaxesValuesの値に合わせて変更する必要あり
-      effectiveDigits: 5,
+      effectiveDigits: 4,
       plotShapeMode: 0,
       shouldShowPixel: true,
       shouldShowValue: true,
@@ -433,16 +432,8 @@ export default Vue.extend({
           id: plot.id,
           xPx: plot.xPx,
           yPx: plot.yPx,
-          xV: parseFloat(
-            xV.toPrecision(
-              this.effectiveDigits + this.additionalEffectiveDigits
-            )
-          ),
-          yV: parseFloat(
-            yV.toPrecision(
-              this.effectiveDigits + this.additionalEffectiveDigits
-            )
-          ),
+          xV,
+          yV,
         }
       })
       return newPlots
@@ -1069,7 +1060,14 @@ export default Vue.extend({
               Math.log10(y1v)
           )
         : ((yPx - y1y) / (y2y - y1y)) * (y2v - y1v) + y1v
-      return { xV, yV }
+      return {
+        xV: parseFloat(
+          xV.toPrecision(this.effectiveDigits + this.additionalEffectiveDigits)
+        ),
+        yV: parseFloat(
+          yV.toPrecision(this.effectiveDigits + this.additionalEffectiveDigits)
+        ),
+      }
     },
     activatePlot(id: number) {
       this.movingPlotId = id
