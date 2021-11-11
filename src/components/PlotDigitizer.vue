@@ -59,7 +59,6 @@
             <canvas-cursor
               :cursor="canvasCursor"
               :label="cursorLabel"
-              :icon="isColorPickerMode ? 'mdi-eyedropper-variant' : ''"
             ></canvas-cursor>
           </div>
           <canvas-footer
@@ -182,12 +181,7 @@
             dense
           ></v-checkbox>
           <span>Draw Mask</span>
-          <v-btn-toggle
-            v-model="maskMode"
-            @click="isColorPickerMode = false"
-            dense
-            class="pl-2"
-          >
+          <v-btn-toggle v-model="maskMode" dense class="pl-2">
             <v-btn text disabled> Box </v-btn>
             <v-btn text @click="shouldBeMasked = true"> Pen </v-btn>
           </v-btn-toggle>
@@ -231,9 +225,7 @@
             thumb-size="20"
             dense
           ></v-slider>
-          <v-btn @click="switchColorPickerMode" icon
-            ><v-icon> mdi-eyedropper-variant </v-icon></v-btn
-          >
+          <input type="color" v-model="colorPicker" />
           <v-color-picker
             v-model="colorPicker"
             hide-canvas
@@ -307,7 +299,6 @@ export default Vue.extend({
       plotShapeMode: 0,
       shouldShowPixel: true,
       shouldShowValue: true,
-      isColorPickerMode: false,
       maskMode: -1,
       xIsLog: false,
       yIsLog: false,
@@ -379,9 +370,6 @@ export default Vue.extend({
     },
     // REFACTOR: もう少し状態管理綺麗に
     cursorLabel(): string {
-      if (this.isColorPickerMode) {
-        return ''
-      }
       if (this.isDrawingMask) {
         return 'Mask'
       }
@@ -611,10 +599,6 @@ export default Vue.extend({
       this.plots.sort((a, b) => {
         return a.xPx - b.xPx
       })
-    },
-    switchColorPickerMode() {
-      this.isColorPickerMode = !this.isColorPickerMode
-      this.maskMode = -1
     },
     updateSwatches(imageElement: HTMLImageElement) {
       const palette = colorThief.getPalette(imageElement).map((color) => {
@@ -960,33 +944,8 @@ export default Vue.extend({
         fr.addEventListener('error', (error) => reject(error))
       })
     },
-    async pickColor(e: MouseEvent) {
-      const imageCanvas = document.getElementById(
-        'imageCanvas'
-      ) as HTMLCanvasElement
-      const ctx = imageCanvas.getContext('2d') as CanvasRenderingContext2D
-      const colors = ctx.getImageData(
-        e.offsetX - magicNumberPx,
-        e.offsetY - magicNumberPx,
-        1,
-        1
-      ).data
-      const color = colors.slice(0, 3).reduce((prev, cur) => {
-        let hex = cur.toString(16)
-        if (hex.length === 1) {
-          hex = '0' + hex
-        }
-        return prev + hex
-      }, '#')
-      this.colorPicker = color
-      this.isColorPickerMode = false
-    },
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
-      if (this.isColorPickerMode) {
-        this.pickColor(e)
-        return
-      }
       // IFNO: マスク描画モード中につき
       if (this.isDrawingMask) {
         return
