@@ -187,7 +187,12 @@
           </v-btn-toggle>
           <br />
           <span>Shape</span>
-          <v-btn-toggle v-model="plotShapeMode" dense class="pl-2 pt-2">
+          <v-btn-toggle
+            mandatory
+            v-model="plotShapeMode"
+            dense
+            class="pl-2 pt-2"
+          >
             <v-btn icon><v-icon small>mdi-circle</v-icon> </v-btn>
             <v-btn icon><v-icon small>mdi-square</v-icon> </v-btn>
             <v-btn icon><v-icon small>mdi-rhombus</v-icon> </v-btn>
