@@ -45,6 +45,7 @@
               ></canvas-axes>
             </div>
             <!-- TODO: PlotsのInlineのサイズに合わせる -->
+            <!-- TODO: activeなplotはborder色を追加してわかるようにする -->
             <canvas-plot
               v-for="plot in plots"
               v-show="shouldShowPoints"
@@ -83,6 +84,7 @@
           </div>
         </v-col>
         <v-col cols="3">
+          <!-- TODO: 有効数字を追加する -->
           <magnifier
             :magnifierSizePx="magnifierSizePx"
             :uploadImageUrl="uploadImageUrl"
@@ -300,7 +302,7 @@ export default Vue.extend({
     return {
       // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
       // TODO: 有効数字はaxesValuesの値に合わせて変更する必要あり
-      significantDigits: 4,
+      effectiveDigits: 5,
       plotShapeMode: 0,
       shouldShowPixel: true,
       shouldShowValue: true,
@@ -355,6 +357,14 @@ export default Vue.extend({
     }
   },
   computed: {
+    additionalEffectiveDigits(): number {
+      return (
+        this.numDigit(parseInt(this.axesValues.x2)) -
+        this.numDigit(
+          parseInt(this.axesValues.x2) - parseInt(this.axesValues.x1)
+        )
+      )
+    },
     axesIsSet(): boolean {
       return this.axesPos.length === 4
     },
@@ -423,8 +433,16 @@ export default Vue.extend({
           id: plot.id,
           xPx: plot.xPx,
           yPx: plot.yPx,
-          xV: parseFloat(xV.toPrecision(this.significantDigits)),
-          yV: parseFloat(yV.toPrecision(this.significantDigits)),
+          xV: parseFloat(
+            xV.toPrecision(
+              this.effectiveDigits + this.additionalEffectiveDigits
+            )
+          ),
+          yV: parseFloat(
+            yV.toPrecision(
+              this.effectiveDigits + this.additionalEffectiveDigits
+            )
+          ),
         }
       })
       return newPlots
@@ -542,6 +560,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    numDigit(num: number): number {
+      return Math.max(Math.floor(Math.log10(Math.abs(num))), 0)
+    },
     switchShowPlots(): void {
       this.shouldShowPoints = !this.shouldShowPoints
     },
