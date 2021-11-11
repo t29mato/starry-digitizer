@@ -4,3 +4,5 @@ export type Position = {
 }
 
 export type Plot = { id: number } & Position
+
+export type PlotValue = { xV: string; yV: string } & Plot

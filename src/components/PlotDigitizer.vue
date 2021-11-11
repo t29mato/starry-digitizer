@@ -78,7 +78,7 @@
             :movingPlotId="movingPlotId"
           ></plots-table>
           <div v-if="!hideCSVText">
-            <clipboard :text="convertPlotsIntoText"></clipboard>
+            <clipboard :plots="calculatedPlots"></clipboard>
           </div>
         </v-col>
         <v-col cols="3">
@@ -239,19 +239,6 @@
             hide-sliders
             :swatches="swatches"
           ></v-color-picker>
-          <h3>Export Settings</h3>
-          <v-checkbox
-            label="show Pixel"
-            v-model="shouldShowPixel"
-            dense
-            hide-details
-          ></v-checkbox>
-          <v-checkbox
-            label="show Value"
-            v-model="shouldShowValue"
-            dense
-            hide-details
-          ></v-checkbox>
         </v-col>
       </v-row>
     </template>
@@ -271,7 +258,7 @@ import CanvasHeader from './Canvas/CanvasHeader.vue'
 import CanvasFooter from './Canvas/CanvasFooter.vue'
 import PlotsTable from './Export/PlotsTable.vue'
 import Clipboard from './Export/Clipboard.vue'
-import { Plot, Position } from '../types'
+import { Plot, PlotValue, Position } from '../types'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
@@ -434,13 +421,7 @@ export default Vue.extend({
     plotRadiusSizePx(): number {
       return this.plotSizePx / 2
     },
-    calculatedPlots(): {
-      id: number
-      xPx: number
-      yPx: number
-      xV: string
-      yV: string
-    }[] {
+    calculatedPlots(): PlotValue[] {
       const newPlots = this.plots.map((plot) => {
         const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
         return {
@@ -458,25 +439,6 @@ export default Vue.extend({
         return 0
       }
       return this.plots.slice(-1)[0].id + 1
-    },
-    convertPlotsIntoText(): string {
-      if (this.plots.length === 0) {
-        return ''
-      }
-      return this.calculatedPlots
-        .reduce((prev, cur) => {
-          if (this.shouldShowPixel && this.shouldShowValue) {
-            return prev + `${cur.xPx}, ${cur.yPx}, ${cur.xV}, ${cur.yV}\n`
-          }
-          if (this.shouldShowPixel) {
-            return prev + `${cur.xPx}, ${cur.yPx}\n`
-          }
-          if (this.shouldShowValue) {
-            return prev + `${cur.xV}, ${cur.yV}\n`
-          }
-          return prev
-        }, '')
-        .trim()
     },
     imageIsFit(): boolean {
       return this.canvasScale !== 1
