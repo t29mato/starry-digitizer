@@ -6,6 +6,7 @@
       top: `${plot.yPx - plotHalfSize}px`,
       left: `${plot.xPx - plotHalfSize}px`,
       cursor: 'pointer',
+      outline: isActive ? '1px dotted red' : 'none',
     }"
     @click="click(plot.id)"
   ></canvas>
@@ -35,6 +36,9 @@ export default Vue.extend({
     activatePlot: {
       type: Function,
       required: true,
+    },
+    isActive: {
+      type: Boolean,
     },
   },
   methods: {

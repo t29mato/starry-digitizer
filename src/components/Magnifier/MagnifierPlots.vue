@@ -13,6 +13,7 @@
       }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
+      outline: isActive ? '1px dotted red' : 'none',
     }"
   ></canvas>
 </template>
@@ -59,6 +60,9 @@ export default Vue.extend({
     magnifierSize: {
       type: Number,
       required: true,
+    },
+    isActive: {
+      type: Boolean,
     },
   },
 })

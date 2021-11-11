@@ -52,9 +52,7 @@
               :key="plot.id"
               :plotSize="plotSizePx"
               :plot="plot"
-              :color="
-                isMovingPlot && movingPlotId === plot.id ? 'limegreen' : red
-              "
+              :isActive="isMovingPlot && movingPlotId === plot.id"
               :activatePlot="activatePlot"
             ></canvas-plot>
             <canvas-cursor

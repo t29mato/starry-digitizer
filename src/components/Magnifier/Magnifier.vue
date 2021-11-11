@@ -45,6 +45,7 @@
           :plotSize="plotSizePx"
           :plot="plot"
           :magnifierSize="magnifierSizePx"
+          :isActive="isMovingPlot && movingPlotId === plot.id"
         ></magnifier-plots>
       </div>
     </div>
