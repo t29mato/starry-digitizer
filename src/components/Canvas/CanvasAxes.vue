@@ -19,6 +19,7 @@
         top: `${axis.yPx - axesHalfSize - 9}px`,
         left: `${axis.xPx - axesHalfSize + 12}px`,
         'pointer-events': 'none',
+        'user-select': 'none',
       }"
       >{{ showAxisName }}</span
     >
