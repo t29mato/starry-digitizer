@@ -16,3 +16,5 @@ FROM node:${VARIANT}
 
 # [Optional] Uncomment if you want to install more global node packages
 RUN npm install --global @vue/cli
+RUN apt-get update && \
+    apt-get install tig
