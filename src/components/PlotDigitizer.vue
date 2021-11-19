@@ -726,7 +726,6 @@ export default Vue.extend({
         this.plots = []
       }
       try {
-        const wrapper = document.getElementById('wrapper') as HTMLDivElement
         const imageCanvas = document.getElementById(
           'imageCanvas'
         ) as HTMLCanvasElement
@@ -739,8 +738,6 @@ export default Vue.extend({
         const maskCanvasCtx = maskCanvas.getContext(
           '2d'
         ) as CanvasRenderingContext2D
-        const image = await this.loadImage(this.uploadImageUrl)
-        this.drawImage(wrapper, imageCanvas, image, imageCanvasCtx)
         const maskCanvasColors = maskCanvasCtx.getImageData(
           0,
           0,
