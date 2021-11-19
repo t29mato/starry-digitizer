@@ -719,7 +719,7 @@ export default Vue.extend({
         //
       }
     },
-    async extractPlots() {
+    extractPlots() {
       const begin_ms = new Date().getTime()
       this.isExtracting = true
       if (this.shouldClearPlots) {
