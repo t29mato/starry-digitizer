@@ -722,6 +722,8 @@ export default Vue.extend({
     async extractPlots() {
       const begin_ms = new Date().getTime()
       this.isExtracting = true
+      this.isMovingAxis = false
+      this.isMovingPlot = false
       if (this.shouldClearPlots) {
         this.plots = []
       }
