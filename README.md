@@ -21,29 +21,42 @@ Or if you want to use it directly in the browser add
 ## How to use
 You need to import the component and then add to the components.
 
-### JavaScript
+### Vue.js (ver3)
+It works in progress. 👷‍♂️👷‍♂️👷‍♂️
 
-👷‍♂️👷‍♂️👷‍♂️
+### Vue.js (ver2)
 
-### TypeScript
+#### 1. Install Vuetify.
+https://vuetifyjs.com/ja/getting-started/installation/
 
-``` TypeScript
+#### 2. Install vue-plot-digitizer
+```
+$ yarn add vue-plot-digitizer
+or
+$ npm install vue-plot-digitizer
+```
+
+#### 3. Set up the component.
+
+``` vue
 <template>
-  <vue-plot-digitizer />
+  <v-app>
+    <vue-plot-digitizer />
+  </v-app>
 </template>
 
-<script lang="ts">
-import Vue from 'vue'
-import VuePlotDigitizer from './components/PlotDigitizer.vue'
+<script>
+import VuePlotDigitizer from 'vue-plot-digitizer'
 
-export default Vue.extend({
+export default {
+  name: 'App',
   components: {
-    PlotDigitizer,
-  },
-})
+    VuePlotDigitizer
+  }
+}
 </script>
-
 ```
+<v-app> component make the
 
 ## Build Setup
 
