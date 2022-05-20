@@ -24,3 +24,7 @@ pnpm-debug.log*
 
 # VSCode extension
 .history
+
+# nims
+nims.*
+nims*.cer
