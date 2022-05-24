@@ -293,7 +293,7 @@ export default Vue.extend({
       maskMode: -1,
       xIsLog: false,
       yIsLog: false,
-      uploadImageUrl: '/img/test-graph-4-triangles.png',
+      uploadImageUrl: require('@/assets/test-graph-4-triangles.png'),
       axesPos: [] as Position[],
       // REFACOTR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
       axesValues: {
