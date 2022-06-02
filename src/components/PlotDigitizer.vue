@@ -282,6 +282,11 @@ export default Vue.extend({
       type: Boolean,
       default: false,
     },
+    // should be imported by require function
+    initialGraphImagePath: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -293,7 +298,7 @@ export default Vue.extend({
       maskMode: -1,
       xIsLog: false,
       yIsLog: false,
-      uploadImageUrl: require('@/assets/test-graph-4-triangles.png'),
+      uploadImageUrl: '',
       axesPos: [] as Position[],
       // REFACOTR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
       axesValues: {
@@ -490,18 +495,21 @@ export default Vue.extend({
     },
   },
   async mounted() {
+    document.addEventListener('keydown', this.keyListener.bind(this))
+    if (!this.initialGraphImagePath) {
+      return
+    }
     try {
       const wrapper = document.getElementById('wrapper') as HTMLDivElement
       const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement
       const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-      const image = await this.loadImage(this.uploadImageUrl)
+      const image = await this.loadImage(this.initialGraphImagePath)
       this.drawImage(wrapper, canvas, image, ctx)
       this.updateSwatches(image)
       this.drawSamplePlot()
     } finally {
       //
     }
-    document.addEventListener('keydown', this.keyListener.bind(this))
   },
   created() {},
   beforeDestroy() {
