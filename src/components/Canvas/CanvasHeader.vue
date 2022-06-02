@@ -4,6 +4,7 @@
       accept="image/*"
       label="file input"
       @change="uploadImage"
+      :clearable="false"
       dense
     ></v-file-input>
     <div class="ml-2">
