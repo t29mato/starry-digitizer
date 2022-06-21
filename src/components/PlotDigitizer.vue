@@ -247,7 +247,6 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import diff from 'color-diff'
 import ColorThief from 'colorthief'
 import { SymbolClass, SymbolCreator } from 'symbol2array'
 import { Magnifier } from './Magnifier'
@@ -259,6 +258,7 @@ import CanvasFooter from './Canvas/CanvasFooter.vue'
 import PlotsTable from './Export/PlotsTable.vue'
 import Clipboard from './Export/Clipboard.vue'
 import { Plot, PlotValue, Position } from '../types'
+import SymbolExtractStrategy from '@/domains/SymbolExtractStrategy'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
@@ -504,6 +504,7 @@ export default Vue.extend({
       const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement
       const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
       const image = await this.loadImage(this.initialGraphImagePath)
+      this.uploadImageUrl = this.initialGraphImagePath
       this.drawImage(wrapper, canvas, image, ctx)
       this.updateSwatches(image)
       this.drawSamplePlot()
@@ -763,112 +764,41 @@ export default Vue.extend({
           maskCanvas.width,
           maskCanvas.height
         ).data
-        const targetArea = [...Array(maskCanvas.height)].map(() =>
-          Array(maskCanvas.width).fill(false)
+        const extractor = new SymbolExtractStrategy(
+          this.symbol,
+          this.targetColor,
+          this.colorDistancePct
         )
-        for (let h = 0; h < maskCanvas.height; h++) {
-          for (let w = 0; w < maskCanvas.width; w++) {
-            const [r1, g1, b1, a1] = imageCanvasColors.slice(
-              (h * maskCanvas.width + w) * 4,
-              (h * maskCanvas.width + w + 1) * 4
-            )
-            if (this.isWhite(r1, g1, b1, a1)) {
-              continue
-            }
-            const [r2, g2, b2, a2] = maskCanvasColors.slice(
-              (h * maskCanvas.width + w) * 4,
-              (h * maskCanvas.width + w + 1) * 4
-            )
-            if (this.shouldBeMasked && !this.isOnMask(r2, g2, b2, a2)) {
-              continue
-            }
-            targetArea[h][w] = true
-          }
-        }
-
-        for (let h = this.plotSizePx; h < this.canvasHeightInt; h++) {
-          for (let w = this.plotSizePx; w < this.canvasWidthInt; w++) {
-            // INFO: 背景色白色はスキップ
-            if (!targetArea[h][w]) {
-              continue
-            }
-            const imageData = imageCanvasCtx.getImageData(
-              w - this.plotRadiusSizePx,
-              h - this.plotRadiusSizePx,
-              this.plotSizePx,
-              this.plotSizePx
-            ).data
-            if (this.matchShapeAndColor(imageData)) {
-              this.plots.push({
-                id: this.nextPlotId,
-                xPx: w,
-                yPx: h,
-              })
-              for (let i = 0; i < this.plotSizePx; i++) {
-                for (let j = 0; j < this.plotSizePx; j++) {
-                  if (i + j === 0) {
-                    continue
-                  }
-                  targetArea[h + j][w - i] = false
-                  targetArea[h + j][w + i] = false
-                }
-              }
-            }
-          }
-        }
+        this.plots = extractor.execute(
+          maskCanvas.height,
+          maskCanvas.width,
+          imageCanvasColors,
+          maskCanvasColors,
+          this.shouldBeMasked,
+          this.plotSizePx,
+          this.plotRadiusSizePx,
+          imageCanvasCtx
+        )
         this.sortPlots()
         const allCount = this.canvasWidthInt * this.canvasHeightInt
         console.info('all count:', allCount)
-        const searchedCount = targetArea.reduce((prev, cur) => {
-          return prev + cur.filter((item) => item).length
-        }, 0)
-        console.info(
-          'searched count:',
-          searchedCount,
-          '(' + Math.round((searchedCount / allCount) * 1000) / 10 + '%)'
-        )
+        // const searchedCount = targetArea.reduce((prev, cur) => {
+        //   return prev + cur.filter((item) => item).length
+        // }, 0)
+        // console.info(
+        //   'searched count:',
+        //   searchedCount,
+        //   '(' + Math.round((searchedCount / allCount) * 1000) / 10 + '%)'
+        // )
         console.info('extracted count: ', this.plots.length)
         this.shouldShowPoints = true
+      } catch (e) {
+        console.error(e)
       } finally {
         const end_ms = new Date().getTime()
         console.info('time:', end_ms - begin_ms + 'ms')
         this.isExtracting = false
       }
-    },
-    matchShapeAndColor(colors: Uint8ClampedArray): boolean {
-      const countColors = colors.length / 4
-      const sideLength = Math.sqrt(countColors)
-      const [rList, gList, bList] = [[], [], []] as number[][]
-      const symbolArray = this.symbol.toArray().data
-      for (let h = 0; h < sideLength; h++) {
-        for (let w = 0; w < sideLength; w++) {
-          if (!symbolArray[h][w]) {
-            continue
-          }
-          rList.push(colors[(h * sideLength + w) * 4])
-          gList.push(colors[(h * sideLength + w) * 4 + 1])
-          bList.push(colors[(h * sideLength + w) * 4 + 2])
-        }
-      }
-      const color = {
-        R: rList.reduce((prev, cur) => prev + cur, 0) / rList.length,
-        G: gList.reduce((prev, cur) => prev + cur, 0) / gList.length,
-        B: bList.reduce((prev, cur) => prev + cur, 0) / bList.length,
-      }
-      return this.diffColor(color, this.targetColor) < this.colorDistancePct
-    },
-    // TODO: 背景色をスキップするか選択できるようにする
-    isOnMask(r: number, g: number, b: number, a: number): boolean {
-      return r === 255 && g === 255 && b === 0 && a > 0
-    },
-    isWhite(r: number, g: number, b: number, a: number): boolean {
-      return r === 255 && g === 255 && b === 255 && a > 0
-    },
-    diffColor(
-      color1: { R: number; G: number; B: number },
-      color2: { R: number; G: number; B: number }
-    ): number {
-      return diff.diff(diff.rgb_to_lab(color1), diff.rgb_to_lab(color2))
     },
     async uploadImage(file: File) {
       try {
