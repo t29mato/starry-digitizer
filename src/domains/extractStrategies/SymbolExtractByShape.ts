@@ -3,7 +3,7 @@ import diff from 'color-diff'
 import { SymbolClass } from 'symbol2array'
 import { Plot } from '@/types'
 
-export default class SymbolExtractStrategy implements ExtractStrategyInterface {
+export default class SymbolExtractByShape implements ExtractStrategyInterface {
   symbol
   targetColor
   colorDistancePct

@@ -258,7 +258,7 @@ import CanvasFooter from './Canvas/CanvasFooter.vue'
 import PlotsTable from './Export/PlotsTable.vue'
 import Clipboard from './Export/Clipboard.vue'
 import { Plot, PlotValue, Position } from '../types'
-import SymbolExtractStrategy from '@/domains/SymbolExtractStrategy'
+import SymbolExtractByShape from '@/domains/extractStrategies/SymbolExtractByShape'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
@@ -764,7 +764,7 @@ export default Vue.extend({
           maskCanvas.width,
           maskCanvas.height
         ).data
-        const extractor = new SymbolExtractStrategy(
+        const extractor = new SymbolExtractByShape(
           this.symbol,
           this.targetColor,
           this.colorDistancePct
