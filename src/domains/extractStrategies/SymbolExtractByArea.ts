@@ -4,20 +4,6 @@ import { SymbolClass } from 'symbol2array'
 import { Plot } from '@/types'
 
 export default class SymbolExtractByArea implements ExtractStrategyInterface {
-  symbol
-  targetColor
-  colorDistancePct
-
-  constructor(
-    symbol: SymbolClass,
-    targetColor: { R: number; G: number; B: number },
-    colorDistancePct: number
-  ) {
-    this.symbol = symbol
-    this.targetColor = targetColor
-    this.colorDistancePct = colorDistancePct
-  }
-
   isWhite(r: number, g: number, b: number, a: number): boolean {
     return r === 255 && g === 255 && b === 255 && a > 0
   }
@@ -27,29 +13,6 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     return r === 255 && g === 255 && b === 0 && a > 0
   }
 
-  matchShapeAndColor(colors: Uint8ClampedArray): boolean {
-    const countColors = colors.length / 4
-    const sideLength = Math.sqrt(countColors)
-    const [rList, gList, bList] = [[], [], []] as number[][]
-    const symbolArray = this.symbol.toArray().data
-    for (let h = 0; h < sideLength; h++) {
-      for (let w = 0; w < sideLength; w++) {
-        if (!symbolArray[h][w]) {
-          continue
-        }
-        rList.push(colors[(h * sideLength + w) * 4])
-        gList.push(colors[(h * sideLength + w) * 4 + 1])
-        bList.push(colors[(h * sideLength + w) * 4 + 2])
-      }
-    }
-    const color = {
-      R: rList.reduce((prev, cur) => prev + cur, 0) / rList.length,
-      G: gList.reduce((prev, cur) => prev + cur, 0) / gList.length,
-      B: bList.reduce((prev, cur) => prev + cur, 0) / bList.length,
-    }
-    return this.diffColor(color, this.targetColor) < this.colorDistancePct
-  }
-
   diffColor(
     color1: { R: number; G: number; B: number },
     color2: { R: number; G: number; B: number }
@@ -57,15 +20,27 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     return diff.diff(diff.rgb_to_lab(color1), diff.rgb_to_lab(color2))
   }
 
+  matchColor(
+    rgb1: [number, number, number],
+    rgb2: [number, number, number],
+    matchRatio: number
+  ) {
+    const diffRatio =
+      rgb1.reduce((prev, _, i) => {
+        return prev + Math.pow(rgb1[i] - rgb2[i], 2)
+      }, 0) /
+      (Math.pow(255, 2) * 3) * 100
+    return diffRatio < matchRatio
+  }
+
   execute(
     height: number,
     width: number,
     graphCanvasColors: Uint8ClampedArray,
-    maskCanvasColors: Uint8ClampedArray,
+    targetRGB: [number, number, number],
+    colorMatchThreshold: number,
     isMasked: boolean,
-    plotSizePx: number,
-    plotRadiusSizePx: number,
-    imageCanvasCtx: CanvasRenderingContext2D
+    maskCanvasColors: Uint8ClampedArray,
   ) {
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
@@ -102,16 +77,9 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
           (h * width + w) * 4,
           (h * width + w + 1) * 4
         )
-        const diffColor = this.diffColor(
-          {
-            R: r1,
-            G: g1,
-            B: b1,
-          },
-          this.targetColor
-        )
+        const isMatch = this.matchColor([r1,g1,b1], targetRGB, colorMatchThreshold)
         visitedArea[h][w] = true
-        if (diffColor < 5) {
+        if (isMatch) {
           const pixels: Plot[] = [
             {
               id: 0,
@@ -132,7 +100,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
                 nw <= pixels[pixelsIndex].xPx + 1;
                 nw++
               ) {
-                if (nh <= 0 || nw <= 0 || nh >= height || nw >= width) {
+                if (nh < 0 || nw < 0 || nh >= height || nw >= width) {
                   continue
                 }
                 if (visitedArea[nh][nw]) {
@@ -144,14 +112,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
                   (nh * width + nw + 1) * 4
                 )
                 if (
-                  this.diffColor(
-                    {
-                      R: r,
-                      G: g,
-                      B: b,
-                    },
-                    this.targetColor
-                  ) < 5
+                  this.matchColor([r,g,b], targetRGB, colorMatchThreshold)
                 ) {
                   pixels.push({
                     id: pixels.length,
