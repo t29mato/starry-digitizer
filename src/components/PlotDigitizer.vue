@@ -393,10 +393,7 @@ export default Vue.extend({
       return newPlots
     },
     nextPlotId(): number {
-      if (this.plots.length === 0) {
-        return 0
-      }
-      return this.plots.slice(-1)[0].id + 1
+      return this.plots.length
     },
     imageIsFit(): boolean {
       return this.canvasScale !== 1
@@ -619,6 +616,7 @@ export default Vue.extend({
           this.shouldBeMasked,
           maskCanvasColors
         )
+        console.log(this.plots)
         this.sortPlots()
         const allCount = this.canvasWidthInt * this.canvasHeightInt
         console.info('all count:', allCount)
