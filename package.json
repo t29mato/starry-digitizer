@@ -73,6 +73,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-jest": "^26.5.3",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^7.0.0-beta.4",
     "jest": "^28.1.1",
@@ -93,8 +94,7 @@
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true,
-      "jest/globals": true
+      "node": true
     },
     "extends": [
       "plugin:vue/essential",
