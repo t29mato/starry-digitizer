@@ -44,13 +44,12 @@
                 :index="index"
               ></canvas-axes>
             </div>
-            <!-- TODO: PlotsのInlineのサイズに合わせる -->
             <!-- TODO: activeなplotはborder色を追加してわかるようにする -->
             <canvas-plot
               v-for="plot in plots"
               v-show="shouldShowPoints"
               :key="plot.id"
-              :plotSize="plotSizePx"
+              :plotSize="4"
               :plot="plot"
               :isActive="isMovingPlot && movingPlotId === plot.id"
               :activatePlot="activatePlot"
@@ -93,7 +92,7 @@
             :axesSizePx="axesSizePx"
             :canvasScale="canvasScale"
             :plots="plots"
-            :plotSizePx="plotSizePx"
+            :plotSizePx="4"
             :isMovingPlot="isMovingPlot"
             :movingPlotId="movingPlotId"
             :shouldShowPoints="shouldShowPoints"
@@ -186,41 +185,6 @@
             <v-btn text @click="shouldBeMasked = true"> Pen </v-btn>
           </v-btn-toggle>
           <br />
-          <span>Shape</span>
-          <v-btn-toggle
-            mandatory
-            v-model="plotShapeMode"
-            dense
-            class="pl-2 pt-2"
-          >
-            <v-btn icon><v-icon small>mdi-circle</v-icon> </v-btn>
-            <v-btn icon><v-icon small>mdi-square</v-icon> </v-btn>
-            <v-btn icon><v-icon small>mdi-rhombus</v-icon> </v-btn>
-            <v-btn icon><v-icon small>mdi-triangle</v-icon> </v-btn>
-          </v-btn-toggle>
-
-          <v-slider
-            v-model="plotSizePx"
-            thumb-label="always"
-            :max="plotMaxSizePx"
-            min="4"
-            label="Plot Size"
-            thumb-size="20"
-            dense
-          ></v-slider>
-          <v-slider
-            v-model="plotInlineSizePx"
-            thumb-label="always"
-            max="10"
-            min="0"
-            label="Plot Inline Size"
-            thumb-size="20"
-            dense
-          ></v-slider>
-          <!-- TODO: 4つ表示させて、プロット間隔の拡大・縮小を直感的にする -->
-          <div :style="{ height: plotMaxSizePx }">
-            <canvas id="plotCanvas"></canvas>
-          </div>
           <v-slider
             v-model="colorDistancePct"
             thumb-label="always"
@@ -248,7 +212,6 @@
 <script lang="ts">
 import Vue from 'vue'
 import ColorThief from 'colorthief'
-import { SymbolClass, SymbolCreator } from 'symbol2array'
 import { Magnifier } from './Magnifier'
 import CanvasAxes from './Canvas/CanvasAxes.vue'
 import CanvasPlot from './Canvas/CanvasPlot.vue'
@@ -264,7 +227,6 @@ const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
 const magicNumberPx = 1
 const colorThief = new ColorThief()
-const symbolCreator = new SymbolCreator()
 
 export default Vue.extend({
   components: {
@@ -319,9 +281,6 @@ export default Vue.extend({
       // REFACTOR: color typeを作成する
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
-      plotSizePx: 15,
-      plotMaxSizePx: 30,
-      plotInlineSizePx: 0,
       colorDistancePct: 5,
       colorPicker: black,
       isExtracting: false,
@@ -399,9 +358,6 @@ export default Vue.extend({
       }
       return ''
     },
-    plotBorderSize(): number {
-      return Math.min(this.plotInlineSizePx, this.plotRadiusSizePx)
-    },
     targetColor(): { R: number; G: number; B: number } {
       return {
         R: parseInt(this.colorPicker.slice(1, 3), 16),
@@ -422,9 +378,6 @@ export default Vue.extend({
     },
     axesRadiusSizePx(): number {
       return this.axesSizePx / 2
-    },
-    plotRadiusSizePx(): number {
-      return this.plotSizePx / 2
     },
     calculatedPlots(): PlotValue[] {
       const newPlots = this.plots.map((plot) => {
@@ -463,36 +416,6 @@ export default Vue.extend({
           return false
       }
     },
-    symbol(): SymbolClass {
-      switch (this.plotShapeMode) {
-        case 0:
-          return symbolCreator.createSymbol(
-            'circle',
-            this.plotSizePx,
-            this.plotInlineSizePx
-          )
-        case 1:
-          return symbolCreator.createSymbol(
-            'square',
-            this.plotSizePx,
-            this.plotInlineSizePx
-          )
-        case 2:
-          return symbolCreator.createSymbol(
-            'diamond',
-            this.plotSizePx,
-            this.plotInlineSizePx
-          )
-        case 3:
-          return symbolCreator.createSymbol(
-            'triangle',
-            this.plotSizePx,
-            this.plotInlineSizePx
-          )
-        default:
-          throw new Error('unexpected plot shape')
-      }
-    },
   },
   async mounted() {
     document.addEventListener('keydown', this.keyListener.bind(this))
@@ -507,7 +430,6 @@ export default Vue.extend({
       this.uploadImageUrl = this.initialGraphImagePath
       this.drawImage(wrapper, canvas, image, ctx)
       this.updateSwatches(image)
-      this.drawSamplePlot()
     } finally {
       //
     }
@@ -516,87 +438,12 @@ export default Vue.extend({
   beforeDestroy() {
     document.removeEventListener('keydown', this.keyListener)
   },
-  watch: {
-    plotSizePx() {
-      this.drawSamplePlot()
-      this.drawPlots()
-    },
-    plotShapeMode() {
-      this.drawSamplePlot()
-      this.drawPlots()
-    },
-    plotInlineSizePx() {
-      this.drawSamplePlot()
-      this.drawPlots()
-    },
-    colorPicker() {
-      this.drawSamplePlot()
-    },
-    plots() {
-      this.drawPlots()
-    },
-  },
   methods: {
     numDigit(num: number): number {
       return Math.floor(Math.log10(Math.abs(num)))
     },
     switchShowPlots(): void {
       this.shouldShowPoints = !this.shouldShowPoints
-    },
-    drawPlots() {
-      this.$nextTick(() => {
-        const canvasPlots = Array.from(
-          document.getElementsByClassName('canvas-plot')
-        ) as Array<HTMLCanvasElement>
-        const magnifierPlots = Array.from(
-          document.getElementsByClassName('magnifier-plots')
-        ) as Array<HTMLCanvasElement>
-        canvasPlots.forEach((canvas, index, canvases) => {
-          return Promise.resolve().then(() => {
-            const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-            canvas.width = canvas.height = this.plotSizePx
-            if (index === 0) {
-              ctx.fillStyle = 'red'
-              this.drawSymbol(ctx)
-            } else {
-              ctx.drawImage(canvases[0], 0, 0)
-            }
-          })
-        })
-        magnifierPlots.forEach((canvas, index, canvases) => {
-          return Promise.resolve().then(() => {
-            const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-            canvas.width = canvas.height = this.plotSizePx / this.canvasScale
-            if (index === 0) {
-              ctx.fillStyle = 'red'
-              ctx.scale(1 / this.canvasScale, 1 / this.canvasScale)
-              this.drawSymbol(ctx)
-            } else {
-              ctx.drawImage(canvases[0], 0, 0)
-            }
-          })
-        })
-      })
-    },
-    drawSamplePlot() {
-      const plotCanvas = document.getElementById(
-        'plotCanvas'
-      ) as HTMLCanvasElement
-      plotCanvas.width = plotCanvas.height = this.plotSizePx
-      const plotCtx = plotCanvas.getContext('2d') as CanvasRenderingContext2D
-      plotCtx.clearRect(0, 0, this.plotMaxSizePx, this.plotMaxSizePx)
-      plotCtx.fillStyle = this.colorPicker
-      this.drawSymbol(plotCtx)
-    },
-    drawSymbol(ctx: CanvasRenderingContext2D) {
-      const symbolArray = this.symbol.toArray().data
-      for (let y = 0; y < this.plotSizePx; y++) {
-        for (let x = 0; x < this.plotSizePx; x++) {
-          if (symbolArray[y][x]) {
-            ctx.fillRect(x, y, 1, 1)
-          }
-        }
-      }
     },
     sortPlots() {
       this.plots.sort((a, b) => {
@@ -693,7 +540,6 @@ export default Vue.extend({
             yPx: axis.yPx / this.canvasScale,
           }
         })
-        this.plotSizePx = this.plotSizePx / this.canvasScale
         this.canvasScale = 1
       } finally {
         //
@@ -723,7 +569,6 @@ export default Vue.extend({
             yPx: (axis.yPx * this.canvasScale) / prevCanvasScale,
           }
         })
-        this.plotSizePx = (this.plotSizePx * this.canvasScale) / prevCanvasScale
       } finally {
         //
       }
@@ -772,7 +617,7 @@ export default Vue.extend({
           [this.targetColor.R, this.targetColor.G, this.targetColor.B],
           5,
           this.shouldBeMasked,
-          maskCanvasColors,
+          maskCanvasColors
         )
         this.sortPlots()
         const allCount = this.canvasWidthInt * this.canvasHeightInt

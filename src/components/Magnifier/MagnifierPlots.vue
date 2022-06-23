@@ -13,7 +13,11 @@
       }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      outline: isActive ? '1px dotted red' : 'none',
+      width: `${plotSize}px`,
+      height: `${plotSize}px`,
+      'background-color': 'white',
+      outline: isActive ? '1px solid red' : '1px solid green',
+      'border-radius': '50%',
     }"
   ></canvas>
 </template>

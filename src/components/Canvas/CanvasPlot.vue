@@ -1,15 +1,19 @@
 <template>
-  <canvas
+  <div
     class="canvas-plot"
     :style="{
       position: 'absolute',
       top: `${plot.yPx - plotHalfSize}px`,
       left: `${plot.xPx - plotHalfSize}px`,
       cursor: 'pointer',
-      outline: isActive ? '1px dotted red' : 'none',
+      width: `${plotSize}px`,
+      height: `${plotSize}px`,
+      'background-color': 'white',
+      outline: isActive ? '1px solid red' : '1px solid green',
+      'border-radius': '50%',
     }"
     @click="click(plot.id)"
-  ></canvas>
+  ></div>
 </template>
 
 <script lang="ts">
