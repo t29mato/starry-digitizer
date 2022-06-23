@@ -31,7 +31,8 @@
     "postbuild": "rimraf ./dist/types/dev ./dist/types/src/entry.d.ts",
     "prepublishOnly": "yarn build",
     "storybook": "start-storybook -p 6006 -s ./public",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "test": "yarn jest"
   },
   "dependencies": {
     "@sentry/tracing": "^6.13.3",
@@ -58,6 +59,7 @@
     "@storybook/addon-links": "^6.3.12",
     "@storybook/vue": "^6.3.12",
     "@types/color-diff": "^1.2.1",
+    "@types/jest": "^28.1.3",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
     "@typescript-eslint/parser": "^4.31.2",
     "@vue/babel-preset-app": "^4.5.15",
@@ -73,6 +75,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^7.0.0-beta.4",
+    "jest": "^28.1.1",
     "prettier": "^2.4.1",
     "rollup": "^2.58.0",
     "rollup-plugin-terser": "^7.0.2",
@@ -80,6 +83,7 @@
     "rollup-plugin-vue": "5",
     "sass": "~1.32.0",
     "sass-loader": "^10.0.0",
+    "ts-node": "^10.8.1",
     "ttypescript": "^1.5.12",
     "typescript": "^4.4.3",
     "vue-cli-plugin-vuetify": "~2.4.2",
@@ -89,7 +93,8 @@
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "node": true,
+      "jest/globals": true
     },
     "extends": [
       "plugin:vue/essential",
@@ -97,6 +102,9 @@
       "@vue/typescript",
       "prettier",
       "plugin:prettier/recommended"
+    ],
+    "plugins": [
+      "jest"
     ],
     "parserOptions": {
       "parser": "@typescript-eslint/parser"
