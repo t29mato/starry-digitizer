@@ -1,6 +1,6 @@
 <template>
   <!-- INFO: プロットデータ -->
-  <canvas
+  <div
     class="magnifier-plots"
     :style="{
       position: 'absolute',
@@ -13,13 +13,13 @@
       }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      width: `${plotSize}px`,
-      height: `${plotSize}px`,
+      width: `${plotSize / canvasScale}px`,
+      height: `${plotSize / canvasScale}px`,
       'background-color': 'white',
       outline: isActive ? '1px solid red' : '1px solid green',
       'border-radius': '50%',
     }"
-  ></canvas>
+  ></div>
 </template>
 
 <script lang="ts">

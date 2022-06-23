@@ -25,9 +25,7 @@
       <div v-for="(axis, index) in axes" :key="'axes' + index">
         <magnifier-axes
           :axis="axis"
-          :color="
-            isMovingAxis && movingAxisIndex === index ? 'limegreen' : 'black'
-          "
+          :isActive="isMovingAxis && movingAxisIndex === index"
           :index="index"
           :axesSize="axesSizePx"
           :canvasScale="canvasScale"

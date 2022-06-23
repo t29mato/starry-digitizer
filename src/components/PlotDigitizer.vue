@@ -49,7 +49,7 @@
               v-for="plot in plots"
               v-show="shouldShowPoints"
               :key="plot.id"
-              :plotSize="4"
+              :plotSize="plotSizePx"
               :plot="plot"
               :isActive="isMovingPlot && movingPlotId === plot.id"
               :activatePlot="activatePlot"
@@ -92,7 +92,7 @@
             :axesSizePx="axesSizePx"
             :canvasScale="canvasScale"
             :plots="plots"
-            :plotSizePx="4"
+            :plotSizePx="plotSizePx"
             :isMovingPlot="isMovingPlot"
             :movingPlotId="movingPlotId"
             :shouldShowPoints="shouldShowPoints"
@@ -284,7 +284,8 @@ export default Vue.extend({
       colorDistancePct: 5,
       colorPicker: black,
       isExtracting: false,
-      axesSizePx: 8,
+      plotSizePx: 4,
+      axesSizePx: 4,
       canvasScale: 1,
       magnifierSizePx: 200,
       // REFACTOR: 変数名を変更 → axesIsActive
@@ -612,7 +613,7 @@ export default Vue.extend({
           maskCanvas.width,
           imageCanvasColors,
           [this.targetColor.R, this.targetColor.G, this.targetColor.B],
-          5,
+          this.colorDistancePct,
           this.shouldBeMasked,
           maskCanvasColors
         )

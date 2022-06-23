@@ -15,8 +15,8 @@
         width: `${axesSize / canvasScale}px`,
         height: `${axesSize / canvasScale}px`,
         'border-radius': '50%',
-        'background-color': color,
-        outline: '1px solid white',
+        'background-color': 'white',
+        outline: isActive ? '1px solid red' : '1px solid green',
       }"
     ></div>
     <span
@@ -62,8 +62,8 @@ export default Vue.extend({
       },
       required: true,
     },
-    color: {
-      type: String,
+    isActive: {
+      type: Boolean,
       required: true,
     },
     index: {
