@@ -764,20 +764,15 @@ export default Vue.extend({
           maskCanvas.width,
           maskCanvas.height
         ).data
-        const extractor = new SymbolExtractByArea(
-          this.symbol,
-          this.targetColor,
-          this.colorDistancePct
-        )
+        const extractor = new SymbolExtractByArea()
         this.plots = extractor.execute(
           maskCanvas.height,
           maskCanvas.width,
           imageCanvasColors,
-          maskCanvasColors,
+          [this.targetColor.R, this.targetColor.G, this.targetColor.B],
+          5,
           this.shouldBeMasked,
-          this.plotSizePx,
-          this.plotRadiusSizePx,
-          imageCanvasCtx
+          maskCanvasColors,
         )
         this.sortPlots()
         const allCount = this.canvasWidthInt * this.canvasHeightInt

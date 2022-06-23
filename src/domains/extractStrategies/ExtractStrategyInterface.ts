@@ -5,10 +5,9 @@ export default interface ExtractStrategyInterface {
     height: number,
     width: number,
     graphCanvasColors: Uint8ClampedArray,
-    maskCanvasColors: Uint8ClampedArray,
+    targetRGB: [number, number, number],
+    colorMatchThreshold: number,
     isMasked: boolean,
-    plotSizePx: number,
-    plotRadiusSizePx: number,
-    imageCanvasCtx: CanvasRenderingContext2D
+    maskCanvasColors: Uint8ClampedArray,
   ): Plot[]
 }
