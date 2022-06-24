@@ -33,10 +33,11 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     matchRatio: number
   ) {
     const diffRatio =
-      rgb1.reduce((prev, _, i) => {
+      (rgb1.reduce((prev, _, i) => {
         return prev + Math.pow(rgb1[i] - rgb2[i], 2)
       }, 0) /
-      (Math.pow(255, 2) * 3) * 100
+        (Math.pow(255, 2) * 3)) *
+      100
     return diffRatio < matchRatio
   }
 
@@ -47,7 +48,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     targetRGB: [number, number, number],
     colorMatchThreshold: number,
     isMasked: boolean,
-    maskCanvasColors: Uint8ClampedArray,
+    maskCanvasColors: Uint8ClampedArray
   ) {
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
@@ -84,7 +85,11 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
           (h * width + w) * 4,
           (h * width + w + 1) * 4
         )
-        const isMatch = this.matchColor([r1,g1,b1], targetRGB, colorMatchThreshold)
+        const isMatch = this.matchColor(
+          [r1, g1, b1],
+          targetRGB,
+          colorMatchThreshold
+        )
         visitedArea[h][w] = true
         if (isMatch) {
           const pixels: Plot[] = [
@@ -119,7 +124,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
                   (nh * width + nw + 1) * 4
                 )
                 if (
-                  this.matchColor([r,g,b], targetRGB, colorMatchThreshold)
+                  this.matchColor([r, g, b], targetRGB, colorMatchThreshold)
                 ) {
                   pixels.push({
                     id: pixels.length,
