@@ -222,6 +222,7 @@ import PlotsTable from './Export/PlotsTable.vue'
 import Clipboard from './Export/Clipboard.vue'
 import { Plot, PlotValue, Position } from '../types'
 import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
+import XYAxesCalculator from '@/domains/XYAxesCalculator'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3]
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
@@ -252,8 +253,6 @@ export default Vue.extend({
   },
   data() {
     return {
-      // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
-      effectiveDigits: 4,
       plotShapeMode: 0,
       shouldShowPixel: true,
       shouldShowValue: true,
@@ -306,15 +305,6 @@ export default Vue.extend({
     }
   },
   computed: {
-    additionalEffectiveDigits(): number {
-      return (
-        this.numDigit(parseInt(this.axesValues.x2)) -
-        this.numDigit(
-          parseInt(this.axesValues.x2) - parseInt(this.axesValues.x1)
-        ) +
-        this.effectiveDigits
-      )
-    },
     validateAxes(): boolean {
       if (this.axesValues.x1 === this.axesValues.x2) {
         alert('x1 and x2 should not be same value')
@@ -437,8 +427,32 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
-    numDigit(num: number): number {
-      return Math.floor(Math.log10(Math.abs(num)))
+    calculateXY(x: number, y: number): { xV: string; yV: string } {
+      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
+      if (!this.validateAxes) {
+        return { xV: '0', yV: '0' }
+      }
+      const calculator = new XYAxesCalculator(
+        {
+          x1: Object.assign(this.axesPos[indexX1], {
+            value: parseFloat(this.axesValues.x1),
+          }),
+          x2: Object.assign(this.axesPos[indexX2], {
+            value: parseFloat(this.axesValues.x2),
+          }),
+          y1: Object.assign(this.axesPos[indexY1], {
+            value: parseFloat(this.axesValues.y1),
+          }),
+          y2: Object.assign(this.axesPos[indexY2], {
+            value: parseFloat(this.axesValues.y2),
+          }),
+        },
+        {
+          x: this.xIsLog,
+          y: this.yIsLog,
+        }
+      )
+      return calculator.calculateXYValues(x, y)
     },
     switchShowPlots(): void {
       this.shouldShowPoints = !this.shouldShowPoints
@@ -756,74 +770,6 @@ export default Vue.extend({
         yPx: isOnCanvas ? e.offsetY : e.offsetY + parseFloat(target.style.top),
       })
       this.shouldShowPoints = true
-    },
-    calculateXY(x: number, y: number): { xV: string; yV: string } {
-      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (!this.validateAxes) {
-        return { xV: '0', yV: '0' }
-      }
-      // INFO: 点x1と点x2を通る直線が、点tと垂直に交わる点の(x,y)値を計算
-      const calculateVerticalCrossPoint = (
-        x1x: number,
-        x1y: number,
-        x2x: number,
-        x2y: number,
-        tx: number,
-        ty: number
-      ): { x: number; y: number } => {
-        const isParallel = x2y - x1y === 0
-        const isVertical = x2x - x1x === 0
-        const x = isParallel
-          ? tx
-          : (x2x * x1y * (x1y - x2y - ty) +
-              x1x * x2y * (x2y - x1y - ty) +
-              tx * (x2x - x1x) ** 2 +
-              ty * (x1x * x1y + x2x * x2y)) /
-            ((x2x - x1x) ** 2 + (x2y - x1y) ** 2)
-        // INFO: a1 = x1x, a2 = x2x, b1 = x1y, b2 = x2y
-        const y = isVertical
-          ? ty
-          : ((x2y - x1y) * x + x2x * x1y - x1x * x2y) / (x2x - x1x)
-        return { x, y }
-      }
-      const [x1x, x1y, x2x, x2y, x1v, x2v, y1x, y1y, y2x, y2y, y1v, y2v] = [
-        this.axesPos[indexX1].xPx,
-        this.axesPos[indexX1].yPx,
-        this.axesPos[indexX2].xPx,
-        this.axesPos[indexX2].yPx,
-        parseFloat(this.axesValues.x1),
-        parseFloat(this.axesValues.x2),
-        this.axesPos[indexY1].xPx,
-        this.axesPos[indexY1].yPx,
-        this.axesPos[indexY2].xPx,
-        this.axesPos[indexY2].yPx,
-        parseFloat(this.axesValues.y1),
-        parseFloat(this.axesValues.y2),
-      ]
-      const xPx = calculateVerticalCrossPoint(x1x, x1y, x2x, x2y, x, y).x
-      const yPx = calculateVerticalCrossPoint(y1x, y1y, y2x, y2y, x, y).y
-      const xV = this.xIsLog
-        ? Math.pow(
-            10,
-            ((xPx - x1x) / (x2x - x1x)) * (Math.log10(x2v) - Math.log10(x1v)) +
-              Math.log10(x1v)
-          )
-        : ((xPx - x1x) / (x2x - x1x)) * (x2v - x1v) + x1v
-      const yV = this.yIsLog
-        ? Math.pow(
-            10,
-            ((yPx - y1y) / (y2y - y1y)) * (Math.log10(y2v) - Math.log10(y1v)) +
-              Math.log10(y1v)
-          )
-        : ((yPx - y1y) / (y2y - y1y)) * (y2v - y1v) + y1v
-      return {
-        xV: parseFloat(
-          xV.toPrecision(this.additionalEffectiveDigits)
-        ).toExponential(),
-        yV: parseFloat(
-          yV.toPrecision(this.additionalEffectiveDigits)
-        ).toExponential(),
-      }
     },
     activatePlot(id: number) {
       this.movingPlotId = id
