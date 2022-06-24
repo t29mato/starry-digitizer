@@ -1,6 +1,7 @@
 import SymbolExtractByArea from './SymbolExtractByArea'
 
 const extractor = new SymbolExtractByArea()
+extractor.setDiameter(0, 1000)
 
 test('matchColor', () => {
   expect(extractor.matchColor([255, 0, 0], [255, 1, 0], 10)).toBe(true)
@@ -27,13 +28,13 @@ wwr
   expect(plots).toEqual([
     {
       id: 0,
-      xPx: 0,
-      yPx: 0,
+      xPx: 0.5,
+      yPx: 0.5,
     },
     {
       id: 1,
-      xPx: 2,
-      yPx: 2,
+      xPx: 2.5,
+      yPx: 2.5,
     },
   ])
 })
@@ -57,8 +58,8 @@ wwr
   expect(plots).toEqual([
     {
       id: 0,
-      xPx: 1,
-      yPx: 1,
+      xPx: 1.5,
+      yPx: 1.5,
     },
   ])
 })
@@ -82,8 +83,8 @@ rrr
   expect(plots).toEqual([
     {
       id: 0,
-      xPx: 1,
-      yPx: 1,
+      xPx: 1.5,
+      yPx: 1.5,
     },
   ])
 })
@@ -107,13 +108,13 @@ rrr
   expect(plots).toEqual([
     {
       id: 0,
-      xPx: 1,
-      yPx: 0,
+      xPx: 1.5,
+      yPx: 0.5,
     },
     {
       id: 1,
-      xPx: 1,
-      yPx: 2,
+      xPx: 1.5,
+      yPx: 2.5,
     },
   ])
 })
@@ -137,8 +138,8 @@ rww
   expect(plots).toEqual([
     {
       id: 0,
-      xPx: 0.6666666666666666,
-      yPx: 0.6666666666666666,
+      xPx: 1.1666666666666666,
+      yPx: 1.1666666666666666,
     },
   ])
 })
@@ -170,13 +171,13 @@ rrrr
   expect(plots).toEqual([
     {
       id: 0,
-      xPx: 1.5,
-      yPx: 0.5,
+      xPx: 2.0,
+      yPx: 1,
     },
     {
       id: 1,
-      xPx: 1.5,
-      yPx: 3,
+      xPx: 2.0,
+      yPx: 3.5,
     },
   ])
 })

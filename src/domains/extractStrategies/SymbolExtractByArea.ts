@@ -1,19 +1,26 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
 import diff from 'color-diff'
-import { SymbolClass } from 'symbol2array'
 import { Plot } from '@/types'
 
 export default class SymbolExtractByArea implements ExtractStrategyInterface {
-  isWhite(r: number, g: number, b: number, a: number): boolean {
+  minDiameterPx = 5
+  maxDiameterPx = 100
+
+  setDiameter(minDiameterPx: number, maxDiameterPx: number) {
+    this.minDiameterPx = minDiameterPx
+    this.maxDiameterPx = maxDiameterPx
+  }
+
+  #isWhite(r: number, g: number, b: number, a: number): boolean {
     return r === 255 && g === 255 && b === 255 && a > 0
   }
 
   // TODO: 背景色をスキップするか選択できるようにする
-  isOnMask(r: number, g: number, b: number, a: number): boolean {
+  #isOnMask(r: number, g: number, b: number, a: number): boolean {
     return r === 255 && g === 255 && b === 0 && a > 0
   }
 
-  diffColor(
+  #diffColor(
     color1: { R: number; G: number; B: number },
     color2: { R: number; G: number; B: number }
   ): number {
@@ -131,10 +138,20 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
           const yPxTotal = pixels.reduce((prev, cur) => {
             return prev + cur.yPx
           }, 0)
+          const area = pixels.length
+          // area = πr^2
+          // r = √(area / π)
+          // diameter = r * 2
+          const diameter = Math.sqrt(area / Math.PI) * 2
+          if (diameter < this.minDiameterPx || diameter > this.maxDiameterPx) {
+            continue
+          }
+          // To avoid gaps between calculation and rendering
+          const offsetPx = 0.5
           plots.push({
             id: plots.length,
-            xPx: xPxTotal / pixels.length,
-            yPx: yPxTotal / pixels.length,
+            xPx: xPxTotal / pixels.length + offsetPx,
+            yPx: yPxTotal / pixels.length + offsetPx,
           })
         }
       }
