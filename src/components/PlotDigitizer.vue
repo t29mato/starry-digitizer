@@ -99,64 +99,12 @@
             :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
           ></magnifier>
           <h3>XY Axes</h3>
-          <v-simple-table dense>
-            <thead>
-              <tr>
-                <th></th>
-                <th>Value 1</th>
-                <th>Value 2</th>
-                <th>Log</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>X</th>
-                <td>
-                  <v-text-field
-                    v-model="axesValues.x1"
-                    type="number"
-                    class="ma-0 pa-0"
-                    hide-details
-                    label="x1"
-                  ></v-text-field>
-                </td>
-                <td>
-                  <v-text-field
-                    v-model="axesValues.x2"
-                    type="number"
-                    class="ma-0 pa-0"
-                    hide-details
-                    label="x2"
-                  ></v-text-field>
-                </td>
-                <td><v-checkbox v-model="xIsLog"></v-checkbox></td>
-              </tr>
-              <tr>
-                <th>Y</th>
-                <td>
-                  <v-text-field
-                    v-model="axesValues.y1"
-                    type="number"
-                    class="ma-0 pa-0"
-                    hide-details
-                    label="y1"
-                  ></v-text-field>
-                </td>
-                <td>
-                  <v-text-field
-                    v-model="axesValues.y2"
-                    type="number"
-                    class="ma-0 pa-0"
-                    hide-details
-                    label="y2"
-                  ></v-text-field>
-                </td>
-                <td>
-                  <v-checkbox v-model="yIsLog"></v-checkbox>
-                </td>
-              </tr>
-            </tbody>
-          </v-simple-table>
+          <axes-settings
+            :axes="axesValues"
+            @input="inputAxes"
+            @change="changeIsLog"
+            :isLog="isLog"
+          ></axes-settings>
           <h3>
             Automatic Extraction<v-btn
               text
@@ -223,6 +171,7 @@ import Clipboard from './Export/Clipboard.vue'
 import { Plot, PlotValue, Position } from '../types'
 import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
+import AxesSettings from './Settings/AxesSettings.vue'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3] as const
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff'] as const
@@ -240,6 +189,7 @@ export default Vue.extend({
     CanvasFooter,
     PlotsTable,
     Clipboard,
+    AxesSettings,
   },
   props: {
     hideCSVText: {
@@ -258,8 +208,10 @@ export default Vue.extend({
       shouldShowPixel: true,
       shouldShowValue: true,
       maskMode: -1,
-      xIsLog: false,
-      yIsLog: false,
+      isLog: {
+        x: false,
+        y: false,
+      },
       uploadImageUrl: '',
       axesPos: [] as Position[],
       // REFACOTR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
@@ -428,6 +380,12 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
+    inputAxes(axesValues: { x1: string; x2: string; y1: string; y2: string }) {
+      this.axesValues = axesValues
+    },
+    changeIsLog(isLog: { x: boolean; y: boolean }) {
+      this.isLog = isLog
+    },
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
       if (!this.validateAxes) {
@@ -449,8 +407,8 @@ export default Vue.extend({
           }),
         },
         {
-          x: this.xIsLog,
-          y: this.yIsLog,
+          x: this.isLog.x,
+          y: this.isLog.y,
         }
       )
       return calculator.calculateXYValues(x, y)
