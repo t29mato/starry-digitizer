@@ -154,11 +154,12 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
             diameter <= this.maxDiameterPx
           ) {
             // To avoid gaps between calculation and rendering
+            // INFO: In manual, pixels are limited to moving one pixel at a time.
             const offsetPx = 0.5
             plots.push({
               id: plots.length,
-              xPx: xPxTotal / pixels.length + offsetPx,
-              yPx: yPxTotal / pixels.length + offsetPx,
+              xPx: (xPxTotal / pixels.length + offsetPx).toFixed(1),
+              yPx: (yPxTotal / pixels.length + offsetPx).toFixed(1),
             })
           }
         }
