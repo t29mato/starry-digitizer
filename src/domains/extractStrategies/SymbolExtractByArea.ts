@@ -50,7 +50,6 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     maskCanvasColors: Uint8ClampedArray,
     isDrawnMask: boolean
   ) {
-    console.log(maskCanvasColors)
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
       Array(width).fill(false)
