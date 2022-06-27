@@ -1,7 +1,8 @@
+/* eslint-disable prettier/prettier */
 import SymbolExtractByArea from './SymbolExtractByArea'
 
 const extractor = new SymbolExtractByArea()
-extractor.setDiameter(0, 1000)
+extractor.setDiameter({min: 0, max: 1000})
 
 test('matchColor', () => {
   expect(extractor.matchColor([255, 0, 0], [255, 1, 0], 10)).toBe(true)
@@ -24,7 +25,7 @@ wwr
     0,0,0,0,
     0,0,0,0,
     255,0,0,0,
-  ], [255,0,0], 10, false, [])
+  ], [255,0,0], 10, [], false)
   expect(plots).toEqual([
     {
       id: 0,
@@ -54,7 +55,7 @@ wwr
     0,0,0,0,
     0,0,0,0,
     255,0,0,0,
-  ], [255,0,0], 10, false, [])
+  ], [255,0,0], 10, [], false)
   expect(plots).toEqual([
     {
       id: 0,
@@ -79,7 +80,7 @@ rrr
     0,0,0,0,
     0,0,0,0,
     255,0,0,0,
-  ], [255,0,0], 10, false, [])
+  ], [255,0,0], 10, [], false)
   expect(plots).toEqual([
     {
       id: 0,
@@ -104,7 +105,7 @@ rrr
     255,0,0,0,
     255,0,0,0,
     255,0,0,0,
-  ], [255,0,0], 10, false, [])
+  ], [255,0,0], 10, [], false)
   expect(plots).toEqual([
     {
       id: 0,
@@ -134,12 +135,12 @@ rww
     255,0,0,0,
     0,0,0,0,
     0,0,0,0,
-  ], [255,0,0], 10, false, [])
+  ], [255,0,0], 10, [], false)
   expect(plots).toEqual([
     {
       id: 0,
-      xPx: 1.1666666666666666,
-      yPx: 1.1666666666666666,
+      xPx: 1.2,
+      yPx: 1.2,
     },
   ])
 })
@@ -167,7 +168,7 @@ rrrr
     255,0,0,0,
     255,0,0,0,
     255,0,0,0,
-  ], [255,0,0], 10, false, [])
+  ], [255,0,0], 10, [], false)
   expect(plots).toEqual([
     {
       id: 0,

@@ -158,8 +158,8 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
             const offsetPx = 0.5
             plots.push({
               id: plots.length,
-              xPx: (xPxTotal / pixels.length + offsetPx).toFixed(1),
-              yPx: (yPxTotal / pixels.length + offsetPx).toFixed(1),
+              xPx: parseFloat((xPxTotal / pixels.length + offsetPx).toFixed(1)),
+              yPx: parseFloat((yPxTotal / pixels.length + offsetPx).toFixed(1)),
             })
           }
         }
