@@ -125,7 +125,7 @@
               @input="setDiameterRange"
             ></symbol-extract-settings>
           </div>
-          <span>Draw Mask</span>
+          <h4>Draw Mask</h4>
           <v-btn-toggle v-model="maskMode" dense class="pl-2">
             <v-btn text> Pen </v-btn>
             <v-btn text :disabled="!isDrawnMask" @click="clearMask">
@@ -601,7 +601,8 @@ export default Vue.extend({
           imageCanvasColors,
           [this.targetColor.R, this.targetColor.G, this.targetColor.B],
           this.colorDistancePct,
-          maskCanvasColors
+          maskCanvasColors,
+          this.isDrawnMask
         )
         this.sortPlots()
         const allCount = this.canvasWidthInt * this.canvasHeightInt

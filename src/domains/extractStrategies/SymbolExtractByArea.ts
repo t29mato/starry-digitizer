@@ -47,36 +47,39 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     graphCanvasColors: Uint8ClampedArray,
     targetRGB: [number, number, number],
     colorMatchThreshold: number,
-    maskCanvasColors: Uint8ClampedArray
+    maskCanvasColors: Uint8ClampedArray,
+    isDrawnMask: boolean
   ) {
+    console.log(maskCanvasColors)
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
       Array(width).fill(false)
     )
-    // for (let h = 0; h < height; h++) {
-    //   for (let w = 0; w < width; w++) {
-    //     const [r1, g1, b1, a1] = graphCanvasColors.slice(
-    //       (h * width + w) * 4,
-    //       (h * width + w + 1) * 4
-    //     )
-    //     if (this.isWhite(r1, g1, b1, a1)) {
-    //       continue
-    //     }
-    //     const [r2, g2, b2, a2] = maskCanvasColors.slice(
-    //       (h * width + w) * 4,
-    //       (h * width + w + 1) * 4
-    //     )
-    //     if (isMasked && !this.isOnMask(r2, g2, b2, a2)) {
-    //       continue
-    //     }
-    //     visitedArea[h][w] = true
-    //   }
-    // }
+    if (isDrawnMask) {
+      for (let h = 0; h < height; h++) {
+        for (let w = 0; w < width; w++) {
+          // const [r1, g1, b1, a1] = graphCanvasColors.slice(
+          //   (h * width + w) * 4,
+          //   (h * width + w + 1) * 4
+          // )
+          // if (this.#isWhite(r1, g1, b1, a1)) {
+          //   visitedArea[h][w] = true
+          //   continue
+          // }
+          const [r2, g2, b2, a2] = maskCanvasColors.slice(
+            (h * width + w) * 4,
+            (h * width + w + 1) * 4
+          )
+          if (!this.#isOnMask(r2, g2, b2, a2)) {
+            visitedArea[h][w] = true
+          }
+        }
+      }
+    }
 
     let count = 0
     for (let h = 0; h < height; h++) {
       for (let w = 0; w < width; w++) {
-        // INFO: 背景色白色はスキップ
         if (visitedArea[h][w]) {
           continue
         }
