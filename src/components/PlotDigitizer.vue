@@ -161,11 +161,13 @@
 import Vue from 'vue'
 import ColorThief from 'colorthief'
 import { Magnifier } from './Magnifier'
-import CanvasAxes from './Canvas/CanvasAxes.vue'
-import CanvasPlot from './Canvas/CanvasPlot.vue'
-import CanvasCursor from './Canvas/CanvasCursor.vue'
-import CanvasHeader from './Canvas/CanvasHeader.vue'
-import CanvasFooter from './Canvas/CanvasFooter.vue'
+import {
+  CanvasHeader,
+  CanvasFooter,
+  CanvasAxes,
+  CanvasPlot,
+  CanvasCursor,
+} from './Canvas'
 import PlotsTable from './Export/PlotsTable.vue'
 import Clipboard from './Export/Clipboard.vue'
 import { Plot, PlotValue, Position } from '../types'
