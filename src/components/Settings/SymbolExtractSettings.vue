@@ -1,16 +1,18 @@
 <template>
-  <v-row>
+  <v-row class="ma-0">
     <v-text-field
       :value="diameterRange.min"
       @input="inputMin"
       label="Min. Diameter (px)"
       type="number"
+      class="ma-0 pl-4"
     ></v-text-field>
     <v-text-field
       :value="diameterRange.max"
       @input="inputMax"
       label="Max. Diameter (px)"
       type="number"
+      class="ma-0 pl-4"
     ></v-text-field>
   </v-row>
 </template>
