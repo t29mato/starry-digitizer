@@ -27,7 +27,7 @@
     </v-app-bar>
 
     <v-main>
-      <PlotDigitizer />
+      <Main :initialGraphImagePath="require('@/assets/testimage.png')" />
     </v-main>
   </v-app>
 </template>
@@ -37,7 +37,7 @@ import Vue from 'vue'
 import * as Sentry from '@sentry/vue'
 import { Integrations } from '@sentry/tracing'
 
-import PlotDigitizer from './components/PlotDigitizer.vue'
+import Main from './components/Main.vue'
 import { version } from '../package.json'
 
 if (process.env.NODE_ENV === 'production') {
@@ -76,7 +76,7 @@ export default Vue.extend({
   name: 'App',
 
   components: {
-    PlotDigitizer,
+    Main,
   },
 
   data: () => ({

@@ -1,11 +1,11 @@
 // vue コンポーネントのインポート
-import PlotDigitizer from './components/PlotDigitizer.vue'
+import Main from './components/Main.vue'
 
 // Vue.use() によって実行される install 関数を定義
 export function install(Vue) {
   if (install.installed) return
   install.installed = true
-  Vue.component(PlotDigitizer, PlotDigitizer)
+  Vue.component(Main, Main)
 }
 
 // Vue.use() のためのモジュール定義を作成
@@ -26,4 +26,4 @@ if (GlobalVue) {
 }
 
 // (npm/webpack 等で) モジュールとして利用させるためコンポーネントを export する
-export default PlotDigitizer
+export default Main

@@ -1,7 +1,7 @@
 import _Vue, { PluginObject } from 'vue'
 
 // Import vue component
-import component from '@/components/PlotDigitizer.vue'
+import component from '@/components/Main.vue'
 
 // Define typescript interfaces for installable component
 type InstallableComponent = typeof component & PluginObject<any>
