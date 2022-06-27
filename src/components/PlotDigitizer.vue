@@ -445,6 +445,10 @@ export default Vue.extend({
       const palette = colorThief.getPalette(imageElement).map((color) => {
         // INFO: rgbからhexへの切り替え
         return color.reduce((prev, cur) => {
+          // INFO: HEXは各色16進数2桁なので
+          if (cur.toString(16).length === 1) {
+            return prev + '0' + cur.toString(16)
+          }
           return prev + cur.toString(16)
         }, '#')
       })
