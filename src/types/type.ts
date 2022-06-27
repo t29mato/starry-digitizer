@@ -15,3 +15,8 @@ export type axesPosList = {
   y1: Axes
   y2: Axes
 }
+
+export type DiameterRange = {
+  min: number
+  max: number
+}

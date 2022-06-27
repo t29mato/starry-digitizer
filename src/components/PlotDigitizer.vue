@@ -115,7 +115,6 @@
               >Run</v-btn
             >
           </h3>
-          <!-- make a child component for symbol extract settings -->
           <v-select
             v-model="extractAlgorithm"
             :items="['Symbol Extract']"
@@ -127,20 +126,10 @@
               'margin-left': '10px',
             }"
           >
-            <v-text-field
-              v-model="diameter.min"
-              value="5"
-              label="Min. Diameter (px)"
-              hide-details
-              type="number"
-            ></v-text-field>
-            <v-text-field
-              v-model="diameter.max"
-              value="100"
-              label="Max. Diameter (px)"
-              hide-details
-              type="number"
-            ></v-text-field>
+            <symbol-extract-settings
+              :diameterRange="diameterRange"
+              @input="setDiameterRange"
+            ></symbol-extract-settings>
           </div>
           <v-checkbox
             v-model="shouldBeMasked"
@@ -191,10 +180,10 @@ import {
 } from './Canvas'
 import PlotsTable from './Export/PlotsTable.vue'
 import Clipboard from './Export/Clipboard.vue'
-import { Plot, PlotValue, Position } from '../types'
+import { Plot, PlotValue, Position, DiameterRange } from '../types'
 import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
-import AxesSettings from './Settings/AxesSettings.vue'
+import { AxesSettings, SymbolExtractSettings } from './Settings'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3] as const
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff'] as const
@@ -213,6 +202,7 @@ export default Vue.extend({
     PlotsTable,
     Clipboard,
     AxesSettings,
+    SymbolExtractSettings,
   },
   props: {
     hideCSVText: {
@@ -228,7 +218,7 @@ export default Vue.extend({
   data() {
     return {
       extractAlgorithm: 'Symbol Extract',
-      diameter: {
+      diameterRange: {
         min: 5,
         max: 100,
       },
@@ -407,6 +397,9 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
+    setDiameterRange(diameterRange: DiameterRange) {
+      this.diameterRange = diameterRange
+    },
     inputAxes(axesValues: { x1: string; x2: string; y1: string; y2: string }) {
       this.axesValues = axesValues
     },
@@ -606,7 +599,7 @@ export default Vue.extend({
           maskCanvas.height
         ).data
         const extractor = new SymbolExtractByArea()
-        extractor.setDiameter(this.diameter)
+        extractor.setDiameter(this.diameterRange)
         this.plots = extractor.execute(
           maskCanvas.height,
           maskCanvas.width,

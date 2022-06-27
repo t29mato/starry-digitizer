@@ -1,14 +1,14 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
 import diff from 'color-diff'
-import { Plot } from '@/types'
+import { Plot, DiameterRange } from '@/types'
 
 export default class SymbolExtractByArea implements ExtractStrategyInterface {
   minDiameterPx = 5
   maxDiameterPx = 100
 
-  setDiameter(diameter: { min: number; max: number }) {
-    this.minDiameterPx = diameter.min
-    this.maxDiameterPx = diameter.max
+  setDiameter(diameterRange: DiameterRange) {
+    this.minDiameterPx = diameterRange.min
+    this.maxDiameterPx = diameterRange.max
   }
 
   #isWhite(r: number, g: number, b: number, a: number): boolean {
