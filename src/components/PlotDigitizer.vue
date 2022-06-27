@@ -119,12 +119,7 @@
             :items="['Symbol Extract']"
             label="Select Algorithm"
           ></v-select>
-          <div
-            v-if="extractAlgorithm === 'Symbol Extract'"
-            :style="{
-              'margin-left': '10px',
-            }"
-          >
+          <div v-if="extractAlgorithm === 'Symbol Extract'">
             <symbol-extract-settings
               :diameterRange="diameterRange"
               @input="setDiameterRange"
@@ -138,15 +133,7 @@
             </v-btn>
           </v-btn-toggle>
           <br />
-          <v-slider
-            v-model="colorDistancePct"
-            thumb-label="always"
-            max="20"
-            min="1"
-            label="Color Diff."
-            thumb-size="20"
-            dense
-          ></v-slider>
+          <h4>Extracted Color</h4>
           <input type="color" v-model="colorPicker" />
           <v-color-picker
             v-model="colorPicker"
@@ -156,6 +143,15 @@
             hide-sliders
             :swatches="swatches"
           ></v-color-picker>
+          <v-slider
+            v-model="colorDistancePct"
+            thumb-label="always"
+            max="20"
+            min="1"
+            label="Color Diff."
+            thumb-size="20"
+            dense
+          ></v-slider>
         </v-col>
       </v-row>
     </template>
