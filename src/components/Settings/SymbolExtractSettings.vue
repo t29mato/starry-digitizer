@@ -1,20 +1,18 @@
 <template>
-  <div>
+  <v-row>
     <v-text-field
       :value="diameterRange.min"
       @input="inputMin"
       label="Min. Diameter (px)"
-      hide-details
       type="number"
     ></v-text-field>
     <v-text-field
       :value="diameterRange.max"
       @input="inputMax"
       label="Max. Diameter (px)"
-      hide-details
       type="number"
     ></v-text-field>
-  </div>
+  </v-row>
 </template>
 
 <script lang="ts">
