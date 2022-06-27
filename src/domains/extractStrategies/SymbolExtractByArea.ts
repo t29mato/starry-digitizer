@@ -6,9 +6,9 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
   minDiameterPx = 5
   maxDiameterPx = 100
 
-  setDiameter(minDiameterPx: number, maxDiameterPx: number) {
-    this.minDiameterPx = minDiameterPx
-    this.maxDiameterPx = maxDiameterPx
+  setDiameter(diameter: { min: number; max: number }) {
+    this.minDiameterPx = diameter.min
+    this.maxDiameterPx = diameter.max
   }
 
   #isWhite(r: number, g: number, b: number, a: number): boolean {
@@ -148,23 +148,21 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
           // r = √(area / π)
           // diameter = r * 2
           const diameter = Math.sqrt(area / Math.PI) * 2
-          if (diameter < this.minDiameterPx || diameter > this.maxDiameterPx) {
-            continue
+          if (
+            this.minDiameterPx <= diameter &&
+            diameter <= this.maxDiameterPx
+          ) {
+            // To avoid gaps between calculation and rendering
+            const offsetPx = 0.5
+            plots.push({
+              id: plots.length,
+              xPx: xPxTotal / pixels.length + offsetPx,
+              yPx: yPxTotal / pixels.length + offsetPx,
+            })
           }
-          // To avoid gaps between calculation and rendering
-          const offsetPx = 0.5
-          plots.push({
-            id: plots.length,
-            xPx: xPxTotal / pixels.length + offsetPx,
-            yPx: yPxTotal / pixels.length + offsetPx,
-          })
         }
       }
     }
-    console.log(plots)
-    console.log({ count })
-    console.log({ visitedArea })
-
     return plots
   }
 }

@@ -115,6 +115,33 @@
               >Run</v-btn
             >
           </h3>
+          <!-- make a child component for symbol extract settings -->
+          <v-select
+            v-model="extractAlgorithm"
+            :items="['Symbol Extract']"
+            label="Select Algorithm"
+          ></v-select>
+          <div
+            v-if="extractAlgorithm === 'Symbol Extract'"
+            :style="{
+              'margin-left': '10px',
+            }"
+          >
+            <v-text-field
+              v-model="diameter.min"
+              value="5"
+              label="Min. Diameter (px)"
+              hide-details
+              type="number"
+            ></v-text-field>
+            <v-text-field
+              v-model="diameter.max"
+              value="100"
+              label="Max. Diameter (px)"
+              hide-details
+              type="number"
+            ></v-text-field>
+          </div>
           <v-checkbox
             v-model="shouldBeMasked"
             label="Mask"
@@ -200,6 +227,11 @@ export default Vue.extend({
   },
   data() {
     return {
+      extractAlgorithm: 'Symbol Extract',
+      diameter: {
+        min: 5,
+        max: 100,
+      },
       plotShapeMode: 0,
       shouldShowPixel: true,
       shouldShowValue: true,
@@ -574,6 +606,7 @@ export default Vue.extend({
           maskCanvas.height
         ).data
         const extractor = new SymbolExtractByArea()
+        extractor.setDiameter(this.diameter)
         this.plots = extractor.execute(
           maskCanvas.height,
           maskCanvas.width,
@@ -583,7 +616,6 @@ export default Vue.extend({
           this.shouldBeMasked,
           maskCanvasColors
         )
-        console.log(this.plots)
         this.sortPlots()
         const allCount = this.canvasWidthInt * this.canvasHeightInt
         console.info('all count:', allCount)
