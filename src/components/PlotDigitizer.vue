@@ -186,7 +186,7 @@ import XYAxesCalculator from '@/domains/XYAxesCalculator'
 import { AxesSettings, SymbolExtractSettings } from './Settings'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3] as const
-const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff'] as const
+const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
 // INFO: to adjust the exact position the user clicked.
 const magicNumberPx = 1
 const colorThief = new ColorThief()

@@ -1,14 +1,14 @@
 <template>
   <div>
     <v-text-field
-      :value="diameter.min"
+      :value="diameterRange.min"
       @input="inputMin"
       label="Min. Diameter (px)"
       hide-details
       type="number"
     ></v-text-field>
     <v-text-field
-      :value="diameter.max"
+      :value="diameterRange.max"
       @input="inputMax"
       label="Max. Diameter (px)"
       hide-details
@@ -23,7 +23,7 @@ import { DiameterRange } from '../../types'
 export default Vue.extend({
   computed: {},
   props: {
-    diameter: {
+    diameterRange: {
       type: Object as () => DiameterRange,
       required: true,
     },
@@ -34,10 +34,16 @@ export default Vue.extend({
   },
   methods: {
     inputMin(value: number) {
-      this.$emit('input', Object.assign(this.$props.diameter, { min: value }))
+      this.$emit(
+        'input',
+        Object.assign(this.$props.diameterRange, { min: value })
+      )
     },
     inputMax(value: number) {
-      this.$emit('input', Object.assign(this.$props.diameter, { max: value }))
+      this.$emit(
+        'input',
+        Object.assign(this.$props.diameterRange, { max: value })
+      )
     },
   },
 })
