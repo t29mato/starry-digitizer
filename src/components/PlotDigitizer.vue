@@ -128,10 +128,10 @@
           <h4>Draw Mask</h4>
           <v-btn-toggle v-model="maskMode" dense class="pl-2">
             <v-btn text> Pen </v-btn>
-            <v-btn text :disabled="!isDrawnMask" @click="clearMask">
-              Clear
-            </v-btn>
           </v-btn-toggle>
+          <v-btn text :disabled="!isDrawnMask" @click="clearMask">
+            Clear
+          </v-btn>
           <br />
           <h4>Extracted Color</h4>
           <input type="color" v-model="colorPicker" />
