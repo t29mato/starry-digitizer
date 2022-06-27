@@ -116,12 +116,6 @@
             >
           </h3>
           <v-checkbox
-            v-model="shouldClearPlots"
-            label="Clear Plots"
-            dense
-            hide-details
-          ></v-checkbox>
-          <v-checkbox
             v-model="shouldBeMasked"
             label="Mask"
             hide-details
@@ -255,7 +249,6 @@ export default Vue.extend({
       canvasHeight: 0,
       swatches: [...Array(5)].map(() => []) as string[][],
       isFit: true,
-      shouldClearPlots: true,
       shouldBeMasked: false,
     }
   },
@@ -551,9 +544,7 @@ export default Vue.extend({
       this.isExtracting = true
       this.isMovingAxis = false
       this.isMovingPlot = false
-      if (this.shouldClearPlots) {
-        this.plots = []
-      }
+      this.plots = []
       try {
         const wrapper = document.getElementById('wrapper') as HTMLDivElement
         const imageCanvas = document.getElementById(
