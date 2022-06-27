@@ -65,7 +65,6 @@
             :shouldShowPoints="shouldShowPoints"
             :clearPoints="clearPoints"
             :clearAxes="clearAxes"
-            :clearMask="clearMask"
             :plots="plots"
             :removePlot="removePlot"
             :switchShowPlots="switchShowPlots"
@@ -131,16 +130,12 @@
               @input="setDiameterRange"
             ></symbol-extract-settings>
           </div>
-          <v-checkbox
-            v-model="shouldBeMasked"
-            label="Mask"
-            hide-details
-            dense
-          ></v-checkbox>
           <span>Draw Mask</span>
           <v-btn-toggle v-model="maskMode" dense class="pl-2">
-            <v-btn text disabled> Box </v-btn>
-            <v-btn text @click="shouldBeMasked = true"> Pen </v-btn>
+            <v-btn text> Pen </v-btn>
+            <v-btn text :disabled="!isDrawnMask" @click="clearMask">
+              Clear
+            </v-btn>
           </v-btn-toggle>
           <br />
           <v-slider
@@ -271,7 +266,7 @@ export default Vue.extend({
       canvasHeight: 0,
       swatches: [...Array(5)].map(() => []) as string[][],
       isFit: true,
-      shouldBeMasked: false,
+      isDrawnMask: false,
     }
   },
   computed: {
@@ -610,7 +605,6 @@ export default Vue.extend({
           imageCanvasColors,
           [this.targetColor.R, this.targetColor.G, this.targetColor.B],
           this.colorDistancePct,
-          this.shouldBeMasked,
           maskCanvasColors
         )
         this.sortPlots()
@@ -790,13 +784,14 @@ export default Vue.extend({
       }
     },
     mouseMoveOnMask(e: MouseEvent) {
-      // INFO: 左クリックされるてる状態
-      if (e.buttons === 1 && this.maskMode === 1) {
+      // INFO: 左クリックされてる状態
+      if (e.buttons === 1 && this.maskMode === 0) {
         return this.draw(e.offsetX, e.offsetY)
       }
       this.cursorOnFilterCanvas = { xPx: 0, yPx: 0 }
     },
     draw(xPx: number, yPx: number) {
+      this.isDrawnMask = true
       const maskCanvas = document.getElementById(
         'maskCanvas'
       ) as HTMLCanvasElement
@@ -820,6 +815,8 @@ export default Vue.extend({
       ) as HTMLCanvasElement
       const ctx = maskCanvas.getContext('2d') as CanvasRenderingContext2D
       ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height)
+      this.isDrawnMask = false
+      this.maskMode = -1
     },
   },
 })

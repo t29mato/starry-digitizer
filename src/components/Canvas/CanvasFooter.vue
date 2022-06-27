@@ -15,7 +15,6 @@
     <v-btn text :disabled="plots.length === 0" @click="switchShowPlots">{{
       shouldShowPoints ? 'Hide Plots' : 'Show Plots'
     }}</v-btn>
-    <v-btn text @click="clearMask"> Clear Mask </v-btn>
   </div>
 </template>
 
@@ -55,10 +54,6 @@ export default Vue.extend({
       required: true,
     },
     switchShowPlots: {
-      type: Function,
-      required: true,
-    },
-    clearMask: {
       type: Function,
       required: true,
     },

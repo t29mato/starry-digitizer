@@ -47,7 +47,6 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     graphCanvasColors: Uint8ClampedArray,
     targetRGB: [number, number, number],
     colorMatchThreshold: number,
-    isMasked: boolean,
     maskCanvasColors: Uint8ClampedArray
   ) {
     const plots = []
