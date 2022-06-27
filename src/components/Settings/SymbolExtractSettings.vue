@@ -27,10 +27,6 @@ export default Vue.extend({
       type: Object as () => DiameterRange,
       required: true,
     },
-    isLog: {
-      type: Object,
-      required: true,
-    },
   },
   methods: {
     inputMin(value: number) {
