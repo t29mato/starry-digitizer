@@ -78,7 +78,7 @@
           <div v-if="!hideCSVText">
             <clipboard :plots="calculatedPlots"></clipboard>
           </div>
-          <v-btn v-if="exportBtnText" @click="exportPlots" text>{{
+          <v-btn v-if="exportBtnText.length > 0" @click="exportPlots" text>{{
             exportBtnText
           }}</v-btn>
         </v-col>
