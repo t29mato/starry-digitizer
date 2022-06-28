@@ -25,9 +25,12 @@
         <v-icon>mdi-open-in-new</v-icon>
       </v-btn>
     </v-app-bar>
-
     <v-main>
-      <Main :initialGraphImagePath="require('@/assets/testimage.png')" />
+      <Main
+        :initialGraphImagePath="require('@/assets/testimage.png')"
+        @exportPlots="importPlots"
+        exportBtnText="Export Parent Component"
+      />
     </v-main>
   </v-app>
 </template>
@@ -80,7 +83,13 @@ export default Vue.extend({
   },
 
   data: () => ({
+    plots: [],
     version,
   }),
+  methods: {
+    importPlots(plots: any) {
+      this.plots = plots
+    },
+  },
 })
 </script>

@@ -78,6 +78,9 @@
           <div v-if="!hideCSVText">
             <clipboard :plots="calculatedPlots"></clipboard>
           </div>
+          <v-btn v-if="exportBtnText" @click="exportPlots" text>{{
+            exportBtnText
+          }}</v-btn>
         </v-col>
         <v-col cols="3">
           <!-- TODO: 有効数字を追加する -->
@@ -204,6 +207,10 @@ export default Vue.extend({
     initialGraphImagePath: {
       type: String,
       required: true,
+    },
+    exportBtnText: {
+      type: String,
+      required: false,
     },
   },
   data() {
@@ -388,6 +395,10 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
+    exportPlots() {
+      const plots = this.calculatedPlots
+      this.$emit('exportPlots', plots)
+    },
     setDiameterRange(diameterRange: DiameterRange) {
       this.diameterRange = diameterRange
     },
