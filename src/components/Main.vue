@@ -210,7 +210,6 @@ export default Vue.extend({
     },
     exportBtnText: {
       type: String,
-      required: false,
     },
   },
   data() {
