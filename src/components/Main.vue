@@ -78,9 +78,7 @@
           <div v-if="!hideCSVText">
             <clipboard :plots="calculatedPlots"></clipboard>
           </div>
-          <v-btn v-if="exportBtnText.length > 0" @click="exportPlots" text>{{
-            exportBtnText
-          }}</v-btn>
+          <v-btn @click="exportPlots" text>{{ exportBtnText }}</v-btn>
         </v-col>
         <v-col cols="3">
           <!-- TODO: 有効数字を追加する -->
@@ -208,9 +206,7 @@ export default Vue.extend({
       type: String,
       required: true,
     },
-    exportBtnText: {
-      type: String,
-    },
+    exportBtnText: String,
   },
   data() {
     return {
