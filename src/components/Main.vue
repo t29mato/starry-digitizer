@@ -821,7 +821,6 @@ export default Vue.extend({
       const ctx = maskCanvas.getContext('2d') as CanvasRenderingContext2D
       ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height)
       this.isDrawnMask = false
-      this.maskMode = -1
     },
   },
 })
