@@ -20,3 +20,7 @@ export type DiameterRange = {
   min: number
   max: number
 }
+
+export type ExtractAlgorithm = 'Symbol Extract' | 'Line Extract'
+
+export type LineExtractProps = { width: number; interval: number }

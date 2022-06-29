@@ -1,14 +1,14 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
 import diff from 'color-diff'
-import { Plot, DiameterRange } from '@/types'
+import { Plot, DiameterRange, LineExtractProps } from '@/types'
 
-export default class SymbolExtractByArea implements ExtractStrategyInterface {
-  #minDiameterPx = 5
-  #maxDiameterPx = 100
+export default class LineExtract implements ExtractStrategyInterface {
+  #interval = 10
+  #lineWidth = 10
 
-  constructor(diameterRange: DiameterRange) {
-    this.#minDiameterPx = diameterRange.min
-    this.#maxDiameterPx = diameterRange.max
+  constructor(props: LineExtractProps) {
+    this.#interval = props.interval
+    this.#lineWidth = props.width
   }
 
   #isWhite(r: number, g: number, b: number, a: number): boolean {
@@ -18,13 +18,6 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
   // TODO: 背景色をスキップするか選択できるようにする
   #isOnMask(r: number, g: number, b: number, a: number): boolean {
     return r === 255 && g === 255 && b === 0 && a > 0
-  }
-
-  #diffColor(
-    color1: { R: number; G: number; B: number },
-    color2: { R: number; G: number; B: number }
-  ): number {
-    return diff.diff(diff.rgb_to_lab(color1), diff.rgb_to_lab(color2))
   }
 
   matchColor(
@@ -77,8 +70,9 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     }
 
     let count = 0
-    for (let h = 0; h < height; h++) {
-      for (let w = 0; w < width; w++) {
+    // INFO: 線グラフは左から右なので横から探す
+    for (let w = 0; w < width; w++) {
+      for (let h = 0; h < height; h++) {
         if (visitedArea[h][w]) {
           continue
         }
@@ -116,6 +110,12 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
                 if (nh < 0 || nw < 0 || nh >= height || nw >= width) {
                   continue
                 }
+                if (
+                  Math.abs(nh - h) > this.#lineWidth ||
+                  Math.abs(nw - w) > this.#interval
+                ) {
+                  continue
+                }
                 if (visitedArea[nh][nw]) {
                   continue
                 }
@@ -144,15 +144,11 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
           const yPxTotal = pixels.reduce((prev, cur) => {
             return prev + cur.yPx
           }, 0)
+          const xPxList = pixels.map((pixel) => {
+            return pixel.xPx
+          })
           const area = pixels.length
-          // area = πr^2
-          // r = √(area / π)
-          // diameter = r * 2
-          const diameter = Math.sqrt(area / Math.PI) * 2
-          if (
-            this.#minDiameterPx <= diameter &&
-            diameter <= this.#maxDiameterPx
-          ) {
+          if (this.#lineWidth < area) {
             // To avoid gaps between calculation and rendering
             // INFO: In manual, pixels are limited to moving one pixel at a time.
             const offsetPx = 0.5

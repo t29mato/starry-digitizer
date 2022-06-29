@@ -1,5 +1,6 @@
 import { Plot } from '@/types'
 
+// INFO: Strategy Pattern
 export default interface ExtractStrategyInterface {
   execute(
     height: number,

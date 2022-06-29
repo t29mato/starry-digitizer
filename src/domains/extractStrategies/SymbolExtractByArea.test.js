@@ -1,8 +1,7 @@
 /* eslint-disable prettier/prettier */
 import SymbolExtractByArea from './SymbolExtractByArea'
 
-const extractor = new SymbolExtractByArea()
-extractor.setDiameter({min: 0, max: 1000})
+const extractor = new SymbolExtractByArea({min: 0, max: 1000})
 
 test('matchColor', () => {
   expect(extractor.matchColor([255, 0, 0], [255, 1, 0], 10)).toBe(true)

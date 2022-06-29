@@ -119,7 +119,7 @@
           </h3>
           <v-select
             v-model="extractAlgorithm"
-            :items="['Symbol Extract']"
+            :items="['Symbol Extract', 'Line Extract']"
             label="Select Algorithm"
           ></v-select>
           <div v-if="extractAlgorithm === 'Symbol Extract'">
@@ -127,6 +127,12 @@
               :diameterRange="diameterRange"
               @input="setDiameterRange"
             ></symbol-extract-settings>
+          </div>
+          <div v-else-if="extractAlgorithm === 'Line Extract'">
+            <line-extract-settings
+              :settings="lineExtractProps"
+              @input="setLineExtractProps"
+            ></line-extract-settings>
           </div>
           <h4>Draw Mask</h4>
           <v-btn-toggle v-model="maskMode" dense class="pl-2">
@@ -174,10 +180,23 @@ import {
 } from './Canvas'
 import PlotsTable from './Export/PlotsTable.vue'
 import Clipboard from './Export/Clipboard.vue'
-import { Plot, PlotValue, Position, DiameterRange } from '../types'
+import {
+  Plot,
+  PlotValue,
+  Position,
+  DiameterRange,
+  ExtractAlgorithm,
+  LineExtractProps,
+} from '../types'
 import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
+import LineExtract from '@/domains/extractStrategies/LineExtract'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
-import { AxesSettings, SymbolExtractSettings } from './Settings'
+import {
+  AxesSettings,
+  SymbolExtractSettings,
+  LineExtractSettings,
+} from './Settings'
+import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3] as const
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
@@ -197,6 +216,7 @@ export default Vue.extend({
     Clipboard,
     AxesSettings,
     SymbolExtractSettings,
+    LineExtractSettings,
   },
   props: {
     hideCSVText: {
@@ -212,11 +232,15 @@ export default Vue.extend({
   },
   data() {
     return {
-      extractAlgorithm: 'Symbol Extract',
+      extractAlgorithm: 'Symbol Extract' as ExtractAlgorithm,
       diameterRange: {
         min: 5,
         max: 100,
       },
+      lineExtractProps: {
+        width: 10,
+        interval: 10,
+      } as LineExtractProps,
       plotShapeMode: 0,
       shouldShowPixel: true,
       shouldShowValue: true,
@@ -396,8 +420,12 @@ export default Vue.extend({
       const plots = this.calculatedPlots
       this.$emit('click', plots)
     },
+    // TODO: setSymbolExtractPropsに変更する
     setDiameterRange(diameterRange: DiameterRange) {
       this.diameterRange = diameterRange
+    },
+    setLineExtractProps(props: LineExtractProps) {
+      this.lineExtractProps = props
     },
     inputAxes(axesValues: { x1: string; x2: string; y1: string; y2: string }) {
       this.axesValues = axesValues
@@ -601,8 +629,17 @@ export default Vue.extend({
           maskCanvas.width,
           maskCanvas.height
         ).data
-        const extractor = new SymbolExtractByArea()
-        extractor.setDiameter(this.diameterRange)
+        let extractor: ExtractStrategyInterface
+        switch (this.extractAlgorithm) {
+          case 'Symbol Extract':
+            extractor = new SymbolExtractByArea(this.diameterRange)
+            break
+          case 'Line Extract':
+            extractor = new LineExtract(this.lineExtractProps)
+            break
+          default:
+            throw new Error('Extract algorithm is not selected.')
+        }
         this.plots = extractor.execute(
           maskCanvas.height,
           maskCanvas.width,
