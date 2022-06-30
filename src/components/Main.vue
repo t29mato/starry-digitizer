@@ -119,7 +119,7 @@
           </h3>
           <v-select
             v-model="extractAlgorithm"
-            :items="['Symbol Extract', 'Line Extract']"
+            :items="extractAlgorithms"
             label="Select Algorithm"
           ></v-select>
           <div v-if="extractAlgorithm === 'Symbol Extract'">
@@ -161,6 +161,7 @@
             thumb-size="20"
             dense
           ></v-slider>
+          <p class="grey--text">v{{ version }}</p>
         </v-col>
       </v-row>
     </template>
@@ -197,12 +198,14 @@ import {
   LineExtractSettings,
 } from './Settings'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
+import { version } from '../../package.json'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3] as const
 const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
 // INFO: to adjust the exact position the user clicked.
 const magicNumberPx = 1
 const colorThief = new ColorThief()
+const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
 export default Vue.extend({
   components: {
@@ -232,6 +235,8 @@ export default Vue.extend({
   },
   data() {
     return {
+      extractAlgorithms,
+      version,
       extractAlgorithm: 'Symbol Extract' as ExtractAlgorithm,
       diameterRange: {
         min: 5,
