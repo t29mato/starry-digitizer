@@ -9,6 +9,9 @@
     <v-btn @click="copy" text :disabled="convertPlotsIntoText.length === 0"
       >Copy to Clipboard</v-btn
     >
+    <v-btn v-if="exportBtnText" @click="exportPlots" text>{{
+      exportBtnText
+    }}</v-btn>
     <v-checkbox
       label="show Pixel"
       v-model="shouldShowPixel"
@@ -58,6 +61,10 @@ export default Vue.extend({
     plots: {
       type: [] as PropType<PlotValue[]>,
     },
+    exportBtnText: {
+      type: String,
+    },
+    exportPlots: Function,
   },
   methods: {
     copy(): void {
