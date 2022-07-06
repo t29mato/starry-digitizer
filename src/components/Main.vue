@@ -248,8 +248,6 @@ export default Vue.extend({
         interval: 10,
       } as LineExtractProps,
       plotShapeMode: 0,
-      shouldShowPixel: true,
-      shouldShowValue: true,
       maskMode: -1,
       isLog: {
         x: false,

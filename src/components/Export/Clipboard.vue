@@ -70,7 +70,7 @@ export default Vue.extend({
   data() {
     return {
       activeColor: colors.green.lighten5,
-      shouldShowPixel: true,
+      shouldShowPixel: false,
       shouldShowValue: true,
     }
   },
