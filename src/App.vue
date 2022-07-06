@@ -26,7 +26,7 @@
       </v-btn>
     </v-app-bar>
     <v-main>
-      <Main :initialGraphImagePath="require('@/assets/line.jpg')" />
+      <Main :initialGraphImagePath="require('@/assets/sample_graph.png')" />
     </v-main>
   </v-app>
 </template>
