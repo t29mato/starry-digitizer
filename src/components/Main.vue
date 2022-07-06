@@ -244,7 +244,7 @@ export default Vue.extend({
         max: 100,
       },
       lineExtractProps: {
-        width: 10,
+        width: 1,
         interval: 10,
       } as LineExtractProps,
       plotShapeMode: 0,

@@ -3,7 +3,7 @@
     <v-text-field
       :value="settings.width"
       @input="inputWidth"
-      label="Line Width (px)"
+      label="Min. Line Width (px)"
       type="number"
       class="ma-0 pl-4"
     ></v-text-field>
