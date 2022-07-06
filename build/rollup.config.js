@@ -89,7 +89,7 @@ if (!argv.format || argv.format === 'es') {
     input: 'src/entry.esm.ts',
     external,
     output: {
-      file: 'dist/vue-plot-digitizer.esm.js',
+      file: 'dist/starry-digitizer.esm.js',
       format: 'esm',
       exports: 'named',
     },
@@ -129,9 +129,9 @@ if (!argv.format || argv.format === 'cjs') {
     external,
     output: {
       compact: true,
-      file: 'dist/vue-plot-digitizer.ssr.js',
+      file: 'dist/starry-digitizer.ssr.js',
       format: 'cjs',
-      name: 'VuePlotDigitizer',
+      name: 'StarryDigitizer',
       exports: 'auto',
       globals,
     },
@@ -159,9 +159,9 @@ if (!argv.format || argv.format === 'iife') {
     external,
     output: {
       compact: true,
-      file: 'dist/vue-plot-digitizer.min.js',
+      file: 'dist/starry-digitizer.min.js',
       format: 'iife',
-      name: 'VuePlotDigitizer',
+      name: 'StarryDigitizer',
       exports: 'auto',
       globals,
     },

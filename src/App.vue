@@ -2,22 +2,22 @@
   <v-app>
     <v-app-bar app color="primary" dark>
       <div class="d-flex align-center">
-        <v-img
-          alt="VuePlotDigitizer Logo"
+        <!-- <v-img
+          alt="StarryDigitizer Logo"
           class="shrink mr-2"
           contain
           src="https://user-images.githubusercontent.com/30012556/139611246-756466ff-b3ed-4403-a75c-8a9be600ec1a.png"
           transition="scale-transition"
           width="40"
-        />
-        <h2>VuePlotDigitizer</h2>
+        /> -->
+        <h2>StarryDigitizer</h2>
         <span class="ml-1 mt-2">{{ version }}</span>
       </div>
 
       <v-spacer></v-spacer>
 
       <v-btn
-        href="https://github.com/t29mato/vue-plot-digitizer/releases"
+        href="https://github.com/t29mato/starry-digitizer/releases"
         target="_blank"
         text
       >
@@ -26,11 +26,7 @@
       </v-btn>
     </v-app-bar>
     <v-main>
-      <Main
-        :initialGraphImagePath="require('@/assets/testimage.png')"
-        @exportPlots="importPlots"
-        exportBtnText="Export Parent Component"
-      />
+      <Main :initialGraphImagePath="require('@/assets/line.jpg')" />
     </v-main>
   </v-app>
 </template>
@@ -47,7 +43,7 @@ if (process.env.NODE_ENV === 'production') {
   Sentry.init({
     Vue,
     dsn: process.env.VUE_APP_SENTRY_DSN,
-    release: `vue-plot-digitizer@${version}`,
+    release: `starry-digitizer@${version}`,
     integrations: [
       new Integrations.BrowserTracing({
         tracingOrigins: ['vpd.vercel.app', /^\//],

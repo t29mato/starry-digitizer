@@ -1,5 +1,5 @@
 {
-  "name": "vue-plot-digitizer",
+  "name": "starry-digitizer",
   "version": "0.6.1",
   "private": false,
   "license": "MIT",
@@ -9,10 +9,10 @@
     "Vue.js",
     "Data Collection"
   ],
-  "main": "dist/vue-plot-digitizer.ssr.js",
-  "browser": "dist/vue-plot-digitizer.esm.js",
-  "module": "dist/vue-plot-digitizer.esm.js",
-  "unpkg": "dist/vue-plot-digitizer.min.js",
+  "main": "dist/starry-digitizer.ssr.js",
+  "browser": "dist/starry-digitizer.esm.js",
+  "module": "dist/starry-digitizer.esm.js",
+  "unpkg": "dist/starry-digitizer.min.js",
   "types": "dist/types/entry.esm.d.ts",
   "files": [
     "dist/*",
