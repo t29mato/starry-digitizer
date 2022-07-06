@@ -10,7 +10,7 @@
     </thead>
     <tbody>
       <tr
-        v-for="plot in calculatedPlots"
+        v-for="plot in calculatedPlotsCeil"
         :key="plot.id"
         @click="activatePlot(plot.id)"
         :style="{
@@ -54,6 +54,26 @@ export default Vue.extend({
     },
     movingPlotId: {
       type: Number,
+    },
+  },
+  computed: {
+    // INFO: 小数点ありのピクセル表示するとユーザーを混乱させるので表示上は切り上げ
+    calculatedPlotsCeil(): {
+      id: number
+      xV: number
+      yV: number
+      xPx: number
+      yPx: number
+    }[] {
+      return this.calculatedPlots.map((plot) => {
+        return {
+          xPx: Math.ceil(plot.xPx),
+          yPx: Math.ceil(plot.yPx),
+          id: plot.id,
+          xV: plot.xV,
+          yV: plot.yV,
+        }
+      })
     },
   },
 })

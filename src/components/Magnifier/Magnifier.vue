@@ -58,7 +58,7 @@
       <tbody>
         <tr>
           <th>X</th>
-          <td>{{ canvasCursor.xPx }}</td>
+          <td>{{ canvasCursorCeil.xPx }}</td>
           <td>
             {{ xyValue.xV }}
           </td>
@@ -66,7 +66,7 @@
         <tr>
           <th>Y</th>
           <td>
-            {{ canvasCursor.yPx }}
+            {{ canvasCursorCeil.yPx }}
           </td>
           <td>
             {{ xyValue.yV }}
@@ -110,6 +110,16 @@ export default Vue.extend({
     magnifierHalfSize(): number {
       return this.magnifierSizePx / 2
     },
+    // INFO: 小数点ありのピクセル表示するとユーザーを混乱させるので表示上は切り上げ
+    canvasCursorCeil(): {
+      xPx: number
+      yPx: number
+    } {
+      return {
+        xPx: Math.ceil(this.canvasCursor.xPx),
+        yPx: Math.ceil(this.canvasCursor.yPx),
+      }
+    },
   },
   props: {
     magnifierSizePx: {
@@ -122,8 +132,8 @@ export default Vue.extend({
     },
     canvasCursor: {
       type: Object as PropType<{
-        xPx: Number
-        yPx: Number
+        xPx: number
+        yPx: number
       }>,
       required: true,
     },

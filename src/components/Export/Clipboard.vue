@@ -34,7 +34,7 @@ import colors from 'vuetify/lib/util/colors'
 export default Vue.extend({
   computed: {
     convertPlotsIntoText(): string {
-      return this.plots
+      return this.ceiledPlots
         .reduce((prev, cur) => {
           if (this.shouldShowPixel && this.shouldShowValue) {
             return prev + `${cur.xPx}, ${cur.yPx}, ${cur.xV}, ${cur.yV}\n`
@@ -48,6 +48,23 @@ export default Vue.extend({
           return prev
         }, '')
         .trim()
+    },
+    ceiledPlots(): {
+      id: number
+      xV: string
+      yV: string
+      xPx: number
+      yPx: number
+    }[] {
+      return this.plots.map((plot) => {
+        return {
+          xPx: Math.ceil(plot.xPx),
+          yPx: Math.ceil(plot.yPx),
+          id: plot.id,
+          xV: plot.xV,
+          yV: plot.yV,
+        }
+      })
     },
   },
   data() {
