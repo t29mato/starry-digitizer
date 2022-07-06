@@ -80,7 +80,7 @@ export default Vue.extend({
 
   data: () => ({
     plots: [],
-    version,
+    version: version + '(Beta)',
   }),
   methods: {
     importPlots(plots: any) {
