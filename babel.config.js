@@ -8,7 +8,9 @@ const buildPresets = [
         node: true,
       },
       // Example: Always transpile optional chaining/nullish coalescing
-      include: [/(class-properties)/],
+      include: [
+        /(class-properties|private-methods|private-property-in-object)/,
+      ],
     },
   ],
   '@babel/preset-typescript',
