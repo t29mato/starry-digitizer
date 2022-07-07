@@ -3,24 +3,24 @@ import diff from 'color-diff'
 import { Plot, DiameterRange, LineExtractProps } from '@/types'
 
 export default class LineExtract implements ExtractStrategyInterface {
-  private interval = 10
-  private lineWidth = 10
+  #interval = 10
+  #lineWidth = 10
 
   constructor(props: LineExtractProps) {
-    this.interval = props.interval
-    this.lineWidth = props.width
+    this.#interval = props.interval
+    this.#lineWidth = props.width
   }
 
-  private isWhite(r: number, g: number, b: number, a: number): boolean {
+  #isWhite(r: number, g: number, b: number, a: number): boolean {
     return r === 255 && g === 255 && b === 255 && a > 0
   }
 
   // TODO: 背景色をスキップするか選択できるようにする
-  private isOnMask(r: number, g: number, b: number, a: number): boolean {
+  #isOnMask(r: number, g: number, b: number, a: number): boolean {
     return r === 255 && g === 255 && b === 0 && a > 0
   }
 
-  private matchColor(
+  matchColor(
     rgb1: [number, number, number],
     rgb2: [number, number, number],
     matchRatio: number
@@ -54,7 +54,7 @@ export default class LineExtract implements ExtractStrategyInterface {
           //   (h * width + w) * 4,
           //   (h * width + w + 1) * 4
           // )
-          // if (this.isWhite(r1, g1, b1, a1)) {
+          // if (this.#isWhite(r1, g1, b1, a1)) {
           //   visitedArea[h][w] = true
           //   continue
           // }
@@ -62,7 +62,7 @@ export default class LineExtract implements ExtractStrategyInterface {
             (h * width + w) * 4,
             (h * width + w + 1) * 4
           )
-          if (!this.isOnMask(r2, g2, b2, a2)) {
+          if (!this.#isOnMask(r2, g2, b2, a2)) {
             visitedArea[h][w] = true
           }
         }
@@ -110,7 +110,7 @@ export default class LineExtract implements ExtractStrategyInterface {
                 if (nh < 0 || nw < 0 || nh >= height || nw >= width) {
                   continue
                 }
-                if (Math.abs(nw - w) > this.interval) {
+                if (Math.abs(nw - w) > this.#interval) {
                   continue
                 }
                 if (visitedArea[nh][nw]) {
@@ -158,7 +158,7 @@ export default class LineExtract implements ExtractStrategyInterface {
           const yPxMed = (yPxMax + yPxMin) / 2
           const lineWidth = yPxMax - yPxMin
           const area = pixels.length
-          if (this.lineWidth < lineWidth) {
+          if (this.#lineWidth < lineWidth) {
             // To avoid gaps between calculation and rendering
             // INFO: In manual, pixels are limited to moving one pixel at a time.
             const offsetPx = 0.5
