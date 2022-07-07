@@ -3,24 +3,24 @@ import diff from 'color-diff'
 import { Plot, DiameterRange } from '@/types'
 
 export default class SymbolExtractByArea implements ExtractStrategyInterface {
-  #minDiameterPx = 5
-  #maxDiameterPx = 100
+  private minDiameterPx = 5
+  private maxDiameterPx = 100
 
   constructor(diameterRange: DiameterRange) {
-    this.#minDiameterPx = diameterRange.min
-    this.#maxDiameterPx = diameterRange.max
+    this.minDiameterPx = diameterRange.min
+    this.maxDiameterPx = diameterRange.max
   }
 
-  #isWhite(r: number, g: number, b: number, a: number): boolean {
+  private isWhite(r: number, g: number, b: number, a: number): boolean {
     return r === 255 && g === 255 && b === 255 && a > 0
   }
 
   // TODO: 背景色をスキップするか選択できるようにする
-  #isOnMask(r: number, g: number, b: number, a: number): boolean {
+  private isOnMask(r: number, g: number, b: number, a: number): boolean {
     return r === 255 && g === 255 && b === 0 && a > 0
   }
 
-  #diffColor(
+  private diffColor(
     color1: { R: number; G: number; B: number },
     color2: { R: number; G: number; B: number }
   ): number {
@@ -61,7 +61,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
           //   (h * width + w) * 4,
           //   (h * width + w + 1) * 4
           // )
-          // if (this.#isWhite(r1, g1, b1, a1)) {
+          // if (this.isWhite(r1, g1, b1, a1)) {
           //   visitedArea[h][w] = true
           //   continue
           // }
@@ -69,7 +69,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
             (h * width + w) * 4,
             (h * width + w + 1) * 4
           )
-          if (!this.#isOnMask(r2, g2, b2, a2)) {
+          if (!this.isOnMask(r2, g2, b2, a2)) {
             visitedArea[h][w] = true
           }
         }
@@ -150,8 +150,8 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
           // diameter = r * 2
           const diameter = Math.sqrt(area / Math.PI) * 2
           if (
-            this.#minDiameterPx <= diameter &&
-            diameter <= this.#maxDiameterPx
+            this.minDiameterPx <= diameter &&
+            diameter <= this.maxDiameterPx
           ) {
             // To avoid gaps between calculation and rendering
             // INFO: In manual, pixels are limited to moving one pixel at a time.
