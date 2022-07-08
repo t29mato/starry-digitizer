@@ -795,6 +795,7 @@ export default Vue.extend({
     activatePlot(id: number) {
       this.movingPlotId = id
       this.isMovingPlot = true
+      this.isMovingAxis = false
     },
     clearAxes() {
       this.axesPos = []
