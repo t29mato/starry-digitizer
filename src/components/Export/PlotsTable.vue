@@ -1,29 +1,31 @@
 <template>
-  <v-simple-table height="300" fixed-header dense>
-    <thead>
-      <tr>
-        <th>X Pixel</th>
-        <th>Y Pixel</th>
-        <th>X Value</th>
-        <th>Y Value</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        v-for="plot in calculatedPlotsCeil"
-        :key="plot.id"
-        @click="activatePlot(plot.id)"
-        :style="{
-          background: plot.id === movingPlotId ? activeColor : '',
-        }"
-      >
-        <td>{{ plot.xPx }}</td>
-        <td>{{ plot.yPx }}</td>
-        <td>{{ plot.xV }}</td>
-        <td>{{ plot.yV }}</td>
-      </tr>
-    </tbody>
-  </v-simple-table>
+  <div class="pa-2" :style="{ border: '1px solid grey' }">
+    <v-simple-table height="240" fixed-header dense>
+      <thead>
+        <tr>
+          <th>X Pixel</th>
+          <th>Y Pixel</th>
+          <th>X Value</th>
+          <th>Y Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="plot in calculatedPlotsCeil"
+          :key="plot.id"
+          @click="activatePlot(plot.id)"
+          :style="{
+            background: plot.id === movingPlotId ? activeColor : '',
+          }"
+        >
+          <td>{{ plot.xPx }}</td>
+          <td>{{ plot.yPx }}</td>
+          <td>{{ plot.xV }}</td>
+          <td>{{ plot.yV }}</td>
+        </tr>
+      </tbody>
+    </v-simple-table>
+  </div>
 </template>
 
 <script lang="ts">

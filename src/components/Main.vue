@@ -70,16 +70,22 @@
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
           {{ plots.length }}
-          <plots-table
-            :activatePlot="activatePlot"
-            :calculatedPlots="calculatedPlots"
-            :movingPlotId="movingPlotId"
-          ></plots-table>
-          <clipboard
-            :plots="calculatedPlots"
-            :exportPlots="exportPlots"
-            :exportBtnText="exportBtnText"
-          ></clipboard>
+          <v-row>
+            <v-col>
+              <plots-table
+                :activatePlot="activatePlot"
+                :calculatedPlots="calculatedPlots"
+                :movingPlotId="movingPlotId"
+              ></plots-table>
+            </v-col>
+            <v-col>
+              <clipboard
+                :plots="calculatedPlots"
+                :exportPlots="exportPlots"
+                :exportBtnText="exportBtnText"
+              ></clipboard>
+            </v-col>
+          </v-row>
         </v-col>
         <v-col cols="3">
           <!-- TODO: 有効数字を追加する -->
