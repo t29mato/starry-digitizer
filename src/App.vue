@@ -11,7 +11,7 @@
           width="40"
         /> -->
         <h3>StarryDigitizer</h3>
-        <span class="ml-1 mt-2">{{ version }}</span>
+        <span class="ml-2 mt-1">{{ version }}</span>
       </div>
 
       <v-spacer></v-spacer>
