@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dense>
+    <v-app-bar app color="primary" dark dense>
       <div class="d-flex align-center">
         <!-- <v-img
           alt="StarryDigitizer Logo"
