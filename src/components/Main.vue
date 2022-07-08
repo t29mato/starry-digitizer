@@ -108,11 +108,10 @@
           ></axes-settings>
           <h3>
             Automatic Extraction<v-btn
-              text
               class="ml-2"
               :loading="isExtracting"
               @click="extractPlots"
-              color="green"
+              color="primary"
               >Run</v-btn
             >
           </h3>
@@ -133,13 +132,16 @@
               @input="setLineExtractProps"
             ></line-extract-settings>
           </div>
-          <h4>Draw Mask</h4>
-          <v-btn-toggle v-model="maskMode" dense class="pl-2">
-            <v-btn text> Pen </v-btn>
-          </v-btn-toggle>
-          <v-btn text :disabled="!isDrawnMask" @click="clearMask">
-            Clear
-          </v-btn>
+          <h4>
+            Draw Mask
+
+            <v-btn-toggle v-model="maskMode" dense class="pl-2">
+              <v-btn> Pen </v-btn>
+            </v-btn-toggle>
+            <v-btn class="ml-1" :disabled="!isDrawnMask" @click="clearMask">
+              Clear
+            </v-btn>
+          </h4>
           <br />
           <h4>Extracted Color</h4>
           <input type="color" v-model="colorPicker" />

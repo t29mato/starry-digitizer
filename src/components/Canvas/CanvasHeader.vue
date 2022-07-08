@@ -8,8 +8,8 @@
       dense
     ></v-file-input>
     <div class="ml-2">
-      <v-btn text @click="resizeCanvasToMax">100%</v-btn>
-      <v-btn text @click="resizeCanvasToFit">Fit</v-btn>
+      <v-btn @click="resizeCanvasToMax">100%</v-btn>
+      <v-btn class="ml-2" @click="resizeCanvasToFit">Fit</v-btn>
     </div>
   </div>
 </template>

@@ -1,20 +1,21 @@
 <template>
-  <div>
-    <v-btn text :disabled="axes.length === 0" @click="clearAxes">
-      Clear Axes</v-btn
-    >
-    <v-btn text :disabled="plots.length === 0" @click="clearPoints"
+  <div class="mt-2">
+    <v-btn :disabled="axes.length === 0" @click="clearAxes"> Clear Axes</v-btn>
+    <v-btn class="ml-2" :disabled="plots.length === 0" @click="clearPoints"
       >Clear Plots</v-btn
     >
     <v-btn
-      text
+      class="ml-2"
       :disabled="plots.length === 0 || !isMovingPlot"
       @click="removePlot"
       >Clear Active Plot</v-btn
     >
-    <v-btn text :disabled="plots.length === 0" @click="switchShowPlots">{{
-      shouldShowPoints ? 'Hide Plots' : 'Show Plots'
-    }}</v-btn>
+    <v-btn
+      class="ml-2"
+      :disabled="plots.length === 0"
+      @click="switchShowPlots"
+      >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
+    >
   </div>
 </template>
 

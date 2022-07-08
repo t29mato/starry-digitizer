@@ -6,12 +6,14 @@
       outlined
       hide-details="true"
     ></v-textarea>
-    <v-btn @click="copy" text :disabled="convertPlotsIntoText.length === 0"
-      >Copy to Clipboard</v-btn
-    >
-    <v-btn v-if="exportBtnText" @click="exportPlots" text>{{
-      exportBtnText
-    }}</v-btn>
+    <div class="mt-2">
+      <v-btn @click="copy" :disabled="convertPlotsIntoText.length === 0"
+        >Copy to Clipboard</v-btn
+      >
+      <v-btn v-if="exportBtnText" @click="exportPlots" class="ml-2">{{
+        exportBtnText
+      }}</v-btn>
+    </div>
     <v-checkbox
       label="show Pixel"
       v-model="shouldShowPixel"
