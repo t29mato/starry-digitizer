@@ -69,8 +69,7 @@
             :removePlot="removePlot"
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
-          {{ plots.length }}
-          <v-row>
+          <v-row class="mt-0">
             <v-col>
               <plots-table
                 :activatePlot="activatePlot"

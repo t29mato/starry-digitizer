@@ -3,6 +3,7 @@
     <v-simple-table height="240" fixed-header dense>
       <thead>
         <tr>
+          <th>#{{ calculatedPlots.length || 0 }}</th>
           <th>X Pixel</th>
           <th>Y Pixel</th>
           <th>X Value</th>
@@ -18,6 +19,7 @@
             background: plot.id === movingPlotId ? activeColor : '',
           }"
         >
+          <td>{{ plot.id }}</td>
           <td>{{ plot.xPx }}</td>
           <td>{{ plot.yPx }}</td>
           <td>{{ plot.xV }}</td>
