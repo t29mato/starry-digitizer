@@ -75,13 +75,11 @@
             :calculatedPlots="calculatedPlots"
             :movingPlotId="movingPlotId"
           ></plots-table>
-          <div v-if="!hideCSVText">
-            <clipboard
-              :plots="calculatedPlots"
-              :exportPlots="exportPlots"
-              :exportBtnText="exportBtnText"
-            ></clipboard>
-          </div>
+          <clipboard
+            :plots="calculatedPlots"
+            :exportPlots="exportPlots"
+            :exportBtnText="exportBtnText"
+          ></clipboard>
         </v-col>
         <v-col cols="3">
           <!-- TODO: 有効数字を追加する -->
@@ -223,10 +221,6 @@ export default Vue.extend({
     LineExtractSettings,
   },
   props: {
-    hideCSVText: {
-      type: Boolean,
-      default: false,
-    },
     // should be imported by require function
     initialGraphImagePath: {
       type: String,
