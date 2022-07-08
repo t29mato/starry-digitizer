@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
+    <v-app-bar app color="primary" dark dense>
       <div class="d-flex align-center">
         <!-- <v-img
           alt="StarryDigitizer Logo"
@@ -10,7 +10,7 @@
           transition="scale-transition"
           width="40"
         /> -->
-        <h2>StarryDigitizer</h2>
+        <h3>StarryDigitizer</h3>
         <span class="ml-1 mt-2">{{ version }}</span>
       </div>
 
