@@ -3,8 +3,8 @@
     <div
       :style="{
         position: 'absolute',
-        top: `${axis.yPx - axesHalfSize}px`,
-        left: `${axis.xPx - axesHalfSize}px`,
+        top: `${yPx - axesHalfSize}px`,
+        left: `${xPx - axesHalfSize}px`,
         'pointer-events': 'none',
         width: `${axesSize}px`,
         height: `${axesSize}px`,
@@ -16,8 +16,8 @@
     <span
       :style="{
         position: 'absolute',
-        top: `${axis.yPx - axesHalfSize - 9}px`,
-        left: `${axis.xPx - axesHalfSize + 12}px`,
+        top: `${yPx - axesHalfSize - 9}px`,
+        left: `${xPx - axesHalfSize + 12}px`,
         'pointer-events': 'none',
         'user-select': 'none',
       }"
@@ -27,6 +27,7 @@
 </template>
 
 <script lang="ts">
+import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
@@ -47,13 +48,16 @@ export default Vue.extend({
           throw new Error('Maximum count of axes is 4')
       }
     },
+    xPx(): number {
+      return this.axis.xPx
+    },
+    yPx(): number {
+      return this.axis.yPx
+    },
   },
   props: {
     axis: {
-      type: Object as () => {
-        xPx: Number
-        yPx: Number
-      },
+      type: Object as () => Position,
       required: true,
     },
     color: {
@@ -67,6 +71,9 @@ export default Vue.extend({
     axesSize: {
       type: Number,
       required: true,
+    },
+    isFit: {
+      type: Boolean,
     },
   },
 })

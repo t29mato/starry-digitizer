@@ -7,8 +7,8 @@ export default {
     uploadImage: {
       action: 'uploadImage',
     },
-    resizeCanvasToMax: {
-      action: 'resizeCanvasToMax',
+    resizeCanvasToOriginal: {
+      action: 'resizeCanvasToOriginal',
     },
     resizeCanvasToFit: {
       action: 'resizeCanvasToFit',

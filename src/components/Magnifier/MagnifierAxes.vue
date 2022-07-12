@@ -3,8 +3,8 @@
     <div
       :style="{
         position: 'absolute',
-        top: `${((axis.yPx - axesHalfSize) / canvasScale) * magnifierScale}px`,
-        left: `${((axis.xPx - axesHalfSize) / canvasScale) * magnifierScale}px`,
+        top: `${((yPx - axesHalfSize) / canvasScale) * magnifierScale}px`,
+        left: `${((xPx - axesHalfSize) / canvasScale) * magnifierScale}px`,
         'pointer-events': 'none',
         transform: `scale(${magnifierScale}) translate(-${
           canvasCursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
@@ -25,12 +25,10 @@
       :style="{
         position: 'absolute',
         top: `${
-          ((axis.yPx - axesHalfSize - axesSize) / canvasScale - 3) *
-          magnifierScale
+          ((yPx - axesHalfSize - axesSize) / canvasScale - 3) * magnifierScale
         }px`,
         left: `${
-          ((axis.xPx - axesHalfSize + axesSize) / canvasScale + 3) *
-          magnifierScale
+          ((xPx - axesHalfSize + axesSize) / canvasScale + 3) * magnifierScale
         }px`,
         'pointer-events': 'none',
         transform: `scale(${magnifierScale}) translate(-${
@@ -55,12 +53,18 @@ export default Vue.extend({
     magnifierHalfSize(): number {
       return this.magnifierSize / 2
     },
+    xPx(): number {
+      return this.axis.xPx
+    },
+    yPx(): number {
+      return this.axis.yPx
+    },
   },
   props: {
     axis: {
       type: Object as () => {
-        xPx: Number
-        yPx: Number
+        xPx: number
+        yPx: number
       },
       required: true,
     },
@@ -98,6 +102,9 @@ export default Vue.extend({
     label: {
       type: String,
       required: true,
+    },
+    isFit: {
+      type: Boolean,
     },
   },
 })

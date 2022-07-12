@@ -4,8 +4,8 @@
     class="magnifier-plots"
     :style="{
       position: 'absolute',
-      top: `${((plot.yPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
-      left: `${((plot.xPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
+      top: `${((yPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
+      left: `${((xPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
       transform: `scale(${magnifierScale}) translate(-${
         cursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
       }px, -${
@@ -25,6 +25,7 @@
 </template>
 
 <script lang="ts">
+import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
@@ -34,13 +35,16 @@ export default Vue.extend({
     magnifierHalfSize(): number {
       return this.magnifierSize / 2
     },
+    xPx(): number {
+      return this.plot.xPx
+    },
+    yPx(): number {
+      return this.plot.yPx
+    },
   },
   props: {
     plot: {
-      type: Object as () => {
-        xPx: Number
-        yPx: Number
-      },
+      type: Object as () => Position,
       required: true,
     },
     plotSize: {
@@ -68,6 +72,9 @@ export default Vue.extend({
       required: true,
     },
     isActive: {
+      type: Boolean,
+    },
+    isFit: {
       type: Boolean,
     },
   },

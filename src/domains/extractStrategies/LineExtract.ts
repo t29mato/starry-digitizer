@@ -1,6 +1,7 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
 import diff from 'color-diff'
 import { Plot, DiameterRange, LineExtractProps } from '@/types'
+import { CanvasManager } from '../CanvasManager'
 
 export default class LineExtract implements ExtractStrategyInterface {
   #interval = 10
@@ -35,14 +36,17 @@ export default class LineExtract implements ExtractStrategyInterface {
   }
 
   execute(
-    height: number,
-    width: number,
-    graphCanvasColors: Uint8ClampedArray,
-    targetRGB: [number, number, number],
+    cm: CanvasManager,
+    targetColor: [number, number, number],
     colorMatchThreshold: number,
-    maskCanvasColors: Uint8ClampedArray,
     isDrawnMask: boolean
   ) {
+    const height = cm.imageElement.height
+    const width = cm.imageElement.width
+    const maskCanvasColors = cm.maskCanvasColors
+    const graphCanvasColors = cm.originalImageCanvasColors
+    const imageRatio = cm.imageRatio
+
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
       Array(width).fill(false)
@@ -82,7 +86,7 @@ export default class LineExtract implements ExtractStrategyInterface {
         )
         const isMatch = this.matchColor(
           [r1, g1, b1],
-          targetRGB,
+          targetColor,
           colorMatchThreshold
         )
         visitedArea[h][w] = true
@@ -122,7 +126,7 @@ export default class LineExtract implements ExtractStrategyInterface {
                   (nh * width + nw + 1) * 4
                 )
                 if (
-                  this.matchColor([r, g, b], targetRGB, colorMatchThreshold)
+                  this.matchColor([r, g, b], targetColor, colorMatchThreshold)
                 ) {
                   pixels.push({
                     id: pixels.length,
@@ -162,10 +166,11 @@ export default class LineExtract implements ExtractStrategyInterface {
             // To avoid gaps between calculation and rendering
             // INFO: In manual, pixels are limited to moving one pixel at a time.
             const offsetPx = 0.5
+            // TODO: ここで桁数を指定する必要ない。表示時のみ対応でOK。
             plots.push({
               id: plots.length,
-              xPx: parseFloat(xPxMed.toFixed(1)),
-              yPx: parseFloat(yPxMed.toFixed(1)),
+              xPx: parseFloat((xPxTotal / pixels.length + offsetPx).toFixed(1)),
+              yPx: parseFloat((yPxTotal / pixels.length + offsetPx).toFixed(1)),
             })
           }
         }

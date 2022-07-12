@@ -3,8 +3,8 @@
     class="canvas-plot"
     :style="{
       position: 'absolute',
-      top: `${plot.yPx - plotHalfSize}px`,
-      left: `${plot.xPx - plotHalfSize}px`,
+      top: `${yPx - plotHalfSize}px`,
+      left: `${xPx - plotHalfSize}px`,
       cursor: 'pointer',
       width: `${plotSize}px`,
       height: `${plotSize}px`,
@@ -17,20 +17,23 @@
 </template>
 
 <script lang="ts">
+import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
     plotHalfSize(): number {
       return this.plotSize / 2
     },
+    xPx(): number {
+      return this.plot.xPx
+    },
+    yPx(): number {
+      return this.plot.yPx
+    },
   },
   props: {
     plot: {
-      type: Object as () => {
-        id: Number
-        xPx: Number
-        yPx: Number
-      },
+      type: Object as () => Position,
       required: true,
     },
     plotSize: {
@@ -42,6 +45,9 @@ export default Vue.extend({
       required: true,
     },
     isActive: {
+      type: Boolean,
+    },
+    isFit: {
       type: Boolean,
     },
   },

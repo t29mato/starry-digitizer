@@ -33,6 +33,7 @@
           :magnifierScale="magnifierScale"
           :magnifierSize="magnifierSizePx"
           :label="showAxisName(index)"
+          :isFit="isFit"
         ></magnifier-axes>
       </div>
       <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
@@ -44,10 +45,12 @@
           :plot="plot"
           :magnifierSize="magnifierSizePx"
           :isActive="isMovingPlot && movingPlotId === plot.id"
+          :isFit="isFit"
         ></magnifier-plots>
       </div>
     </div>
-    <v-simple-table dense>
+    <p>x: {{ xyValue.xV }}, y: {{ xyValue.yV }}</p>
+    <!-- <v-simple-table dense>
       <thead>
         <tr>
           <th></th>
@@ -73,7 +76,7 @@
           </td>
         </tr>
       </tbody>
-    </v-simple-table>
+    </v-simple-table> -->
     <v-slider
       v-model="magnifierScale"
       thumb-label="always"
@@ -182,6 +185,9 @@ export default Vue.extend({
     },
     xyValue: {
       type: Object as PropType<{ xV: number; yV: number }>,
+    },
+    isFit: {
+      type: Boolean,
     },
   },
   methods: {

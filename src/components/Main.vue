@@ -5,7 +5,7 @@
         <v-col cols="9">
           <canvas-header
             :resizeCanvasToFit="resizeCanvasToFit"
-            :resizeCanvasToMax="resizeCanvasToMax"
+            :resizeCanvasToOriginal="resizeCanvasToOriginal"
             :uploadImage="uploadImage"
           ></canvas-header>
           <div
@@ -15,11 +15,12 @@
               'user-drag': 'none',
               outline: 'solid 1px grey',
             }"
-            id="wrapper"
+            id="canvasWrapper"
             @click="plot"
             @mousemove="mouseMove"
           >
-            <canvas id="imageCanvas" :src="uploadImageUrl" :style="{}"></canvas>
+            <!-- TODO: uploadImageUrlはcanvasManagerで描画してるのでdataプロパティ上は不要 -->
+            <canvas id="imageCanvas" :src="uploadImageUrl"></canvas>
             <canvas
               id="maskCanvas"
               :style="{
@@ -28,12 +29,11 @@
                 left: 0,
                 opacity: 0.5,
               }"
-              :width="canvasWidth"
-              :height="canvasHeight"
               @mousemove="mouseMoveOnMask"
             ></canvas>
-            <div v-for="(axis, index) in axesPos" :key="'axesPos' + index">
+            <div v-for="(axis, index) in showAxesPos" :key="'axesPos' + index">
               <canvas-axes
+                :isFit="isFit"
                 :axesSize="axesSizePx"
                 :axis="axis"
                 :color="
@@ -46,26 +46,27 @@
             </div>
             <!-- TODO: activeなplotはborder色を追加してわかるようにする -->
             <canvas-plot
-              v-for="plot in plots"
+              v-for="plot in showPlots"
               v-show="shouldShowPoints"
               :key="plot.id"
               :plotSize="plotSizePx"
               :plot="plot"
               :isActive="isMovingPlot && movingPlotId === plot.id"
               :activatePlot="activatePlot"
+              :isFit="isFit"
             ></canvas-plot>
             <canvas-cursor
-              :cursor="canvasCursor"
+              :cursor="showCanvasCursor"
               :label="cursorLabel"
             ></canvas-cursor>
           </div>
           <canvas-footer
-            :axes="axesPos"
+            :axes="showAxesPos"
             :isMovingPlot="isMovingPlot"
             :shouldShowPoints="shouldShowPoints"
             :clearPoints="clearPoints"
             :clearAxes="clearAxes"
-            :plots="plots"
+            :plots="showPlots"
             :removePlot="removePlot"
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
@@ -91,18 +92,19 @@
           <magnifier
             :magnifierSizePx="magnifierSizePx"
             :uploadImageUrl="uploadImageUrl"
-            :canvasCursor="canvasCursor"
-            :axes="axesPos"
+            :canvasCursor="showCanvasCursor"
+            :axes="showAxesPos"
             :isMovingAxis="isMovingAxis"
             :movingAxisIndex="movingAxisIndex"
             :axesSizePx="axesSizePx"
             :canvasScale="canvasScale"
-            :plots="plots"
+            :plots="showPlots"
             :plotSizePx="plotSizePx"
             :isMovingPlot="isMovingPlot"
             :movingPlotId="movingPlotId"
             :shouldShowPoints="shouldShowPoints"
             :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
+            :isFit="isFit"
           ></magnifier>
           <h3>XY Axes</h3>
           <axes-settings
@@ -176,7 +178,6 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import ColorThief from 'colorthief'
 import { Magnifier } from './Magnifier'
 import {
   CanvasHeader,
@@ -205,12 +206,13 @@ import {
 } from './Settings'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
+import { CanvasManager } from '@/domains/CanvasManager'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3] as const
-const [black, red, yellow] = ['#000000ff', '#ff0000ff', '#ffff00ff']
+const [black, red] = ['#000000ff', '#ff0000ff']
 // INFO: to adjust the exact position the user clicked.
-const magicNumberPx = 1
-const colorThief = new ColorThief()
+const offsetPx = 1
+const cm = CanvasManager.instance
 const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
 export default Vue.extend({
@@ -267,10 +269,6 @@ export default Vue.extend({
         xPx: 0,
         yPx: 0,
       } as Position,
-      cursorOnFilterCanvas: {
-        xPx: 0,
-        yPx: 0,
-      } as Position,
       plots: [] as Plot[],
       // REFACTOR: color typeを作成する
       colors: [] as { R: number; G: number; B: number }[][],
@@ -299,6 +297,38 @@ export default Vue.extend({
     }
   },
   computed: {
+    showPlots(): Plot[] {
+      if (this.isFit) {
+        return this.plots.map((plot) => {
+          return {
+            id: plot.id,
+            xPx: plot.xPx * this.canvasScale,
+            yPx: plot.yPx * this.canvasScale,
+          }
+        })
+      }
+      return this.plots
+    },
+    showAxesPos(): Position[] {
+      if (this.isFit) {
+        return this.axesPos.map((axis) => {
+          return {
+            xPx: axis.xPx * this.canvasScale,
+            yPx: axis.yPx * this.canvasScale,
+          }
+        })
+      }
+      return this.axesPos
+    },
+    showCanvasCursor(): Position {
+      if (this.isFit) {
+        return {
+          xPx: this.canvasCursor.xPx * this.canvasScale,
+          yPx: this.canvasCursor.yPx * this.canvasScale,
+        }
+      }
+      return this.canvasCursor
+    },
     validateAxes(): boolean {
       if (this.axesValues.x1 === this.axesValues.x2) {
         alert('x1 and x2 should not be same value')
@@ -405,13 +435,18 @@ export default Vue.extend({
       return
     }
     try {
-      const wrapper = document.getElementById('wrapper') as HTMLDivElement
-      const canvas = document.getElementById('imageCanvas') as HTMLCanvasElement
-      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-      const image = await this.loadImage(this.initialGraphImagePath)
+      await cm.initialize(
+        'canvasWrapper',
+        'imageCanvas',
+        'maskCanvas',
+        this.initialGraphImagePath,
+        this.isFit
+      )
       this.uploadImageUrl = this.initialGraphImagePath
-      this.drawImage(wrapper, canvas, image, ctx)
-      this.updateSwatches(image)
+      this.canvasWidth = cm.imageCanvas.width
+      this.canvasHeight = cm.imageCanvas.height
+      this.canvasScale = cm.imageRatio
+      this.updateSwatches(cm.colorSwatches)
     } finally {
       //
     }
@@ -473,22 +508,12 @@ export default Vue.extend({
         return a.xPx - b.xPx
       })
     },
-    updateSwatches(imageElement: HTMLImageElement) {
-      const palette = colorThief.getPalette(imageElement).map((color) => {
-        // INFO: rgbからhexへの切り替え
-        return color.reduce((prev, cur) => {
-          // INFO: HEXは各色16進数2桁なので
-          if (cur.toString(16).length === 1) {
-            return prev + '0' + cur.toString(16)
-          }
-          return prev + cur.toString(16)
-        }, '#')
-      })
+    updateSwatches(colorSwatches: string[]) {
       this.swatches = [...Array(5)].map(() => [])
-      palette.forEach((color, index) => {
+      colorSwatches.forEach((color, index) => {
         this.swatches[index % this.swatches.length].push(color)
       })
-      this.colorPicker = palette[0]
+      this.colorPicker = colorSwatches[0]
     },
     keyListener(e: KeyboardEvent) {
       const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
@@ -544,61 +569,28 @@ export default Vue.extend({
         )[0]
       }
     },
-    async resizeCanvasToMax() {
+    async resizeCanvasToOriginal() {
+      cm.drawOriginalSizeImage()
       this.isFit = false
-      try {
-        const wrapper = document.getElementById('wrapper') as HTMLDivElement
-        const canvas = document.getElementById(
-          'imageCanvas'
-        ) as HTMLCanvasElement
-        const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-        const image = await this.loadImage(this.uploadImageUrl)
-        this.drawImage(wrapper, canvas, image, ctx)
-        this.plots = this.plots.map((plot) => {
-          return {
-            id: plot.id,
-            xPx: plot.xPx / this.canvasScale,
-            yPx: plot.yPx / this.canvasScale,
-          }
-        })
-        this.axesPos = this.axesPos.map((axis) => {
-          return {
-            xPx: axis.xPx / this.canvasScale,
-            yPx: axis.yPx / this.canvasScale,
-          }
-        })
-        this.canvasScale = 1
-      } finally {
-        //
-      }
+      this.canvasScale = 1
     },
     async resizeCanvasToFit() {
+      cm.drawFitSizeImage()
       this.isFit = true
-      try {
-        const wrapper = document.getElementById('wrapper') as HTMLDivElement
-        const canvas = document.getElementById(
-          'imageCanvas'
-        ) as HTMLCanvasElement
-        const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-        const image = await this.loadImage(this.uploadImageUrl)
-        const prevCanvasScale = this.canvasScale
-        this.drawImage(wrapper, canvas, image, ctx)
-        this.plots = this.plots.map((plot) => {
-          return {
-            id: plot.id,
-            xPx: (plot.xPx * this.canvasScale) / prevCanvasScale,
-            yPx: (plot.yPx * this.canvasScale) / prevCanvasScale,
-          }
-        })
-        this.axesPos = this.axesPos.map((axis) => {
-          return {
-            xPx: (axis.xPx * this.canvasScale) / prevCanvasScale,
-            yPx: (axis.yPx * this.canvasScale) / prevCanvasScale,
-          }
-        })
-      } finally {
-        //
-      }
+      this.canvasScale = cm.imageRatio
+      this.plots = this.plots.map((plot) => {
+        return {
+          id: plot.id,
+          xPx: plot.xPx,
+          yPx: plot.yPx,
+        }
+      })
+      this.axesPos = this.axesPos.map((axis) => {
+        return {
+          xPx: axis.xPx,
+          yPx: axis.yPx,
+        }
+      })
     },
     async extractPlots() {
       const begin_ms = new Date().getTime()
@@ -607,33 +599,7 @@ export default Vue.extend({
       this.isMovingPlot = false
       this.plots = []
       try {
-        const wrapper = document.getElementById('wrapper') as HTMLDivElement
-        const imageCanvas = document.getElementById(
-          'imageCanvas'
-        ) as HTMLCanvasElement
-        const imageCanvasCtx = imageCanvas.getContext(
-          '2d'
-        ) as CanvasRenderingContext2D
-        const maskCanvas = document.getElementById(
-          'maskCanvas'
-        ) as HTMLCanvasElement
-        const maskCanvasCtx = maskCanvas.getContext(
-          '2d'
-        ) as CanvasRenderingContext2D
-        const image = await this.loadImage(this.uploadImageUrl)
-        this.drawImage(wrapper, imageCanvas, image, imageCanvasCtx)
-        const maskCanvasColors = maskCanvasCtx.getImageData(
-          0,
-          0,
-          maskCanvas.width,
-          maskCanvas.height
-        ).data
-        const imageCanvasColors = imageCanvasCtx.getImageData(
-          0,
-          0,
-          maskCanvas.width,
-          maskCanvas.height
-        ).data
+        // cm.drawImage()
         let extractor: ExtractStrategyInterface
         switch (this.extractAlgorithm) {
           case 'Symbol Extract':
@@ -646,16 +612,14 @@ export default Vue.extend({
             throw new Error('Extract algorithm is not selected.')
         }
         this.plots = extractor.execute(
-          maskCanvas.height,
-          maskCanvas.width,
-          imageCanvasColors,
+          cm,
           [this.targetColor.R, this.targetColor.G, this.targetColor.B],
           this.colorDistancePct,
-          maskCanvasColors,
           this.isDrawnMask
         )
         this.sortPlots()
         const allCount = this.canvasWidthInt * this.canvasHeightInt
+        // TODO: 時間の問題は無くなったので、時間カウントの処理は外す
         console.info('all count:', allCount)
         // const searchedCount = targetArea.reduce((prev, cur) => {
         //   return prev + cur.filter((item) => item).length
@@ -668,7 +632,7 @@ export default Vue.extend({
         console.info('extracted count: ', this.plots.length)
         this.shouldShowPoints = true
       } catch (e) {
-        console.error(e)
+        console.error('failed to extractPlots', { cause: e })
       } finally {
         const end_ms = new Date().getTime()
         console.info('time:', end_ms - begin_ms + 'ms')
@@ -677,18 +641,16 @@ export default Vue.extend({
     },
     async uploadImage(file: File) {
       try {
-        const wrapper = document.getElementById('wrapper') as HTMLDivElement
-        const canvas = document.getElementById(
-          'imageCanvas'
-        ) as HTMLCanvasElement
-        const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
         const fr = await this.readFile(file)
         if (typeof fr.result !== 'string') {
           throw new Error('file is not string type')
         }
+        // TODO: CanvasManagerを利用する
         const image = await this.loadImage(fr.result)
-        this.drawImage(wrapper, canvas, image, ctx)
-        this.updateSwatches(image)
+        cm.changeImage(image)
+        this.canvasScale = cm.imageRatio
+        cm.drawImage()
+        this.updateSwatches(cm.colorSwatches)
         this.uploadImageUrl = fr.result
       } finally {
         //
@@ -701,49 +663,6 @@ export default Vue.extend({
         img.onerror = (error) => reject(error)
         img.src = src
       })
-    },
-    drawImage(
-      wrapper: HTMLDivElement,
-      canvas: HTMLCanvasElement,
-      image: HTMLImageElement,
-      ctx: CanvasRenderingContext2D
-    ) {
-      if (this.isFit) {
-        return this.drawFitSizeImage(wrapper, canvas, image, ctx)
-      }
-      this.drawMaxSizeImage(wrapper, canvas, image, ctx)
-    },
-    drawFitSizeImage(
-      wrapper: HTMLDivElement,
-      canvas: HTMLCanvasElement,
-      image: HTMLImageElement,
-      ctx: CanvasRenderingContext2D
-    ) {
-      const wrapperWidthPx = wrapper.offsetWidth
-      const imageWidthPx = image.width
-      const imageHeightPx = image.height
-      const imageRatio = wrapperWidthPx / imageWidthPx
-      const wrapperHeightPx = imageHeightPx * imageRatio
-      canvas.setAttribute('width', String(wrapperWidthPx))
-      canvas.setAttribute('height', String(wrapperHeightPx))
-      ctx.drawImage(image, 0, 0, wrapperWidthPx, wrapperHeightPx)
-      this.canvasWidth = wrapperWidthPx
-      this.canvasHeight = wrapperHeightPx
-      this.canvasScale = imageRatio
-    },
-    drawMaxSizeImage(
-      wrapper: HTMLDivElement,
-      canvas: HTMLCanvasElement,
-      image: HTMLImageElement,
-      ctx: CanvasRenderingContext2D
-    ) {
-      const imageWidthPx = image.width
-      const imageHeightPx = image.height
-      canvas.setAttribute('width', String(imageWidthPx))
-      canvas.setAttribute('height', String(imageHeightPx))
-      ctx.drawImage(image, 0, 0, imageWidthPx, imageHeightPx)
-      this.canvasWidth = imageWidthPx
-      this.canvasHeight = imageHeightPx
     },
     readFile(file: File): Promise<FileReader> {
       return new Promise((resolve, reject) => {
@@ -760,7 +679,6 @@ export default Vue.extend({
         return
       }
       const target = e.target as HTMLElement
-      const isOnCanvas = target.id === 'canvas'
       const isOnCanvasPlot = target.className === 'canvas-plot'
       // INFO: canvas-plot element上の時は、plot edit modeになるので
       if (isOnCanvasPlot) {
@@ -771,12 +689,8 @@ export default Vue.extend({
         this.cursorIsMoved = false
         this.movingAxisIndex = this.axesPos.length
         this.axesPos.push({
-          xPx: isOnCanvas
-            ? e.offsetX - magicNumberPx
-            : e.offsetX - magicNumberPx + parseFloat(target.style.left),
-          yPx: isOnCanvas
-            ? e.offsetY
-            : e.offsetY + parseFloat(target.style.top),
+          xPx: (e.offsetX - offsetPx) / this.canvasScale,
+          yPx: e.offsetY / this.canvasScale,
         })
         return
       }
@@ -786,10 +700,8 @@ export default Vue.extend({
       this.movingPlotId = this.nextPlotId
       this.plots.push({
         id: this.nextPlotId,
-        xPx: isOnCanvas
-          ? e.offsetX - magicNumberPx
-          : e.offsetX - magicNumberPx + parseFloat(target.style.left),
-        yPx: isOnCanvas ? e.offsetY : e.offsetY + parseFloat(target.style.top),
+        xPx: (e.offsetX - offsetPx) / this.canvasScale,
+        yPx: e.offsetY / this.canvasScale,
       })
       this.shouldShowPoints = true
     },
@@ -822,40 +734,20 @@ export default Vue.extend({
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
       const target = e.target as HTMLElement
-      const isOnCanvas = target.id === 'canvas'
       this.cursorIsMoved = false
       this.canvasCursor = {
-        xPx: isOnCanvas
-          ? e.offsetX - magicNumberPx
-          : e.offsetX - magicNumberPx + parseFloat(target.style.left),
-        yPx: isOnCanvas ? e.offsetY : e.offsetY + parseFloat(target.style.top),
+        xPx:
+          (e.offsetX - offsetPx + parseFloat(target.style.left)) /
+          this.canvasScale,
+        yPx: (e.offsetY + parseFloat(target.style.top)) / this.canvasScale,
       }
     },
     mouseMoveOnMask(e: MouseEvent) {
       // INFO: 左クリックされてる状態
       if (e.buttons === 1 && this.maskMode === 0) {
-        return this.draw(e.offsetX, e.offsetY)
+        cm.drawMask(e.offsetX, e.offsetY)
+        this.isDrawnMask = true
       }
-      this.cursorOnFilterCanvas = { xPx: 0, yPx: 0 }
-    },
-    draw(xPx: number, yPx: number) {
-      this.isDrawnMask = true
-      const maskCanvas = document.getElementById(
-        'maskCanvas'
-      ) as HTMLCanvasElement
-      const ctx = maskCanvas.getContext('2d') as CanvasRenderingContext2D
-      ctx.beginPath()
-      if (this.cursorOnFilterCanvas.xPx === 0) {
-        ctx.moveTo(xPx, yPx)
-      } else {
-        ctx.moveTo(this.cursorOnFilterCanvas.xPx, this.cursorOnFilterCanvas.yPx)
-      }
-      ctx.lineTo(xPx, yPx)
-      ctx.lineCap = 'round'
-      ctx.lineWidth = 50
-      ctx.stroke()
-      ctx.strokeStyle = yellow
-      this.cursorOnFilterCanvas = { xPx, yPx }
     },
     clearMask() {
       const maskCanvas = document.getElementById(

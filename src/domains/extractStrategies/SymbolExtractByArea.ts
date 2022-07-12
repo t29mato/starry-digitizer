@@ -1,6 +1,7 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
 import diff from 'color-diff'
 import { Plot, DiameterRange } from '@/types'
+import { CanvasManager } from '../CanvasManager'
 
 export default class SymbolExtractByArea implements ExtractStrategyInterface {
   #minDiameterPx = 5
@@ -42,14 +43,17 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
   }
 
   execute(
-    height: number,
-    width: number,
-    graphCanvasColors: Uint8ClampedArray,
-    targetRGB: [number, number, number],
+    cm: CanvasManager,
+    targetColor: [number, number, number],
     colorMatchThreshold: number,
-    maskCanvasColors: Uint8ClampedArray,
     isDrawnMask: boolean
   ) {
+    const height = cm.imageElement.height
+    const width = cm.imageElement.width
+    const maskCanvasColors = cm.originalSizeMaskCanvasColors
+    const graphCanvasColors = cm.originalImageCanvasColors
+    const imageRatio = cm.imageRatio
+
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
       Array(width).fill(false)
@@ -88,7 +92,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
         )
         const isMatch = this.matchColor(
           [r1, g1, b1],
-          targetRGB,
+          targetColor,
           colorMatchThreshold
         )
         visitedArea[h][w] = true
@@ -125,7 +129,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
                   (nh * width + nw + 1) * 4
                 )
                 if (
-                  this.matchColor([r, g, b], targetRGB, colorMatchThreshold)
+                  this.matchColor([r, g, b], targetColor, colorMatchThreshold)
                 ) {
                   pixels.push({
                     id: pixels.length,

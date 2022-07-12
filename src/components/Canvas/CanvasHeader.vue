@@ -8,7 +8,7 @@
       dense
     ></v-file-input>
     <div class="ml-2">
-      <v-btn @click="resizeCanvasToMax">100%</v-btn>
+      <v-btn @click="resizeCanvasToOriginal">100%</v-btn>
       <v-btn class="ml-2" @click="resizeCanvasToFit">Fit</v-btn>
     </div>
   </div>
@@ -22,7 +22,7 @@ export default Vue.extend({
       type: Function,
       required: true,
     },
-    resizeCanvasToMax: {
+    resizeCanvasToOriginal: {
       type: Function,
       required: true,
     },
