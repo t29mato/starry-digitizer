@@ -15,7 +15,7 @@
       <v-btn small class="ml-2" @click="resizeCanvasToOriginal">100%</v-btn>
       <v-btn small class="ml-2" @click="resizeCanvasToFit">Fit</v-btn>
     </div>
-    <span class="ma-1">{{ showScaleRatio }}</span>
+    <span class="ma-1">{{ showcanvasScale }}</span>
   </div>
 </template>
 
@@ -43,14 +43,14 @@ export default Vue.extend({
       type: Function,
       required: true,
     },
-    scaleRatio: {
+    canvasScale: {
       type: Number,
       required: true,
     },
   },
   computed: {
-    showScaleRatio(): string {
-      return Math.trunc(this.scaleRatio * 100) + '%'
+    showcanvasScale(): string {
+      return Math.trunc(this.canvasScale * 100) + '%'
     },
   },
 })

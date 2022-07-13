@@ -45,7 +45,7 @@ export default class LineExtract implements ExtractStrategyInterface {
     const width = cm.imageElement.width
     const maskCanvasColors = cm.maskCanvasColors
     const graphCanvasColors = cm.originalImageCanvasColors
-    const imageRatio = cm.imageRatio
+    const canvasScale = cm.canvasScale
 
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>

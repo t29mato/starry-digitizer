@@ -9,7 +9,7 @@
             :scaleUp="scaleUp"
             :scaleDown="scaleDown"
             :uploadImage="uploadImage"
-            :scaleRatio="canvasScale"
+            :canvasScale="canvasScale"
           ></canvas-header>
           <div
             :style="{
@@ -435,7 +435,7 @@ export default Vue.extend({
       this.uploadImageUrl = this.initialGraphImagePath
       this.canvasWidth = cm.imageCanvas.width
       this.canvasHeight = cm.imageCanvas.height
-      this.canvasScale = cm.imageRatio
+      this.canvasScale = cm.canvasScale
       this.updateSwatches(cm.colorSwatches)
     } finally {
       //
@@ -577,11 +577,11 @@ export default Vue.extend({
     },
     scaleUp() {
       cm.scaleUp()
-      this.canvasScale = cm.imageRatio
+      this.canvasScale = cm.canvasScale
     },
     scaleDown() {
       cm.scaleDown()
-      this.canvasScale = cm.imageRatio
+      this.canvasScale = cm.canvasScale
     },
     resizeCanvasToOriginal() {
       cm.drawOriginalSizeImage()
@@ -589,7 +589,7 @@ export default Vue.extend({
     },
     resizeCanvasToFit() {
       cm.drawFitSizeImage()
-      this.canvasScale = cm.imageRatio
+      this.canvasScale = cm.canvasScale
     },
     async extractPlots() {
       const begin_ms = new Date().getTime()
@@ -647,7 +647,7 @@ export default Vue.extend({
         // TODO: CanvasManagerを利用する
         const image = await this.loadImage(fr.result)
         cm.changeImage(image)
-        this.canvasScale = cm.imageRatio
+        this.canvasScale = cm.canvasScale
         cm.drawImage()
         this.updateSwatches(cm.colorSwatches)
         this.uploadImageUrl = fr.result

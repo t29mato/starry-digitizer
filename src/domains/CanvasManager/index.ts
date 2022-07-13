@@ -8,7 +8,7 @@ export class CanvasManager {
   #imageCanvas?: HTMLCanvasElement
   #maskCanvas?: HTMLCanvasElement
   #imageElement?: HTMLImageElement
-  #imageRatio = 1
+  #canvasScale = 1
   #cursor: Position = { xPx: 0, yPx: 0 }
 
   static get instance(): CanvasManager {
@@ -131,11 +131,11 @@ export class CanvasManager {
   }
 
   get imageIsScaled() {
-    return this.imageRatio !== 1
+    return this.canvasScale !== 1
   }
 
-  set imageRatio(imageRatio: number) {
-    this.#imageRatio = imageRatio
+  set canvasScale(canvasScale: number) {
+    this.#canvasScale = canvasScale
   }
 
   get canvasWrapper() {
@@ -145,11 +145,11 @@ export class CanvasManager {
     return this.#canvasWrapper
   }
 
-  get imageRatio() {
-    if (!this.#imageRatio) {
-      throw new Error('#imageRatio is undefined.')
+  get canvasScale() {
+    if (!this.#canvasScale) {
+      throw new Error('#canvasScale is undefined.')
     }
-    return this.#imageRatio
+    return this.#canvasScale
   }
 
   get imageElement() {
@@ -215,8 +215,8 @@ export class CanvasManager {
     const wrapperWidthPx = this.canvasWrapper.offsetWidth
     const imageWidthPx = this.imageElement.width
     const imageHeightPx = this.imageElement.height
-    const imageRatio = wrapperWidthPx / imageWidthPx
-    const wrapperHeightPx = imageHeightPx * imageRatio
+    const canvasScale = wrapperWidthPx / imageWidthPx
+    const wrapperHeightPx = imageHeightPx * canvasScale
     this.maskCanvas.setAttribute('width', String(wrapperWidthPx))
     this.maskCanvas.setAttribute('height', String(wrapperHeightPx))
     this.imageCanvas.setAttribute('width', String(wrapperWidthPx))
@@ -228,7 +228,7 @@ export class CanvasManager {
       wrapperWidthPx,
       wrapperHeightPx
     )
-    this.imageRatio = imageRatio
+    this.canvasScale = canvasScale
     // this.#maskCanvas = this.#getCanvasElementById('maskCanvas')
     // this.#maskCanvas.width = this.imageElement.width
     // this.#maskCanvas.height = this.imageElement.height
@@ -249,7 +249,7 @@ export class CanvasManager {
       expandedWidth,
       expandedHeight
     )
-    this.imageRatio = this.imageRatio * downRatio
+    this.canvasScale = this.canvasScale * downRatio
   }
 
   scaleUp() {
@@ -267,7 +267,7 @@ export class CanvasManager {
       expandedWidth,
       expandedHeight
     )
-    this.imageRatio = this.imageRatio * upRatio
+    this.canvasScale = this.canvasScale * upRatio
   }
 
   drawOriginalSizeImage() {
@@ -281,6 +281,6 @@ export class CanvasManager {
       this.#imageCanvas.width,
       this.#imageCanvas.height
     )
-    this.imageRatio = 1
+    this.canvasScale = 1
   }
 }
