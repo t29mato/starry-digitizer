@@ -43,8 +43,8 @@
                 :axis="axis"
                 :color="
                   isMovingAxis && movingAxisIndex === index
-                    ? 'limegreen'
-                    : axesColor
+                    ? 'red'
+                    : 'limegreen'
                 "
                 :index="index"
               ></canvas-axes>
@@ -293,7 +293,6 @@ export default Vue.extend({
       isMovingPlot: false,
       // REFACTOR: 変数名をactiveなどにする
       movingPlotId: 0,
-      axesColor: black,
       red,
       canvasWidth: 0,
       canvasHeight: 0,

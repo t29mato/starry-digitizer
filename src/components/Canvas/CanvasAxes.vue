@@ -9,8 +9,8 @@
         width: `${axesSize}px`,
         height: `${axesSize}px`,
         'border-radius': '50%',
-        'background-color': color,
-        outline: '1px solid white',
+        'background-color': 'white',
+        outline: `1px solid ${color}`,
       }"
     ></div>
     <span
