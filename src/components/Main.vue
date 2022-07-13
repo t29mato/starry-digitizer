@@ -112,6 +112,7 @@
             @input="inputAxes"
             @change="changeIsLog"
             :isLog="isLog"
+            :error="axesValuesErrorMessage"
           ></axes-settings>
           <h3>
             Automatic Extraction<v-btn
@@ -294,6 +295,7 @@ export default Vue.extend({
       swatches: [...Array(5)].map(() => []) as string[][],
       isFit: true,
       isDrawnMask: false,
+      axesValuesErrorMessage: '',
     }
   },
   computed: {
@@ -329,21 +331,6 @@ export default Vue.extend({
       }
       return this.canvasCursor
     },
-    validateAxes(): boolean {
-      if (this.axesValues.x1 === this.axesValues.x2) {
-        alert('x1 and x2 should not be same value')
-        return false
-      }
-      if (this.axesValues.y1 === this.axesValues.y2) {
-        alert('y1 and y2 should not be same value')
-        return false
-      }
-      if (Object.values(this.axesValues).includes('')) {
-        console.warn('axes values should not be empty')
-        return false
-      }
-      return this.axesPos.length === 4
-    },
     // REFACTOR: canvas-cursorコンポーネントの中に閉じ込めたい
     showNextAxisName(): string {
       switch (this.axesPos.length) {
@@ -368,7 +355,7 @@ export default Vue.extend({
       if (this.isDrawingMask) {
         return 'Mask'
       }
-      if (!this.validateAxes) {
+      if (this.axesPos.length < 4) {
         return this.showNextAxisName
       }
       return ''
@@ -456,6 +443,22 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
+    validateAxes(): boolean {
+      if (this.axesValues.x1 === this.axesValues.x2) {
+        this.axesValuesErrorMessage = 'x1 and x2 should not be same value'
+        return false
+      }
+      if (this.axesValues.y1 === this.axesValues.y2) {
+        this.axesValuesErrorMessage = 'y1 and y2 should not be same value'
+        return false
+      }
+      if (Object.values(this.axesValues).includes('')) {
+        this.axesValuesErrorMessage = 'axes values should not be empty'
+        return false
+      }
+      this.axesValuesErrorMessage = ''
+      return this.axesPos.length === 4
+    },
     exportPlots() {
       const plots = this.calculatedPlots
       this.$emit('click', plots)
@@ -475,7 +478,7 @@ export default Vue.extend({
     },
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (!this.validateAxes) {
+      if (!this.validateAxes()) {
         return { xV: '0', yV: '0' }
       }
       const calculator = new XYAxesCalculator(
@@ -684,7 +687,7 @@ export default Vue.extend({
       if (isOnCanvasPlot) {
         return
       }
-      if (!this.validateAxes) {
+      if (this.axesPos.length < 4) {
         this.isMovingAxis = true
         this.cursorIsMoved = false
         this.movingAxisIndex = this.axesPos.length
