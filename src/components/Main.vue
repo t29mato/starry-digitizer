@@ -592,13 +592,11 @@ export default Vue.extend({
       this.canvasScale = cm.canvasScale
     },
     async extractPlots() {
-      const begin_ms = new Date().getTime()
       this.isExtracting = true
       this.isMovingAxis = false
       this.isMovingPlot = false
       this.plots = []
       try {
-        // cm.drawImage()
         let extractor: ExtractStrategyInterface
         switch (this.extractAlgorithm) {
           case 'Symbol Extract':
@@ -617,24 +615,10 @@ export default Vue.extend({
           this.isDrawnMask
         )
         this.sortPlots()
-        const allCount = this.canvasWidthInt * this.canvasHeightInt
-        // TODO: 時間の問題は無くなったので、時間カウントの処理は外す
-        console.info('all count:', allCount)
-        // const searchedCount = targetArea.reduce((prev, cur) => {
-        //   return prev + cur.filter((item) => item).length
-        // }, 0)
-        // console.info(
-        //   'searched count:',
-        //   searchedCount,
-        //   '(' + Math.round((searchedCount / allCount) * 1000) / 10 + '%)'
-        // )
-        console.info('extracted count: ', this.plots.length)
         this.shouldShowPoints = true
       } catch (e) {
         console.error('failed to extractPlots', { cause: e })
       } finally {
-        const end_ms = new Date().getTime()
-        console.info('time:', end_ms - begin_ms + 'ms')
         this.isExtracting = false
       }
     },
