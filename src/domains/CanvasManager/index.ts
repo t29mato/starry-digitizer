@@ -235,9 +235,12 @@ export class CanvasManager {
   }
 
   scaleDown() {
-    const downRatio = 0.9
-    const expandedWidth = this.imageCanvas.width * downRatio
-    const expandedHeight = this.imageCanvas.height * downRatio
+    if (this.canvasScale <= 0.1) {
+      throw new Error(`The scale doesn't allow it to be a minus.`)
+    }
+    this.canvasScale = this.canvasScale - 0.1
+    const expandedWidth = this.imageElement.width * this.canvasScale
+    const expandedHeight = this.imageElement.height * this.canvasScale
     this.maskCanvas.setAttribute('width', String(expandedWidth))
     this.maskCanvas.setAttribute('height', String(expandedHeight))
     this.imageCanvas.setAttribute('width', String(expandedWidth))
@@ -249,13 +252,12 @@ export class CanvasManager {
       expandedWidth,
       expandedHeight
     )
-    this.canvasScale = this.canvasScale * downRatio
   }
 
   scaleUp() {
-    const upRatio = 1.1
-    const expandedWidth = this.imageCanvas.width * upRatio
-    const expandedHeight = this.imageCanvas.height * upRatio
+    this.canvasScale = this.canvasScale + 0.1
+    const expandedWidth = this.imageElement.width * this.canvasScale
+    const expandedHeight = this.imageElement.height * this.canvasScale
     this.maskCanvas.setAttribute('width', String(expandedWidth))
     this.maskCanvas.setAttribute('height', String(expandedHeight))
     this.imageCanvas.setAttribute('width', String(expandedWidth))
@@ -267,7 +269,6 @@ export class CanvasManager {
       expandedWidth,
       expandedHeight
     )
-    this.canvasScale = this.canvasScale * upRatio
   }
 
   drawOriginalSizeImage() {
