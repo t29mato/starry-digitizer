@@ -8,8 +8,12 @@
       dense
     ></v-file-input>
     <div class="ml-2">
-      <v-btn @click="resizeCanvasToOriginal">100%</v-btn>
-      <v-btn class="ml-2" @click="resizeCanvasToFit">Fit</v-btn>
+      <v-btn small @click="scaleDown"><v-icon>mdi-minus</v-icon></v-btn>
+      <v-btn small class="ml-2" @click="scaleUp"
+        ><v-icon>mdi-plus</v-icon></v-btn
+      >
+      <v-btn small class="ml-2" @click="resizeCanvasToOriginal">100%</v-btn>
+      <v-btn small class="ml-2" @click="resizeCanvasToFit">Fit</v-btn>
     </div>
   </div>
 </template>
@@ -27,6 +31,10 @@ export default Vue.extend({
       required: true,
     },
     resizeCanvasToFit: {
+      type: Function,
+      required: true,
+    },
+    scaleUp: {
       type: Function,
       required: true,
     },

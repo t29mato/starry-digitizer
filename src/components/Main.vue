@@ -6,6 +6,7 @@
           <canvas-header
             :resizeCanvasToFit="resizeCanvasToFit"
             :resizeCanvasToOriginal="resizeCanvasToOriginal"
+            :scaleUp="scaleUp"
             :uploadImage="uploadImage"
           ></canvas-header>
           <div
@@ -14,6 +15,7 @@
               cursor: 'crosshair',
               'user-drag': 'none',
               outline: 'solid 1px grey',
+              overflow: 'auto',
             }"
             id="canvasWrapper"
             @click="plot"
@@ -572,28 +574,26 @@ export default Vue.extend({
         )[0]
       }
     },
-    async resizeCanvasToOriginal() {
+    scaleUp() {
+      cm.scaleUp()
+      // FIXME: 変数名と実態があっていないので、isOriginalSizeにする。というよりisFitはratioから割り出せるのcomputedに変更する
+      this.isFit = true
+      this.canvasScale = cm.imageRatio
+    },
+    scaleDown() {
+      cm.scaleDown()
+      this.isFit = true
+      this.canvasScale = cm.imageRatio
+    },
+    resizeCanvasToOriginal() {
       cm.drawOriginalSizeImage()
       this.isFit = false
       this.canvasScale = 1
     },
-    async resizeCanvasToFit() {
+    resizeCanvasToFit() {
       cm.drawFitSizeImage()
       this.isFit = true
       this.canvasScale = cm.imageRatio
-      this.plots = this.plots.map((plot) => {
-        return {
-          id: plot.id,
-          xPx: plot.xPx,
-          yPx: plot.yPx,
-        }
-      })
-      this.axesPos = this.axesPos.map((axis) => {
-        return {
-          xPx: axis.xPx,
-          yPx: axis.yPx,
-        }
-      })
     },
     async extractPlots() {
       const begin_ms = new Date().getTime()

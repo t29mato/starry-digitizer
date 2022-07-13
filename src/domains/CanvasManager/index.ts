@@ -236,6 +236,43 @@ export class CanvasManager {
     // this.#maskCanvas.width = this.imageElement.width
     // this.#maskCanvas.height = this.imageElement.height
   }
+
+  scaleDown() {
+    const downRatio = 0.9
+    const expandedWidth = this.imageCanvas.width * downRatio
+    const expandedHeight = this.imageCanvas.height * downRatio
+    this.maskCanvas.setAttribute('width', String(expandedWidth))
+    this.maskCanvas.setAttribute('height', String(expandedHeight))
+    this.imageCanvas.setAttribute('width', String(expandedWidth))
+    this.imageCanvas.setAttribute('height', String(expandedHeight))
+    this.imageCanvasCtx.drawImage(
+      this.imageElement,
+      0,
+      0,
+      expandedWidth,
+      expandedHeight
+    )
+    this.imageRatio = this.imageRatio * downRatio
+  }
+
+  scaleUp() {
+    const upRatio = 1.1
+    const expandedWidth = this.imageCanvas.width * upRatio
+    const expandedHeight = this.imageCanvas.height * upRatio
+    this.maskCanvas.setAttribute('width', String(expandedWidth))
+    this.maskCanvas.setAttribute('height', String(expandedHeight))
+    this.imageCanvas.setAttribute('width', String(expandedWidth))
+    this.imageCanvas.setAttribute('height', String(expandedHeight))
+    this.imageCanvasCtx.drawImage(
+      this.imageElement,
+      0,
+      0,
+      expandedWidth,
+      expandedHeight
+    )
+    this.imageRatio = this.imageRatio * upRatio
+  }
+
   drawOriginalSizeImage() {
     this.#imageCanvas = this.#getCanvasElementById('imageCanvas')
     this.#imageCanvas.width = this.imageElement.width
