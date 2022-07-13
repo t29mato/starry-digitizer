@@ -130,6 +130,15 @@ export class CanvasManager {
     this.drawFitSizeImage()
   }
 
+  clearMask() {
+    this.maskCanvasCtx.clearRect(
+      0,
+      0,
+      this.maskCanvas.width,
+      this.maskCanvas.height
+    )
+  }
+
   get imageIsScaled() {
     return this.canvasScale !== 1
   }

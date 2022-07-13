@@ -145,24 +145,14 @@
               @input="setLineExtractProps"
             ></line-extract-settings>
           </div>
-          <h4>
-            Draw Mask
-
-            <v-btn-toggle v-model="maskMode" dense class="pl-2">
-              <v-btn> Pen </v-btn>
-            </v-btn-toggle>
-            <v-btn class="ml-1" :disabled="!isDrawnMask" @click="clearMask">
-              Clear
-            </v-btn>
-          </h4>
-          <v-text-field
-            v-if="maskMode === 0"
-            v-model="penToolSize"
-            type="number"
-            hide-details
-            label="Pen Size"
-          ></v-text-field>
-          <br />
+          <mask-settings
+            :maskMode="maskMode"
+            :setMaskMode="setMaskMode"
+            :isDrawnMask="isDrawnMask"
+            :clearMask="clearMask"
+            :penToolSize="penToolSize"
+            :setPenToolSize="setPenToolSize"
+          ></mask-settings>
           <h4>Extracted Color</h4>
           <input type="color" v-model="colorPicker" />
           <v-color-picker
@@ -216,6 +206,7 @@ import {
   AxesSettings,
   SymbolExtractSettings,
   LineExtractSettings,
+  MaskSettings,
 } from './Settings'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
@@ -241,6 +232,7 @@ export default Vue.extend({
     AxesSettings,
     SymbolExtractSettings,
     LineExtractSettings,
+    MaskSettings,
   },
   props: {
     // should be imported by require function
@@ -453,6 +445,12 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
+    setMaskMode(mode: number) {
+      this.maskMode = mode
+    },
+    setPenToolSize(size: number) {
+      this.penToolSize = size
+    },
     validateAxes(): boolean {
       if (this.axesValues.x1 === this.axesValues.x2) {
         this.axesValuesErrorMessage = 'x1 and x2 should not be same value'
@@ -744,11 +742,7 @@ export default Vue.extend({
       }
     },
     clearMask() {
-      const maskCanvas = document.getElementById(
-        'maskCanvas'
-      ) as HTMLCanvasElement
-      const ctx = maskCanvas.getContext('2d') as CanvasRenderingContext2D
-      ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height)
+      cm.clearMask()
       this.isDrawnMask = false
     },
   },
