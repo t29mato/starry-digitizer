@@ -284,5 +284,6 @@ export class CanvasManager {
       this.#imageCanvas.width,
       this.#imageCanvas.height
     )
+    this.imageRatio = 1
   }
 }
