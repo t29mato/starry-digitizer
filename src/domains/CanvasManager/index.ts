@@ -53,7 +53,6 @@ export class CanvasManager {
   }
 
   drawMask(xPx: number, yPx: number) {
-    // TODO: ペンが一度離れたら、スタート地点は再度ペンを使い始めた点にする
     const ctx = this.maskCanvasCtx
     ctx.beginPath()
     if (this.#cursor.xPx === 0) {
@@ -67,6 +66,10 @@ export class CanvasManager {
     ctx.stroke()
     ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     this.#cursor = { xPx, yPx }
+  }
+
+  resetDrawMaskPos() {
+    this.#cursor = { xPx: 0, yPx: 0 }
   }
 
   get originalImageCanvasColors() {

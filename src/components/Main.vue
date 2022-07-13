@@ -751,6 +751,10 @@ export default Vue.extend({
         cm.drawMask(e.offsetX, e.offsetY)
         this.isDrawnMask = true
       }
+      // INFO: クリックされていない状態
+      if (e.buttons === 0) {
+        cm.resetDrawMaskPos()
+      }
     },
     clearMask() {
       const maskCanvas = document.getElementById(
