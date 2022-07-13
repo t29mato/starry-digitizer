@@ -15,7 +15,7 @@
       <v-btn small class="ml-2" @click="resizeCanvasToOriginal">100%</v-btn>
       <v-btn small class="ml-2" @click="resizeCanvasToFit">Fit</v-btn>
     </div>
-    <span class="ma-1">{{ showcanvasScale }}</span>
+    <span class="ma-1">{{ showCanvasScale }}</span>
   </div>
 </template>
 
@@ -49,7 +49,7 @@ export default Vue.extend({
     },
   },
   computed: {
-    showcanvasScale(): string {
+    showCanvasScale(): string {
       return Math.trunc(this.canvasScale * 100) + '%'
     },
   },
