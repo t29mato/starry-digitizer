@@ -49,7 +49,7 @@ export class CanvasManager {
     })
   }
 
-  drawMask(xPx: number, yPx: number) {
+  drawMask(xPx: number, yPx: number, penSize: number) {
     const ctx = this.maskCanvasCtx
     ctx.beginPath()
     if (this.#cursor.xPx === 0) {
@@ -59,7 +59,7 @@ export class CanvasManager {
     }
     ctx.lineTo(xPx, yPx)
     ctx.lineCap = 'round'
-    ctx.lineWidth = 50
+    ctx.lineWidth = penSize
     ctx.stroke()
     ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     this.#cursor = { xPx, yPx }

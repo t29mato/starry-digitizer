@@ -155,6 +155,13 @@
               Clear
             </v-btn>
           </h4>
+          <v-text-field
+            v-if="maskMode === 0"
+            v-model="penToolSize"
+            type="number"
+            hide-details
+            label="Pen Size"
+          ></v-text-field>
           <br />
           <h4>Extracted Color</h4>
           <input type="color" v-model="colorPicker" />
@@ -299,6 +306,7 @@ export default Vue.extend({
       swatches: [...Array(5)].map(() => []) as string[][],
       isDrawnMask: false,
       axesValuesErrorMessage: '',
+      penToolSize: 50,
     }
   },
   computed: {
@@ -727,7 +735,7 @@ export default Vue.extend({
     mouseMoveOnMask(e: MouseEvent) {
       // INFO: 左クリックされてる状態
       if (e.buttons === 1 && this.maskMode === 0) {
-        cm.drawMask(e.offsetX, e.offsetY)
+        cm.drawMask(e.offsetX, e.offsetY, this.penToolSize)
         this.isDrawnMask = true
       }
       // INFO: クリックされていない状態
