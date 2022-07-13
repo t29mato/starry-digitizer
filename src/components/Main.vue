@@ -448,8 +448,8 @@ export default Vue.extend({
     setMaskMode(mode: number) {
       this.maskMode = mode
     },
-    setPenToolSize(size: number) {
-      this.penToolSize = size
+    setPenToolSize(size: string) {
+      this.penToolSize = parseInt(size)
     },
     validateAxes(): boolean {
       if (this.axesValues.x1 === this.axesValues.x2) {
