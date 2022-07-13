@@ -38,7 +38,7 @@
             ></canvas>
             <div v-for="(axis, index) in showAxesPos" :key="'axesPos' + index">
               <canvas-axes
-                :isFit="isFit"
+                :imageIsScaled="imageIsScaled"
                 :axesSize="axesSizePx"
                 :axis="axis"
                 :color="
@@ -58,7 +58,7 @@
               :plot="plot"
               :isActive="isMovingPlot && movingPlotId === plot.id"
               :activatePlot="activatePlot"
-              :isFit="isFit"
+              :imageIsScaled="imageIsScaled"
             ></canvas-plot>
             <canvas-cursor
               :cursor="showCanvasCursor"
@@ -109,7 +109,7 @@
             :movingPlotId="movingPlotId"
             :shouldShowPoints="shouldShowPoints"
             :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
-            :isFit="isFit"
+            :imageIsScaled="imageIsScaled"
           ></magnifier>
           <h3>XY Axes</h3>
           <axes-settings
@@ -298,14 +298,13 @@ export default Vue.extend({
       canvasWidth: 0,
       canvasHeight: 0,
       swatches: [...Array(5)].map(() => []) as string[][],
-      isFit: true,
       isDrawnMask: false,
       axesValuesErrorMessage: '',
     }
   },
   computed: {
     showPlots(): Plot[] {
-      if (this.isFit) {
+      if (this.imageIsScaled) {
         return this.plots.map((plot) => {
           return {
             id: plot.id,
@@ -317,7 +316,7 @@ export default Vue.extend({
       return this.plots
     },
     showAxesPos(): Position[] {
-      if (this.isFit) {
+      if (this.imageIsScaled) {
         return this.axesPos.map((axis) => {
           return {
             xPx: axis.xPx * this.canvasScale,
@@ -328,7 +327,7 @@ export default Vue.extend({
       return this.axesPos
     },
     showCanvasCursor(): Position {
-      if (this.isFit) {
+      if (this.imageIsScaled) {
         return {
           xPx: this.canvasCursor.xPx * this.canvasScale,
           yPx: this.canvasCursor.yPx * this.canvasScale,
@@ -402,7 +401,7 @@ export default Vue.extend({
     nextPlotId(): number {
       return this.plots.length
     },
-    imageIsFit(): boolean {
+    imageIsScaled(): boolean {
       return this.canvasScale !== 1
     },
     canvasHeightInt(): number {
@@ -432,7 +431,7 @@ export default Vue.extend({
         'imageCanvas',
         'maskCanvas',
         this.initialGraphImagePath,
-        this.isFit
+        this.imageIsScaled
       )
       this.uploadImageUrl = this.initialGraphImagePath
       this.canvasWidth = cm.imageCanvas.width
@@ -579,23 +578,18 @@ export default Vue.extend({
     },
     scaleUp() {
       cm.scaleUp()
-      // FIXME: 変数名と実態があっていないので、isOriginalSizeにする。というよりisFitはratioから割り出せるのcomputedに変更する
-      this.isFit = true
       this.canvasScale = cm.imageRatio
     },
     scaleDown() {
       cm.scaleDown()
-      this.isFit = true
       this.canvasScale = cm.imageRatio
     },
     resizeCanvasToOriginal() {
       cm.drawOriginalSizeImage()
-      this.isFit = false
       this.canvasScale = 1
     },
     resizeCanvasToFit() {
       cm.drawFitSizeImage()
-      this.isFit = true
       this.canvasScale = cm.imageRatio
     },
     async extractPlots() {

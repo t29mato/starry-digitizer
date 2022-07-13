@@ -72,7 +72,7 @@ export default Vue.extend({
       type: Number,
       required: true,
     },
-    isFit: {
+    imageIsScaled: {
       type: Boolean,
     },
   },

@@ -8,7 +8,6 @@ export class CanvasManager {
   #imageCanvas?: HTMLCanvasElement
   #maskCanvas?: HTMLCanvasElement
   #imageElement?: HTMLImageElement
-  #isFit = false
   #imageRatio = 1
   #cursor: Position = { xPx: 0, yPx: 0 }
 
@@ -23,14 +22,12 @@ export class CanvasManager {
     canvasWrapperId: string,
     imageCanvasId: string,
     maskCanvasId: string,
-    graphImagePath: string,
-    isFit: boolean
+    graphImagePath: string
   ) {
     this.#canvasWrapper = this.#getDivElementById(canvasWrapperId)
     this.#imageCanvas = this.#getCanvasElementById(imageCanvasId)
     this.#maskCanvas = this.#getCanvasElementById(maskCanvasId)
     this.#imageElement = await this.loadImage(graphImagePath)
-    this.#isFit = isFit
 
     this.drawFitSizeImage()
   }
@@ -133,8 +130,8 @@ export class CanvasManager {
     this.drawFitSizeImage()
   }
 
-  set isFit(isFit: boolean) {
-    this.#isFit = isFit
+  get imageIsScaled() {
+    return this.imageRatio !== 1
   }
 
   set imageRatio(imageRatio: number) {
@@ -209,7 +206,7 @@ export class CanvasManager {
   }
 
   drawImage() {
-    if (this.#isFit) {
+    if (this.imageIsScaled) {
       return this.drawFitSizeImage()
     }
     return this.drawOriginalSizeImage()

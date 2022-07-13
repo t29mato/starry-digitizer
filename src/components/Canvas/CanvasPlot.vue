@@ -47,7 +47,7 @@ export default Vue.extend({
     isActive: {
       type: Boolean,
     },
-    isFit: {
+    imageIsScaled: {
       type: Boolean,
     },
   },

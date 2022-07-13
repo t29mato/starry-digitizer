@@ -103,9 +103,6 @@ export default Vue.extend({
       type: String,
       required: true,
     },
-    isFit: {
-      type: Boolean,
-    },
   },
 })
 </script>

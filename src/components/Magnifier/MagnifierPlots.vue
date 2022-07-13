@@ -74,9 +74,6 @@ export default Vue.extend({
     isActive: {
       type: Boolean,
     },
-    isFit: {
-      type: Boolean,
-    },
   },
 })
 </script>
