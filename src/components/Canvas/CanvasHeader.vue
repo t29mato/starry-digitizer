@@ -34,6 +34,10 @@ export default Vue.extend({
       type: Function,
       required: true,
     },
+    scaleDown: {
+      type: Function,
+      required: true,
+    },
     scaleUp: {
       type: Function,
       required: true,

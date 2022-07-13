@@ -7,6 +7,7 @@
             :resizeCanvasToFit="resizeCanvasToFit"
             :resizeCanvasToOriginal="resizeCanvasToOriginal"
             :scaleUp="scaleUp"
+            :scaleDown="scaleDown"
             :uploadImage="uploadImage"
           ></canvas-header>
           <div
@@ -16,6 +17,7 @@
               'user-drag': 'none',
               outline: 'solid 1px grey',
               overflow: 'auto',
+              'max-height': '70vh',
             }"
             id="canvasWrapper"
             @click="plot"
