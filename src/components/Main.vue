@@ -9,6 +9,7 @@
             :scaleUp="scaleUp"
             :scaleDown="scaleDown"
             :uploadImage="uploadImage"
+            :scaleRatio="canvasScale"
           ></canvas-header>
           <div
             :style="{
