@@ -430,8 +430,7 @@ export default Vue.extend({
         'canvasWrapper',
         'imageCanvas',
         'maskCanvas',
-        this.initialGraphImagePath,
-        this.imageIsScaled
+        this.initialGraphImagePath
       )
       this.uploadImageUrl = this.initialGraphImagePath
       this.canvasWidth = cm.imageCanvas.width
