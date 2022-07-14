@@ -353,6 +353,9 @@ export default Vue.extend({
           )
       }
     },
+    showPenToolSize(): number {
+      return this.penToolSize * this.canvasScale
+    },
     // REFACTOR: もう少し状態管理綺麗に
     cursorLabel(): string {
       if (this.isDrawingMask) {
@@ -406,6 +409,7 @@ export default Vue.extend({
     canvasHeightInt(): number {
       return Math.floor(this.canvasHeight)
     },
+    // TODO: canvasWidthIntは利用していないので削除する
     canvasWidthInt(): number {
       return Math.floor(this.canvasWidth)
     },
@@ -733,7 +737,7 @@ export default Vue.extend({
     mouseMoveOnMask(e: MouseEvent) {
       // INFO: 左クリックされてる状態
       if (e.buttons === 1 && this.maskMode === 0) {
-        cm.drawMask(e.offsetX, e.offsetY, this.penToolSize)
+        cm.drawMask(e.offsetX, e.offsetY, this.showPenToolSize)
         this.isDrawnMask = true
       }
       // INFO: クリックされていない状態
