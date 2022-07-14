@@ -137,10 +137,6 @@ export class CanvasManager {
     return this.imageElement.height
   }
 
-  get imageIsScaled() {
-    return this.canvasScale !== 1
-  }
-
   set canvasScale(canvasScale: number) {
     this.#canvasScale = canvasScale
   }
@@ -212,12 +208,6 @@ export class CanvasManager {
     ).data
   }
 
-  drawImage() {
-    if (this.imageIsScaled) {
-      return this.drawFitSizeImage()
-    }
-    return this.drawOriginalSizeImage()
-  }
   drawFitSizeImage() {
     const wrapperWidthPx = this.canvasWrapper.offsetWidth
     const canvasScale = wrapperWidthPx / this.originalWidth

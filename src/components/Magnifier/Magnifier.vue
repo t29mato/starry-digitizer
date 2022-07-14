@@ -33,7 +33,6 @@
           :magnifierScale="magnifierScale"
           :magnifierSize="magnifierSizePx"
           :label="showAxisName(index)"
-          :imageIsScaled="imageIsScaled"
         ></magnifier-axes>
       </div>
       <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
@@ -45,7 +44,6 @@
           :plot="plot"
           :magnifierSize="magnifierSizePx"
           :isActive="isMovingPlot && movingPlotId === plot.id"
-          :imageIsScaled="imageIsScaled"
         ></magnifier-plots>
       </div>
     </div>
@@ -185,9 +183,6 @@ export default Vue.extend({
     },
     xyValue: {
       type: Object as PropType<{ xV: number; yV: number }>,
-    },
-    imageIsScaled: {
-      type: Boolean,
     },
   },
   methods: {

@@ -47,9 +47,6 @@ export default Vue.extend({
     isActive: {
       type: Boolean,
     },
-    imageIsScaled: {
-      type: Boolean,
-    },
   },
   methods: {
     click(id: number) {

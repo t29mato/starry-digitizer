@@ -38,7 +38,6 @@
             ></canvas>
             <div v-for="(axis, index) in showAxesPos" :key="'axesPos' + index">
               <canvas-axes
-                :imageIsScaled="imageIsScaled"
                 :axesSize="axesSizePx"
                 :axis="axis"
                 :color="
@@ -58,7 +57,6 @@
               :plot="plot"
               :isActive="isMovingPlot && movingPlotId === plot.id"
               :activatePlot="activatePlot"
-              :imageIsScaled="imageIsScaled"
             ></canvas-plot>
             <canvas-cursor
               :cursor="showCanvasCursor"
@@ -109,7 +107,6 @@
             :movingPlotId="movingPlotId"
             :shouldShowPoints="shouldShowPoints"
             :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
-            :imageIsScaled="imageIsScaled"
           ></magnifier>
           <h3>XY Axes</h3>
           <axes-settings
@@ -283,7 +280,7 @@ export default Vue.extend({
       isExtracting: false,
       plotSizePx: 4,
       axesSizePx: 4,
-      canvasScale: 1,
+      canvasScale: cm.canvasScale,
       magnifierSizePx: 200,
       // REFACTOR: 変数名を変更 → axesIsActive
       isMovingAxis: false,
@@ -303,36 +300,27 @@ export default Vue.extend({
   },
   computed: {
     showPlots(): Plot[] {
-      if (this.imageIsScaled) {
-        return this.plots.map((plot) => {
-          return {
-            id: plot.id,
-            xPx: plot.xPx * this.canvasScale,
-            yPx: plot.yPx * this.canvasScale,
-          }
-        })
-      }
-      return this.plots
+      return this.plots.map((plot) => {
+        return {
+          id: plot.id,
+          xPx: plot.xPx * this.canvasScale,
+          yPx: plot.yPx * this.canvasScale,
+        }
+      })
     },
     showAxesPos(): Position[] {
-      if (this.imageIsScaled) {
-        return this.axesPos.map((axis) => {
-          return {
-            xPx: axis.xPx * this.canvasScale,
-            yPx: axis.yPx * this.canvasScale,
-          }
-        })
-      }
-      return this.axesPos
+      return this.axesPos.map((axis) => {
+        return {
+          xPx: axis.xPx * this.canvasScale,
+          yPx: axis.yPx * this.canvasScale,
+        }
+      })
     },
     showCanvasCursor(): Position {
-      if (this.imageIsScaled) {
-        return {
-          xPx: this.canvasCursor.xPx * this.canvasScale,
-          yPx: this.canvasCursor.yPx * this.canvasScale,
-        }
+      return {
+        xPx: this.canvasCursor.xPx * this.canvasScale,
+        yPx: this.canvasCursor.yPx * this.canvasScale,
       }
-      return this.canvasCursor
     },
     // REFACTOR: canvas-cursorコンポーネントの中に閉じ込めたい
     showNextAxisName(): string {
@@ -402,9 +390,6 @@ export default Vue.extend({
     },
     nextPlotId(): number {
       return this.plots.length
-    },
-    imageIsScaled(): boolean {
-      return this.canvasScale !== 1
     },
     canvasHeightInt(): number {
       return Math.floor(this.canvasHeight)
@@ -641,7 +626,7 @@ export default Vue.extend({
         const image = await this.loadImage(fr.result)
         cm.changeImage(image)
         this.canvasScale = cm.canvasScale
-        cm.drawImage()
+        cm.drawFitSizeImage()
         this.updateSwatches(cm.colorSwatches)
         this.uploadImageUrl = fr.result
       } finally {
