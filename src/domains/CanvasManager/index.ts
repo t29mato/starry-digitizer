@@ -219,11 +219,25 @@ export class CanvasManager {
     return this.drawOriginalSizeImage()
   }
   drawFitSizeImage() {
+    const tempMaskCanvas = document.createElement('canvas')
+    const tempMaskCanvasCtx = tempMaskCanvas.getContext(
+      '2d'
+    ) as CanvasRenderingContext2D
+    tempMaskCanvas.width = this.maskCanvas.width
+    tempMaskCanvas.height = this.maskCanvas.height
+    tempMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
     const wrapperWidthPx = this.canvasWrapper.offsetWidth
     const canvasScale = wrapperWidthPx / this.originalWidth
     const wrapperHeightPx = this.originalHeight * canvasScale
     this.maskCanvas.setAttribute('width', String(wrapperWidthPx))
     this.maskCanvas.setAttribute('height', String(wrapperHeightPx))
+    this.maskCanvasCtx.drawImage(
+      tempMaskCanvas,
+      0,
+      0,
+      wrapperWidthPx,
+      wrapperHeightPx
+    )
     this.imageCanvas.setAttribute('width', String(wrapperWidthPx))
     this.imageCanvas.setAttribute('height', String(wrapperHeightPx))
     this.imageCanvasCtx.drawImage(
@@ -240,45 +254,87 @@ export class CanvasManager {
     if (this.canvasScale <= 0.1) {
       throw new Error(`The scale doesn't allow it to be a minus.`)
     }
+    const tempMaskCanvas = document.createElement('canvas')
+    const tempMaskCanvasCtx = tempMaskCanvas.getContext(
+      '2d'
+    ) as CanvasRenderingContext2D
+    tempMaskCanvas.width = this.maskCanvas.width
+    tempMaskCanvas.height = this.maskCanvas.height
+    tempMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
     this.canvasScale = this.canvasScale - 0.1
-    const expandedWidth = this.originalWidth * this.canvasScale
-    const expandedHeight = this.originalHeight * this.canvasScale
-    this.maskCanvas.setAttribute('width', String(expandedWidth))
-    this.maskCanvas.setAttribute('height', String(expandedHeight))
-    this.imageCanvas.setAttribute('width', String(expandedWidth))
-    this.imageCanvas.setAttribute('height', String(expandedHeight))
+    const scaledWidth = this.originalWidth * this.canvasScale
+    const scaledHeight = this.originalHeight * this.canvasScale
+    this.maskCanvas.setAttribute('width', String(scaledWidth))
+    this.maskCanvas.setAttribute('height', String(scaledHeight))
+    this.maskCanvasCtx.drawImage(
+      tempMaskCanvas,
+      0,
+      0,
+      scaledWidth,
+      scaledHeight
+    )
+    this.imageCanvas.setAttribute('width', String(scaledWidth))
+    this.imageCanvas.setAttribute('height', String(scaledHeight))
     this.imageCanvasCtx.drawImage(
       this.imageElement,
       0,
       0,
-      expandedWidth,
-      expandedHeight
+      scaledWidth,
+      scaledHeight
     )
   }
 
   scaleUp() {
+    const tempMaskCanvas = document.createElement('canvas')
+    const tempMaskCanvasCtx = tempMaskCanvas.getContext(
+      '2d'
+    ) as CanvasRenderingContext2D
+    tempMaskCanvas.width = this.maskCanvas.width
+    tempMaskCanvas.height = this.maskCanvas.height
+    tempMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
     this.canvasScale = this.canvasScale + 0.1
-    const expandedWidth = this.originalWidth * this.canvasScale
-    const expandedHeight = this.originalHeight * this.canvasScale
-    this.maskCanvas.setAttribute('width', String(expandedWidth))
-    this.maskCanvas.setAttribute('height', String(expandedHeight))
-    this.imageCanvas.setAttribute('width', String(expandedWidth))
-    this.imageCanvas.setAttribute('height', String(expandedHeight))
+    const scaledWidth = this.originalWidth * this.canvasScale
+    const scaledHeight = this.originalHeight * this.canvasScale
+    this.maskCanvas.setAttribute('width', String(scaledWidth))
+    this.maskCanvas.setAttribute('height', String(scaledHeight))
+    this.maskCanvasCtx.drawImage(
+      tempMaskCanvas,
+      0,
+      0,
+      scaledWidth,
+      scaledHeight
+    )
+    this.imageCanvas.setAttribute('width', String(scaledWidth))
+    this.imageCanvas.setAttribute('height', String(scaledHeight))
     this.imageCanvasCtx.drawImage(
       this.imageElement,
       0,
       0,
-      expandedWidth,
-      expandedHeight
+      scaledWidth,
+      scaledHeight
     )
   }
 
   drawOriginalSizeImage() {
+    const tempMaskCanvas = document.createElement('canvas')
+    const tempMaskCanvasCtx = tempMaskCanvas.getContext(
+      '2d'
+    ) as CanvasRenderingContext2D
+    tempMaskCanvas.width = this.maskCanvas.width
+    tempMaskCanvas.height = this.maskCanvas.height
+    tempMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
     this.#imageCanvas = this.#getCanvasElementById('imageCanvas')
-    this.#imageCanvas.width = this.originalWidth
-    this.#imageCanvas.height = this.originalHeight
     this.maskCanvas.width = this.originalWidth
     this.maskCanvas.height = this.originalHeight
+    this.maskCanvasCtx.drawImage(
+      tempMaskCanvas,
+      0,
+      0,
+      this.originalWidth,
+      this.originalHeight
+    )
+    this.#imageCanvas.width = this.originalWidth
+    this.#imageCanvas.height = this.originalHeight
     this.imageCanvasCtx.drawImage(
       this.imageElement,
       0,
