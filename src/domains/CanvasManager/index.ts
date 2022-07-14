@@ -284,6 +284,8 @@ export class CanvasManager {
     this.#imageCanvas = this.#getCanvasElementById('imageCanvas')
     this.#imageCanvas.width = this.imageElement.width
     this.#imageCanvas.height = this.imageElement.height
+    this.maskCanvas.width = this.imageElement.width
+    this.maskCanvas.height = this.imageElement.height
     this.imageCanvasCtx.drawImage(
       this.imageElement,
       0,
