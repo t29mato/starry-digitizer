@@ -71,42 +71,32 @@ export class CanvasManager {
 
   get originalImageCanvasColors() {
     const newCanvas = document.createElement('canvas')
-    newCanvas.setAttribute('width', String(this.imageElement.width))
-    newCanvas.setAttribute('height', String(this.imageElement.height))
+    newCanvas.setAttribute('width', String(this.originalWidth))
+    newCanvas.setAttribute('height', String(this.originalHeight))
     const ctx = newCanvas.getContext('2d') as CanvasRenderingContext2D
     ctx.drawImage(
       this.imageElement,
       0,
       0,
-      this.imageElement.width,
-      this.imageElement.height
+      this.originalWidth,
+      this.originalHeight
     )
-    return ctx.getImageData(
-      0,
-      0,
-      this.imageElement.width,
-      this.imageElement.height
-    ).data
+    return ctx.getImageData(0, 0, this.originalWidth, this.originalHeight).data
   }
 
   get originalSizeMaskCanvasColors() {
     const newCanvas = document.createElement('canvas')
-    newCanvas.setAttribute('width', String(this.imageElement.width))
-    newCanvas.setAttribute('height', String(this.imageElement.height))
+    newCanvas.setAttribute('width', String(this.originalWidth))
+    newCanvas.setAttribute('height', String(this.originalHeight))
     const ctx = newCanvas.getContext('2d') as CanvasRenderingContext2D
     ctx.drawImage(
       this.maskCanvas,
       0,
       0,
-      this.imageElement.width,
-      this.imageElement.height
+      this.originalWidth,
+      this.originalHeight
     )
-    return ctx.getImageData(
-      0,
-      0,
-      this.imageElement.width,
-      this.imageElement.height
-    ).data
+    return ctx.getImageData(0, 0, this.originalWidth, this.originalHeight).data
   }
 
   get colorSwatches() {
@@ -137,6 +127,14 @@ export class CanvasManager {
       this.maskCanvas.width,
       this.maskCanvas.height
     )
+  }
+
+  get originalWidth(): number {
+    return this.imageElement.width
+  }
+
+  get originalHeight(): number {
+    return this.imageElement.height
   }
 
   get imageIsScaled() {
@@ -186,8 +184,8 @@ export class CanvasManager {
     return this.imageCanvasCtx.getImageData(
       0,
       0,
-      this.imageElement.width,
-      this.imageElement.height
+      this.originalWidth,
+      this.originalHeight
     ).data
   }
 
@@ -222,10 +220,8 @@ export class CanvasManager {
   }
   drawFitSizeImage() {
     const wrapperWidthPx = this.canvasWrapper.offsetWidth
-    const imageWidthPx = this.imageElement.width
-    const imageHeightPx = this.imageElement.height
-    const canvasScale = wrapperWidthPx / imageWidthPx
-    const wrapperHeightPx = imageHeightPx * canvasScale
+    const canvasScale = wrapperWidthPx / this.originalWidth
+    const wrapperHeightPx = this.originalHeight * canvasScale
     this.maskCanvas.setAttribute('width', String(wrapperWidthPx))
     this.maskCanvas.setAttribute('height', String(wrapperHeightPx))
     this.imageCanvas.setAttribute('width', String(wrapperWidthPx))
@@ -238,9 +234,6 @@ export class CanvasManager {
       wrapperHeightPx
     )
     this.canvasScale = canvasScale
-    // this.#maskCanvas = this.#getCanvasElementById('maskCanvas')
-    // this.#maskCanvas.width = this.imageElement.width
-    // this.#maskCanvas.height = this.imageElement.height
   }
 
   scaleDown() {
@@ -248,8 +241,8 @@ export class CanvasManager {
       throw new Error(`The scale doesn't allow it to be a minus.`)
     }
     this.canvasScale = this.canvasScale - 0.1
-    const expandedWidth = this.imageElement.width * this.canvasScale
-    const expandedHeight = this.imageElement.height * this.canvasScale
+    const expandedWidth = this.originalWidth * this.canvasScale
+    const expandedHeight = this.originalHeight * this.canvasScale
     this.maskCanvas.setAttribute('width', String(expandedWidth))
     this.maskCanvas.setAttribute('height', String(expandedHeight))
     this.imageCanvas.setAttribute('width', String(expandedWidth))
@@ -265,8 +258,8 @@ export class CanvasManager {
 
   scaleUp() {
     this.canvasScale = this.canvasScale + 0.1
-    const expandedWidth = this.imageElement.width * this.canvasScale
-    const expandedHeight = this.imageElement.height * this.canvasScale
+    const expandedWidth = this.originalWidth * this.canvasScale
+    const expandedHeight = this.originalHeight * this.canvasScale
     this.maskCanvas.setAttribute('width', String(expandedWidth))
     this.maskCanvas.setAttribute('height', String(expandedHeight))
     this.imageCanvas.setAttribute('width', String(expandedWidth))
@@ -282,10 +275,10 @@ export class CanvasManager {
 
   drawOriginalSizeImage() {
     this.#imageCanvas = this.#getCanvasElementById('imageCanvas')
-    this.#imageCanvas.width = this.imageElement.width
-    this.#imageCanvas.height = this.imageElement.height
-    this.maskCanvas.width = this.imageElement.width
-    this.maskCanvas.height = this.imageElement.height
+    this.#imageCanvas.width = this.originalWidth
+    this.#imageCanvas.height = this.originalHeight
+    this.maskCanvas.width = this.originalWidth
+    this.maskCanvas.height = this.originalHeight
     this.imageCanvasCtx.drawImage(
       this.imageElement,
       0,
