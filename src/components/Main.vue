@@ -165,7 +165,7 @@
             thumb-label="always"
             max="20"
             min="1"
-            label="Color Diff."
+            label="Color Diff. (%)"
             thumb-size="20"
             dense
           ></v-slider>
