@@ -1,33 +1,29 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark dense>
-      <div class="d-flex align-center">
-        <!-- <v-img
-          alt="StarryDigitizer Logo"
-          class="shrink mr-2"
-          contain
-          src="https://user-images.githubusercontent.com/30012556/139611246-756466ff-b3ed-4403-a75c-8a9be600ec1a.png"
-          transition="scale-transition"
-          width="40"
-        /> -->
-        <h3>StarryDigitizer</h3>
-        <span class="ml-2 mt-1">{{ version }}</span>
-      </div>
-
-      <v-spacer></v-spacer>
-
-      <v-btn
-        href="https://github.com/t29mato/starry-digitizer/releases"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Release Note</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
-    </v-app-bar>
     <v-main>
       <Main :initialGraphImagePath="require('@/assets/sample_graph.png')" />
     </v-main>
+    <v-footer color="primary">
+      <v-row justify="center" no-gutters>
+        <v-btn
+          v-for="link in links"
+          :key="link.url"
+          color="white"
+          text
+          rounded
+          class="my-2"
+          :href="link.url"
+          target="_blank"
+          small
+        >
+          {{ link.text }}
+        </v-btn>
+        <v-col class="text-center white--text" cols="12">
+          {{ new Date().getFullYear() }} — <strong>StarryDigitizer</strong
+          ><span class="ml-2 mt-1">{{ version }}</span>
+        </v-col>
+      </v-row>
+    </v-footer>
   </v-app>
 </template>
 
@@ -81,6 +77,16 @@ export default Vue.extend({
   data: () => ({
     plots: [],
     version: version + '(Beta)',
+    links: [
+      {
+        text: 'Release Note',
+        url: 'https://github.com/t29mato/starry-digitizer/releases',
+      },
+      {
+        text: 'Document',
+        url: 'https://starrydigitizer.readthedocs.io/',
+      },
+    ],
   }),
   methods: {
     importPlots(plots: any) {
