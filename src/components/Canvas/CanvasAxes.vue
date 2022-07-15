@@ -9,8 +9,8 @@
         width: `${axesSize}px`,
         height: `${axesSize}px`,
         'border-radius': '50%',
-        'background-color': 'white',
-        outline: `1px solid ${color}`,
+        'background-color': isActive ? 'red' : 'dodgerblue',
+        border: `1px solid white`,
       }"
     ></div>
     <span
@@ -60,8 +60,8 @@ export default Vue.extend({
       type: Object as () => Position,
       required: true,
     },
-    color: {
-      type: String,
+    isActive: {
+      type: Boolean,
       required: true,
     },
     index: {

@@ -40,11 +40,7 @@
               <canvas-axes
                 :axesSize="axesSizePx"
                 :axis="axis"
-                :color="
-                  isMovingAxis && movingAxisIndex === index
-                    ? 'red'
-                    : 'limegreen'
-                "
+                :isActive="isMovingAxis && movingAxisIndex === index"
                 :index="index"
               ></canvas-axes>
             </div>
@@ -270,8 +266,8 @@ export default Vue.extend({
       colorDistancePct: 5,
       colorPicker: black,
       isExtracting: false,
-      plotSizePx: 4,
-      axesSizePx: 4,
+      plotSizePx: 10,
+      axesSizePx: 10,
       canvasScale: cm.canvasScale,
       magnifierSizePx: 200,
       // REFACTOR: 変数名を変更 → axesIsActive

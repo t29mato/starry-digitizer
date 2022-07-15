@@ -8,8 +8,8 @@
       cursor: 'pointer',
       width: `${plotSize}px`,
       height: `${plotSize}px`,
-      'background-color': 'white',
-      outline: isActive ? '1px solid red' : '1px solid green',
+      'background-color': isActive ? 'red' : 'dodgerblue',
+      outline: '1px solid white',
       'border-radius': '50%',
     }"
     @click="click(plot.id)"

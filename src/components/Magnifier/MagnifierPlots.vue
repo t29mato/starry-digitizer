@@ -15,10 +15,8 @@
       'pointer-events': 'none',
       width: `${plotSize / canvasScale}px`,
       height: `${plotSize / canvasScale}px`,
-      'background-color': 'white',
-      outline: isActive
-        ? `${1 / canvasScale}px solid red`
-        : `${1 / canvasScale}px solid green`,
+      'background-color': isActive ? 'red' : 'dodgerblue',
+      border: `${1 / canvasScale}px solid white`,
       'border-radius': '50%',
     }"
   ></div>
@@ -73,6 +71,10 @@ export default Vue.extend({
     },
     isActive: {
       type: Boolean,
+    },
+    plotOutlineSizePx: {
+      type: Number,
+      required: true,
     },
   },
 })
