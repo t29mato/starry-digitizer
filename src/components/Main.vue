@@ -375,7 +375,10 @@ export default Vue.extend({
       return newPlots
     },
     nextPlotId(): number {
-      return this.plots.length
+      if (this.plots.length === 0) {
+        return 1
+      }
+      return this.plots[this.plots.length - 1].id + 1
     },
     canvasHeightInt(): number {
       return Math.floor(this.canvasHeight)
