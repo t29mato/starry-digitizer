@@ -44,7 +44,6 @@
                 :index="index"
               ></canvas-axes>
             </div>
-            <!-- TODO: activeなplotはborder色を追加してわかるようにする -->
             <canvas-plot
               v-for="plot in showPlots"
               v-show="shouldShowPoints"
