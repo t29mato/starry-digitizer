@@ -113,16 +113,7 @@
             :shouldShowPoints="shouldShowPoints"
             :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
           ></magnifier>
-          <h4>
-            Automatic Extraction<v-btn
-              class="ml-2"
-              :loading="isExtracting"
-              @click="extractPlots"
-              color="primary"
-              small
-              >Run</v-btn
-            >
-          </h4>
+          <h4>Automatic Extraction</h4>
           <v-select
             v-model="extractAlgorithm"
             :items="extractAlgorithms"
@@ -155,7 +146,14 @@
             :colorDistancePct="colorDistancePct"
             :setColorDistancePct="setColorDistancePct"
           ></color-settings>
-          <p class="grey--text">v{{ version }}</p>
+          <v-btn
+            :loading="isExtracting"
+            @click="extractPlots"
+            color="primary"
+            small
+            >Run</v-btn
+          >
+          <p class="text-caption text-right">v{{ version }}</p>
         </v-col>
       </v-row>
     </template>
