@@ -2,7 +2,7 @@
   <v-container fluid>
     <template>
       <v-row>
-        <v-col cols="9">
+        <v-col cols="9" class="pt-1">
           <canvas-header
             :resizeCanvasToFit="resizeCanvasToFit"
             :resizeCanvasToOriginal="resizeCanvasToOriginal"
@@ -90,7 +90,7 @@
             </v-col>
           </v-row>
         </v-col>
-        <v-col cols="3">
+        <v-col cols="3" class="pt-1">
           <!-- TODO: 有効数字を追加する -->
           <magnifier
             :magnifierSizePx="magnifierSizePx"
