@@ -9,6 +9,9 @@
         outline: '1px solid grey',
       }"
     >
+      <magnifier-settings-btn
+        :toggleSettingsDialog="toggleSettingsDialog"
+      ></magnifier-settings-btn>
       <magnifier-image
         :src="uploadImageUrl"
         :scale="magnifierScale"
@@ -48,41 +51,13 @@
       </div>
     </div>
     <p>x: {{ xyValue.xV }}, y: {{ xyValue.yV }}</p>
-    <!-- <v-simple-table dense>
-      <thead>
-        <tr>
-          <th></th>
-          <th>Pixel</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>X</th>
-          <td>{{ canvasCursorCeil.xPx }}</td>
-          <td>
-            {{ xyValue.xV }}
-          </td>
-        </tr>
-        <tr>
-          <th>Y</th>
-          <td>
-            {{ canvasCursorCeil.yPx }}
-          </td>
-          <td>
-            {{ xyValue.yV }}
-          </td>
-        </tr>
-      </tbody>
-    </v-simple-table> -->
-    <v-slider
-      v-model="magnifierScale"
-      thumb-label="always"
-      max="10"
-      min="2"
-      label="Magnifier"
-      thumb-size="20"
-    ></v-slider>
+    <magnifier-settings
+      :magnifierScale="magnifierScale"
+      :showSettingsDialog="showSettingsDialog"
+      :setMagnifierScale="setMagnifierScale"
+      :toggleSettingsDialog="toggleSettingsDialog"
+      :magnifierSettingError="magnifierSettingError"
+    ></magnifier-settings>
   </div>
 </template>
 
@@ -93,11 +68,15 @@ import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
 import MagnifierAxes from './MagnifierAxes.vue'
 import MagnifierPlots from './MagnifierPlots.vue'
+import MagnifierSettings from './MagnifierSettings.vue'
+import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 
 export default Vue.extend({
   data() {
     return {
       magnifierScale: 5,
+      showSettingsDialog: false,
+      magnifierSettingError: '',
     }
   },
   components: {
@@ -106,6 +85,8 @@ export default Vue.extend({
     MagnifierImage,
     MagnifierAxes,
     MagnifierPlots,
+    MagnifierSettings,
+    MagnifierSettingsBtn,
   },
   computed: {
     magnifierHalfSize(): number {
@@ -199,6 +180,20 @@ export default Vue.extend({
         default:
           return '-'
       }
+    },
+    toggleSettingsDialog(): void {
+      this.showSettingsDialog = !this.showSettingsDialog
+    },
+    setMagnifierScale(inputValue: string): void {
+      const scale = parseInt(inputValue)
+      this.magnifierSettingError = ''
+      if (scale < 2) {
+        this.magnifierSettingError =
+          'The Magnifier scale is supposed to be larger than 2 times.'
+        this.magnifierScale = 2
+        return
+      }
+      this.magnifierScale = scale
     },
   },
 })
