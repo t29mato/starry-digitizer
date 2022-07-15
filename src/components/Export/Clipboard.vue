@@ -1,10 +1,10 @@
 <template>
   <div>
     <v-textarea
-      readonly
       :value="convertPlotsIntoText"
       outlined
       hide-details="true"
+      @change="changeTextArea"
     ></v-textarea>
     <div class="mt-2">
       <v-btn @click="copy" :disabled="convertPlotsIntoText.length === 0"
@@ -74,6 +74,7 @@ export default Vue.extend({
       activeColor: colors.green.lighten5,
       shouldShowPixel: false,
       shouldShowValue: true,
+      textArea: '',
     }
   },
   props: {
@@ -87,7 +88,10 @@ export default Vue.extend({
   },
   methods: {
     copy(): void {
-      navigator.clipboard.writeText(this.convertPlotsIntoText)
+      navigator.clipboard.writeText(this.textArea)
+    },
+    changeTextArea(text: string): void {
+      this.textArea = text
     },
   },
 })
