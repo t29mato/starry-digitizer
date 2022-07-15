@@ -1,16 +1,24 @@
 <template>
   <div class="mt-2">
-    <v-btn :disabled="axes.length === 0" @click="clearAxes"> Clear Axes</v-btn>
-    <v-btn class="ml-2" :disabled="plots.length === 0" @click="clearPoints"
+    <v-btn small :disabled="axes.length === 0" @click="clearAxes">
+      Clear Axes</v-btn
+    >
+    <v-btn
+      small
+      class="ml-2"
+      :disabled="plots.length === 0"
+      @click="clearPoints"
       >Clear Plots</v-btn
     >
     <v-btn
+      small
       class="ml-2"
       :disabled="plots.length === 0 || !isMovingPlot"
       @click="removePlot"
       >Clear Active Plot</v-btn
     >
     <v-btn
+      small
       class="ml-2"
       :disabled="plots.length === 0"
       @click="switchShowPlots"
