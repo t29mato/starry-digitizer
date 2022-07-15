@@ -117,15 +117,16 @@
             :shouldShowPoints="shouldShowPoints"
             :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
           ></magnifier>
-          <h3>
+          <h4>
             Automatic Extraction<v-btn
               class="ml-2"
               :loading="isExtracting"
               @click="extractPlots"
               color="primary"
+              small
               >Run</v-btn
             >
-          </h3>
+          </h4>
           <v-select
             v-model="extractAlgorithm"
             :items="extractAlgorithms"
@@ -151,7 +152,7 @@
             :penToolSize="penToolSize"
             :setPenToolSize="setPenToolSize"
           ></mask-settings>
-          <h4>Extracted Color</h4>
+          <h5>Extracted Color</h5>
           <input type="color" v-model="colorPicker" />
           <v-color-picker
             v-model="colorPicker"

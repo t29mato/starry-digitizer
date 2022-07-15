@@ -1,14 +1,14 @@
 <template>
   <div>
-    <h4>
-      Draw Mask
+    <h5>
+      Mask
       <v-btn-toggle :value="maskMode" @change="setMaskMode" dense class="pl-2">
-        <v-btn> Pen </v-btn>
+        <v-btn small> Pen </v-btn>
       </v-btn-toggle>
-      <v-btn class="ml-1" :disabled="!isDrawnMask" @click="clearMask">
+      <v-btn small class="ml-1" :disabled="!isDrawnMask" @click="clearMask">
         Clear
       </v-btn>
-    </h4>
+    </h5>
     <v-text-field
       v-if="maskMode === 0"
       :value="penToolSize"
