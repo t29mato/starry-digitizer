@@ -16,7 +16,7 @@
           :key="plot.id"
           @click="activatePlot(plot.id)"
           :style="{
-            background: plot.id === movingPlotId ? activeColor : '',
+            background: activePlotIds.includes(plot.id) ? activeColor : '',
           }"
         >
           <td>{{ plot.id }}</td>
@@ -56,8 +56,8 @@ export default Vue.extend({
       type: Function,
       required: true,
     },
-    movingPlotId: {
-      type: Number,
+    activePlotIds: {
+      type: Array as PropType<number[]>,
     },
   },
   computed: {

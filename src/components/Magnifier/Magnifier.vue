@@ -46,7 +46,7 @@
           :plotSize="plotSizePx"
           :plot="plot"
           :magnifierSize="magnifierSizePx"
-          :isActive="isMovingPlot && movingPlotId === plot.id"
+          :isActive="activePlotIds.includes(plot.id)"
         ></magnifier-plots>
       </div>
     </div>
@@ -154,12 +154,8 @@ export default Vue.extend({
       type: Number,
       required: true,
     },
-    isMovingPlot: {
-      type: Boolean,
-      required: true,
-    },
-    movingPlotId: {
-      type: Number,
+    activePlotIds: {
+      type: Array as PropType<number[]>,
       required: true,
     },
     xyValue: {

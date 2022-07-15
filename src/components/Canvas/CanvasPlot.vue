@@ -12,12 +12,12 @@
       outline: '1px solid white',
       'border-radius': '50%',
     }"
-    @click="click(plot.id)"
+    @click="click"
   ></div>
 </template>
 
 <script lang="ts">
-import { Position } from '@/types'
+import { Plot } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
@@ -33,7 +33,7 @@ export default Vue.extend({
   },
   props: {
     plot: {
-      type: Object as () => Position,
+      type: Object as () => Plot,
       required: true,
     },
     plotSize: {
@@ -44,13 +44,21 @@ export default Vue.extend({
       type: Function,
       required: true,
     },
+    toggleActivatedPlot: {
+      type: Function,
+      required: true,
+    },
     isActive: {
       type: Boolean,
     },
   },
   methods: {
-    click(id: number) {
-      this.activatePlot(id)
+    click(event: PointerEvent) {
+      if (event.ctrlKey || event.metaKey) {
+        this.toggleActivatedPlot(this.plot.id)
+        return
+      }
+      this.activatePlot(this.plot.id)
     },
   },
 })

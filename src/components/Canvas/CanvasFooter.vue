@@ -13,8 +13,8 @@
     <v-btn
       small
       class="ml-2"
-      :disabled="plots.length === 0 || !isMovingPlot"
-      @click="removePlot"
+      :disabled="plots.length === 0 || !plotIsActive"
+      @click="clearActivePlots"
       >Clear Active Plot</v-btn
     >
     <v-btn
@@ -31,7 +31,7 @@
 import Vue, { PropType } from 'vue'
 export default Vue.extend({
   props: {
-    isMovingPlot: {
+    plotIsActive: {
       type: Boolean,
       required: true,
     },
@@ -58,7 +58,7 @@ export default Vue.extend({
       type: Function,
       required: true,
     },
-    removePlot: {
+    clearActivePlots: {
       type: Function,
       required: true,
     },

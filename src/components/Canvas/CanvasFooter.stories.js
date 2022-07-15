@@ -4,7 +4,7 @@ export default {
   title: 'Components/Canvas/Footer',
   component: CanvasFooter,
   argTypes: {
-    isMovingPlot: {
+    plotIsActive: {
       defaultValue: true,
     },
     shouldShowPoints: {
@@ -29,8 +29,8 @@ export default {
     clearPoints: {
       action: 'clearPoints',
     },
-    removePlot: {
-      action: 'removePlot',
+    clearActivePlots: {
+      action: 'clearActivePlots',
     },
     switchShowPlots: {
       action: 'switchShowPlots',

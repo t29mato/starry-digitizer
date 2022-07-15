@@ -62,7 +62,6 @@ PlotsActive.args = {
     { id: 0, xPx: 210, yPx: 200 },
     { id: 1, xPx: 220, yPx: 220 },
   ],
-  isMovingPlot: true,
   movingPlotId: 1,
 }
 

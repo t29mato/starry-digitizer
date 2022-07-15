@@ -72,10 +72,6 @@ export default Vue.extend({
     isActive: {
       type: Boolean,
     },
-    plotOutlineSizePx: {
-      type: Number,
-      required: true,
-    },
   },
 })
 </script>

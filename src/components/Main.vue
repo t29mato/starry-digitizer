@@ -50,8 +50,9 @@
               :key="plot.id"
               :plotSize="plotSizePx"
               :plot="plot"
-              :isActive="isMovingPlot && movingPlotId === plot.id"
+              :isActive="activePlotIds.includes(plot.id)"
               :activatePlot="activatePlot"
+              :toggleActivatedPlot="toggleActivatedPlot"
             ></canvas-plot>
             <canvas-cursor
               :cursor="showCanvasCursor"
@@ -60,12 +61,12 @@
           </div>
           <canvas-footer
             :axes="showAxesPos"
-            :isMovingPlot="isMovingPlot"
+            :plotIsActive="plotIsActive"
             :shouldShowPoints="shouldShowPoints"
             :clearPoints="clearPoints"
             :clearAxes="clearAxes"
             :plots="showPlots"
-            :removePlot="removePlot"
+            :clearActivePlots="clearActivePlots"
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
           <v-row class="mt-0">
@@ -82,7 +83,7 @@
               <plots-table
                 :activatePlot="activatePlot"
                 :calculatedPlots="calculatedPlots"
-                :movingPlotId="movingPlotId"
+                :activePlotIds="activePlotIds"
               ></plots-table>
             </v-col>
             <v-col cols="3">
@@ -107,8 +108,8 @@
             :canvasScale="canvasScale"
             :plots="showPlots"
             :plotSizePx="plotSizePx"
-            :isMovingPlot="isMovingPlot"
-            :movingPlotId="movingPlotId"
+            :plotIsActive="plotIsActive"
+            :activePlotIds="activePlotIds"
             :shouldShowPoints="shouldShowPoints"
             :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
           ></magnifier>
@@ -271,9 +272,8 @@ export default Vue.extend({
       isMovingAxis: false,
       cursorIsMoved: false,
       movingAxisIndex: 0,
-      isMovingPlot: false,
       // REFACTOR: 変数名をactiveなどにする
-      movingPlotId: 0,
+      activePlotIds: [] as number[],
       red,
       canvasWidth: 0,
       canvasHeight: 0,
@@ -284,6 +284,9 @@ export default Vue.extend({
     }
   },
   computed: {
+    plotIsActive(): boolean {
+      return this.activePlotIds.length > 0
+    },
     showPlots(): Plot[] {
       return this.plots.map((plot) => {
         return {
@@ -535,25 +538,33 @@ export default Vue.extend({
         }
         this.canvasCursor = this.axesPos[this.movingAxisIndex]
       }
-      if (this.isMovingPlot) {
+      if (this.plotIsActive) {
         switch (e.key) {
           case arrowUp:
-            this.plots.filter((plot) => plot.id === this.movingPlotId)[0].yPx--
+            this.plots
+              .filter((plot) => this.activePlotIds.includes(plot.id))
+              .map((plot) => plot.yPx--)
             break
           case arrowRight:
-            this.plots.filter((plot) => plot.id === this.movingPlotId)[0].xPx++
+            this.plots
+              .filter((plot) => this.activePlotIds.includes(plot.id))
+              .map((plot) => plot.xPx++)
             break
           case arrowDown:
-            this.plots.filter((plot) => plot.id === this.movingPlotId)[0].yPx++
+            this.plots
+              .filter((plot) => this.activePlotIds.includes(plot.id))
+              .map((plot) => plot.yPx++)
             break
           case arrowLeft:
-            this.plots.filter((plot) => plot.id === this.movingPlotId)[0].xPx--
+            this.plots
+              .filter((plot) => this.activePlotIds.includes(plot.id))
+              .map((plot) => plot.xPx--)
             break
           default:
             break
         }
-        this.canvasCursor = this.plots.filter(
-          (plot) => plot.id === this.movingPlotId
+        this.canvasCursor = this.plots.filter((plot) =>
+          this.activePlotIds.includes(plot.id)
         )[0]
       }
     },
@@ -576,7 +587,6 @@ export default Vue.extend({
     async extractPlots() {
       this.isExtracting = true
       this.isMovingAxis = false
-      this.isMovingPlot = false
       this.plots = []
       try {
         let extractor: ExtractStrategyInterface
@@ -661,8 +671,7 @@ export default Vue.extend({
       }
       this.isMovingAxis = false
 
-      this.isMovingPlot = true
-      this.movingPlotId = this.nextPlotId
+      this.activePlotIds = [this.nextPlotId]
       this.plots.push({
         id: this.nextPlotId,
         xPx: (e.offsetX - offsetPx) / this.canvasScale,
@@ -671,30 +680,32 @@ export default Vue.extend({
       this.shouldShowPoints = true
     },
     activatePlot(id: number) {
-      this.movingPlotId = id
-      this.isMovingPlot = true
+      this.activePlotIds = [id]
       this.isMovingAxis = false
+    },
+    toggleActivatedPlot(toggledId: number) {
+      if (this.activePlotIds.includes(toggledId)) {
+        this.activePlotIds = this.activePlotIds.filter((id) => {
+          return id !== toggledId
+        })
+        return
+      }
+      this.activePlotIds.push(toggledId)
     },
     clearAxes() {
       this.axesPos = []
       this.isMovingAxis = false
-      this.isMovingPlot = false
       this.cursorIsMoved = false
     },
     clearPoints() {
       this.plots = []
       this.shouldShowPoints = true
-      this.isMovingPlot = false
     },
-    removeAxis() {
-      this.axesPos.pop()
-      this.isMovingAxis = false
-    },
-    removePlot() {
+    clearActivePlots() {
       this.plots = this.plots.filter((plot) => {
-        return plot.id !== this.movingPlotId
+        return !this.activePlotIds.includes(plot.id)
       })
-      this.isMovingPlot = false
+      this.activePlotIds = []
     },
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
