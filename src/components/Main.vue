@@ -74,14 +74,23 @@
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
           <v-row class="mt-0">
-            <v-col>
+            <v-col cols="4">
+              <axes-settings
+                :axes="axesValues"
+                @input="inputAxes"
+                @change="changeIsLog"
+                :isLog="isLog"
+                :error="axesValuesErrorMessage"
+              ></axes-settings>
+            </v-col>
+            <v-col cols="5">
               <plots-table
                 :activatePlot="activatePlot"
                 :calculatedPlots="calculatedPlots"
                 :movingPlotId="movingPlotId"
               ></plots-table>
             </v-col>
-            <v-col>
+            <v-col cols="3">
               <clipboard
                 :plots="calculatedPlots"
                 :exportPlots="exportPlots"
@@ -108,14 +117,6 @@
             :shouldShowPoints="shouldShowPoints"
             :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
           ></magnifier>
-          <h3>XY Axes</h3>
-          <axes-settings
-            :axes="axesValues"
-            @input="inputAxes"
-            @change="changeIsLog"
-            :isLog="isLog"
-            :error="axesValuesErrorMessage"
-          ></axes-settings>
           <h3>
             Automatic Extraction<v-btn
               class="ml-2"

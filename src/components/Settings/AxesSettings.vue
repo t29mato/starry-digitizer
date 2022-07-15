@@ -1,14 +1,15 @@
 <template>
-  <div>
+  <div :style="{ border: '1px solid grey' }" class="pa-1">
+    <h4>XY Axes</h4>
     <v-simple-table dense>
-      <thead>
+      <!-- <thead>
         <tr>
           <th></th>
           <th>Value 1</th>
           <th>Value 2</th>
           <th>Log</th>
         </tr>
-      </thead>
+      </thead> -->
       <tbody>
         <tr>
           <th>X</th>
@@ -33,7 +34,13 @@
             ></v-text-field>
           </td>
           <td>
-            <v-checkbox :value="isLog.x" @change="changeIsLogX"></v-checkbox>
+            <v-checkbox
+              :value="isLog.x"
+              @change="changeIsLogX"
+              dense
+              hint="Log"
+              persistent-hint
+            ></v-checkbox>
           </td>
         </tr>
         <tr>
@@ -59,7 +66,13 @@
             ></v-text-field>
           </td>
           <td>
-            <v-checkbox :value="isLog.y" @change="changeIsLogY"></v-checkbox>
+            <v-checkbox
+              :value="isLog.y"
+              @change="changeIsLogY"
+              hint="Log"
+              persistent-hint
+              dense
+            ></v-checkbox>
           </td>
         </tr>
       </tbody>
