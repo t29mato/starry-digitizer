@@ -3,7 +3,7 @@
     <v-simple-table height="240" fixed-header dense>
       <thead>
         <tr>
-          <th>#{{ calculatedPlots.length || 0 }}</th>
+          <th v-if="isDev">#{{ calculatedPlots.length || 0 }}</th>
           <th>X Pixel</th>
           <th>Y Pixel</th>
           <th>X Value</th>
@@ -19,7 +19,7 @@
             background: activePlotIds.includes(plot.id) ? activeColor : '',
           }"
         >
-          <td>{{ plot.id }}</td>
+          <td v-if="isDev">{{ plot.id }}</td>
           <td>{{ plot.xPx }}</td>
           <td>{{ plot.yPx }}</td>
           <td>{{ plot.xV }}</td>
@@ -37,6 +37,7 @@ export default Vue.extend({
   data() {
     return {
       activeColor: colors.green.lighten5,
+      isDev: process.env.NODE_ENV === 'development',
     }
   },
   props: {
