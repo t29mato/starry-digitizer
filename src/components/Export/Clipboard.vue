@@ -7,25 +7,13 @@
       @change="changeTextArea"
     ></v-textarea>
     <div class="mt-2">
-      <v-btn @click="copy" :disabled="convertPlotsIntoText.length === 0"
+      <v-btn small @click="copy" :disabled="convertPlotsIntoText.length === 0"
         >Copy to Clipboard</v-btn
       >
       <v-btn v-if="exportBtnText" @click="exportPlots" class="ml-2">{{
         exportBtnText
       }}</v-btn>
     </div>
-    <v-checkbox
-      label="show Pixel"
-      v-model="shouldShowPixel"
-      dense
-      hide-details
-    ></v-checkbox>
-    <v-checkbox
-      label="show Value"
-      v-model="shouldShowValue"
-      dense
-      hide-details
-    ></v-checkbox>
   </div>
 </template>
 
@@ -38,16 +26,7 @@ export default Vue.extend({
     convertPlotsIntoText(): string {
       return this.ceiledPlots
         .reduce((prev, cur) => {
-          if (this.shouldShowPixel && this.shouldShowValue) {
-            return prev + `${cur.xPx}, ${cur.yPx}, ${cur.xV}, ${cur.yV}\n`
-          }
-          if (this.shouldShowPixel) {
-            return prev + `${cur.xPx}, ${cur.yPx}\n`
-          }
-          if (this.shouldShowValue) {
-            return prev + `${cur.xV}, ${cur.yV}\n`
-          }
-          return prev
+          return prev + `${cur.xV}, ${cur.yV}\n`
         }, '')
         .trim()
     },
@@ -72,8 +51,6 @@ export default Vue.extend({
   data() {
     return {
       activeColor: colors.green.lighten5,
-      shouldShowPixel: false,
-      shouldShowValue: true,
       textArea: '',
     }
   },
@@ -88,7 +65,7 @@ export default Vue.extend({
   },
   methods: {
     copy(): void {
-      navigator.clipboard.writeText(this.textArea)
+      navigator.clipboard.writeText(this.textArea || this.convertPlotsIntoText)
     },
     changeTextArea(text: string): void {
       this.textArea = text
