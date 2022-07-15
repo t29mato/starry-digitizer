@@ -3,7 +3,7 @@
     <v-main>
       <Main :initialGraphImagePath="require('@/assets/sample_graph.png')" />
     </v-main>
-    <v-footer color="primary">
+    <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
         <v-btn
           v-for="link in links"
@@ -87,6 +87,7 @@ export default Vue.extend({
         url: 'https://starrydigitizer.readthedocs.io/',
       },
     ],
+    isProd: process.env.NODE_ENV === 'production',
   }),
   methods: {
     importPlots(plots: any) {
