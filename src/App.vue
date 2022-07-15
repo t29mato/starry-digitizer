@@ -76,7 +76,7 @@ export default Vue.extend({
 
   data: () => ({
     plots: [],
-    version: version + '(Beta)',
+    version,
     links: [
       {
         text: 'Release Note',
