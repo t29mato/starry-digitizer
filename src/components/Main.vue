@@ -152,33 +152,13 @@
             :penToolSize="penToolSize"
             :setPenToolSize="setPenToolSize"
           ></mask-settings>
-          <h5>Extracted Color</h5>
-          <!-- TODO: 抽出色設定もColorSettingsComponentに入れる -->
-          <v-row class="mt-1">
-            <v-col cols="4">
-              <input type="color" v-model="colorPicker" />
-            </v-col>
-            <v-col cols="8">
-              <v-text-field
-                :value="colorDistancePct"
-                @input="setColorDistancePct"
-                label="Color Diff. (%)"
-                type="number"
-                :error="colorDistancePctErrorMsg.length > 0"
-                :error-messages="colorDistancePctErrorMsg"
-                dense
-              >
-              </v-text-field>
-            </v-col>
-          </v-row>
-          <v-color-picker
-            v-model="colorPicker"
-            hide-canvas
-            hide-inputs
-            show-swatches
-            hide-sliders
+          <color-settings
+            :colorPicker="colorPicker"
+            :setColorPicker="setColorPicker"
             :swatches="swatches"
-          ></v-color-picker>
+            :colorDistancePct="colorDistancePct"
+            :setColorDistancePct="setColorDistancePct"
+          ></color-settings>
           <p class="grey--text">v{{ version }}</p>
         </v-col>
       </v-row>
@@ -214,6 +194,7 @@ import {
   SymbolExtractSettings,
   LineExtractSettings,
   MaskSettings,
+  ColorSettings,
 } from './Settings'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
@@ -240,6 +221,7 @@ export default Vue.extend({
     SymbolExtractSettings,
     LineExtractSettings,
     MaskSettings,
+    ColorSettings,
   },
   props: {
     // should be imported by require function
@@ -286,7 +268,6 @@ export default Vue.extend({
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
       colorDistancePct: 5,
-      colorDistancePctErrorMsg: '',
       colorPicker: black,
       isExtracting: false,
       plotSizePx: 4,
@@ -745,17 +726,10 @@ export default Vue.extend({
       cm.clearMask()
       this.isDrawnMask = false
     },
-    setColorDistancePct(inputValue: string) {
-      const distance = parseInt(inputValue)
-      this.colorDistancePctErrorMsg = ''
-      if (distance < 1) {
-        this.colorDistancePctErrorMsg =
-          'The Color Difference(%) is supposed to be larger than 1%.'
-      }
-      if (100 <= distance) {
-        this.colorDistancePctErrorMsg =
-          'The Color Difference(%) is supposed to be smaller than 100%'
-      }
+    setColorPicker(color: string) {
+      this.colorPicker = color
+    },
+    setColorDistancePct(distance: number) {
       this.colorDistancePct = distance
     },
   },
