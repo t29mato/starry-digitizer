@@ -2,7 +2,7 @@
   <div>
     <h5>
       Mask
-      <v-btn-toggle :value="maskMode" @change="setMaskMode" dense class="pl-2">
+      <v-btn-toggle :value="maskMode" @change="change" dense class="pl-2">
         <v-btn small color="primary"> Pen </v-btn>
         <v-btn small color="primary"> Box </v-btn>
       </v-btn-toggle>
@@ -52,6 +52,14 @@ export default Vue.extend({
       required: true,
     },
   },
-  methods: {},
+  methods: {
+    change(value: any) {
+      if (value === undefined) {
+        this.setMaskMode(-1)
+        return
+      }
+      this.setMaskMode(value)
+    },
+  },
 })
 </script>
