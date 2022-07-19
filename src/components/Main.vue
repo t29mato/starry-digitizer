@@ -627,6 +627,8 @@ export default Vue.extend({
         cm.drawFitSizeImage()
         this.updateSwatches(cm.colorSwatches)
         this.uploadImageUrl = fr.result
+        this.clearAxes()
+        this.clearPoints()
       } finally {
         //
       }
