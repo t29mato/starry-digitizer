@@ -10,7 +10,7 @@
         height: `${axesSize}px`,
         'border-radius': '50%',
         'background-color': isActive ? 'red' : 'dodgerblue',
-        border: `1px solid white`,
+        outline: `1px solid white`,
       }"
     ></div>
     <span

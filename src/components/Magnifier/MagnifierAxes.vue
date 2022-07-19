@@ -16,7 +16,7 @@
         height: `${axesSize / canvasScale}px`,
         'border-radius': '50%',
         'background-color': isActive ? 'red' : 'dodgerblue',
-        border: `${1 / canvasScale}px solid white`,
+        outline: `${1 / canvasScale}px solid white`,
       }"
     ></div>
     <span

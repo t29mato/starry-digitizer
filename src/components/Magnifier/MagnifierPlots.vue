@@ -16,7 +16,7 @@
       width: `${plotSize / canvasScale}px`,
       height: `${plotSize / canvasScale}px`,
       'background-color': isActive ? 'red' : 'dodgerblue',
-      border: `${1 / canvasScale}px solid white`,
+      outline: `${1 / canvasScale}px solid white`,
       'border-radius': '50%',
     }"
   ></div>
