@@ -23,6 +23,8 @@
             id="canvasWrapper"
             @click="plot"
             @mousemove="mouseMove"
+            @mousedown="mouseDown"
+            @mouseup="mouseUp"
           >
             <!-- TODO: uploadImageUrlはcanvasManagerで描画してるのでdataプロパティ上は不要 -->
             <canvas id="imageCanvas" :src="uploadImageUrl"></canvas>
@@ -43,9 +45,6 @@
                 opacity: 0.5,
               }"
               id="maskCanvas"
-              @mousemove="mouseMoveOnMask"
-              @mousedown="mouseDownOnMask"
-              @mouseup="mouseUpOnMask"
             ></canvas>
             <div v-for="(axis, index) in showAxesPos" :key="'axesPos' + index">
               <canvas-axes
@@ -289,7 +288,7 @@ export default Vue.extend({
       canvasWidth: 0,
       canvasHeight: 0,
       swatches: [...Array(5)].map(() => []) as string[][],
-      isDrawnMask: false,
+      isDrawnMask: cm.isDrawnMask,
       axesValuesErrorMessage: '',
       penToolSize: 50,
     }
@@ -724,46 +723,45 @@ export default Vue.extend({
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
       const target = e.target as HTMLElement
+      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
+      const yPx = e.offsetY + parseFloat(target.style.top)
       this.cursorIsMoved = false
       this.canvasCursor = {
-        xPx:
-          (e.offsetX - offsetPx + parseFloat(target.style.left)) /
-          this.canvasScale,
-        yPx: (e.offsetY + parseFloat(target.style.top)) / this.canvasScale,
+        xPx: xPx / this.canvasScale,
+        yPx: yPx / this.canvasScale,
       }
-    },
-    mouseDownOnMask(e: MouseEvent) {
-      if (this.maskMode === 1) {
-        cm.mouseDownForBox(e)
-        this.isDrawnMask = true
-      }
-    },
-    mouseMoveOnMask(e: MouseEvent) {
       // INFO: 左クリックされていない状態
-      if (e.buttons === 0) {
+      const isClicking = e.buttons === 1
+      if (!isClicking) {
         cm.resetDrawMaskPos()
-        return
-      }
-      // INFO: ペンモード
-      if (e.buttons === 1 && this.maskMode === 0) {
-        cm.drawMaskByPen(e.offsetX, e.offsetY, this.showPenToolSize)
-        this.isDrawnMask = true
-      }
-      // INFO: ボックスモード
-      if (e.buttons === 1 && this.maskMode === 1) {
-        cm.mouseMoveForBox(e)
-        this.isDrawnMask = true
+      } else {
+        if (this.maskMode === 0) {
+          cm.drawMaskByPen(xPx, yPx, this.showPenToolSize)
+          this.isDrawnMask = cm.isDrawnMask
+        }
+        if (this.maskMode === 1) {
+          cm.mouseMoveForBox(xPx, yPx)
+        }
       }
     },
-    mouseUpOnMask(e: MouseEvent) {
+    mouseDown(e: MouseEvent) {
+      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
+      const target = e.target as HTMLElement
+      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
+      const yPx = e.offsetY + parseFloat(target.style.top)
       if (this.maskMode === 1) {
-        cm.mouseUpForBox(e)
-        this.isDrawnMask = true
+        cm.mouseDownForBox(xPx, yPx)
+      }
+    },
+    mouseUp() {
+      if (this.maskMode === 1) {
+        cm.mouseUpForBox()
+        this.isDrawnMask = cm.isDrawnMask
       }
     },
     clearMask() {
       cm.clearMask()
-      this.isDrawnMask = false
+      this.isDrawnMask = cm.isDrawnMask
     },
     setColorPicker(color: string) {
       this.colorPicker = color

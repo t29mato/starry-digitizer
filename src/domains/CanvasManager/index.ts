@@ -7,6 +7,7 @@ export class CanvasManager {
   #canvasWrapper?: HTMLDivElement
   #imageCanvas?: HTMLCanvasElement
   #maskCanvas?: HTMLCanvasElement
+  isDrawnMask = false
   #tempMaskCanvas?: HTMLCanvasElement
   #imageElement?: HTMLImageElement
   #canvasScale = 1
@@ -72,15 +73,16 @@ export class CanvasManager {
     ctx.lineCap = 'round'
     ctx.lineWidth = penSize
     ctx.stroke()
+    this.isDrawnMask = true
     this.#cursor = { xPx, yPx }
   }
 
-  mouseDownForBox(e: MouseEvent) {
-    this.#rectangle.startY = e.offsetY
-    this.#rectangle.startX = e.offsetX
+  mouseDownForBox(xPx: number, yPx: number) {
+    this.#rectangle.startY = yPx
+    this.#rectangle.startX = xPx
   }
 
-  mouseMoveForBox(e: MouseEvent) {
+  mouseMoveForBox(xPx: number, yPx: number) {
     this.tempMaskCanvasCtx.strokeStyle = '#000000ff' // INFO: black
     this.tempMaskCanvasCtx.clearRect(
       0,
@@ -88,8 +90,8 @@ export class CanvasManager {
       this.maskCanvas.width,
       this.maskCanvas.height
     )
-    this.#rectangle.endY = e.offsetY - this.#rectangle.startY
-    this.#rectangle.endX = e.offsetX - this.#rectangle.startX
+    this.#rectangle.endY = yPx - this.#rectangle.startY
+    this.#rectangle.endX = xPx - this.#rectangle.startX
     this.tempMaskCanvasCtx.strokeRect(
       this.#rectangle.startX,
       this.#rectangle.startY,
@@ -98,7 +100,7 @@ export class CanvasManager {
     )
   }
 
-  mouseUpForBox(e: MouseEvent) {
+  mouseUpForBox() {
     this.maskCanvasCtx.fillStyle = '#ffff00ff' // INFO: yellow
     this.maskCanvasCtx.fillRect(
       this.#rectangle.startX,
@@ -106,6 +108,7 @@ export class CanvasManager {
       this.#rectangle.endX,
       this.#rectangle.endY
     )
+    this.isDrawnMask = true
     this.clearRectangle()
     this.tempMaskCanvasCtx.clearRect(
       0,
@@ -186,6 +189,7 @@ export class CanvasManager {
       this.maskCanvas.width,
       this.maskCanvas.height
     )
+    this.isDrawnMask = false
   }
 
   get originalWidth(): number {
