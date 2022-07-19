@@ -7,9 +7,16 @@ export class CanvasManager {
   #canvasWrapper?: HTMLDivElement
   #imageCanvas?: HTMLCanvasElement
   #maskCanvas?: HTMLCanvasElement
+  #tempMaskCanvas?: HTMLCanvasElement
   #imageElement?: HTMLImageElement
   #canvasScale = 1
   #cursor: Position = { xPx: 0, yPx: 0 }
+  #rectangle = {
+    startX: 0,
+    startY: 0,
+    endX: 0,
+    endY: 0,
+  }
 
   static get instance(): CanvasManager {
     if (!this.#instance) {
@@ -22,11 +29,13 @@ export class CanvasManager {
     canvasWrapperId: string,
     imageCanvasId: string,
     maskCanvasId: string,
+    tempMaskCanvasId: string,
     graphImagePath: string
   ) {
     this.#canvasWrapper = this.#getDivElementById(canvasWrapperId)
     this.#imageCanvas = this.#getCanvasElementById(imageCanvasId)
     this.#maskCanvas = this.#getCanvasElementById(maskCanvasId)
+    this.#tempMaskCanvas = this.#getCanvasElementById(tempMaskCanvasId)
     this.#imageElement = await this.loadImage(graphImagePath)
 
     this.drawFitSizeImage()
@@ -36,6 +45,7 @@ export class CanvasManager {
     return document.getElementById(id) as HTMLDivElement
   }
 
+  // TODO: TypeがHTMLCanvasElementでなければここでエラー出す。
   #getCanvasElementById(id: string) {
     return document.getElementById(id) as HTMLCanvasElement
   }
@@ -49,8 +59,9 @@ export class CanvasManager {
     })
   }
 
-  drawMask(xPx: number, yPx: number, penSize: number) {
+  drawMaskByPen(xPx: number, yPx: number, penSize: number) {
     const ctx = this.maskCanvasCtx
+    ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     ctx.beginPath()
     if (this.#cursor.xPx === 0) {
       ctx.moveTo(xPx, yPx)
@@ -61,8 +72,56 @@ export class CanvasManager {
     ctx.lineCap = 'round'
     ctx.lineWidth = penSize
     ctx.stroke()
-    ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     this.#cursor = { xPx, yPx }
+  }
+
+  mouseDownForBox(e: MouseEvent) {
+    this.#rectangle.startY = e.offsetY
+    this.#rectangle.startX = e.offsetX
+  }
+
+  mouseMoveForBox(e: MouseEvent) {
+    this.tempMaskCanvasCtx.strokeStyle = '#000000ff' // INFO: black
+    this.tempMaskCanvasCtx.clearRect(
+      0,
+      0,
+      this.maskCanvas.width,
+      this.maskCanvas.height
+    )
+    this.#rectangle.endY = e.offsetY - this.#rectangle.startY
+    this.#rectangle.endX = e.offsetX - this.#rectangle.startX
+    this.tempMaskCanvasCtx.strokeRect(
+      this.#rectangle.startX,
+      this.#rectangle.startY,
+      this.#rectangle.endX,
+      this.#rectangle.endY
+    )
+  }
+
+  mouseUpForBox(e: MouseEvent) {
+    this.maskCanvasCtx.fillStyle = '#ffff00ff' // INFO: yellow
+    this.maskCanvasCtx.fillRect(
+      this.#rectangle.startX,
+      this.#rectangle.startY,
+      this.#rectangle.endX,
+      this.#rectangle.endY
+    )
+    this.clearRectangle()
+    this.tempMaskCanvasCtx.clearRect(
+      0,
+      0,
+      this.maskCanvas.width,
+      this.maskCanvas.height
+    )
+  }
+
+  clearRectangle() {
+    this.#rectangle = {
+      startX: 0,
+      startY: 0,
+      endX: 0,
+      endY: 0,
+    }
   }
 
   resetDrawMaskPos() {
@@ -193,10 +252,7 @@ export class CanvasManager {
   }
 
   get maskCanvasCtx() {
-    if (!this.#maskCanvas) {
-      throw new Error('#maskCanvas is undefined.')
-    }
-    return this.#maskCanvas.getContext('2d') as CanvasRenderingContext2D
+    return this.maskCanvas.getContext('2d') as CanvasRenderingContext2D
   }
 
   get maskCanvasColors() {
@@ -206,6 +262,17 @@ export class CanvasManager {
       this.maskCanvas.width,
       this.maskCanvas.height
     ).data
+  }
+
+  get tempMaskCanvas() {
+    if (!this.#tempMaskCanvas) {
+      throw new Error('#tempMaskCanvas is undefined.')
+    }
+    return this.#tempMaskCanvas
+  }
+
+  get tempMaskCanvasCtx() {
+    return this.tempMaskCanvas.getContext('2d') as CanvasRenderingContext2D
   }
 
   drawFitSizeImage() {
@@ -249,6 +316,8 @@ export class CanvasManager {
     this.maskCanvas.width = width
     this.maskCanvas.height = height
     this.maskCanvasCtx.drawImage(tempMaskCanvas, 0, 0, width, height)
+    this.tempMaskCanvas.width = width
+    this.tempMaskCanvas.height = height
     this.imageCanvas.width = width
     this.imageCanvas.height = height
     this.imageCanvasCtx.drawImage(this.imageElement, 0, 0, width, height)

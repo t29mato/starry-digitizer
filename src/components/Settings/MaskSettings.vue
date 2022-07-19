@@ -4,6 +4,7 @@
       Mask
       <v-btn-toggle :value="maskMode" @change="setMaskMode" dense class="pl-2">
         <v-btn small color="primary"> Pen </v-btn>
+        <v-btn small color="primary"> Box </v-btn>
       </v-btn-toggle>
       <v-btn small class="ml-1" :disabled="!isDrawnMask" @click="clearMask">
         Clear

@@ -27,14 +27,27 @@
             <!-- TODO: uploadImageUrlはcanvasManagerで描画してるのでdataプロパティ上は不要 -->
             <canvas id="imageCanvas" :src="uploadImageUrl"></canvas>
             <canvas
-              id="maskCanvas"
               :style="{
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 opacity: 0.5,
+                'z-index': 2,
               }"
+              id="maskCanvas"
               @mousemove="mouseMoveOnMask"
+              @mousedown="mouseDownOnMask"
+              @mouseup="mouseUpOnMask"
+            ></canvas>
+            <canvas
+              id="tempMaskCanvas"
+              :style="{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                opacity: 0.5,
+                'z-index': 1,
+              }"
             ></canvas>
             <div v-for="(axis, index) in showAxesPos" :key="'axesPos' + index">
               <canvas-axes
@@ -409,6 +422,7 @@ export default Vue.extend({
         'canvasWrapper',
         'imageCanvas',
         'maskCanvas',
+        'tempMaskCanvas',
         this.initialGraphImagePath
       )
       this.uploadImageUrl = this.initialGraphImagePath
@@ -720,15 +734,33 @@ export default Vue.extend({
         yPx: (e.offsetY + parseFloat(target.style.top)) / this.canvasScale,
       }
     },
-    mouseMoveOnMask(e: MouseEvent) {
-      // INFO: 左クリックされてる状態
-      if (e.buttons === 1 && this.maskMode === 0) {
-        cm.drawMask(e.offsetX, e.offsetY, this.showPenToolSize)
+    mouseDownOnMask(e: MouseEvent) {
+      if (this.maskMode === 1) {
+        cm.mouseDownForBox(e)
         this.isDrawnMask = true
       }
-      // INFO: クリックされていない状態
+    },
+    mouseMoveOnMask(e: MouseEvent) {
+      // INFO: 左クリックされていない状態
       if (e.buttons === 0) {
         cm.resetDrawMaskPos()
+        return
+      }
+      // INFO: ペンモード
+      if (e.buttons === 1 && this.maskMode === 0) {
+        cm.drawMaskByPen(e.offsetX, e.offsetY, this.showPenToolSize)
+        this.isDrawnMask = true
+      }
+      // INFO: ボックスモード
+      if (e.buttons === 1 && this.maskMode === 1) {
+        cm.mouseMoveForBox(e)
+        this.isDrawnMask = true
+      }
+    },
+    mouseUpOnMask(e: MouseEvent) {
+      if (this.maskMode === 1) {
+        cm.mouseUpForBox(e)
+        this.isDrawnMask = true
       }
     },
     clearMask() {
