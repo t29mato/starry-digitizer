@@ -3,11 +3,7 @@
     <v-btn small :disabled="axes.length === 0" @click="clearAxes">
       Clear Axes</v-btn
     >
-    <v-btn
-      small
-      class="ml-2"
-      :disabled="plots.length === 0"
-      @click="clearPoints"
+    <v-btn small class="ml-2" :disabled="plots.length === 0" @click="clearPlots"
       >Clear Plots</v-btn
     >
     <v-btn
@@ -54,7 +50,7 @@ export default Vue.extend({
       type: Function,
       required: true,
     },
-    clearPoints: {
+    clearPlots: {
       type: Function,
       required: true,
     },

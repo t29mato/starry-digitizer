@@ -26,8 +26,8 @@ export default {
     clearAxes: {
       action: 'clearAxes',
     },
-    clearPoints: {
-      action: 'clearPoints',
+    clearPlots: {
+      action: 'clearPlots',
     },
     clearActivePlots: {
       action: 'clearActivePlots',

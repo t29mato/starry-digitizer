@@ -63,7 +63,7 @@
             :axes="showAxesPos"
             :plotIsActive="plotIsActive"
             :shouldShowPoints="shouldShowPoints"
-            :clearPoints="clearPoints"
+            :clearPlots="clearPlots"
             :clearAxes="clearAxes"
             :plots="showPlots"
             :clearActivePlots="clearActivePlots"
@@ -628,7 +628,7 @@ export default Vue.extend({
         this.updateSwatches(cm.colorSwatches)
         this.uploadImageUrl = fr.result
         this.clearAxes()
-        this.clearPoints()
+        this.clearPlots()
       } finally {
         //
       }
@@ -699,7 +699,7 @@ export default Vue.extend({
       this.isMovingAxis = false
       this.cursorIsMoved = false
     },
-    clearPoints() {
+    clearPlots() {
       this.plots = []
       this.shouldShowPoints = true
     },
