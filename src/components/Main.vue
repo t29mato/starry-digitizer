@@ -147,7 +147,9 @@
             :isDrawnMask="isDrawnMask"
             :clearMask="clearMask"
             :penToolSize="penToolSize"
+            :eraserSize="eraserSize"
             :setPenToolSize="setPenToolSize"
+            :setEraserSize="setEraserSize"
           ></mask-settings>
           <color-settings
             :colorPicker="colorPicker"
@@ -291,6 +293,7 @@ export default Vue.extend({
       isDrawnMask: cm.isDrawnMask,
       axesValuesErrorMessage: '',
       penToolSize: 50,
+      eraserSize: 30,
     }
   },
   computed: {
@@ -342,10 +345,17 @@ export default Vue.extend({
     showPenToolSize(): number {
       return this.penToolSize * this.canvasScale
     },
-    // REFACTOR: もう少し状態管理綺麗に
+    showEraserSize(): number {
+      return this.eraserSize * this.canvasScale
+    },
     cursorLabel(): string {
-      if (this.isDrawingMask) {
-        return 'Mask'
+      switch (this.maskMode) {
+        case 0:
+          return 'Pen'
+        case 1:
+          return 'Box'
+        case 2:
+          return 'Eraser'
       }
       if (this.axesPos.length < 4) {
         return this.showNextAxisName
@@ -403,6 +413,7 @@ export default Vue.extend({
       switch (this.maskMode) {
         case 0:
         case 1:
+        case 2:
           return true
         default:
           return false
@@ -441,6 +452,9 @@ export default Vue.extend({
     },
     setPenToolSize(size: string) {
       this.penToolSize = parseInt(size)
+    },
+    setEraserSize(size: string) {
+      this.eraserSize = parseInt(size)
     },
     validateAxes(): boolean {
       if (this.axesValues.x1 === this.axesValues.x2) {
@@ -735,12 +749,19 @@ export default Vue.extend({
       if (!isClicking) {
         cm.resetDrawMaskPos()
       } else {
-        if (this.maskMode === 0) {
-          cm.drawMaskByPen(xPx, yPx, this.showPenToolSize)
-          this.isDrawnMask = cm.isDrawnMask
-        }
-        if (this.maskMode === 1) {
-          cm.mouseMoveForBox(xPx, yPx)
+        switch (this.maskMode) {
+          case 0: // INFO: pen mask
+            cm.mouseMoveForPen(xPx, yPx, this.showPenToolSize)
+            this.isDrawnMask = cm.isDrawnMask
+            break
+          case 1: // INFO: box mask
+            cm.mouseMoveForBox(xPx, yPx)
+            break
+          case 2: // INFO: eraser mask
+            cm.mouseMoveForEraser(xPx, yPx, this.showEraserSize)
+            break
+          default:
+            break
         }
       }
     },
@@ -762,6 +783,10 @@ export default Vue.extend({
     clearMask() {
       cm.clearMask()
       this.isDrawnMask = cm.isDrawnMask
+      // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
+      if (this.maskMode === 2) {
+        this.maskMode = -1
+      }
     },
     setColorPicker(color: string) {
       this.colorPicker = color

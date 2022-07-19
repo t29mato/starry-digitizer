@@ -60,7 +60,7 @@ export class CanvasManager {
     })
   }
 
-  drawMaskByPen(xPx: number, yPx: number, penSize: number) {
+  mouseMoveForPen(xPx: number, yPx: number, penSize: number) {
     const ctx = this.maskCanvasCtx
     ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     ctx.beginPath()
@@ -75,6 +75,25 @@ export class CanvasManager {
     ctx.stroke()
     this.isDrawnMask = true
     this.#cursor = { xPx, yPx }
+  }
+
+  mouseMoveForEraser(xPx: number, yPx: number, penSize: number) {
+    const ctx = this.maskCanvasCtx
+    ctx.globalCompositeOperation = 'destination-out'
+    ctx.strokeStyle = '#000000' // INFO: black
+    ctx.beginPath()
+    if (this.#cursor.xPx === 0) {
+      ctx.moveTo(xPx, yPx)
+    } else {
+      ctx.moveTo(this.#cursor.xPx, this.#cursor.yPx)
+    }
+    ctx.lineTo(xPx, yPx)
+    ctx.lineCap = 'round'
+    ctx.lineWidth = penSize
+    ctx.stroke()
+    this.isDrawnMask = true
+    this.#cursor = { xPx, yPx }
+    ctx.globalCompositeOperation = 'source-over'
   }
 
   mouseDownForBox(xPx: number, yPx: number) {

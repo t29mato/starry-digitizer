@@ -5,6 +5,7 @@
       <v-btn-toggle :value="maskMode" @change="change" dense class="pl-2">
         <v-btn small color="primary"> Pen </v-btn>
         <v-btn small color="primary"> Box </v-btn>
+        <v-btn small color="primary"> Eraser </v-btn>
       </v-btn-toggle>
       <v-btn small class="ml-1" :disabled="!isDrawnMask" @click="clearMask">
         Clear
@@ -18,7 +19,14 @@
       hide-details
       label="Pen Size"
     ></v-text-field>
-    <br />
+    <v-text-field
+      v-if="maskMode === 2"
+      :value="eraserSize"
+      @change="setEraserSize"
+      type="number"
+      hide-details
+      label="Eraser Size (px)"
+    ></v-text-field>
   </div>
 </template>
 
@@ -48,6 +56,14 @@ export default Vue.extend({
       required: true,
     },
     setPenToolSize: {
+      type: Function,
+      required: true,
+    },
+    eraserSize: {
+      type: Number,
+      required: true,
+    },
+    setEraserSize: {
       type: Function,
       required: true,
     },
