@@ -27,27 +27,25 @@
             <!-- TODO: uploadImageUrlはcanvasManagerで描画してるのでdataプロパティ上は不要 -->
             <canvas id="imageCanvas" :src="uploadImageUrl"></canvas>
             <canvas
-              :style="{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                opacity: 0.5,
-                'z-index': 2,
-              }"
-              id="maskCanvas"
-              @mousemove="mouseMoveOnMask"
-              @mousedown="mouseDownOnMask"
-              @mouseup="mouseUpOnMask"
-            ></canvas>
-            <canvas
               id="tempMaskCanvas"
               :style="{
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 opacity: 0.5,
-                'z-index': 1,
               }"
+            ></canvas>
+            <canvas
+              :style="{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                opacity: 0.5,
+              }"
+              id="maskCanvas"
+              @mousemove="mouseMoveOnMask"
+              @mousedown="mouseDownOnMask"
+              @mouseup="mouseUpOnMask"
             ></canvas>
             <div v-for="(axis, index) in showAxesPos" :key="'axesPos' + index">
               <canvas-axes
