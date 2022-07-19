@@ -21,9 +21,11 @@
       ></magnifier-image>
       <magnifier-vertical-line
         :magnifierSize="magnifierSizePx"
+        :crosshairSizePx="crosshairSizePx"
       ></magnifier-vertical-line>
       <magnifier-horizontal-line
         :magnifierSize="magnifierSizePx"
+        :crosshairSizePx="crosshairSizePx"
       ></magnifier-horizontal-line>
       <div v-for="(axis, index) in axes" :key="'axes' + index">
         <magnifier-axes
@@ -77,6 +79,7 @@ export default Vue.extend({
       magnifierScale: 5,
       showSettingsDialog: false,
       magnifierSettingError: '',
+      crosshairSizePx: 1,
     }
   },
   components: {

@@ -5,7 +5,7 @@
       top: '0px',
       left: '0px',
       width: `${magnifierSize}px`,
-      height: `${magnifierSize / 2}px`,
+      height: `${height}px`,
       'border-bottom': '1px solid grey',
     }"
   ></div>
@@ -18,6 +18,16 @@ export default Vue.extend({
     magnifierSize: {
       type: Number,
       required: true,
+    },
+    crosshairSizePx: {
+      type: Number,
+      required: true,
+    },
+  },
+  computed: {
+    // INFO: 十字線を作成する箱の横幅
+    height(): number {
+      return (this.magnifierSize - this.crosshairSizePx) / 2
     },
   },
 })
