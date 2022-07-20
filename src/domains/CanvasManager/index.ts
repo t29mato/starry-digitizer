@@ -7,6 +7,7 @@ export class CanvasManager {
   #canvasWrapper?: HTMLDivElement
   #imageCanvas?: HTMLCanvasElement
   #maskCanvas?: HTMLCanvasElement
+  #magnifierMaskCanvas?: HTMLCanvasElement
   isDrawnMask = false
   #tempMaskCanvas?: HTMLCanvasElement
   #imageElement?: HTMLImageElement
@@ -31,12 +32,16 @@ export class CanvasManager {
     imageCanvasId: string,
     maskCanvasId: string,
     tempMaskCanvasId: string,
+    magnifierMaskCanvasId: string,
     graphImagePath: string
   ) {
     this.#canvasWrapper = this.#getDivElementById(canvasWrapperId)
     this.#imageCanvas = this.#getCanvasElementById(imageCanvasId)
     this.#maskCanvas = this.#getCanvasElementById(maskCanvasId)
     this.#tempMaskCanvas = this.#getCanvasElementById(tempMaskCanvasId)
+    this.#magnifierMaskCanvas = this.#getCanvasElementById(
+      magnifierMaskCanvasId
+    )
     this.#imageElement = await this.loadImage(graphImagePath)
 
     this.drawFitSizeImage()
@@ -75,6 +80,7 @@ export class CanvasManager {
     ctx.stroke()
     this.isDrawnMask = true
     this.#cursor = { xPx, yPx }
+    this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
   }
 
   mouseMoveForEraser(xPx: number, yPx: number, penSize: number) {
@@ -94,6 +100,13 @@ export class CanvasManager {
     this.isDrawnMask = true
     this.#cursor = { xPx, yPx }
     ctx.globalCompositeOperation = 'source-over'
+    this.magnifierMaskCanvasCtx.clearRect(
+      0,
+      0,
+      this.maskCanvas.width,
+      this.maskCanvas.height
+    )
+    this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
   }
 
   mouseDownForBox(xPx: number, yPx: number) {
@@ -127,6 +140,7 @@ export class CanvasManager {
       this.#rectangle.endX,
       this.#rectangle.endY
     )
+    this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
     this.isDrawnMask = true
     this.clearRectangle()
     this.tempMaskCanvasCtx.clearRect(
@@ -208,6 +222,7 @@ export class CanvasManager {
       this.maskCanvas.width,
       this.maskCanvas.height
     )
+    this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
     this.isDrawnMask = false
   }
 
@@ -298,6 +313,17 @@ export class CanvasManager {
     return this.tempMaskCanvas.getContext('2d') as CanvasRenderingContext2D
   }
 
+  get magnifierMaskCanvas() {
+    if (!this.#magnifierMaskCanvas) {
+      throw new Error('#magnifierMaskCanvas is undefined.')
+    }
+    return this.#magnifierMaskCanvas
+  }
+
+  get magnifierMaskCanvasCtx() {
+    return this.magnifierMaskCanvas.getContext('2d') as CanvasRenderingContext2D
+  }
+
   drawFitSizeImage() {
     const wrapperWidthPx = this.canvasWrapper.offsetWidth
     const canvasScale = wrapperWidthPx / this.originalWidth
@@ -344,5 +370,8 @@ export class CanvasManager {
     this.imageCanvas.width = width
     this.imageCanvas.height = height
     this.imageCanvasCtx.drawImage(this.imageElement, 0, 0, width, height)
+    this.magnifierMaskCanvas.width = width
+    this.magnifierMaskCanvas.height = height
+    this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0, width, height)
   }
 }

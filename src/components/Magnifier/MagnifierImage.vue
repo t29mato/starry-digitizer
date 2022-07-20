@@ -1,11 +1,30 @@
 <template>
   <div>
+    <canvas
+      id="magnifierMaskCanvas"
+      :style="{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        opacity: 0.5,
+        transform: `scale(${
+          this.magnifierScale / this.canvasScale
+        }) translate(-${
+          (cursorX - halfSize / magnifierScale) * canvasScale
+        }px, -${(cursorY - halfSize / magnifierScale) * canvasScale}px)`,
+        'transform-origin': 'top left',
+        'z-index': 100,
+      }"
+    ></canvas>
     <img
       :src="src"
       :style="{
-        transform: `scale(${scale}) translate(-${
-          cursorX - halfSize / scale
-        }px, -${cursorY - halfSize / scale}px)`,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        transform: `scale(${magnifierScale}) translate(-${
+          cursorX - halfSize / magnifierScale
+        }px, -${cursorY - halfSize / magnifierScale}px)`,
         'transform-origin': 'top left',
       }"
     />
@@ -25,7 +44,11 @@ export default Vue.extend({
       type: String,
       required: true,
     },
-    scale: {
+    magnifierScale: {
+      type: Number,
+      required: true,
+    },
+    canvasScale: {
       type: Number,
       required: true,
     },

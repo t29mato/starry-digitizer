@@ -14,7 +14,8 @@
       ></magnifier-settings-btn>
       <magnifier-image
         :src="uploadImageUrl"
-        :scale="magnifierScale"
+        :magnifierScale="magnifierScale"
+        :canvasScale="canvasScale"
         :cursorX="canvasCursor.xPx / canvasScale"
         :cursorY="canvasCursor.yPx / canvasScale"
         :size="magnifierSizePx"

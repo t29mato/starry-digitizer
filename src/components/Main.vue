@@ -431,6 +431,7 @@ export default Vue.extend({
         'imageCanvas',
         'maskCanvas',
         'tempMaskCanvas',
+        'magnifierMaskCanvas',
         this.initialGraphImagePath
       )
       this.uploadImageUrl = this.initialGraphImagePath
@@ -749,6 +750,7 @@ export default Vue.extend({
       if (!isClicking) {
         cm.resetDrawMaskPos()
       } else {
+        // TODO: 呼び出すメソッドはCanvasManagerに移譲したい
         switch (this.maskMode) {
           case 0: // INFO: pen mask
             cm.mouseMoveForPen(xPx, yPx, this.showPenToolSize)
