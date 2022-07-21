@@ -6,7 +6,7 @@
       left: '0px',
       width: `${magnifierSize}px`,
       height: `${height}px`,
-      'border-bottom': '1px solid grey',
+      outline: '1px solid grey',
     }"
   ></div>
 </template>
