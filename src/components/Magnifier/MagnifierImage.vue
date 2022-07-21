@@ -1,5 +1,17 @@
 <template>
   <div>
+    <img
+      :src="src"
+      :style="{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        transform: `scale(${magnifierScale}) translate(-${
+          cursorX - halfSize / magnifierScale
+        }px, -${cursorY - halfSize / magnifierScale}px)`,
+        'transform-origin': 'top left',
+      }"
+    />
     <canvas
       id="magnifierMaskCanvas"
       :style="{
@@ -13,21 +25,8 @@
           (cursorX - halfSize / magnifierScale) * canvasScale
         }px, -${(cursorY - halfSize / magnifierScale) * canvasScale}px)`,
         'transform-origin': 'top left',
-        'z-index': 100,
       }"
     ></canvas>
-    <img
-      :src="src"
-      :style="{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        transform: `scale(${magnifierScale}) translate(-${
-          cursorX - halfSize / magnifierScale
-        }px, -${cursorY - halfSize / magnifierScale}px)`,
-        'transform-origin': 'top left',
-      }"
-    />
   </div>
 </template>
 
