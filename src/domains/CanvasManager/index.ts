@@ -222,7 +222,12 @@ export class CanvasManager {
       this.maskCanvas.width,
       this.maskCanvas.height
     )
-    this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
+    this.magnifierMaskCanvasCtx.clearRect(
+      0,
+      0,
+      this.maskCanvas.width,
+      this.maskCanvas.height
+    )
     this.isDrawnMask = false
   }
 
