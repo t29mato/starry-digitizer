@@ -35,8 +35,15 @@
                 </div>
               </v-list-group>
             </v-list>
-            <v-btn small @click="addDataset">Add Dataset</v-btn>
+            <!-- TODO: Add DatasetではなくてManage Datasetの形にして、追加削除編集が簡単にできるようにする -->
+            <v-btn small @click="openDatasetDialog">Add Dataset</v-btn>
           </v-card>
+          <dataset-dialog
+            :showDialog="showDatasetDialog"
+            :nextDatasetId="nextDatasetId"
+            :closeDialog="closeDatasetDialog"
+            :addDatasets="addDatasets"
+          ></dataset-dialog>
         </v-col>
         <v-col class="pt-1">
           <canvas-header
@@ -240,6 +247,7 @@ import {
   MaskSettings,
   ColorSettings,
 } from './Settings'
+import { DatasetDialog } from './Dataset'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
 import { CanvasManager } from '@/domains/CanvasManager'
@@ -266,6 +274,7 @@ export default Vue.extend({
     LineExtractSettings,
     MaskSettings,
     ColorSettings,
+    DatasetDialog,
   },
   props: {
     // should be imported by require function
@@ -277,6 +286,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      showDatasetDialog: false,
       sideMenus: [
         {
           title: 'Datasets',
@@ -317,7 +327,7 @@ export default Vue.extend({
       plots: [] as Plot[],
       datasets: [
         {
-          id: 0,
+          id: 1,
           name: 'dataset 1',
           plots: [],
         },
@@ -512,14 +522,15 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
-    addDataset() {
-      const nextId = this.nextDatasetId
-      this.datasets.push({
-        id: nextId,
-        name: 'new dataset',
-        plots: [],
-      })
-      this.activeDatasetId = nextId
+    addDatasets(datasets: Datasets) {
+      this.datasets.push(...datasets)
+      this.showDatasetDialog = false
+    },
+    openDatasetDialog() {
+      this.showDatasetDialog = true
+    },
+    closeDatasetDialog() {
+      this.showDatasetDialog = false
     },
     setMaskMode(mode: number) {
       this.maskMode = mode
