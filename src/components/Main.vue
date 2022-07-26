@@ -2,7 +2,43 @@
   <v-container fluid>
     <template>
       <v-row>
-        <v-col cols="9" class="pt-1">
+        <!-- TODO: コンポーネントを分ける -->
+        <v-col :style="{ 'max-width': '200px' }">
+          <v-card class="mx-auto" flat>
+            <v-list dense>
+              <v-list-group
+                v-for="menu in sideMenus"
+                :key="menu.title"
+                v-model="menu.active"
+                sub-group
+              >
+                <template v-slot:activator>
+                  <v-list-item-content>
+                    <v-list-item-title v-text="menu.title"></v-list-item-title>
+                  </v-list-item-content>
+                </template>
+
+                <div v-if="menu.title === 'Datasets'">
+                  <v-list-item
+                    v-for="dataset in datasets"
+                    :key="dataset.name"
+                    link
+                    @click="activeDatasetId = dataset.id"
+                    :class="dataset.id === activeDatasetId && 'blue lighten-4'"
+                  >
+                    <v-list-item-content>
+                      <v-list-item-title
+                        v-text="dataset.name"
+                      ></v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </div>
+              </v-list-group>
+            </v-list>
+            <v-btn small @click="addDataset">Add Dataset</v-btn>
+          </v-card>
+        </v-col>
+        <v-col class="pt-1">
           <canvas-header
             :resizeCanvasToFit="resizeCanvasToFit"
             :resizeCanvasToOriginal="resizeCanvasToOriginal"
@@ -105,7 +141,7 @@
             </v-col>
           </v-row>
         </v-col>
-        <v-col cols="3" class="pt-1">
+        <v-col class="pt-1" :style="{ 'max-width': '300px' }">
           <!-- TODO: 有効数字を追加する -->
           <magnifier
             :magnifierSizePx="magnifierSizePx"
@@ -191,6 +227,8 @@ import {
   DiameterRange,
   ExtractAlgorithm,
   LineExtractProps,
+  Datasets,
+  Dataset,
 } from '../types'
 import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
 import LineExtract from '@/domains/extractStrategies/LineExtract'
@@ -239,6 +277,13 @@ export default Vue.extend({
   },
   data() {
     return {
+      sideMenus: [
+        {
+          title: 'Datasets',
+          action: 'mdi-silverware-fork-knife',
+          active: true,
+        },
+      ],
       extractAlgorithms,
       version,
       extractAlgorithm: 'Symbol Extract' as ExtractAlgorithm,
@@ -270,6 +315,14 @@ export default Vue.extend({
         yPx: 0,
       } as Position,
       plots: [] as Plot[],
+      datasets: [
+        {
+          id: 0,
+          name: 'dataset 1',
+          plots: [],
+        },
+      ] as Datasets,
+      activeDatasetId: 0,
       // REFACTOR: color typeを作成する
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
@@ -297,11 +350,14 @@ export default Vue.extend({
     }
   },
   computed: {
+    activeDataset(): Dataset {
+      return this.datasets[this.activeDatasetId]
+    },
     plotIsActive(): boolean {
       return this.activePlotIds.length > 0
     },
     showPlots(): Plot[] {
-      return this.plots.map((plot) => {
+      return this.activeDataset.plots.map((plot) => {
         return {
           id: plot.id,
           xPx: plot.xPx * this.canvasScale,
@@ -384,7 +440,7 @@ export default Vue.extend({
       return this.axesSizePx / 2
     },
     calculatedPlots(): PlotValue[] {
-      const newPlots = this.plots.map((plot) => {
+      const newPlots = this.activeDataset.plots.map((plot) => {
         const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
         return {
           id: plot.id,
@@ -397,10 +453,18 @@ export default Vue.extend({
       return newPlots
     },
     nextPlotId(): number {
-      if (this.plots.length === 0) {
+      if (this.activeDataset.plots.length === 0) {
         return 1
       }
-      return this.plots[this.plots.length - 1].id + 1
+      return (
+        this.activeDataset.plots[this.activeDataset.plots.length - 1].id + 1
+      )
+    },
+    nextDatasetId(): number {
+      if (this.datasets.length === 0) {
+        return 1
+      }
+      return this.datasets[this.datasets.length - 1].id + 1
     },
     canvasHeightInt(): number {
       return Math.floor(this.canvasHeight)
@@ -448,6 +512,15 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
+    addDataset() {
+      const nextId = this.nextDatasetId
+      this.datasets.push({
+        id: nextId,
+        name: 'new dataset',
+        plots: [],
+      })
+      this.activeDatasetId = nextId
+    },
     setMaskMode(mode: number) {
       this.maskMode = mode
     },
@@ -521,7 +594,7 @@ export default Vue.extend({
       this.shouldShowPoints = !this.shouldShowPoints
     },
     sortPlots() {
-      this.plots.sort((a, b) => {
+      this.activeDataset.plots.sort((a, b) => {
         return a.xPx - b.xPx
       })
     },
@@ -567,29 +640,29 @@ export default Vue.extend({
       if (this.plotIsActive) {
         switch (e.key) {
           case arrowUp:
-            this.plots
+            this.activeDataset.plots
               .filter((plot) => this.activePlotIds.includes(plot.id))
               .map((plot) => plot.yPx--)
             break
           case arrowRight:
-            this.plots
+            this.activeDataset.plots
               .filter((plot) => this.activePlotIds.includes(plot.id))
               .map((plot) => plot.xPx++)
             break
           case arrowDown:
-            this.plots
+            this.activeDataset.plots
               .filter((plot) => this.activePlotIds.includes(plot.id))
               .map((plot) => plot.yPx++)
             break
           case arrowLeft:
-            this.plots
+            this.activeDataset.plots
               .filter((plot) => this.activePlotIds.includes(plot.id))
               .map((plot) => plot.xPx--)
             break
           default:
             break
         }
-        this.canvasCursor = this.plots.filter((plot) =>
+        this.canvasCursor = this.activeDataset.plots.filter((plot) =>
           this.activePlotIds.includes(plot.id)
         )[0]
       }
@@ -613,7 +686,7 @@ export default Vue.extend({
     async extractPlots() {
       this.isExtracting = true
       this.isMovingAxis = false
-      this.plots = []
+      this.activeDataset.plots = []
       try {
         let extractor: ExtractStrategyInterface
         switch (this.extractAlgorithm) {
@@ -626,7 +699,7 @@ export default Vue.extend({
           default:
             throw new Error('Extract algorithm is not selected.')
         }
-        this.plots = extractor.execute(
+        this.activeDataset.plots = extractor.execute(
           cm,
           [this.targetColor.R, this.targetColor.G, this.targetColor.B],
           this.colorDistancePct,
@@ -700,7 +773,12 @@ export default Vue.extend({
       this.isMovingAxis = false
 
       this.activePlotIds = [this.nextPlotId]
-      this.plots.push({
+      // this.activeDataset.plots.push({
+      //   id: this.nextPlotId,
+      //   xPx: (e.offsetX - offsetPx) / this.canvasScale,
+      //   yPx: e.offsetY / this.canvasScale,
+      // })
+      this.activeDataset.plots.push({
         id: this.nextPlotId,
         xPx: (e.offsetX - offsetPx) / this.canvasScale,
         yPx: e.offsetY / this.canvasScale,
@@ -726,11 +804,11 @@ export default Vue.extend({
       this.cursorIsMoved = false
     },
     clearPlots() {
-      this.plots = []
+      this.activeDataset.plots = []
       this.shouldShowPoints = true
     },
     clearActivePlots() {
-      this.plots = this.plots.filter((plot) => {
+      this.activeDataset.plots = this.activeDataset.plots.filter((plot) => {
         return !this.activePlotIds.includes(plot.id)
       })
       this.activePlotIds = []

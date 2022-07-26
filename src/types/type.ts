@@ -7,6 +7,10 @@ export type Axes = { value: number } & Position
 
 export type Plot = { id: number } & Position
 
+export type Dataset = { name: string; plots: Plot[]; id: number }
+
+export type Datasets = Dataset[]
+
 export type PlotValue = { xV: string; yV: string } & Plot
 
 export type axesPosList = {
