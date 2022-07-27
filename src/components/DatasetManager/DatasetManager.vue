@@ -12,6 +12,7 @@
         >
           <v-list-item-content>
             <v-list-item-title
+              :class="dataset.id === activeDatasetId && 'font-weight-bold'"
               v-text="`${dataset.name} (${dataset.plots.length})`"
             ></v-list-item-title>
           </v-list-item-content>
