@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <template>
-      <v-row>
+      <v-row :style="{ 'flex-wrap': 'nowrap' }">
         <!-- TODO: コンポーネントを分ける -->
         <v-col :style="{ 'max-width': '200px' }">
           <v-card class="mx-auto" flat>
@@ -21,7 +21,7 @@
                 <div v-if="menu.title === 'Datasets'">
                   <v-list-item
                     v-for="dataset in datasets"
-                    :key="dataset.name"
+                    :key="dataset.id"
                     link
                     @click="activeDatasetId = dataset.id"
                     :class="dataset.id === activeDatasetId && 'blue lighten-4'"
@@ -35,15 +35,13 @@
                 </div>
               </v-list-group>
             </v-list>
-            <!-- TODO: Add DatasetではなくてManage Datasetの形にして、追加削除編集が簡単にできるようにする -->
-            <v-btn small @click="openDatasetDialog">Add Dataset</v-btn>
+            <dataset-dialog
+              :datasets="datasets"
+              :addDataset="addDataset"
+              :editDataset="editDataset"
+              :popDataset="popDataset"
+            ></dataset-dialog>
           </v-card>
-          <dataset-dialog
-            :showDialog="showDatasetDialog"
-            :nextDatasetId="nextDatasetId"
-            :closeDialog="closeDatasetDialog"
-            :addDatasets="addDatasets"
-          ></dataset-dialog>
         </v-col>
         <v-col class="pt-1">
           <canvas-header
@@ -286,7 +284,6 @@ export default Vue.extend({
   },
   data() {
     return {
-      showDatasetDialog: false,
       sideMenus: [
         {
           title: 'Datasets',
@@ -332,7 +329,7 @@ export default Vue.extend({
           plots: [],
         },
       ] as Datasets,
-      activeDatasetId: 0,
+      activeDatasetId: 1,
       // REFACTOR: color typeを作成する
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
@@ -361,7 +358,13 @@ export default Vue.extend({
   },
   computed: {
     activeDataset(): Dataset {
-      return this.datasets[this.activeDatasetId]
+      const targetDataset = this.datasets.find((dataset) => {
+        return dataset.id === this.activeDatasetId
+      })
+      if (!targetDataset) {
+        throw new Error('There are no active datasets.')
+      }
+      return targetDataset
     },
     plotIsActive(): boolean {
       return this.activePlotIds.length > 0
@@ -522,15 +525,20 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
-    addDatasets(datasets: Datasets) {
-      this.datasets.push(...datasets)
-      this.showDatasetDialog = false
+    editDataset(datasetId: number, newName: string) {
+      const targetDataset = this.datasets.find((dataset) => {
+        return dataset.id === datasetId
+      })
+      if (!targetDataset) {
+        throw new Error(datasetId + "doesn't exist.")
+      }
+      targetDataset.name = newName
     },
-    openDatasetDialog() {
-      this.showDatasetDialog = true
+    addDataset(dataset: Dataset) {
+      this.datasets.push(dataset)
     },
-    closeDatasetDialog() {
-      this.showDatasetDialog = false
+    popDataset() {
+      this.datasets.pop()
     },
     setMaskMode(mode: number) {
       this.maskMode = mode

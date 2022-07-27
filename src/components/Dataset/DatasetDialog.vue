@@ -1,69 +1,71 @@
 <template>
-  <v-dialog :value="showDialog" origin="center" scrollable max-width="500px">
-    <v-card height="80vh">
-      <v-card-title>
-        <!-- TODO: Manage Datasetに変える -->
-        <span class="text-h5">Add Dataset</span>
-      </v-card-title>
-      <v-card-text>
-        <v-container>
-          <v-row>
-            <v-col>
-              <v-btn @click="addColumn" small><v-icon>mdi-plus</v-icon></v-btn>
-              <v-btn
-                small
-                @click="removeColumn"
-                :disabled="this.datasets.length === 1"
-                ><v-icon>mdi-minus</v-icon></v-btn
-              >
-              <v-simple-table dense>
-                <template v-slot:default>
-                  <thead>
-                    <tr>
-                      <th class="text-left">ID</th>
-                      <th class="text-left">Name</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="dataset in datasets" :key="dataset.id">
-                      <td>{{ dataset.id }}</td>
-                      <td>
-                        <v-text-field v-model="dataset.name"></v-text-field>
-                      </td>
-                    </tr>
-                  </tbody>
-                </template>
-              </v-simple-table>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn @click="clickCloseBtn"> Close </v-btn>
-        <v-btn @click="clickAddBtn"> Add </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <div>
+    <!-- TODO: DatasetDialogという名前を変える。ボタンもここに入ってきてしまったので。 -->
+    <v-btn small @click="openDialog">Manage Dataset</v-btn>
+    <v-dialog v-model="showDialog" origin="center" scrollable max-width="500px">
+      <v-card height="80vh">
+        <v-card-title>
+          <span class="text-h5">Manage Datasets</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col>
+                <v-btn @click="addColumn" small
+                  ><v-icon>mdi-plus</v-icon></v-btn
+                >
+                <v-btn
+                  small
+                  @click="removeColumn"
+                  :disabled="this.datasets.length === 1"
+                  ><v-icon>mdi-minus</v-icon></v-btn
+                >
+                <v-simple-table dense>
+                  <template v-slot:default>
+                    <thead>
+                      <tr>
+                        <th class="text-left">ID</th>
+                        <th class="text-left">Name</th>
+                        <!-- TODO: プロット数を表示する -->
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="dataset in datasets" :key="dataset.id">
+                        <td>{{ dataset.id }}</td>
+                        <td>
+                          <v-text-field
+                            v-model="dataset.name"
+                            :placeholder="'dataset ' + dataset.id"
+                          ></v-text-field>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </template>
+                </v-simple-table>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn @click="showDialog = false"> Close </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import Vue, { PropType } from 'vue'
 import { Datasets } from '@/types'
 export default Vue.extend({
   data() {
     return {
       datasetCount: 1,
-      datasets: [
-        {
-          id: this.nextDatasetId,
-          name: `dataset ${this.nextDatasetId}`,
-          plots: [],
-        },
-      ] as Datasets,
+      showDialog: false,
     }
   },
   computed: {
-    nextNewDatasetId(): number {
+    nextDatasetId(): number {
       if (this.datasets.length === 0) {
         return 1
       }
@@ -71,38 +73,28 @@ export default Vue.extend({
     },
   },
   props: {
-    showDialog: {
-      type: Boolean,
+    datasets: {
+      type: Array as PropType<Datasets>,
       required: true,
     },
-    closeDialog: {
+    addDataset: {
       type: Function,
       required: true,
     },
-    addDatasets: {
+    editDataset: {
       type: Function,
       required: true,
     },
-    nextDatasetId: {
-      type: Number,
+    popDataset: {
+      type: Function,
       required: true,
     },
   },
   methods: {
-    inputCount(value: string) {
-      const count = parseInt(value)
-      if (count - this.datasetCount === 1) {
-        this.datasets.push({
-          id: this.nextNewDatasetId,
-          name: 'hoge',
-          plots: [],
-        })
-      }
-    },
     addColumn() {
-      this.datasets.push({
-        id: this.nextNewDatasetId,
-        name: `dataset ${this.nextNewDatasetId}`,
+      this.addDataset({
+        id: this.nextDatasetId,
+        name: `dataset ${this.nextDatasetId}`,
         plots: [],
       })
     },
@@ -110,20 +102,10 @@ export default Vue.extend({
       if (this.datasets.length === 1) {
         return
       }
-      this.datasets.pop()
+      this.popDataset()
     },
-    clickAddBtn() {
-      this.addDatasets(this.datasets)
-      this.datasets = [
-        {
-          id: this.nextNewDatasetId,
-          name: `dataset ${this.nextNewDatasetId}`,
-          plots: [],
-        },
-      ]
-    },
-    clickCloseBtn() {
-      this.closeDialog()
+    openDialog() {
+      this.showDialog = true
     },
   },
 })
