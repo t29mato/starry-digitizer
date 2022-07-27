@@ -18,7 +18,11 @@
         </v-list-item>
       </v-list>
       <v-btn small @click="openEditDialog">Manage Datasets</v-btn>
-      <v-btn small class="mt-2" @click="shouldShowActiveDataset = true"
+      <v-btn
+        small
+        class="mt-2"
+        @click="shouldShowActiveDataset = true"
+        :disabled="activeDataset.plots.length === 0"
         >Show Plots</v-btn
       >
     </v-card>
