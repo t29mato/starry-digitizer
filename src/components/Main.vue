@@ -682,6 +682,7 @@ export default Vue.extend({
         )
         this.sortPlots()
         this.shouldShowPoints = true
+        this.activePlotIds = []
       } catch (e) {
         console.error('failed to extractPlots', { cause: e })
       } finally {
