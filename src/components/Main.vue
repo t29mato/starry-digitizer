@@ -3,6 +3,13 @@
     <template>
       <v-row :style="{ 'flex-wrap': 'nowrap' }">
         <v-col :style="{ 'max-width': '220px' }">
+          <axes-settings
+            :axes="axesValues"
+            @input="inputAxes"
+            @change="changeIsLog"
+            :isLog="isLog"
+            :error="axesValuesErrorMessage"
+          ></axes-settings>
           <dataset-manager
             :datasets="datasets"
             :addDataset="addDataset"
@@ -11,13 +18,6 @@
             :setActiveDataset="setActiveDataset"
             :activeDatasetId="activeDatasetId"
           ></dataset-manager>
-          <axes-settings
-            :axes="axesValues"
-            @input="inputAxes"
-            @change="changeIsLog"
-            :isLog="isLog"
-            :error="axesValuesErrorMessage"
-          ></axes-settings>
         </v-col>
         <v-col class="pt-1">
           <canvas-header

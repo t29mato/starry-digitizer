@@ -1,32 +1,19 @@
 <template>
   <div>
+    <h4>Datasets</h4>
     <v-card class="mx-auto" flat>
       <v-list dense>
-        <v-list-group
-          v-for="menu in sideMenus"
-          :key="menu.title"
-          v-model="menu.active"
-          sub-group
+        <v-list-item
+          v-for="dataset in datasets"
+          :key="dataset.id"
+          link
+          @click="setActiveDataset(dataset.id)"
+          :class="dataset.id === activeDatasetId && 'blue lighten-4'"
         >
-          <template v-slot:activator>
-            <v-list-item-content>
-              <v-list-item-title v-text="menu.title"></v-list-item-title>
-            </v-list-item-content>
-          </template>
-          <div v-if="menu.title === 'Datasets'">
-            <v-list-item
-              v-for="dataset in datasets"
-              :key="dataset.id"
-              link
-              @click="setActiveDataset(dataset.id)"
-              :class="dataset.id === activeDatasetId && 'blue lighten-4'"
-            >
-              <v-list-item-content>
-                <v-list-item-title v-text="dataset.name"></v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </div>
-        </v-list-group>
+          <v-list-item-content>
+            <v-list-item-title v-text="dataset.name"></v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
       <v-btn small @click="openDialog">Manage Dataset</v-btn>
     </v-card>
