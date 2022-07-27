@@ -3,15 +3,14 @@
     <template>
       <v-row :style="{ 'flex-wrap': 'nowrap' }">
         <v-col :style="{ 'max-width': '220px' }">
-          <!-- TODO: DatasetManagerに戻す -->
-          <left-menu
+          <dataset-manager
             :datasets="datasets"
             :addDataset="addDataset"
             :editDataset="editDataset"
             :popDataset="popDataset"
             :setActiveDataset="setActiveDataset"
             :activeDatasetId="activeDatasetId"
-          ></left-menu>
+          ></dataset-manager>
           <axes-settings
             :axes="axesValues"
             @input="inputAxes"
@@ -213,7 +212,7 @@ import {
   MaskSettings,
   ColorSettings,
 } from './Settings'
-import { LeftMenu } from './LeftMenu'
+import { DatasetManager } from './DatasetManager'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
 import { CanvasManager } from '@/domains/CanvasManager'
@@ -240,7 +239,7 @@ export default Vue.extend({
     LineExtractSettings,
     MaskSettings,
     ColorSettings,
-    LeftMenu,
+    DatasetManager,
   },
   props: {
     // should be imported by require function
