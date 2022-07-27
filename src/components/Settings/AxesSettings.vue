@@ -1,19 +1,11 @@
 <template>
-  <div :style="{ border: '1px solid grey' }" class="pa-1">
+  <div class="mt-3">
     <h4>XY Axes</h4>
     <v-simple-table dense>
-      <!-- <thead>
-        <tr>
-          <th></th>
-          <th>Value 1</th>
-          <th>Value 2</th>
-          <th>Log</th>
-        </tr>
-      </thead> -->
       <tbody>
         <tr>
-          <th>X</th>
-          <td>
+          <th class="pa-1">X</th>
+          <td class="pa-1">
             <v-text-field
               :value="axes.x1"
               @input="inputX1"
@@ -23,7 +15,7 @@
               label="x1"
             ></v-text-field>
           </td>
-          <td>
+          <td class="pa-1">
             <v-text-field
               :value="axes.x2"
               @input="inputX2"
@@ -33,7 +25,7 @@
               label="x2"
             ></v-text-field>
           </td>
-          <td>
+          <td class="pa-1">
             <v-checkbox
               :value="isLog.x"
               @change="changeIsLogX"
@@ -44,8 +36,8 @@
           </td>
         </tr>
         <tr>
-          <th>Y</th>
-          <td>
+          <th class="pa-1">Y</th>
+          <td class="pa-1">
             <v-text-field
               :value="axes.y1"
               @input="inputY1"
@@ -55,7 +47,7 @@
               label="y1"
             ></v-text-field>
           </td>
-          <td>
+          <td class="pa-1">
             <v-text-field
               :value="axes.y2"
               @input="inputY2"
@@ -65,7 +57,7 @@
               label="y2"
             ></v-text-field>
           </td>
-          <td>
+          <td class="pa-1">
             <v-checkbox
               :value="isLog.y"
               @change="changeIsLogY"

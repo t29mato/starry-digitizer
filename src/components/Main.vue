@@ -2,8 +2,8 @@
   <v-container fluid>
     <template>
       <v-row :style="{ 'flex-wrap': 'nowrap' }">
-        <!-- TODO: コンポーネントを分ける -->
-        <v-col :style="{ 'max-width': '200px' }">
+        <v-col :style="{ 'max-width': '220px' }">
+          <!-- TODO: DatasetManagerに戻す -->
           <left-menu
             :datasets="datasets"
             :addDataset="addDataset"
@@ -12,6 +12,13 @@
             :setActiveDataset="setActiveDataset"
             :activeDatasetId="activeDatasetId"
           ></left-menu>
+          <axes-settings
+            :axes="axesValues"
+            @input="inputAxes"
+            @change="changeIsLog"
+            :isLog="isLog"
+            :error="axesValuesErrorMessage"
+          ></axes-settings>
         </v-col>
         <v-col class="pt-1">
           <canvas-header
@@ -91,15 +98,6 @@
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
           <v-row class="mt-0">
-            <v-col cols="4">
-              <axes-settings
-                :axes="axesValues"
-                @input="inputAxes"
-                @change="changeIsLog"
-                :isLog="isLog"
-                :error="axesValuesErrorMessage"
-              ></axes-settings>
-            </v-col>
             <v-col cols="5">
               <plots-table
                 :activatePlot="activatePlot"
