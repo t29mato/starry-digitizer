@@ -1,8 +1,8 @@
 <template>
   <v-container fluid>
     <template>
-      <v-row :style="{ 'flex-wrap': 'nowrap' }">
-        <v-col :style="{ 'max-width': '220px' }">
+      <v-row>
+        <v-col cols="2">
           <axes-settings
             :axes="axesValues"
             @input="inputAxes"
@@ -17,9 +17,13 @@
             :popDataset="popDataset"
             :setActiveDataset="setActiveDataset"
             :activeDatasetId="activeDatasetId"
+            :activeDataset="activeDataset"
+            :exportPlots="exportPlots"
+            :exportBtnText="exportBtnText"
+            :calculatedPlots="calculatedPlots"
           ></dataset-manager>
         </v-col>
-        <v-col class="pt-1">
+        <v-col class="pt-1" cols="7">
           <canvas-header
             :resizeCanvasToFit="resizeCanvasToFit"
             :resizeCanvasToOriginal="resizeCanvasToOriginal"
@@ -35,7 +39,7 @@
               'user-drag': 'none',
               outline: 'solid 1px grey',
               overflow: 'auto',
-              'max-height': '70vh',
+              'max-height': '87vh',
             }"
             id="canvasWrapper"
             @click="plot"
@@ -96,24 +100,8 @@
             :clearActivePlots="clearActivePlots"
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
-          <v-row class="mt-0">
-            <v-col cols="5">
-              <plots-table
-                :activatePlot="activatePlot"
-                :calculatedPlots="calculatedPlots"
-                :activePlotIds="activePlotIds"
-              ></plots-table>
-            </v-col>
-            <v-col cols="3">
-              <clipboard
-                :plots="calculatedPlots"
-                :exportPlots="exportPlots"
-                :exportBtnText="exportBtnText"
-              ></clipboard>
-            </v-col>
-          </v-row>
         </v-col>
-        <v-col class="pt-1" :style="{ 'max-width': '300px' }">
+        <v-col class="pt-1" cols="3">
           <!-- TODO: 有効数字を追加する -->
           <magnifier
             :magnifierSizePx="magnifierSizePx"
@@ -190,8 +178,6 @@ import {
   CanvasPlot,
   CanvasCursor,
 } from './Canvas'
-import PlotsTable from './Export/PlotsTable.vue'
-import Clipboard from './Export/Clipboard.vue'
 import {
   Plot,
   PlotValue,
@@ -232,8 +218,6 @@ export default Vue.extend({
     CanvasCursor,
     CanvasHeader,
     CanvasFooter,
-    PlotsTable,
-    Clipboard,
     AxesSettings,
     SymbolExtractSettings,
     LineExtractSettings,

@@ -5,6 +5,7 @@
       outlined
       hide-details="true"
       @change="changeTextArea"
+      height="50vh"
     ></v-textarea>
     <div class="mt-2">
       <v-btn small @click="copy" :disabled="convertPlotsIntoText.length === 0"
@@ -24,28 +25,11 @@ import colors from 'vuetify/lib/util/colors'
 export default Vue.extend({
   computed: {
     convertPlotsIntoText(): string {
-      return this.ceiledPlots
+      return this.plots
         .reduce((prev, cur) => {
           return prev + `${cur.xV}, ${cur.yV}\n`
         }, '')
         .trim()
-    },
-    ceiledPlots(): {
-      id: number
-      xV: string
-      yV: string
-      xPx: number
-      yPx: number
-    }[] {
-      return this.plots.map((plot) => {
-        return {
-          xPx: Math.ceil(plot.xPx),
-          yPx: Math.ceil(plot.yPx),
-          id: plot.id,
-          xV: plot.xV,
-          yV: plot.yV,
-        }
-      })
     },
   },
   data() {
