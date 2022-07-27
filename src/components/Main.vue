@@ -4,44 +4,14 @@
       <v-row :style="{ 'flex-wrap': 'nowrap' }">
         <!-- TODO: コンポーネントを分ける -->
         <v-col :style="{ 'max-width': '200px' }">
-          <v-card class="mx-auto" flat>
-            <v-list dense>
-              <v-list-group
-                v-for="menu in sideMenus"
-                :key="menu.title"
-                v-model="menu.active"
-                sub-group
-              >
-                <template v-slot:activator>
-                  <v-list-item-content>
-                    <v-list-item-title v-text="menu.title"></v-list-item-title>
-                  </v-list-item-content>
-                </template>
-
-                <div v-if="menu.title === 'Datasets'">
-                  <v-list-item
-                    v-for="dataset in datasets"
-                    :key="dataset.id"
-                    link
-                    @click="activeDatasetId = dataset.id"
-                    :class="dataset.id === activeDatasetId && 'blue lighten-4'"
-                  >
-                    <v-list-item-content>
-                      <v-list-item-title
-                        v-text="dataset.name"
-                      ></v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </div>
-              </v-list-group>
-            </v-list>
-            <dataset-dialog
-              :datasets="datasets"
-              :addDataset="addDataset"
-              :editDataset="editDataset"
-              :popDataset="popDataset"
-            ></dataset-dialog>
-          </v-card>
+          <left-menu
+            :datasets="datasets"
+            :addDataset="addDataset"
+            :editDataset="editDataset"
+            :popDataset="popDataset"
+            :setActiveDataset="setActiveDataset"
+            :activeDatasetId="activeDatasetId"
+          ></left-menu>
         </v-col>
         <v-col class="pt-1">
           <canvas-header
@@ -245,7 +215,7 @@ import {
   MaskSettings,
   ColorSettings,
 } from './Settings'
-import { DatasetDialog } from './Dataset'
+import { LeftMenu } from './LeftMenu'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
 import { CanvasManager } from '@/domains/CanvasManager'
@@ -272,7 +242,7 @@ export default Vue.extend({
     LineExtractSettings,
     MaskSettings,
     ColorSettings,
-    DatasetDialog,
+    LeftMenu,
   },
   props: {
     // should be imported by require function
@@ -284,13 +254,6 @@ export default Vue.extend({
   },
   data() {
     return {
-      sideMenus: [
-        {
-          title: 'Datasets',
-          action: 'mdi-silverware-fork-knife',
-          active: true,
-        },
-      ],
       extractAlgorithms,
       version,
       extractAlgorithm: 'Symbol Extract' as ExtractAlgorithm,
@@ -525,6 +488,9 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyListener)
   },
   methods: {
+    setActiveDataset(id: number) {
+      this.activeDatasetId = id
+    },
     editDataset(datasetId: number, newName: string) {
       const targetDataset = this.datasets.find((dataset) => {
         return dataset.id === datasetId
