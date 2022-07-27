@@ -1,12 +1,6 @@
 <template>
-  <div class="d-flex justify-space-between">
-    <v-file-input
-      accept="image/*"
-      label="file input"
-      @change="uploadImage"
-      :clearable="false"
-      dense
-    ></v-file-input>
+  <div class="d-flex justify-end">
+    <div></div>
     <div class="ml-2">
       <v-btn small @click="scaleDown"><v-icon>mdi-minus</v-icon></v-btn>
       <v-btn small class="ml-2" @click="scaleUp"

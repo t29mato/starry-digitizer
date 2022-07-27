@@ -3,6 +3,15 @@
     <template>
       <v-row>
         <v-col cols="2">
+          <h4>Image File</h4>
+          <v-file-input
+            accept="image/*"
+            @change="uploadImage"
+            :clearable="false"
+            dense
+            label="choose image file"
+            class="mt-2"
+          ></v-file-input>
           <axes-settings
             :axes="axesValues"
             @input="inputAxes"

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mt-2">
     <h4>XY Axes</h4>
     <v-simple-table dense>
       <tbody>
