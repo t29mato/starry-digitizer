@@ -53,7 +53,7 @@
         ></magnifier-plots>
       </div>
     </div>
-    <p>x: {{ xyValue.xV }}, y: {{ xyValue.yV }}</p>
+    <span>x: {{ xyValue.xV }}, y: {{ xyValue.yV }}</span>
     <magnifier-settings
       :magnifierScale="magnifierScale"
       :showSettingsDialog="showSettingsDialog"
