@@ -43,7 +43,7 @@ export default class LineExtract implements ExtractStrategyInterface {
   ) {
     const height = cm.imageElement.height
     const width = cm.imageElement.width
-    const maskCanvasColors = cm.maskCanvasColors
+    const maskCanvasColors = cm.originalSizeMaskCanvasColors
     const graphCanvasColors = cm.originalImageCanvasColors
     const canvasScale = cm.canvasScale
 
