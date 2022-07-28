@@ -451,7 +451,8 @@ export default Vue.extend({
     },
   },
   async mounted() {
-    document.addEventListener('keydown', this.keyListener.bind(this))
+    document.addEventListener('keydown', this.keyDownHandler.bind(this))
+    document.addEventListener('paste', this.pasteHandler.bind(this))
     if (!this.initialGraphImagePath) {
       return
     }
@@ -475,7 +476,8 @@ export default Vue.extend({
   },
   created() {},
   beforeDestroy() {
-    document.removeEventListener('keydown', this.keyListener)
+    document.removeEventListener('keydown', this.keyDownHandler)
+    document.removeEventListener('paste', this.pasteHandler)
   },
   methods: {
     setActiveDataset(id: number) {
@@ -580,7 +582,7 @@ export default Vue.extend({
       })
       this.colorPicker = colorSwatches[0]
     },
-    keyListener(e: KeyboardEvent) {
+    keyDownHandler(e: KeyboardEvent) {
       const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
         'ArrowUp',
         'ArrowRight',
@@ -641,6 +643,23 @@ export default Vue.extend({
           this.activePlotIds.includes(plot.id)
         )[0]
       }
+    },
+    pasteHandler(event: ClipboardEvent) {
+      if (!event.clipboardData) {
+        return
+      }
+      if (!event.clipboardData.items) {
+        return
+      }
+      const items = event.clipboardData.items
+      if (items[0].type.indexOf('image') === -1) {
+        return
+      }
+      const imageFile = items[0].getAsFile()
+      if (!imageFile) {
+        return
+      }
+      this.uploadImage(imageFile)
     },
     scaleUp() {
       cm.scaleUp()
