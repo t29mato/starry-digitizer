@@ -104,11 +104,11 @@ export class AxesManager {
   // }
 
   validateAxes(): boolean {
-    if (this.axes.x1 === this.axes.x2) {
+    if (this.axes.x1.value === this.axes.x2.value) {
       this.axesValuesErrorMessage = 'x1 and x2 should not be same value'
       return false
     }
-    if (this.axes.y1 === this.axes.y2) {
+    if (this.axes.y1.value === this.axes.y2.value) {
       this.axesValuesErrorMessage = 'y1 and y2 should not be same value'
       return false
     }

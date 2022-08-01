@@ -12,13 +12,7 @@
             label="choose image file"
             class="mt-2"
           ></v-file-input>
-          <axes-settings
-            :axes="axesValues"
-            @input="inputAxes"
-            @change="changeIsLog"
-            :isLog="isLog"
-            :error="axesValuesErrorMessage"
-          ></axes-settings>
+          <axes-settings></axes-settings>
           <dataset-manager :exportBtnText="exportBtnText"></dataset-manager>
         </v-col>
         <v-col class="pt-1" cols="7">
@@ -234,10 +228,6 @@ export default Vue.extend({
       } as LineExtractProps,
       plotShapeMode: 0,
       maskMode: -1,
-      isLog: {
-        x: false,
-        y: false,
-      },
       uploadImageUrl: '',
       axes: am.axes,
       axesPos: am.axesPos,
@@ -416,12 +406,6 @@ export default Vue.extend({
     },
     setLineExtractProps(props: LineExtractProps) {
       this.lineExtractProps = props
-    },
-    inputAxes(axesValues: { x1: string; x2: string; y1: string; y2: string }) {
-      this.axesValues = axesValues
-    },
-    changeIsLog(isLog: { x: boolean; y: boolean }) {
-      this.isLog = isLog
     },
     switchShowPlots(): void {
       this.shouldShowPoints = !this.shouldShowPoints

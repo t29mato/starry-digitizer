@@ -7,8 +7,8 @@
           <th class="pa-1">X</th>
           <td class="pa-1">
             <v-text-field
-              :value="axes.x1"
-              @input="inputX1"
+              :value="x1"
+              @input="setX1"
               type="number"
               class="ma-0 pa-0"
               hide-details
@@ -17,8 +17,8 @@
           </td>
           <td class="pa-1">
             <v-text-field
-              :value="axes.x2"
-              @input="inputX2"
+              :value="x2"
+              @input="setX2"
               type="number"
               class="ma-0 pa-0"
               hide-details
@@ -27,8 +27,8 @@
           </td>
           <td class="pa-1">
             <v-checkbox
-              :value="isLog.x"
-              @change="changeIsLogX"
+              :value="xIsLog"
+              @change="setXIsLog"
               dense
               hint="Log"
               persistent-hint
@@ -39,8 +39,8 @@
           <th class="pa-1">Y</th>
           <td class="pa-1">
             <v-text-field
-              :value="axes.y1"
-              @input="inputY1"
+              :value="y1"
+              @input="setY1"
               type="number"
               class="ma-0 pa-0"
               hide-details
@@ -49,8 +49,8 @@
           </td>
           <td class="pa-1">
             <v-text-field
-              :value="axes.y2"
-              @input="inputY2"
+              :value="y2"
+              @input="setY2"
               type="number"
               class="ma-0 pa-0"
               hide-details
@@ -59,8 +59,8 @@
           </td>
           <td class="pa-1">
             <v-checkbox
-              :value="isLog.y"
-              @change="changeIsLogY"
+              :value="yIsLog"
+              @change="setYIsLog"
               hint="Log"
               persistent-hint
               dense
@@ -69,45 +69,59 @@
         </tr>
       </tbody>
     </v-simple-table>
-    <p class="red--text">{{ error }}</p>
+    <!-- TODO: エラーメッセージを表示する -->
+    <!-- <p class="red--text">{{ error }}</p> -->
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
+import { AxesManager as AM } from '@/domains/AxesManager'
+const am = AM.instance
+
 export default Vue.extend({
-  computed: {},
-  props: {
-    axes: {
-      type: Object,
-      required: true,
+  computed: {
+    x1() {
+      return am.axes.x1.value
     },
-    isLog: {
-      type: Object,
-      required: true,
+    x2() {
+      return am.axes.x2.value
     },
-    error: {
-      type: String,
+    y1() {
+      return am.axes.y1.value
+    },
+    y2() {
+      return am.axes.y2.value
+    },
+    xIsLog() {
+      return am.xIsLog
+    },
+    yIsLog() {
+      return am.yIsLog
     },
   },
+  data() {
+    return {}
+  },
+  props: {},
   methods: {
-    inputX1(value: string) {
-      this.$emit('input', Object.assign(this.$props.axes, { x1: value }))
+    setX1(value: string) {
+      am.axes.x1.value = parseInt(value)
     },
-    inputX2(value: string) {
-      this.$emit('input', Object.assign(this.$props.axes, { x2: value }))
+    setX2(value: string) {
+      am.axes.x2.value = parseInt(value)
     },
-    inputY1(value: string) {
-      this.$emit('input', Object.assign(this.$props.axes, { y1: value }))
+    setY1(value: string) {
+      am.axes.y1.value = parseInt(value)
     },
-    inputY2(value: string) {
-      this.$emit('input', Object.assign(this.$props.axes, { y2: value }))
+    setY2(value: string) {
+      am.axes.y2.value = parseInt(value)
     },
-    changeIsLogX(isLog: boolean) {
-      this.$emit('change', Object.assign(this.$props.isLog, { x: isLog }))
+    setXIsLog(value: boolean) {
+      am.xIsLog = value
     },
-    changeIsLogY(isLog: boolean) {
-      this.$emit('change', Object.assign(this.$props.isLog, { y: isLog }))
+    setYIsLog(value: boolean) {
+      am.yIsLog = value
     },
   },
 })
