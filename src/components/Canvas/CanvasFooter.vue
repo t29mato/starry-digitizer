@@ -25,6 +25,9 @@
 
 <script lang="ts">
 import Vue, { PropType } from 'vue'
+import { DatasetManager as DM } from '@/domains/DatasetManager'
+const dm = DM.instance
+
 export default Vue.extend({
   props: {
     plotIsActive: {
@@ -54,13 +57,14 @@ export default Vue.extend({
       type: Function,
       required: true,
     },
-    clearActivePlots: {
-      type: Function,
-      required: true,
-    },
     switchShowPlots: {
       type: Function,
       required: true,
+    },
+  },
+  methods: {
+    clearActivePlots() {
+      dm.clearActivePlots()
     },
   },
 })

@@ -20,13 +20,6 @@
             :error="axesValuesErrorMessage"
           ></axes-settings>
           <dataset-manager
-            :datasets="datasets"
-            :addDataset="addDataset"
-            :editDataset="editDataset"
-            :popDataset="popDataset"
-            :setActiveDataset="setActiveDataset"
-            :activeDatasetId="activeDatasetId"
-            :activeDataset="activeDataset"
             :exportPlots="exportPlots"
             :exportBtnText="exportBtnText"
             :calculatedPlots="calculatedPlots"
@@ -106,7 +99,6 @@
             :clearPlots="clearPlots"
             :clearAxes="clearAxes"
             :plots="showPlots"
-            :clearActivePlots="clearActivePlots"
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
         </v-col>
@@ -194,8 +186,6 @@ import {
   DiameterRange,
   ExtractAlgorithm,
   LineExtractProps,
-  Datasets,
-  Dataset,
 } from '../types'
 import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
 import LineExtract from '@/domains/extractStrategies/LineExtract'
@@ -211,12 +201,14 @@ import { DatasetManager } from './DatasetManager'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
 import { CanvasManager } from '@/domains/CanvasManager'
+import { DatasetManager as DM } from '@/domains/DatasetManager'
 
 const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3] as const
 const [black, red] = ['#000000ff', '#ff0000ff']
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 const cm = CanvasManager.instance
+const dm = DM.instance
 const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
 export default Vue.extend({
@@ -274,15 +266,8 @@ export default Vue.extend({
         xPx: 0,
         yPx: 0,
       } as Position,
-      plots: [] as Plot[],
-      datasets: [
-        {
-          id: 1,
-          name: 'dataset 1',
-          plots: [],
-        },
-      ] as Datasets,
-      activeDatasetId: 1,
+      // INFO: dm.datasetsの監視のために必要
+      datasets: dm.datasets,
       // REFACTOR: color typeを作成する
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
@@ -298,7 +283,7 @@ export default Vue.extend({
       cursorIsMoved: false,
       movingAxisIndex: 0,
       // REFACTOR: 変数名をactiveなどにする
-      activePlotIds: [] as number[],
+      activePlotIds: dm.activePlotIds,
       red,
       canvasWidth: 0,
       canvasHeight: 0,
@@ -310,20 +295,11 @@ export default Vue.extend({
     }
   },
   computed: {
-    activeDataset(): Dataset {
-      const targetDataset = this.datasets.find((dataset) => {
-        return dataset.id === this.activeDatasetId
-      })
-      if (!targetDataset) {
-        throw new Error('There are no active datasets.')
-      }
-      return targetDataset
-    },
     plotIsActive(): boolean {
       return this.activePlotIds.length > 0
     },
     showPlots(): Plot[] {
-      return this.activeDataset.plots.map((plot) => {
+      return dm.activeDataset.plots.map((plot) => {
         return {
           id: plot.id,
           xPx: plot.xPx * this.canvasScale,
@@ -406,7 +382,7 @@ export default Vue.extend({
       return this.axesSizePx / 2
     },
     calculatedPlots(): PlotValue[] {
-      const newPlots = this.activeDataset.plots.map((plot) => {
+      const newPlots = dm.activeDataset.plots.map((plot) => {
         const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
         return {
           id: plot.id,
@@ -417,20 +393,6 @@ export default Vue.extend({
         }
       })
       return newPlots
-    },
-    nextPlotId(): number {
-      if (this.activeDataset.plots.length === 0) {
-        return 1
-      }
-      return (
-        this.activeDataset.plots[this.activeDataset.plots.length - 1].id + 1
-      )
-    },
-    nextDatasetId(): number {
-      if (this.datasets.length === 0) {
-        return 1
-      }
-      return this.datasets[this.datasets.length - 1].id + 1
     },
     canvasHeightInt(): number {
       return Math.floor(this.canvasHeight)
@@ -480,24 +442,6 @@ export default Vue.extend({
     document.removeEventListener('paste', this.pasteHandler)
   },
   methods: {
-    setActiveDataset(id: number) {
-      this.activeDatasetId = id
-    },
-    editDataset(datasetId: number, newName: string) {
-      const targetDataset = this.datasets.find((dataset) => {
-        return dataset.id === datasetId
-      })
-      if (!targetDataset) {
-        throw new Error(datasetId + "doesn't exist.")
-      }
-      targetDataset.name = newName
-    },
-    addDataset(dataset: Dataset) {
-      this.datasets.push(dataset)
-    },
-    popDataset() {
-      this.datasets.pop()
-    },
     setMaskMode(mode: number) {
       this.maskMode = mode
     },
@@ -571,7 +515,7 @@ export default Vue.extend({
       this.shouldShowPoints = !this.shouldShowPoints
     },
     sortPlots() {
-      this.activeDataset.plots.sort((a, b) => {
+      dm.activeDataset.plots.sort((a, b) => {
         return a.xPx - b.xPx
       })
     },
@@ -615,31 +559,8 @@ export default Vue.extend({
         this.canvasCursor = this.axesPos[this.movingAxisIndex]
       }
       if (this.plotIsActive) {
-        switch (e.key) {
-          case arrowUp:
-            this.activeDataset.plots
-              .filter((plot) => this.activePlotIds.includes(plot.id))
-              .map((plot) => plot.yPx--)
-            break
-          case arrowRight:
-            this.activeDataset.plots
-              .filter((plot) => this.activePlotIds.includes(plot.id))
-              .map((plot) => plot.xPx++)
-            break
-          case arrowDown:
-            this.activeDataset.plots
-              .filter((plot) => this.activePlotIds.includes(plot.id))
-              .map((plot) => plot.yPx++)
-            break
-          case arrowLeft:
-            this.activeDataset.plots
-              .filter((plot) => this.activePlotIds.includes(plot.id))
-              .map((plot) => plot.xPx--)
-            break
-          default:
-            break
-        }
-        this.canvasCursor = this.activeDataset.plots.filter((plot) =>
+        dm.moveActivePlot(e.key)
+        this.canvasCursor = dm.activeDataset.plots.filter((plot) =>
           this.activePlotIds.includes(plot.id)
         )[0]
       }
@@ -680,7 +601,7 @@ export default Vue.extend({
     async extractPlots() {
       this.isExtracting = true
       this.isMovingAxis = false
-      this.activeDataset.plots = []
+      dm.activeDataset.plots = []
       try {
         let extractor: ExtractStrategyInterface
         switch (this.extractAlgorithm) {
@@ -693,7 +614,7 @@ export default Vue.extend({
           default:
             throw new Error('Extract algorithm is not selected.')
         }
-        this.activeDataset.plots = extractor.execute(
+        dm.activeDataset.plots = extractor.execute(
           cm,
           [this.targetColor.R, this.targetColor.G, this.targetColor.B],
           this.colorDistancePct,
@@ -767,31 +688,18 @@ export default Vue.extend({
       }
       this.isMovingAxis = false
 
-      this.activePlotIds = [this.nextPlotId]
-      // this.activeDataset.plots.push({
-      //   id: this.nextPlotId,
-      //   xPx: (e.offsetX - offsetPx) / this.canvasScale,
-      //   yPx: e.offsetY / this.canvasScale,
-      // })
-      this.activeDataset.plots.push({
-        id: this.nextPlotId,
-        xPx: (e.offsetX - offsetPx) / this.canvasScale,
-        yPx: e.offsetY / this.canvasScale,
-      })
+      dm.addPlot(
+        (e.offsetX - offsetPx) / this.canvasScale,
+        e.offsetY / this.canvasScale
+      )
       this.shouldShowPoints = true
     },
     activatePlot(id: number) {
-      this.activePlotIds = [id]
+      dm.activatePlot(id)
       this.isMovingAxis = false
     },
     toggleActivatedPlot(toggledId: number) {
-      if (this.activePlotIds.includes(toggledId)) {
-        this.activePlotIds = this.activePlotIds.filter((id) => {
-          return id !== toggledId
-        })
-        return
-      }
-      this.activePlotIds.push(toggledId)
+      dm.toggleActivatedPlot(toggledId)
     },
     clearAxes() {
       this.axesPos = []
@@ -799,14 +707,8 @@ export default Vue.extend({
       this.cursorIsMoved = false
     },
     clearPlots() {
-      this.activeDataset.plots = []
+      dm.clearPlots()
       this.shouldShowPoints = true
-    },
-    clearActivePlots() {
-      this.activeDataset.plots = this.activeDataset.plots.filter((plot) => {
-        return !this.activePlotIds.includes(plot.id)
-      })
-      this.activePlotIds = []
     },
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる

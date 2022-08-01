@@ -41,7 +41,7 @@
           <v-container>
             <v-row>
               <v-col>
-                <v-btn @click="addColumn" small
+                <v-btn @click="addDataset" small
                   ><v-icon>mdi-plus</v-icon></v-btn
                 >
                 <v-btn
@@ -115,8 +115,11 @@
 
 <script lang="ts">
 import Vue, { PropType } from 'vue'
-import { Datasets, Dataset, Plots } from '@/types'
+import { Dataset, Plots } from '@/types'
 import Clipboard from '@/components/Export/Clipboard.vue'
+import { DatasetManager as DM } from '@/domains/DatasetManager'
+const dm = DM.instance
+
 export default Vue.extend({
   components: {
     Clipboard,
@@ -130,9 +133,10 @@ export default Vue.extend({
           active: true,
         },
       ],
-      datasetCount: 1,
       shouldShowEditDialog: false,
       shouldShowActiveDataset: false,
+      activeDatasetId: dm.activeDatasetId,
+      datasets: dm.datasets,
     }
   },
   computed: {
@@ -142,28 +146,11 @@ export default Vue.extend({
       }
       return this.datasets[this.datasets.length - 1].id + 1
     },
+    activeDataset(): Dataset {
+      return dm.activeDataset
+    },
   },
   props: {
-    datasets: {
-      type: Array as PropType<Datasets>,
-      required: true,
-    },
-    addDataset: {
-      type: Function,
-      required: true,
-    },
-    editDataset: {
-      type: Function,
-      required: true,
-    },
-    popDataset: {
-      type: Function,
-      required: true,
-    },
-    setActiveDataset: {
-      type: Function,
-      required: true,
-    },
     exportPlots: {
       type: Function,
       required: false,
@@ -172,27 +159,12 @@ export default Vue.extend({
       type: String,
       required: false,
     },
-    activeDatasetId: {
-      type: Number,
-      required: true,
-    },
-    activeDataset: {
-      type: Object as PropType<Dataset>,
-      required: true,
-    },
     calculatedPlots: {
       type: Array as PropType<Plots>,
       required: true,
     },
   },
   methods: {
-    addColumn() {
-      this.addDataset({
-        id: this.nextDatasetId,
-        name: `dataset ${this.nextDatasetId}`,
-        plots: [],
-      })
-    },
     removeColumn() {
       if (this.datasets.length === 1) {
         return
@@ -201,6 +173,19 @@ export default Vue.extend({
     },
     openEditDialog() {
       this.shouldShowEditDialog = true
+    },
+    addDataset() {
+      dm.addDataset()
+    },
+    editDataset(datasetId: number, newName: string) {
+      dm.editDatasetName(datasetId, newName)
+    },
+    popDataset() {
+      dm.popDataset()
+    },
+    setActiveDataset(id: number) {
+      // INFO: dmに変数代入したかったがVueインスタンスのdataプロパティに反映されなかったのでdataを直接更新。
+      this.activeDatasetId = dm.activeDatasetId = id
     },
   },
 })
