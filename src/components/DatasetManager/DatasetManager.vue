@@ -98,7 +98,6 @@
               <v-col>
                 <clipboard
                   :plots="calculatedPlots"
-                  :exportPlots="exportPlots"
                   :exportBtnText="exportBtnText"
                 ></clipboard>
               </v-col>
@@ -114,8 +113,8 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from 'vue'
-import { Dataset, Plots } from '@/types'
+import Vue from 'vue'
+import { Dataset } from '@/types'
 import Clipboard from '@/components/Export/Clipboard.vue'
 import { DatasetManager as DM } from '@/domains/DatasetManager'
 const dm = DM.instance
@@ -149,19 +148,14 @@ export default Vue.extend({
     activeDataset(): Dataset {
       return dm.activeDataset
     },
+    calculatedPlots() {
+      return dm.activeCalculatedPlots
+    },
   },
   props: {
-    exportPlots: {
-      type: Function,
-      required: false,
-    },
     exportBtnText: {
       type: String,
       required: false,
-    },
-    calculatedPlots: {
-      type: Array as PropType<Plots>,
-      required: true,
     },
   },
   methods: {

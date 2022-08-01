@@ -6,8 +6,8 @@
       top: `${yPx - plotHalfSize}px`,
       left: `${xPx - plotHalfSize}px`,
       cursor: 'pointer',
-      width: `${plotSize}px`,
-      height: `${plotSize}px`,
+      width: `${plotSizePx}px`,
+      height: `${plotSizePx}px`,
       'background-color': isActive ? 'red' : 'dodgerblue',
       outline: '1px solid white',
       'border-radius': '50%',
@@ -19,10 +19,13 @@
 <script lang="ts">
 import { Plot } from '@/types'
 import Vue from 'vue'
+import { DatasetManager as DM } from '@/domains/DatasetManager'
+const dm = DM.instance
+
 export default Vue.extend({
   computed: {
     plotHalfSize(): number {
-      return this.plotSize / 2
+      return this.plotSizePx / 2
     },
     xPx(): number {
       return this.plot.xPx
@@ -36,16 +39,8 @@ export default Vue.extend({
       type: Object as () => Plot,
       required: true,
     },
-    plotSize: {
+    plotSizePx: {
       type: Number,
-      required: true,
-    },
-    activatePlot: {
-      type: Function,
-      required: true,
-    },
-    toggleActivatedPlot: {
-      type: Function,
       required: true,
     },
     isActive: {
@@ -55,10 +50,10 @@ export default Vue.extend({
   methods: {
     click(event: PointerEvent) {
       if (event.ctrlKey || event.metaKey) {
-        this.toggleActivatedPlot(this.plot.id)
+        dm.toggleActivatedPlot(this.plot.id)
         return
       }
-      this.activatePlot(this.plot.id)
+      dm.activatePlot(this.plot.id)
     },
   },
 })

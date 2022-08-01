@@ -19,11 +19,7 @@
             :isLog="isLog"
             :error="axesValuesErrorMessage"
           ></axes-settings>
-          <dataset-manager
-            :exportPlots="exportPlots"
-            :exportBtnText="exportBtnText"
-            :calculatedPlots="calculatedPlots"
-          ></dataset-manager>
+          <dataset-manager :exportBtnText="exportBtnText"></dataset-manager>
         </v-col>
         <v-col class="pt-1" cols="7">
           <canvas-header
@@ -77,16 +73,12 @@
                 :index="index"
               ></canvas-axes>
             </div>
-            <canvas-plot
-              v-for="plot in showPlots"
+            <canvas-plots
               v-show="shouldShowPoints"
-              :key="plot.id"
-              :plotSize="plotSizePx"
-              :plot="plot"
+              :plotSizePx="plotSizePx"
               :isActive="activePlotIds.includes(plot.id)"
-              :activatePlot="activatePlot"
-              :toggleActivatedPlot="toggleActivatedPlot"
-            ></canvas-plot>
+            >
+            </canvas-plots>
             <canvas-cursor
               :cursor="showCanvasCursor"
               :label="cursorLabel"
@@ -98,7 +90,6 @@
             :shouldShowPoints="shouldShowPoints"
             :clearPlots="clearPlots"
             :clearAxes="clearAxes"
-            :plots="showPlots"
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
         </v-col>
@@ -113,12 +104,10 @@
             :movingAxisIndex="movingAxisIndex"
             :axesSizePx="axesSizePx"
             :canvasScale="canvasScale"
-            :plots="showPlots"
             :plotSizePx="plotSizePx"
             :plotIsActive="plotIsActive"
             :activePlotIds="activePlotIds"
             :shouldShowPoints="shouldShowPoints"
-            :xyValue="calculateXY(canvasCursor.xPx, canvasCursor.yPx)"
           ></magnifier>
           <h4>Automatic Extraction</h4>
           <v-select
@@ -176,12 +165,10 @@ import {
   CanvasHeader,
   CanvasFooter,
   CanvasAxes,
-  CanvasPlot,
+  CanvasPlots,
   CanvasCursor,
 } from './Canvas'
 import {
-  Plot,
-  PlotValue,
   Position,
   DiameterRange,
   ExtractAlgorithm,
@@ -189,7 +176,6 @@ import {
 } from '../types'
 import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
 import LineExtract from '@/domains/extractStrategies/LineExtract'
-import XYAxesCalculator from '@/domains/XYAxesCalculator'
 import {
   AxesSettings,
   SymbolExtractSettings,
@@ -202,20 +188,21 @@ import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrateg
 import { version } from '../../package.json'
 import { CanvasManager } from '@/domains/CanvasManager'
 import { DatasetManager as DM } from '@/domains/DatasetManager'
+import { AxesManager as AM } from '@/domains/AxesManager'
 
-const [indexX1, indexX2, indexY1, indexY2] = [0, 1, 2, 3] as const
 const [black, red] = ['#000000ff', '#ff0000ff']
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 const cm = CanvasManager.instance
 const dm = DM.instance
+const am = AM.instance
 const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
 export default Vue.extend({
   components: {
     Magnifier,
     CanvasAxes,
-    CanvasPlot,
+    CanvasPlots,
     CanvasCursor,
     CanvasHeader,
     CanvasFooter,
@@ -254,8 +241,9 @@ export default Vue.extend({
         y: false,
       },
       uploadImageUrl: '',
-      axesPos: [] as Position[],
-      // REFACOTR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
+      axes: am.axes,
+      axesPos: am.axesPos,
+      // REFACTOR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
       axesValues: {
         x1: '0',
         x2: '1',
@@ -266,8 +254,6 @@ export default Vue.extend({
         xPx: 0,
         yPx: 0,
       } as Position,
-      // INFO: dm.datasetsの監視のために必要
-      datasets: dm.datasets,
       // REFACTOR: color typeを作成する
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
@@ -296,19 +282,10 @@ export default Vue.extend({
   },
   computed: {
     plotIsActive(): boolean {
-      return this.activePlotIds.length > 0
-    },
-    showPlots(): Plot[] {
-      return dm.activeDataset.plots.map((plot) => {
-        return {
-          id: plot.id,
-          xPx: plot.xPx * this.canvasScale,
-          yPx: plot.yPx * this.canvasScale,
-        }
-      })
+      return dm.activePlotIds.length > 0
     },
     showAxesPos(): Position[] {
-      return this.axesPos.map((axis) => {
+      return am.axesPos.map((axis) => {
         return {
           xPx: axis.xPx * this.canvasScale,
           yPx: axis.yPx * this.canvasScale,
@@ -381,19 +358,6 @@ export default Vue.extend({
     axesRadiusSizePx(): number {
       return this.axesSizePx / 2
     },
-    calculatedPlots(): PlotValue[] {
-      const newPlots = dm.activeDataset.plots.map((plot) => {
-        const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
-        return {
-          id: plot.id,
-          xPx: plot.xPx,
-          yPx: plot.yPx,
-          xV,
-          yV,
-        }
-      })
-      return newPlots
-    },
     canvasHeightInt(): number {
       return Math.floor(this.canvasHeight)
     },
@@ -451,26 +415,6 @@ export default Vue.extend({
     setEraserSize(size: string) {
       this.eraserSize = parseInt(size)
     },
-    validateAxes(): boolean {
-      if (this.axesValues.x1 === this.axesValues.x2) {
-        this.axesValuesErrorMessage = 'x1 and x2 should not be same value'
-        return false
-      }
-      if (this.axesValues.y1 === this.axesValues.y2) {
-        this.axesValuesErrorMessage = 'y1 and y2 should not be same value'
-        return false
-      }
-      if (Object.values(this.axesValues).includes('')) {
-        this.axesValuesErrorMessage = 'axes values should not be empty'
-        return false
-      }
-      this.axesValuesErrorMessage = ''
-      return this.axesPos.length === 4
-    },
-    exportPlots() {
-      const plots = this.calculatedPlots
-      this.$emit('click', plots)
-    },
     // TODO: setSymbolExtractPropsに変更する
     setDiameterRange(diameterRange: DiameterRange) {
       this.diameterRange = diameterRange
@@ -483,33 +427,6 @@ export default Vue.extend({
     },
     changeIsLog(isLog: { x: boolean; y: boolean }) {
       this.isLog = isLog
-    },
-    calculateXY(x: number, y: number): { xV: string; yV: string } {
-      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (!this.validateAxes()) {
-        return { xV: '0', yV: '0' }
-      }
-      const calculator = new XYAxesCalculator(
-        {
-          x1: Object.assign(this.axesPos[indexX1], {
-            value: parseFloat(this.axesValues.x1),
-          }),
-          x2: Object.assign(this.axesPos[indexX2], {
-            value: parseFloat(this.axesValues.x2),
-          }),
-          y1: Object.assign(this.axesPos[indexY1], {
-            value: parseFloat(this.axesValues.y1),
-          }),
-          y2: Object.assign(this.axesPos[indexY2], {
-            value: parseFloat(this.axesValues.y2),
-          }),
-        },
-        {
-          x: this.isLog.x,
-          y: this.isLog.y,
-        }
-      )
-      return calculator.calculateXYValues(x, y)
     },
     switchShowPlots(): void {
       this.shouldShowPoints = !this.shouldShowPoints
@@ -676,14 +593,14 @@ export default Vue.extend({
       if (isOnCanvasPlot) {
         return
       }
-      if (this.axesPos.length < 4) {
+      if (am.nextAxis) {
         this.isMovingAxis = true
         this.cursorIsMoved = false
         this.movingAxisIndex = this.axesPos.length
-        this.axesPos.push({
-          xPx: (e.offsetX - offsetPx) / this.canvasScale,
-          yPx: e.offsetY / this.canvasScale,
-        })
+        am.addAxisPosition(
+          (e.offsetX - offsetPx) / this.canvasScale,
+          e.offsetY / this.canvasScale
+        )
         return
       }
       this.isMovingAxis = false
@@ -693,13 +610,6 @@ export default Vue.extend({
         e.offsetY / this.canvasScale
       )
       this.shouldShowPoints = true
-    },
-    activatePlot(id: number) {
-      dm.activatePlot(id)
-      this.isMovingAxis = false
-    },
-    toggleActivatedPlot(toggledId: number) {
-      dm.toggleActivatedPlot(toggledId)
     },
     clearAxes() {
       this.axesPos = []

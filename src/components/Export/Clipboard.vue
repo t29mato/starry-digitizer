@@ -11,9 +11,8 @@
       <v-btn small @click="copy" :disabled="convertPlotsIntoText.length === 0"
         >Copy to Clipboard</v-btn
       >
-      <v-btn v-if="exportBtnText" @click="exportPlots" class="ml-2">{{
-        exportBtnText
-      }}</v-btn>
+      <!-- TODO: export機能を実装する -->
+      <v-btn v-if="exportBtnText" class="ml-2">{{ exportBtnText }}</v-btn>
     </div>
   </div>
 </template>
@@ -45,7 +44,6 @@ export default Vue.extend({
     exportBtnText: {
       type: String,
     },
-    exportPlots: Function,
   },
   methods: {
     copy(): void {

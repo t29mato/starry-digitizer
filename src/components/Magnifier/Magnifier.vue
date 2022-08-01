@@ -73,6 +73,11 @@ import MagnifierAxes from './MagnifierAxes.vue'
 import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
+import { DatasetManager as DM } from '@/domains/DatasetManager'
+import { AxesManager as AM } from '@/domains/AxesManager'
+import XYAxesCalculator from '@/domains/XYAxesCalculator'
+const dm = DM.instance
+const am = AM.instance
 
 export default Vue.extend({
   data() {
@@ -106,6 +111,31 @@ export default Vue.extend({
         yPx: Math.ceil(this.canvasCursor.yPx),
       }
     },
+    plots() {
+      return dm.activeScaledPlots
+    },
+    xyValue() {
+      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
+      if (!am.validateAxes()) {
+        return { xV: '0', yV: '0' }
+      }
+      const calculator = new XYAxesCalculator(
+        {
+          x1: am.axes.x1,
+          x2: am.axes.x2,
+          y1: am.axes.y1,
+          y2: am.axes.y2,
+        },
+        {
+          x: am.xIsLog,
+          y: am.yIsLog,
+        }
+      )
+      return calculator.calculateXYValues(
+        this.canvasCursor.xPx,
+        this.canvasCursor.yPx
+      )
+    },
   },
   props: {
     magnifierSizePx: {
@@ -126,9 +156,6 @@ export default Vue.extend({
     canvasScale: {
       type: Number,
       required: true,
-    },
-    plots: {
-      type: Array as PropType<{ id: number; xPx: number; yPx: number }[]>,
     },
     shouldShowPoints: {
       type: Boolean,
@@ -161,9 +188,6 @@ export default Vue.extend({
     activePlotIds: {
       type: Array as PropType<number[]>,
       required: true,
-    },
-    xyValue: {
-      type: Object as PropType<{ xV: number; yV: number }>,
     },
   },
   methods: {

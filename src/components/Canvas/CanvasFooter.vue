@@ -38,9 +38,6 @@ export default Vue.extend({
       type: Boolean,
       required: true,
     },
-    plots: {
-      type: Array as PropType<{ id: number; xPx: number; yPx: number }[]>,
-    },
     axes: {
       type: Array as PropType<
         {
@@ -60,6 +57,11 @@ export default Vue.extend({
     switchShowPlots: {
       type: Function,
       required: true,
+    },
+  },
+  computed: {
+    plots() {
+      return dm.activeScaledPlots
     },
   },
   methods: {

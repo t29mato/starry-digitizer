@@ -1,4 +1,9 @@
-import { Datasets, Dataset } from '@/types'
+import { Datasets, Dataset, Plots } from '@/types'
+import { CanvasManager as CM } from '@/domains/CanvasManager'
+import { AxesManager as AM } from '@/domains/AxesManager'
+import XYAxesCalculator from '../XYAxesCalculator'
+const cm = CM.instance
+const am = AM.instance
 
 export class DatasetManager {
   static #instance: DatasetManager
@@ -35,6 +40,31 @@ export class DatasetManager {
     return targetDataset
   }
 
+  get activeScaledPlots(): Plots {
+    const plots = this.activeDataset.plots.map((plot) => {
+      return {
+        id: plot.id,
+        xPx: plot.xPx * cm.canvasScale,
+        yPx: plot.yPx * cm.canvasScale,
+      }
+    })
+    return plots
+  }
+
+  get activeCalculatedPlots(): Plots {
+    const newPlots = this.activeDataset.plots.map((plot) => {
+      const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
+      return {
+        id: plot.id,
+        xPx: plot.xPx,
+        yPx: plot.yPx,
+        xV,
+        yV,
+      }
+    })
+    return newPlots
+  }
+
   get nextPlotId(): number {
     if (this.activeDataset.plots.length === 0) {
       return 1
@@ -47,6 +77,26 @@ export class DatasetManager {
       return 1
     }
     return this.datasets[this.datasets.length - 1].id + 1
+  }
+
+  calculateXY(x: number, y: number): { xV: string; yV: string } {
+    // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
+    if (!am.validateAxes()) {
+      return { xV: '0', yV: '0' }
+    }
+    const calculator = new XYAxesCalculator(
+      {
+        x1: am.axes.x1,
+        x2: am.axes.x2,
+        y1: am.axes.y1,
+        y2: am.axes.y2,
+      },
+      {
+        x: am.xIsLog,
+        y: am.yIsLog,
+      }
+    )
+    return calculator.calculateXYValues(x, y)
   }
 
   addPlot(xPx: number, yPx: number) {
