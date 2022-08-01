@@ -9,7 +9,7 @@
     <v-btn
       small
       class="ml-2"
-      :disabled="plots.length === 0 || !plotIsActive"
+      :disabled="plots.length === 0 || !plotsAreActive"
       @click="clearActivePlots"
       >Clear Active Plot</v-btn
     >
@@ -30,10 +30,6 @@ const dm = DM.instance
 
 export default Vue.extend({
   props: {
-    plotIsActive: {
-      type: Boolean,
-      required: true,
-    },
     shouldShowPoints: {
       type: Boolean,
       required: true,
@@ -62,6 +58,9 @@ export default Vue.extend({
   computed: {
     plots() {
       return dm.activeScaledPlots
+    },
+    plotsAreActive() {
+      return dm.plotsAreActive
     },
   },
   methods: {

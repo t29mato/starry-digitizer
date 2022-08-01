@@ -86,7 +86,6 @@
           </div>
           <canvas-footer
             :axes="showAxesPos"
-            :plotIsActive="plotIsActive"
             :shouldShowPoints="shouldShowPoints"
             :clearPlots="clearPlots"
             :clearAxes="clearAxes"
@@ -105,7 +104,6 @@
             :axesSizePx="axesSizePx"
             :canvasScale="canvasScale"
             :plotSizePx="plotSizePx"
-            :plotIsActive="plotIsActive"
             :activePlotIds="activePlotIds"
             :shouldShowPoints="shouldShowPoints"
           ></magnifier>
@@ -281,9 +279,6 @@ export default Vue.extend({
     }
   },
   computed: {
-    plotIsActive(): boolean {
-      return dm.activePlotIds.length > 0
-    },
     showAxesPos(): Position[] {
       return am.axesPos.map((axis) => {
         return {
@@ -475,7 +470,7 @@ export default Vue.extend({
         }
         this.canvasCursor = this.axesPos[this.movingAxisIndex]
       }
-      if (this.plotIsActive) {
+      if (dm.plotsAreActive) {
         dm.moveActivePlot(e.key)
         this.canvasCursor = dm.activeDataset.plots.filter((plot) =>
           this.activePlotIds.includes(plot.id)

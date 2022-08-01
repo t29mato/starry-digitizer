@@ -72,6 +72,10 @@ export class DatasetManager {
     return this.activeDataset.plots[this.activeDataset.plots.length - 1].id + 1
   }
 
+  get plotsAreActive(): boolean {
+    return this.activePlotIds.length > 0
+  }
+
   get nextDatasetId(): number {
     if (this.datasets.length === 0) {
       return 1
