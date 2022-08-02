@@ -16,14 +16,7 @@
           <dataset-manager :exportBtnText="exportBtnText"></dataset-manager>
         </v-col>
         <v-col class="pt-1" cols="7">
-          <canvas-header
-            :resizeCanvasToFit="resizeCanvasToFit"
-            :resizeCanvasToOriginal="resizeCanvasToOriginal"
-            :scaleUp="scaleUp"
-            :scaleDown="scaleDown"
-            :uploadImage="uploadImage"
-            :canvasScale="canvasScale"
-          ></canvas-header>
+          <canvas-header :uploadImage="uploadImage"></canvas-header>
           <div
             :style="{
               position: 'relative',
@@ -96,7 +89,6 @@
             :isMovingAxis="isMovingAxis"
             :movingAxisIndex="movingAxisIndex"
             :axesSizePx="axesSizePx"
-            :canvasScale="canvasScale"
             :plotSizePx="plotSizePx"
             :activePlotIds="activePlotIds"
             :shouldShowPoints="shouldShowPoints"
@@ -250,7 +242,6 @@ export default Vue.extend({
       isExtracting: false,
       plotSizePx: 10,
       axesSizePx: 10,
-      canvasScale: cm.canvasScale,
       magnifierSizePx: 200,
       // REFACTOR: 変数名を変更 → axesIsActive
       isMovingAxis: false,
@@ -272,15 +263,15 @@ export default Vue.extend({
     showAxesPos(): Position[] {
       return am.axesPos.map((axis) => {
         return {
-          xPx: axis.xPx * this.canvasScale,
-          yPx: axis.yPx * this.canvasScale,
+          xPx: axis.xPx * cm.canvasScale,
+          yPx: axis.yPx * cm.canvasScale,
         }
       })
     },
     showCanvasCursor(): Position {
       return {
-        xPx: this.canvasCursor.xPx * this.canvasScale,
-        yPx: this.canvasCursor.yPx * this.canvasScale,
+        xPx: this.canvasCursor.xPx * cm.canvasScale,
+        yPx: this.canvasCursor.yPx * cm.canvasScale,
       }
     },
     // REFACTOR: canvas-cursorコンポーネントの中に閉じ込めたい
@@ -303,10 +294,10 @@ export default Vue.extend({
       }
     },
     showPenToolSize(): number {
-      return this.penToolSize * this.canvasScale
+      return this.penToolSize * cm.canvasScale
     },
     showEraserSize(): number {
-      return this.eraserSize * this.canvasScale
+      return this.eraserSize * cm.canvasScale
     },
     cursorLabel(): string {
       switch (this.maskMode) {
@@ -379,7 +370,6 @@ export default Vue.extend({
       this.uploadImageUrl = this.initialGraphImagePath
       this.canvasWidth = cm.imageCanvas.width
       this.canvasHeight = cm.imageCanvas.height
-      this.canvasScale = cm.canvasScale
       this.updateSwatches(cm.colorSwatches)
     } finally {
       //
@@ -478,22 +468,6 @@ export default Vue.extend({
       }
       this.uploadImage(imageFile)
     },
-    scaleUp() {
-      cm.scaleUp()
-      this.canvasScale = cm.canvasScale
-    },
-    scaleDown() {
-      cm.scaleDown()
-      this.canvasScale = cm.canvasScale
-    },
-    resizeCanvasToOriginal() {
-      cm.drawOriginalSizeImage()
-      this.canvasScale = 1
-    },
-    resizeCanvasToFit() {
-      cm.drawFitSizeImage()
-      this.canvasScale = cm.canvasScale
-    },
     async extractPlots() {
       this.isExtracting = true
       this.isMovingAxis = false
@@ -534,7 +508,6 @@ export default Vue.extend({
         // TODO: CanvasManagerを利用する
         const image = await this.loadImage(fr.result)
         cm.changeImage(image)
-        this.canvasScale = cm.canvasScale
         cm.drawFitSizeImage()
         this.updateSwatches(cm.colorSwatches)
         this.uploadImageUrl = fr.result
@@ -577,16 +550,16 @@ export default Vue.extend({
         this.cursorIsMoved = false
         this.movingAxisIndex = this.axesPos.length
         am.addAxisPosition(
-          (e.offsetX - offsetPx) / this.canvasScale,
-          e.offsetY / this.canvasScale
+          (e.offsetX - offsetPx) / cm.canvasScale,
+          e.offsetY / cm.canvasScale
         )
         return
       }
       this.isMovingAxis = false
 
       dm.addPlot(
-        (e.offsetX - offsetPx) / this.canvasScale,
-        e.offsetY / this.canvasScale
+        (e.offsetX - offsetPx) / cm.canvasScale,
+        e.offsetY / cm.canvasScale
       )
       this.shouldShowPoints = true
     },
@@ -606,8 +579,8 @@ export default Vue.extend({
       const yPx = e.offsetY + parseFloat(target.style.top)
       this.cursorIsMoved = false
       this.canvasCursor = {
-        xPx: xPx / this.canvasScale,
-        yPx: yPx / this.canvasScale,
+        xPx: xPx / cm.canvasScale,
+        yPx: yPx / cm.canvasScale,
       }
       // INFO: 左クリックされていない状態
       const isClicking = e.buttons === 1

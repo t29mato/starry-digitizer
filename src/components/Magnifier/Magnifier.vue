@@ -75,9 +75,12 @@ import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import { DatasetManager as DM } from '@/domains/DatasetManager'
 import { AxesManager as AM } from '@/domains/AxesManager'
+import { CanvasManager as CM } from '@/domains/CanvasManager'
+
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
 const dm = DM.instance
 const am = AM.instance
+const cm = CM.instance
 
 export default Vue.extend({
   data() {
@@ -98,6 +101,10 @@ export default Vue.extend({
     MagnifierSettingsBtn,
   },
   computed: {
+    // FIXME: CanvasScaleが反映されない。→Storeを導入して解決する
+    canvasScale(): number {
+      return cm.canvasScale
+    },
     magnifierHalfSize(): number {
       return this.magnifierSizePx / 2
     },
@@ -151,10 +158,6 @@ export default Vue.extend({
         xPx: number
         yPx: number
       }>,
-      required: true,
-    },
-    canvasScale: {
-      type: Number,
       required: true,
     },
     shouldShowPoints: {

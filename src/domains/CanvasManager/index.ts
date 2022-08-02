@@ -11,7 +11,7 @@ export class CanvasManager {
   isDrawnMask = false
   #tempMaskCanvas?: HTMLCanvasElement
   #imageElement?: HTMLImageElement
-  #canvasScale = 1
+  canvasScale = 1
   #cursor: Position = { xPx: 0, yPx: 0 }
   #rectangle = {
     startX: 0,
@@ -239,9 +239,9 @@ export class CanvasManager {
     return this.imageElement.height
   }
 
-  set canvasScale(canvasScale: number) {
-    this.#canvasScale = canvasScale
-  }
+  // set canvasScale(canvasScale: number) {
+  //   this.#canvasScale = canvasScale
+  // }
 
   get canvasWrapper() {
     if (!this.#canvasWrapper) {
@@ -250,12 +250,12 @@ export class CanvasManager {
     return this.#canvasWrapper
   }
 
-  get canvasScale() {
-    if (!this.#canvasScale) {
-      throw new Error('#canvasScale is undefined.')
-    }
-    return this.#canvasScale
-  }
+  // get canvasScale() {
+  //   if (!this.#canvasScale) {
+  //     throw new Error('#canvasScale is undefined.')
+  //   }
+  //   return this.#canvasScale
+  // }
 
   get imageElement() {
     if (!this.#imageElement) {
