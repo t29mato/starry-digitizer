@@ -19,8 +19,7 @@
 <script lang="ts">
 import { Plot } from '@/types'
 import Vue from 'vue'
-import { DatasetManager as DM } from '@/domains/DatasetManager'
-const dm = DM.instance
+import { datasetMapper } from '@/store/modules/dataset'
 
 export default Vue.extend({
   computed: {
@@ -48,12 +47,13 @@ export default Vue.extend({
     },
   },
   methods: {
+    ...datasetMapper.mapActions(['toggleActivatedPlot', 'activatePlot']),
     click(event: PointerEvent) {
       if (event.ctrlKey || event.metaKey) {
-        dm.toggleActivatedPlot(this.plot.id)
+        this.toggleActivatedPlot(this.plot.id)
         return
       }
-      dm.activatePlot(this.plot.id)
+      this.activatePlot(this.plot.id)
     },
   },
 })

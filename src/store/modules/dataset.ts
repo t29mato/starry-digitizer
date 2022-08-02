@@ -87,6 +87,16 @@ class actions extends Actions<state, getters, mutations> {
     this.commit('updateActiveDataset', this.dd.activeDataset)
     this.commit('updateActivePlotsIds', this.dd.activePlotIds)
   }
+  toggleActivatedPlot(id: number) {
+    this.dd.toggleActivatedPlot(id)
+    this.commit('updateActivePlotsIds', this.dd.activePlotIds)
+    this.commit('updatePlotsAreActive', this.dd.plotsAreActive)
+  }
+  activatePlot(id: number) {
+    this.dd.activatePlot(id)
+    this.commit('updateActivePlotsIds', this.dd.activePlotIds)
+    this.commit('updatePlotsAreActive', this.dd.plotsAreActive)
+  }
 }
 
 export const dataset = new Module({
