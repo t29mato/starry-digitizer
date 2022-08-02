@@ -16155,7 +16155,7 @@ vuex-smart-module@0.5.0:
   resolved "https://registry.yarnpkg.com/vuex-smart-module/-/vuex-smart-module-0.5.0.tgz#b7973071a517a075a1bf8f7bb1b508eb5ae3b18b"
   integrity sha512-g/dXwtL4oG0fr4ekxVPmx2VLeI2M+5om6BwReS4TMkawa0qROI4DZMuqvmkTg8SCAR9zbLoTYV0GgzVSfyfERw==
 
-vuex@3:
+vuex@3.x:
   version "3.6.2"
   resolved "https://registry.yarnpkg.com/vuex/-/vuex-3.6.2.tgz#236bc086a870c3ae79946f107f16de59d5895e71"
   integrity sha512-ETW44IqCgBpVomy520DT5jf8n0zoCac+sxWnn+hMe/CzaSejb/eVw2YToiXYX+Ex/AuHHia28vWTq4goAexFbw==
