@@ -40,6 +40,9 @@ class mutations extends Mutations<state> {
   updateActivePlotsIds(ids: number[]) {
     this.state.activePlotIds = ids
   }
+  updatePlotsAreActive(isActive: boolean) {
+    this.state.plotsAreActive = isActive
+  }
 }
 
 class actions extends Actions<state, getters, mutations> {
@@ -53,6 +56,7 @@ class actions extends Actions<state, getters, mutations> {
     this.dd.addPlot(plot.xPx, plot.yPx)
     this.commit('updateActiveScaledPlots', this.dd.activeScaledPlots)
     this.commit('updateActivePlotsIds', this.dd.activePlotIds)
+    this.commit('updatePlotsAreActive', this.dd.plotsAreActive)
   }
   addDataset() {
     this.dd.addDataset()
@@ -69,6 +73,13 @@ class actions extends Actions<state, getters, mutations> {
   clearPlots() {
     this.dd.clearPlots()
     this.commit('updateActiveDataset', this.dd.activeDataset)
+    this.commit('updateActivePlotsIds', this.dd.activePlotIds)
+    this.commit('updateActiveScaledPlots', this.dd.activeScaledPlots)
+  }
+  clearActivePlots() {
+    this.dd.clearActivePlots()
+    this.commit('updateActiveDataset', this.dd.activeDataset)
+    this.commit('updateActiveScaledPlots', this.dd.activeScaledPlots)
     this.commit('updateActivePlotsIds', this.dd.activePlotIds)
   }
   setPlots(plots: Plots) {

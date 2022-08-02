@@ -3,30 +3,34 @@
     <v-btn small :disabled="axes.length === 0" @click="clearAxes">
       Clear Axes</v-btn
     >
-    <v-btn small class="ml-2" :disabled="plots.length === 0" @click="clearPlots"
+    <v-btn
+      small
+      class="ml-2"
+      :disabled="activeScaledPlots.length === 0"
+      @click="clearPlots"
       >Clear Plots</v-btn
     >
     <v-btn
       small
       class="ml-2"
-      :disabled="plots.length === 0 || !plotsAreActive"
+      :disabled="activeScaledPlots.length === 0 || !plotsAreActive"
       @click="clearActivePlots"
       >Clear Active Plot</v-btn
     >
-    <v-btn
+    <!-- TODO: プロットを非表示にするケースが少ないので一旦使わない -->
+    <!-- <v-btn
       small
       class="ml-2"
-      :disabled="plots.length === 0"
-      @click="switchShowPlots"
+      :disabled="activeScaledPlots.length === 0"
+      @click="hidePlots"
       >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
-    >
+    > -->
   </div>
 </template>
 
 <script lang="ts">
 import Vue, { PropType } from 'vue'
-import { DatasetManager as DM } from '@/domains/DatasetManager'
-const dm = DM.instance
+import { datasetMapper } from '@/store/modules/dataset'
 
 export default Vue.extend({
   props: {
@@ -46,27 +50,12 @@ export default Vue.extend({
       type: Function,
       required: true,
     },
-    clearPlots: {
-      type: Function,
-      required: true,
-    },
-    switchShowPlots: {
-      type: Function,
-      required: true,
-    },
   },
   computed: {
-    plots() {
-      return dm.activeScaledPlots
-    },
-    plotsAreActive() {
-      return dm.plotsAreActive
-    },
+    ...datasetMapper.mapState(['activeScaledPlots', 'plotsAreActive']),
   },
   methods: {
-    clearActivePlots() {
-      dm.clearActivePlots()
-    },
+    ...datasetMapper.mapActions(['clearPlots', 'clearActivePlots']),
   },
 })
 </script>

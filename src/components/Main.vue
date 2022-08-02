@@ -74,7 +74,6 @@
           <canvas-footer
             :axes="showAxesPos"
             :shouldShowPoints="shouldShowPoints"
-            :clearPlots="clearPlots"
             :clearAxes="clearAxes"
             :switchShowPlots="switchShowPlots"
           ></canvas-footer>
@@ -576,10 +575,6 @@ export default Vue.extend({
       this.axesPos = []
       this.isMovingAxis = false
       this.cursorIsMoved = false
-    },
-    clearPlots() {
-      this.clearPlots()
-      this.shouldShowPoints = true
     },
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
