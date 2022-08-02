@@ -150,6 +150,9 @@ export class DatasetManager {
     })
   }
   popDataset() {
+    if (this.datasets.length === 1) {
+      return
+    }
     this.datasets.pop()
   }
 
