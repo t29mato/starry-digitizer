@@ -113,6 +113,11 @@ export class DatasetManager {
     })
   }
 
+  setPlots(plots: Plots) {
+    this.activePlotIds.length = 0
+    this.activeDataset.plots = plots
+  }
+
   // HACK: Vue instance cannot detect the CanvasManager scale change.
   refreshPlots() {
     this.activeDataset.plots.push({

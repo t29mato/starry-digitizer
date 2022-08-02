@@ -1,7 +1,7 @@
 <template>
   <div>
     <canvas-plot
-      v-for="plot in plots"
+      v-for="plot in activeScaledPlots"
       :key="plot.id"
       :plotSizePx="plotSizePx"
       :plot="plot"
@@ -13,26 +13,20 @@
 <script lang="ts">
 import CanvasPlot from '@/components/Canvas/CanvasPlot.vue'
 import Vue from 'vue'
-import { DatasetManager as DM } from '@/domains/DatasetManager'
-import { Plots } from '@/types'
-const dm = DM.instance
+import { datasetMapper } from '@/store/modules/dataset'
 
 export default Vue.extend({
   components: {
     CanvasPlot,
   },
   computed: {
+    ...datasetMapper.mapGetters(['activeScaledPlots', 'activePlotIds']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
-    plots(): Plots {
-      return dm.activeScaledPlots
-    },
   },
   data() {
-    return {
-      activePlotIds: dm.activePlotIds,
-    }
+    return {}
   },
   props: {
     plotSizePx: {

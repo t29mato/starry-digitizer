@@ -171,14 +171,13 @@ import { DatasetManager } from './DatasetManager'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
 import { CanvasManager } from '@/domains/CanvasManager'
-import { DatasetManager as DM } from '@/domains/DatasetManager'
 import { AxesManager as AM } from '@/domains/AxesManager'
+import { datasetMapper } from '@/store/modules/dataset'
 
 const [black, red] = ['#000000ff', '#ff0000ff']
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 const cm = CanvasManager.instance
-const dm = DM.instance
 const am = AM.instance
 const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
@@ -247,8 +246,6 @@ export default Vue.extend({
       isMovingAxis: false,
       cursorIsMoved: false,
       movingAxisIndex: 0,
-      // REFACTOR: 変数名をactiveなどにする
-      activePlotIds: dm.activePlotIds,
       red,
       canvasWidth: 0,
       canvasHeight: 0,
@@ -260,6 +257,11 @@ export default Vue.extend({
     }
   },
   computed: {
+    ...datasetMapper.mapGetters([
+      'activeDataset',
+      'plotsAreActive',
+      'activePlotIds',
+    ]),
     showAxesPos(): Position[] {
       return am.axesPos.map((axis) => {
         return {
@@ -381,6 +383,12 @@ export default Vue.extend({
     document.removeEventListener('paste', this.pasteHandler)
   },
   methods: {
+    ...datasetMapper.mapActions([
+      'addPlot',
+      'moveActivePlot',
+      'clearPlots',
+      'setPlots',
+    ]),
     setMaskMode(mode: number) {
       this.maskMode = mode
     },
@@ -401,7 +409,7 @@ export default Vue.extend({
       this.shouldShowPoints = !this.shouldShowPoints
     },
     sortPlots() {
-      dm.activeDataset.plots.sort((a, b) => {
+      this.activeDataset.plots.sort((a, b) => {
         return a.xPx - b.xPx
       })
     },
@@ -444,9 +452,9 @@ export default Vue.extend({
         }
         this.canvasCursor = this.axesPos[this.movingAxisIndex]
       }
-      if (dm.plotsAreActive) {
-        dm.moveActivePlot(e.key)
-        this.canvasCursor = dm.activeDataset.plots.filter((plot) =>
+      if (this.plotsAreActive) {
+        this.moveActivePlot(e.key)
+        this.canvasCursor = this.activeDataset.plots.filter((plot) =>
           this.activePlotIds.includes(plot.id)
         )[0]
       }
@@ -471,7 +479,7 @@ export default Vue.extend({
     async extractPlots() {
       this.isExtracting = true
       this.isMovingAxis = false
-      dm.activeDataset.plots = []
+      this.clearPlots()
       try {
         let extractor: ExtractStrategyInterface
         switch (this.extractAlgorithm) {
@@ -484,15 +492,16 @@ export default Vue.extend({
           default:
             throw new Error('Extract algorithm is not selected.')
         }
-        dm.activeDataset.plots = extractor.execute(
-          cm,
-          [this.targetColor.R, this.targetColor.G, this.targetColor.B],
-          this.colorDistancePct,
-          this.isDrawnMask
+        this.setPlots(
+          extractor.execute(
+            cm,
+            [this.targetColor.R, this.targetColor.G, this.targetColor.B],
+            this.colorDistancePct,
+            this.isDrawnMask
+          )
         )
         this.sortPlots()
         this.shouldShowPoints = true
-        this.activePlotIds = []
       } catch (e) {
         console.error('failed to extractPlots', { cause: e })
       } finally {
@@ -557,10 +566,10 @@ export default Vue.extend({
       }
       this.isMovingAxis = false
 
-      dm.addPlot(
-        (e.offsetX - offsetPx) / cm.canvasScale,
-        e.offsetY / cm.canvasScale
-      )
+      this.addPlot({
+        xPx: (e.offsetX - offsetPx) / cm.canvasScale,
+        yPx: e.offsetY / cm.canvasScale,
+      })
       this.shouldShowPoints = true
     },
     clearAxes() {
@@ -569,7 +578,7 @@ export default Vue.extend({
       this.cursorIsMoved = false
     },
     clearPlots() {
-      dm.clearPlots()
+      this.clearPlots()
       this.shouldShowPoints = true
     },
     mouseMove(e: MouseEvent) {
