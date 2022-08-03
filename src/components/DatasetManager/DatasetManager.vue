@@ -117,7 +117,7 @@ import Vue from 'vue'
 import Clipboard from '@/components/Export/Clipboard.vue'
 import { datasetMapper } from '@/store/modules/dataset'
 import { Plots } from '@/types'
-import { Axes } from '@/domains/AxesManager'
+import { Axes } from '@/domains/axes'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
 const am = Axes.instance
 

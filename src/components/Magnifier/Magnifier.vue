@@ -82,7 +82,7 @@ import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
 import { axesMapper } from '@/store/modules/axes'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
-import { Axes } from '@/domains/AxesManager'
+import { Axes } from '@/domains/axes'
 const ad = Axes.instance
 
 export default Vue.extend({

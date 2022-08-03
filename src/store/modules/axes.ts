@@ -5,7 +5,7 @@ import {
   Module,
   createMapper,
 } from 'vuex-smart-module'
-import { Axes } from '@/domains/AxesManager'
+import { Axes } from '@/domains/axes'
 import { Plot, Plots } from '@/types'
 import { DatasetManager as DatasetDomain } from '@/domains/DatasetManager'
 

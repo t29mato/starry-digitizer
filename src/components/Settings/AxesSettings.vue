@@ -75,7 +75,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Axes } from '@/domains/AxesManager'
+import { Axes } from '@/domains/axes'
 import { axesMapper } from '@/store/modules/axes'
 const axes = Axes.instance
 
