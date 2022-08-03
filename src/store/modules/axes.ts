@@ -54,6 +54,14 @@ class actions extends Actions<state, getters, mutations> {
     Axes.instance.yIsLog = value
     this.commit('updateAxes', Axes.instance)
   }
+  clearAxes() {
+    Axes.instance.clearAxes()
+    this.commit('updateAxes', Axes.instance)
+  }
+  addAxis(axis: { xPx: number; yPx: number }) {
+    Axes.instance.addAxisPosition(axis.xPx, axis.yPx)
+    this.commit('updateAxes', Axes.instance)
+  }
 }
 
 export const axes = new Module({

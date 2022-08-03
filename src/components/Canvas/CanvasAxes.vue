@@ -21,7 +21,7 @@
         'pointer-events': 'none',
         'user-select': 'none',
       }"
-      >{{ showAxisName }}</span
+      >{{ showLabel(index) }}</span
     >
   </div>
 </template>
@@ -33,20 +33,6 @@ import Vue from 'vue'
 export default Vue.extend({
   computed: {
     ...axesMapper.mapGetters(['axes']),
-    showAxisName(): string {
-      switch (this.index) {
-        case 0:
-          return 'x1'
-        case 1:
-          return 'x2'
-        case 2:
-          return 'y1'
-        case 3:
-          return 'y2'
-        default:
-          throw new Error('Maximum count of axes is 4')
-      }
-    },
     xPx(): number {
       return this.axis.xPx
     },
@@ -66,6 +52,22 @@ export default Vue.extend({
     index: {
       type: Number,
       required: true,
+    },
+  },
+  methods: {
+    showLabel(index: number) {
+      switch (index) {
+        case 0:
+          return 'x1'
+        case 1:
+          return 'x2'
+        case 2:
+          return 'y1'
+        case 3:
+          return 'y2'
+        default:
+          return ''
+      }
     },
   },
 })

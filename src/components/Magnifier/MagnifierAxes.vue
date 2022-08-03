@@ -44,6 +44,7 @@
 </template>
 
 <script lang="ts">
+// FIXME: アクティブな座標の色が変わらない
 import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
 import Vue from 'vue'

@@ -31,7 +31,7 @@
       <div v-for="(axis, index) in scaledAxes" :key="index">
         <magnifier-axes
           :axis="axis"
-          :isActive="isMovingAxis && movingAxisIndex === index"
+          :isActive="isMovingAxis && axes.activeIndex === index"
           :index="index"
           :canvasScale="canvasScale"
           :canvasCursor="canvasCursor"
@@ -181,10 +181,6 @@ export default Vue.extend({
     // },
     isMovingAxis: {
       type: Boolean,
-      required: true,
-    },
-    movingAxisIndex: {
-      type: Number,
       required: true,
     },
     activePlotIds: {

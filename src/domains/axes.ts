@@ -33,6 +33,7 @@ export class Axes {
   yIsLog = false
   error = ''
   sizePx = 10
+  activeIndex = -1
 
   static #instance: Axes
   static get instance(): Axes {
@@ -46,20 +47,27 @@ export class Axes {
     return this.sizePx / 2
   }
 
-  get nextAxis() {
+  get nextAxisKey() {
     if (this.x1.xPx + this.x1.yPx < 0) {
-      return this.x1
+      return 'x1'
     }
     if (this.x2.xPx + this.x2.yPx < 0) {
-      return this.x2
+      return 'x2'
     }
     if (this.y1.xPx + this.y1.yPx < 0) {
-      return this.y1
+      return 'y1'
     }
     if (this.y2.xPx + this.y2.yPx < 0) {
-      return this.y2
+      return 'y2'
     }
-    return null
+    return ''
+  }
+
+  get nextAxis() {
+    if (this.nextAxisKey === '') {
+      return
+    }
+    return this[this.nextAxisKey]
   }
 
   get axesPos() {
@@ -83,12 +91,80 @@ export class Axes {
     ]
   }
 
+  get activeKey() {
+    switch (this.activeIndex) {
+      case 0:
+        return 'x1'
+      case 1:
+        return 'x2'
+      case 2:
+        return 'y1'
+      case 3:
+        return 'y2'
+      default:
+        return ''
+    }
+  }
+
+  get activeAxis() {
+    return this.axesPos[this.activeIndex]
+  }
+
+  axisName(index: number) {
+    switch (index) {
+      case 0:
+        return 'x1'
+      case 1:
+        return 'x2'
+      case 2:
+        return 'y1'
+      case 3:
+        return 'y2'
+      default:
+        return ''
+    }
+  }
+
+  moveActiveAxis(arrow: string) {
+    switch (arrow) {
+      case 'ArrowUp':
+        this.activeAxis.yPx--
+        break
+      case 'arrowRight':
+        this.activeAxis.xPx++
+        break
+      case 'arrowDown':
+        this.activeAxis.yPx++
+        break
+      case 'arrowLeft':
+        this.activeAxis.xPx--
+        break
+      default:
+        break
+    }
+  }
+
+  clearAxes() {
+    this.x1 = this.y1 = {
+      xPx: -999,
+      yPx: -999,
+      value: 0,
+    }
+    this.x2 = this.y2 = {
+      xPx: -999,
+      yPx: -999,
+      value: 1,
+    }
+    this.activeIndex = -1
+  }
+
   addAxisPosition(xPx: number, yPx: number) {
     if (!this.nextAxis) {
       throw new Error('The axes already filled.')
     }
     this.nextAxis.xPx = xPx
     this.nextAxis.yPx = yPx
+    this.activeIndex++
   }
 
   validateAxes(): boolean {

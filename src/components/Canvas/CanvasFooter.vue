@@ -46,6 +46,7 @@ export default Vue.extend({
         }[]
       >,
     },
+    // FIXME: clearAxes doesn't work
     clearAxes: {
       type: Function,
       required: true,

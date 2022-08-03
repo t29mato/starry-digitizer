@@ -52,10 +52,10 @@
               }"
               id="maskCanvas"
             ></canvas>
-            <div v-for="(axis, index) in showAxesPos" :key="'axesPos' + index">
+            <div v-for="(axis, index) in showAxesPos" :key="index">
               <canvas-axes
                 :axis="axis"
-                :isActive="isMovingAxis && movingAxisIndex === index"
+                :isActive="isMovingAxis && axes.activeIndex === index"
                 :index="index"
               ></canvas-axes>
             </div>
@@ -83,7 +83,6 @@
             :uploadImageUrl="uploadImageUrl"
             :canvasCursor="showCanvasCursor"
             :isMovingAxis="isMovingAxis"
-            :movingAxisIndex="movingAxisIndex"
             :plotSizePx="plotSizePx"
             :activePlotIds="activePlotIds"
             :shouldShowPoints="shouldShowPoints"
@@ -169,6 +168,7 @@ import { CanvasManager } from '@/domains/CanvasManager'
 import { Axes } from '@/domains/axes'
 import { datasetMapper } from '@/store/modules/dataset'
 import { canvasMapper } from '@/store/modules/canvas'
+import { axesMapper } from '@/store/modules/axes'
 
 const [black, red] = ['#000000ff', '#ff0000ff']
 // INFO: to adjust the exact position the user clicked.
@@ -216,7 +216,6 @@ export default Vue.extend({
       plotShapeMode: 0,
       maskMode: -1,
       uploadImageUrl: '',
-      axesPos: am.axesPos,
       // REFACTOR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
       axesValues: {
         x1: '0',
@@ -238,7 +237,6 @@ export default Vue.extend({
       // REFACTOR: 変数名を変更 → axesIsActive
       isMovingAxis: false,
       cursorIsMoved: false,
-      movingAxisIndex: 0,
       red,
       canvasWidth: 0,
       canvasHeight: 0,
@@ -255,6 +253,7 @@ export default Vue.extend({
       'plotsAreActive',
       'activePlotIds',
     ]),
+    ...axesMapper.mapGetters(['axes']),
     showAxesPos(): Position[] {
       return am.axesPos.map((axis) => {
         return {
@@ -267,25 +266,6 @@ export default Vue.extend({
       return {
         xPx: this.canvasCursor.xPx * cm.canvasScale,
         yPx: this.canvasCursor.yPx * cm.canvasScale,
-      }
-    },
-    // REFACTOR: canvas-cursorコンポーネントの中に閉じ込めたい
-    showNextAxisName(): string {
-      switch (this.axesPos.length) {
-        case 0:
-          return 'x1'
-        case 1:
-          return 'x2'
-        case 2:
-          return 'y1'
-        case 3:
-          return 'y2'
-        case 4:
-          return ''
-        default:
-          throw new Error(
-            `count of axes is ${this.axesPos.length}, but the maximum must be 4`
-          )
       }
     },
     showPenToolSize(): number {
@@ -303,10 +283,7 @@ export default Vue.extend({
         case 2:
           return 'Eraser'
       }
-      if (this.axesPos.length < 4) {
-        return this.showNextAxisName
-      }
-      return ''
+      return this.axes.nextAxisKey
     },
     targetColor(): { R: number; G: number; B: number } {
       return {
@@ -381,6 +358,7 @@ export default Vue.extend({
     setMaskMode(mode: number) {
       this.maskMode = mode
     },
+    ...axesMapper.mapActions(['clearAxes', 'addAxis']),
     setPenToolSize(size: string) {
       this.penToolSize = parseInt(size)
     },
@@ -423,23 +401,8 @@ export default Vue.extend({
       e.preventDefault()
       this.cursorIsMoved = true
       if (this.isMovingAxis) {
-        switch (key) {
-          case arrowUp:
-            this.axesPos[this.movingAxisIndex].yPx--
-            break
-          case arrowRight:
-            this.axesPos[this.movingAxisIndex].xPx++
-            break
-          case arrowDown:
-            this.axesPos[this.movingAxisIndex].yPx++
-            break
-          case arrowLeft:
-            this.axesPos[this.movingAxisIndex].xPx--
-            break
-          default:
-            break
-        }
-        this.canvasCursor = this.axesPos[this.movingAxisIndex]
+        this.axes.moveActiveAxis(key)
+        this.canvasCursor = this.axes.activeAxis
       }
       if (this.plotsAreActive) {
         this.moveActivePlot(e.key)
@@ -546,11 +509,10 @@ export default Vue.extend({
       if (am.nextAxis) {
         this.isMovingAxis = true
         this.cursorIsMoved = false
-        this.movingAxisIndex = this.axesPos.length
-        am.addAxisPosition(
-          (e.offsetX - offsetPx) / cm.canvasScale,
-          e.offsetY / cm.canvasScale
-        )
+        this.addAxis({
+          xPx: (e.offsetX - offsetPx) / cm.canvasScale,
+          yPx: e.offsetY / cm.canvasScale,
+        })
         return
       }
       this.isMovingAxis = false
@@ -562,8 +524,7 @@ export default Vue.extend({
       this.shouldShowPoints = true
     },
     clearAxes() {
-      this.axesPos = []
-      this.isMovingAxis = false
+      this.clearAxes()
       this.cursorIsMoved = false
     },
     mouseMove(e: MouseEvent) {
