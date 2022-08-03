@@ -52,7 +52,7 @@ export default Vue.extend({
     },
   },
   computed: {
-    ...datasetMapper.mapState(['activeScaledPlots', 'plotsAreActive']),
+    ...datasetMapper.mapGetters(['activeScaledPlots', 'plotsAreActive']),
   },
   methods: {
     ...datasetMapper.mapActions(['clearPlots', 'clearActivePlots']),

@@ -42,9 +42,13 @@
 </template>
 
 <script lang="ts">
+import { axesMapper } from '@/store/modules/axes'
+import { canvasMapper } from '@/store/modules/canvas'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
+    ...canvasMapper.mapGetters(['canvasScale']),
+    ...axesMapper.mapGetters(['axes']),
     axesHalfSize(): number {
       return this.axesSize / 2
     },
@@ -70,15 +74,7 @@ export default Vue.extend({
       type: Boolean,
       required: true,
     },
-    index: {
-      type: Number,
-      required: true,
-    },
     axesSize: {
-      type: Number,
-      required: true,
-    },
-    canvasScale: {
       type: Number,
       required: true,
     },

@@ -81,10 +81,8 @@
         <v-col class="pt-1" cols="3">
           <!-- TODO: 有効数字を追加する -->
           <magnifier
-            :magnifierSizePx="magnifierSizePx"
             :uploadImageUrl="uploadImageUrl"
             :canvasCursor="showCanvasCursor"
-            :axes="showAxesPos"
             :isMovingAxis="isMovingAxis"
             :movingAxisIndex="movingAxisIndex"
             :axesSizePx="axesSizePx"
@@ -172,6 +170,7 @@ import { version } from '../../package.json'
 import { CanvasManager } from '@/domains/CanvasManager'
 import { AxesManager as AM } from '@/domains/AxesManager'
 import { datasetMapper } from '@/store/modules/dataset'
+import { canvasMapper } from '@/store/modules/canvas'
 
 const [black, red] = ['#000000ff', '#ff0000ff']
 // INFO: to adjust the exact position the user clicked.
@@ -240,7 +239,6 @@ export default Vue.extend({
       isExtracting: false,
       plotSizePx: 10,
       axesSizePx: 10,
-      magnifierSizePx: 200,
       // REFACTOR: 変数名を変更 → axesIsActive
       isMovingAxis: false,
       cursorIsMoved: false,
@@ -329,9 +327,6 @@ export default Vue.extend({
         this.targetColor.B.toString(16)
       )
     },
-    magnificationRadiusSizePx(): number {
-      return this.magnifierSizePx / 2
-    },
     axesRadiusSizePx(): number {
       return this.axesSizePx / 2
     },
@@ -368,6 +363,7 @@ export default Vue.extend({
         'magnifierMaskCanvas',
         this.initialGraphImagePath
       )
+      this.drawFitSizeImage()
       this.uploadImageUrl = this.initialGraphImagePath
       this.canvasWidth = cm.imageCanvas.width
       this.canvasHeight = cm.imageCanvas.height
@@ -388,6 +384,7 @@ export default Vue.extend({
       'clearPlots',
       'setPlots',
     ]),
+    ...canvasMapper.mapActions(['drawFitSizeImage']),
     setMaskMode(mode: number) {
       this.maskMode = mode
     },
@@ -516,7 +513,7 @@ export default Vue.extend({
         // TODO: CanvasManagerを利用する
         const image = await this.loadImage(fr.result)
         cm.changeImage(image)
-        cm.drawFitSizeImage()
+        this.drawFitSizeImage()
         this.updateSwatches(cm.colorSwatches)
         this.uploadImageUrl = fr.result
         this.clearAxes()

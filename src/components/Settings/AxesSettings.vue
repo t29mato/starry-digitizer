@@ -69,18 +69,19 @@
         </tr>
       </tbody>
     </v-simple-table>
-    <!-- TODO: エラーメッセージを表示する -->
-    <!-- <p class="red--text">{{ error }}</p> -->
+    <p class="red--text">{{ axesValuesErrorMessage }}</p>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
 import { AxesManager as AM } from '@/domains/AxesManager'
+import { axesMapper } from '@/store/modules/axes'
 const am = AM.instance
 
 export default Vue.extend({
   computed: {
+    ...axesMapper.mapGetters(['axesValuesErrorMessage']),
     x1() {
       return am.axes.x1.value
     },
@@ -105,23 +106,24 @@ export default Vue.extend({
   },
   props: {},
   methods: {
+    ...axesMapper.mapActions(['setX1Value', 'setXIsLog', 'setYIsLog']),
     setX1(value: string) {
-      am.axes.x1.value = parseInt(value)
+      this.setX1Value(parseInt(value))
     },
     setX2(value: string) {
-      am.axes.x2.value = parseInt(value)
+      this.setX1Value(parseInt(value))
     },
     setY1(value: string) {
-      am.axes.y1.value = parseInt(value)
+      this.setX1Value(parseInt(value))
     },
     setY2(value: string) {
-      am.axes.y2.value = parseInt(value)
+      this.setX1Value(parseInt(value))
     },
     setXIsLog(value: boolean) {
-      am.xIsLog = value
+      this.setXIsLog(value)
     },
     setYIsLog(value: boolean) {
-      am.yIsLog = value
+      this.setYIsLog(value)
     },
   },
 })

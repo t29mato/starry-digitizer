@@ -11,26 +11,17 @@ import { DatasetManager as DatasetDomain } from '@/domains/DatasetManager'
 
 class state {
   canvasScale: number = CanvasDomain.instance.canvasScale
-  activeScaledPlots: Plots = DatasetDomain.instance.activeScaledPlots
 }
 
 class getters extends Getters<state> {
   get canvasScale() {
     return this.state.canvasScale
   }
-
-  get activeScaledPlots() {
-    return this.state.activeScaledPlots
-  }
 }
 
 class mutations extends Mutations<state> {
   updateCanvasScale(newScale: number) {
     this.state.canvasScale = newScale
-  }
-
-  updateActiveScaledPlots(newPlots: Plots) {
-    this.state.activeScaledPlots = newPlots
   }
 }
 

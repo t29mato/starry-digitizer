@@ -8,11 +8,11 @@
           :key="dataset.id"
           link
           @click="setActiveDataset(dataset.id)"
-          :class="dataset.id === activeDatasetId && 'blue lighten-4'"
+          :class="dataset.id === activeDataset.id && 'blue lighten-4'"
         >
           <v-list-item-content>
             <v-list-item-title
-              :class="dataset.id === activeDatasetId && 'font-weight-bold'"
+              :class="dataset.id === activeDataset.id && 'font-weight-bold'"
               v-text="`${dataset.name} (${dataset.plots.length})`"
             ></v-list-item-title>
           </v-list-item-content>
@@ -46,7 +46,7 @@
                 >
                 <v-btn
                   small
-                  @click="removeColumn"
+                  @click="popDataset"
                   :disabled="this.datasets.length === 1"
                   ><v-icon>mdi-minus</v-icon></v-btn
                 >
@@ -97,7 +97,7 @@
             <v-row>
               <v-col>
                 <clipboard
-                  :plots="calculatedPlots"
+                  :plots="activeCalculatedPlots"
                   :exportBtnText="exportBtnText"
                 ></clipboard>
               </v-col>
@@ -114,10 +114,12 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Dataset } from '@/types'
 import Clipboard from '@/components/Export/Clipboard.vue'
-import { DatasetManager as DM } from '@/domains/DatasetManager'
-const dm = DM.instance
+import { datasetMapper } from '@/store/modules/dataset'
+import { Plots } from '@/types'
+import { AxesManager } from '@/domains/AxesManager'
+import XYAxesCalculator from '@/domains/XYAxesCalculator'
+const am = AxesManager.instance
 
 export default Vue.extend({
   components: {
@@ -125,31 +127,24 @@ export default Vue.extend({
   },
   data() {
     return {
-      sideMenus: [
-        {
-          title: 'Datasets',
-          action: 'mdi-silverware-fork-knife',
-          active: true,
-        },
-      ],
       shouldShowEditDialog: false,
       shouldShowActiveDataset: false,
-      activeDatasetId: dm.activeDatasetId,
-      datasets: dm.datasets,
     }
   },
   computed: {
-    nextDatasetId(): number {
-      if (this.datasets.length === 0) {
-        return 1
-      }
-      return this.datasets[this.datasets.length - 1].id + 1
-    },
-    activeDataset(): Dataset {
-      return dm.activeDataset
-    },
-    calculatedPlots() {
-      return dm.activeCalculatedPlots
+    ...datasetMapper.mapGetters(['activeDataset', 'datasets']),
+    activeCalculatedPlots(): Plots {
+      const newPlots = this.activeDataset.plots.map((plot) => {
+        const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
+        return {
+          id: plot.id,
+          xPx: plot.xPx,
+          yPx: plot.yPx,
+          xV,
+          yV,
+        }
+      })
+      return newPlots
     },
   },
   props: {
@@ -159,27 +154,32 @@ export default Vue.extend({
     },
   },
   methods: {
-    removeColumn() {
-      if (this.datasets.length === 1) {
-        return
-      }
-      this.popDataset()
-    },
+    ...datasetMapper.mapActions([
+      'addDataset',
+      'setActiveDataset',
+      'popDataset',
+    ]),
     openEditDialog() {
       this.shouldShowEditDialog = true
     },
-    addDataset() {
-      dm.addDataset()
-    },
-    editDataset(datasetId: number, newName: string) {
-      dm.editDatasetName(datasetId, newName)
-    },
-    popDataset() {
-      dm.popDataset()
-    },
-    setActiveDataset(id: number) {
-      // INFO: dmに変数代入したかったがVueインスタンスのdataプロパティに反映されなかったのでdataを直接更新。
-      this.activeDatasetId = dm.activeDatasetId = id
+    calculateXY(x: number, y: number): { xV: string; yV: string } {
+      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
+      if (!am.validateAxes()) {
+        return { xV: '0', yV: '0' }
+      }
+      const calculator = new XYAxesCalculator(
+        {
+          x1: am.axes.x1,
+          x2: am.axes.x2,
+          y1: am.axes.y1,
+          y2: am.axes.y2,
+        },
+        {
+          x: am.xIsLog,
+          y: am.yIsLog,
+        }
+      )
+      return calculator.calculateXYValues(x, y)
     },
   },
 })

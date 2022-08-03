@@ -5,14 +5,16 @@ import {
   Module,
   createMapper,
 } from 'vuex-smart-module'
-import { Dataset, Plot, Plots, Position } from '@/types'
-import { DatasetManager as dd } from '@/domains/DatasetManager'
+import { Dataset, Datasets, Plot, Plots, Position } from '@/types'
+import { DatasetManager as DD } from '@/domains/DatasetManager'
+const dd = DD.instance
 
 class state {
-  activeScaledPlots: Plots = dd.instance.activeScaledPlots
-  activePlotIds: number[] = dd.instance.activePlotIds
-  activeDataset: Dataset = dd.instance.activeDataset
-  plotsAreActive: boolean = dd.instance.plotsAreActive
+  activeScaledPlots: Plots = dd.activeScaledPlots
+  activePlotIds: number[] = dd.activePlotIds
+  activeDataset: Dataset = dd.activeDataset
+  plotsAreActive: boolean = dd.plotsAreActive
+  datasets: Datasets = dd.datasets
 }
 
 class getters extends Getters<state> {
@@ -28,11 +30,17 @@ class getters extends Getters<state> {
   get plotsAreActive() {
     return this.state.plotsAreActive
   }
+  get datasets() {
+    return this.state.datasets
+  }
 }
 
 class mutations extends Mutations<state> {
   updateActiveScaledPlots(newPlots: Plots) {
     this.state.activeScaledPlots = newPlots
+  }
+  updateDatasets(newDatasets: Datasets) {
+    this.state.datasets = newDatasets
   }
   updateActiveDataset(newDataset: Dataset) {
     this.state.activeDataset = newDataset
@@ -49,7 +57,7 @@ class actions extends Actions<state, getters, mutations> {
   dd
   constructor() {
     super()
-    this.dd = dd.instance
+    this.dd = dd
   }
 
   addPlot(plot: Position) {
@@ -60,11 +68,12 @@ class actions extends Actions<state, getters, mutations> {
   }
   addDataset() {
     this.dd.addDataset()
-    this.commit('updateActiveDataset', this.dd.activeDataset)
+    this.commit('updateDatasets', this.dd.datasets)
   }
   popDataset() {
     this.dd.popDataset()
     this.commit('updateActiveDataset', this.dd.activeDataset)
+    this.commit('updateDatasets', this.dd.datasets)
   }
   moveActivePlot(arrow: string) {
     this.dd.moveActivePlot(arrow)
@@ -96,6 +105,10 @@ class actions extends Actions<state, getters, mutations> {
     this.dd.activatePlot(id)
     this.commit('updateActivePlotsIds', this.dd.activePlotIds)
     this.commit('updatePlotsAreActive', this.dd.plotsAreActive)
+  }
+  setActiveDataset(id: number) {
+    this.dd.setActiveDataset(id)
+    this.commit('updateActiveDataset', this.dd.activeDataset)
   }
 }
 

@@ -28,7 +28,7 @@
         :magnifierSize="magnifierSizePx"
         :crosshairSizePx="crosshairSizePx"
       ></magnifier-horizontal-line>
-      <div v-for="(axis, index) in axes" :key="'axes' + index">
+      <div v-for="(axis, index) in scaledAxes" :key="index">
         <magnifier-axes
           :axis="axis"
           :isActive="isMovingAxis && movingAxisIndex === index"
@@ -41,7 +41,11 @@
           :label="showAxisName(index)"
         ></magnifier-axes>
       </div>
-      <div v-for="plot in plots" v-show="shouldShowPoints" :key="plot.id">
+      <div
+        v-for="plot in activeScaledPlots"
+        v-show="shouldShowPoints"
+        :key="plot.id"
+      >
         <magnifier-plots
           :magnifierScale="magnifierScale"
           :canvasScale="canvasScale"
@@ -73,23 +77,17 @@ import MagnifierAxes from './MagnifierAxes.vue'
 import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
-import { DatasetManager as DM } from '@/domains/DatasetManager'
-import { AxesManager as AM } from '@/domains/AxesManager'
-import { CanvasManager as CM } from '@/domains/CanvasManager'
-
+import { datasetMapper } from '@/store/modules/dataset'
+import { canvasMapper } from '@/store/modules/canvas'
+import { magnifierMapper } from '@/store/modules/magnifier'
+import { axesMapper } from '@/store/modules/axes'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
-const dm = DM.instance
-const am = AM.instance
-const cm = CM.instance
+import { AxesManager } from '@/domains/AxesManager'
+const ad = AxesManager.instance
 
 export default Vue.extend({
   data() {
-    return {
-      magnifierScale: 5,
-      showSettingsDialog: false,
-      magnifierSettingError: '',
-      crosshairSizePx: 1,
-    }
+    return {}
   },
   components: {
     MagnifierVerticalLine,
@@ -101,10 +99,17 @@ export default Vue.extend({
     MagnifierSettingsBtn,
   },
   computed: {
+    ...datasetMapper.mapGetters(['activeScaledPlots']),
+    ...canvasMapper.mapGetters(['canvasScale']),
+    ...magnifierMapper.mapGetters([
+      'magnifierScale',
+      'showSettingsDialog',
+      'magnifierSettingError',
+      'crosshairSizePx',
+      'magnifierSizePx',
+    ]),
+    ...axesMapper.mapGetters(['axes', 'xIsLog', 'yIsLog']),
     // FIXME: CanvasScaleが反映されない。→Storeを導入して解決する
-    canvasScale(): number {
-      return cm.canvasScale
-    },
     magnifierHalfSize(): number {
       return this.magnifierSizePx / 2
     },
@@ -118,24 +123,48 @@ export default Vue.extend({
         yPx: Math.ceil(this.canvasCursor.yPx),
       }
     },
-    plots() {
-      return dm.activeScaledPlots
+    scaledAxes() {
+      return {
+        x1: {
+          xPx: this.axes.x1.xPx * this.canvasScale,
+          yPx: this.axes.x1.xPx * this.canvasScale,
+          value: this.axes.x1.value,
+        },
+        x2: {
+          xPx: this.axes.x2.xPx * this.canvasScale,
+          yPx: this.axes.x2.xPx * this.canvasScale,
+          value: this.axes.x2.value,
+        },
+        y1: {
+          xPx: this.axes.y1.xPx * this.canvasScale,
+          yPx: this.axes.y1.xPx * this.canvasScale,
+          value: this.axes.y1.value,
+        },
+        y2: {
+          xPx: this.axes.y2.xPx * this.canvasScale,
+          yPx: this.axes.y2.xPx * this.canvasScale,
+          value: this.axes.y2.value,
+        },
+      }
     },
-    xyValue() {
+    xyValue(): {
+      xV: string
+      yV: string
+    } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (!am.validateAxes()) {
+      if (!ad.validateAxes()) {
         return { xV: '0', yV: '0' }
       }
       const calculator = new XYAxesCalculator(
         {
-          x1: am.axes.x1,
-          x2: am.axes.x2,
-          y1: am.axes.y1,
-          y2: am.axes.y2,
+          x1: ad.axes.x1,
+          x2: ad.axes.x2,
+          y1: ad.axes.y1,
+          y2: ad.axes.y2,
         },
         {
-          x: am.xIsLog,
-          y: am.yIsLog,
+          x: ad.xIsLog,
+          y: ad.yIsLog,
         }
       )
       return calculator.calculateXYValues(
@@ -145,10 +174,6 @@ export default Vue.extend({
     },
   },
   props: {
-    magnifierSizePx: {
-      type: Number as PropType<number>,
-      required: true,
-    },
     uploadImageUrl: {
       type: String,
       required: true,
@@ -168,14 +193,14 @@ export default Vue.extend({
       type: Number,
       required: true,
     },
-    axes: {
-      type: Array as PropType<
-        {
-          xPx: number
-          yPx: number
-        }[]
-      >,
-    },
+    // axes: {
+    //   type: Array as PropType<
+    //     {
+    //       xPx: number
+    //       yPx: number
+    //     }[]
+    //   >,
+    // },
     axesSizePx: {
       type: Number,
       required: true,

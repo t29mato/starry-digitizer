@@ -1,5 +1,6 @@
 import { Position } from '@/types'
 import ColorThief from 'colorthief'
+import XYAxesCalculator from '../XYAxesCalculator'
 const colorThief = new ColorThief()
 
 export class CanvasManager {
@@ -43,8 +44,6 @@ export class CanvasManager {
       magnifierMaskCanvasId
     )
     this.#imageElement = await this.loadImage(graphImagePath)
-
-    this.drawFitSizeImage()
   }
 
   #getDivElementById(id: string) {

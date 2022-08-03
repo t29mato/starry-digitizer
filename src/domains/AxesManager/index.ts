@@ -1,12 +1,13 @@
-import { Datasets, Dataset } from '@/types'
+import { CanvasManager as CanvasDomain } from '@/domains/CanvasManager'
+const cd = CanvasDomain.instance
 
-type Axis = {
+export type Axis = {
   xPx: number
   yPx: number
   value: number
 }
 
-type Axes = {
+export type Axes = {
   x1: Axis
   x2: Axis
   y1: Axis
@@ -14,7 +15,7 @@ type Axes = {
 }
 
 export class AxesManager {
-  // TODO: x1, x2, y1, y2はそれぞれプロパティとして分ける？
+  // TODO: x1, x2, y1, y2はそれぞれプロパティとして分ける。
   axes: Axes = {
     x1: {
       xPx: -999,
@@ -37,9 +38,9 @@ export class AxesManager {
       value: 1,
     },
   }
-  axesValuesErrorMessage = ''
   xIsLog = false
   yIsLog = false
+  axesValuesErrorMessage = ''
 
   static #instance: AxesManager
   static get instance(): AxesManager {
@@ -94,15 +95,6 @@ export class AxesManager {
     this.nextAxis.yPx = yPx
   }
 
-  // get axesValues() {
-  //   return [
-  //     this.axes.x1.value,
-  //     this.axes.x2.value,
-  //     this.axes.y1.value,
-  //     this.axes.y2.value,
-  //   ]
-  // }
-
   validateAxes(): boolean {
     if (this.axes.x1.value === this.axes.x2.value) {
       this.axesValuesErrorMessage = 'x1 and x2 should not be same value'
@@ -120,4 +112,13 @@ export class AxesManager {
     return true
     // return this.axesPos.length === 4
   }
+
+  // get axesValues() {
+  //   return [
+  //     this.axes.x1.value,
+  //     this.axes.x2.value,
+  //     this.axes.y1.value,
+  //     this.axes.y2.value,
+  //   ]
+  // }
 }
