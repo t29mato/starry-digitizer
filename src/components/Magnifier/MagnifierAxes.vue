@@ -3,8 +3,8 @@
     <div
       :style="{
         position: 'absolute',
-        top: `${((yPx - axesHalfSize) / canvasScale) * magnifierScale}px`,
-        left: `${((xPx - axesHalfSize) / canvasScale) * magnifierScale}px`,
+        top: `${((yPx - axes.halfSizePx) / canvasScale) * magnifierScale}px`,
+        left: `${((xPx - axes.halfSizePx) / canvasScale) * magnifierScale}px`,
         'pointer-events': 'none',
         transform: `scale(${magnifierScale}) translate(-${
           canvasCursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
@@ -23,11 +23,11 @@
       :style="{
         position: 'absolute',
         top: `${
-          ((yPx - axesHalfSize - axes.sizePx) / canvasScale - 3) *
+          ((yPx - axes.halfSizePx - axes.sizePx) / canvasScale - 3) *
           magnifierScale
         }px`,
         left: `${
-          ((xPx - axesHalfSize + axes.sizePx) / canvasScale + 3) *
+          ((xPx - axes.halfSizePx + axes.sizePx) / canvasScale + 3) *
           magnifierScale
         }px`,
         'pointer-events': 'none',
@@ -51,9 +51,6 @@ export default Vue.extend({
   computed: {
     ...canvasMapper.mapGetters(['canvasScale']),
     ...axesMapper.mapGetters(['axes']),
-    axesHalfSize(): number {
-      return this.axes.sizePx / 2
-    },
     magnifierHalfSize(): number {
       return this.magnifierSize / 2
     },

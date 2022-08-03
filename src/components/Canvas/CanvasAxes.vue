@@ -3,8 +3,8 @@
     <div
       :style="{
         position: 'absolute',
-        top: `${yPx - axesHalfSize}px`,
-        left: `${xPx - axesHalfSize}px`,
+        top: `${yPx - axes.halfSizePx}px`,
+        left: `${xPx - axes.halfSizePx}px`,
         'pointer-events': 'none',
         width: `${axes.sizePx}px`,
         height: `${axes.sizePx}px`,
@@ -16,8 +16,8 @@
     <span
       :style="{
         position: 'absolute',
-        top: `${yPx - axesHalfSize - 9}px`,
-        left: `${xPx - axesHalfSize + 12}px`,
+        top: `${yPx - axes.halfSizePx - 9}px`,
+        left: `${xPx - axes.halfSizePx + 12}px`,
         'pointer-events': 'none',
         'user-select': 'none',
       }"
@@ -33,9 +33,6 @@ import Vue from 'vue'
 export default Vue.extend({
   computed: {
     ...axesMapper.mapGetters(['axes']),
-    axesHalfSize(): number {
-      return this.axes.sizePx / 2
-    },
     showAxisName(): string {
       switch (this.index) {
         case 0:

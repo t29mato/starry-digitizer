@@ -42,6 +42,10 @@ export class Axes {
     return this.#instance
   }
 
+  get halfSizePx() {
+    return this.sizePx / 2
+  }
+
   get nextAxis() {
     if (this.x1.xPx + this.x1.yPx < 0) {
       return this.x1
