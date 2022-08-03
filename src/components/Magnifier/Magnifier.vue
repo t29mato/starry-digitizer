@@ -33,7 +33,6 @@
           :axis="axis"
           :isActive="isMovingAxis && movingAxisIndex === index"
           :index="index"
-          :axesSize="axesSizePx"
           :canvasScale="canvasScale"
           :canvasCursor="canvasCursor"
           :magnifierScale="magnifierScale"
@@ -180,10 +179,6 @@ export default Vue.extend({
     //     }[]
     //   >,
     // },
-    axesSizePx: {
-      type: Number,
-      required: true,
-    },
     isMovingAxis: {
       type: Boolean,
       required: true,

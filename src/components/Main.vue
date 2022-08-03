@@ -54,7 +54,6 @@
             ></canvas>
             <div v-for="(axis, index) in showAxesPos" :key="'axesPos' + index">
               <canvas-axes
-                :axesSize="axesSizePx"
                 :axis="axis"
                 :isActive="isMovingAxis && movingAxisIndex === index"
                 :index="index"
@@ -85,7 +84,6 @@
             :canvasCursor="showCanvasCursor"
             :isMovingAxis="isMovingAxis"
             :movingAxisIndex="movingAxisIndex"
-            :axesSizePx="axesSizePx"
             :plotSizePx="plotSizePx"
             :activePlotIds="activePlotIds"
             :shouldShowPoints="shouldShowPoints"
@@ -237,7 +235,6 @@ export default Vue.extend({
       colorPicker: black,
       isExtracting: false,
       plotSizePx: 10,
-      axesSizePx: 10,
       // REFACTOR: 変数名を変更 → axesIsActive
       isMovingAxis: false,
       cursorIsMoved: false,
@@ -325,9 +322,6 @@ export default Vue.extend({
         this.targetColor.G.toString(16) +
         this.targetColor.B.toString(16)
       )
-    },
-    axesRadiusSizePx(): number {
-      return this.axesSizePx / 2
     },
     canvasHeightInt(): number {
       return Math.floor(this.canvasHeight)

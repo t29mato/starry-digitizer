@@ -6,8 +6,8 @@
         top: `${yPx - axesHalfSize}px`,
         left: `${xPx - axesHalfSize}px`,
         'pointer-events': 'none',
-        width: `${axesSize}px`,
-        height: `${axesSize}px`,
+        width: `${axes.sizePx}px`,
+        height: `${axes.sizePx}px`,
         'border-radius': '50%',
         'background-color': isActive ? 'red' : 'dodgerblue',
         outline: `1px solid white`,
@@ -27,12 +27,14 @@
 </template>
 
 <script lang="ts">
+import { axesMapper } from '@/store/modules/axes'
 import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
+    ...axesMapper.mapGetters(['axes']),
     axesHalfSize(): number {
-      return this.axesSize / 2
+      return this.axes.sizePx / 2
     },
     showAxisName(): string {
       switch (this.index) {
@@ -65,10 +67,6 @@ export default Vue.extend({
       required: true,
     },
     index: {
-      type: Number,
-      required: true,
-    },
-    axesSize: {
       type: Number,
       required: true,
     },

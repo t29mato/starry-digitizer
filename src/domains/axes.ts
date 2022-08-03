@@ -32,6 +32,7 @@ export class Axes {
   xIsLog = false
   yIsLog = false
   error = ''
+  sizePx = 10
 
   static #instance: Axes
   static get instance(): Axes {

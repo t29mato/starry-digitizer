@@ -12,8 +12,8 @@
           canvasCursor.yPx / canvasScale - magnifierHalfSize / magnifierScale
         }px)`,
         'transform-origin': 'top left',
-        width: `${axesSize / canvasScale}px`,
-        height: `${axesSize / canvasScale}px`,
+        width: `${axes.sizePx / canvasScale}px`,
+        height: `${axes.sizePx / canvasScale}px`,
         'border-radius': '50%',
         'background-color': isActive ? 'red' : 'dodgerblue',
         outline: `${1 / canvasScale}px solid white`,
@@ -23,10 +23,12 @@
       :style="{
         position: 'absolute',
         top: `${
-          ((yPx - axesHalfSize - axesSize) / canvasScale - 3) * magnifierScale
+          ((yPx - axesHalfSize - axes.sizePx) / canvasScale - 3) *
+          magnifierScale
         }px`,
         left: `${
-          ((xPx - axesHalfSize + axesSize) / canvasScale + 3) * magnifierScale
+          ((xPx - axesHalfSize + axes.sizePx) / canvasScale + 3) *
+          magnifierScale
         }px`,
         'pointer-events': 'none',
         transform: `scale(${magnifierScale}) translate(-${
@@ -50,7 +52,7 @@ export default Vue.extend({
     ...canvasMapper.mapGetters(['canvasScale']),
     ...axesMapper.mapGetters(['axes']),
     axesHalfSize(): number {
-      return this.axesSize / 2
+      return this.axes.sizePx / 2
     },
     magnifierHalfSize(): number {
       return this.magnifierSize / 2
@@ -72,10 +74,6 @@ export default Vue.extend({
     },
     isActive: {
       type: Boolean,
-      required: true,
-    },
-    axesSize: {
-      type: Number,
       required: true,
     },
     canvasCursor: {
