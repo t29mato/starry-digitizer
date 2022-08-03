@@ -1,10 +1,6 @@
 import { Datasets, Dataset, Plots } from '@/types'
 import { CanvasManager as CM } from '@/domains/CanvasManager'
-import { AxesManager as AM } from '@/domains/AxesManager'
-import XYAxesCalculator from '../XYAxesCalculator'
-console.log(CM)
 const cm = CM.instance
-const am = AM.instance
 
 export class DatasetManager {
   static #instance: DatasetManager

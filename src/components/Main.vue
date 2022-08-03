@@ -168,7 +168,7 @@ import { DatasetManager } from './DatasetManager'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
 import { CanvasManager } from '@/domains/CanvasManager'
-import { AxesManager as AM } from '@/domains/AxesManager'
+import { Axes } from '@/domains/AxesManager'
 import { datasetMapper } from '@/store/modules/dataset'
 import { canvasMapper } from '@/store/modules/canvas'
 
@@ -176,7 +176,7 @@ const [black, red] = ['#000000ff', '#ff0000ff']
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 const cm = CanvasManager.instance
-const am = AM.instance
+const am = Axes.instance
 const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
 export default Vue.extend({
@@ -218,7 +218,6 @@ export default Vue.extend({
       plotShapeMode: 0,
       maskMode: -1,
       uploadImageUrl: '',
-      axes: am.axes,
       axesPos: am.axesPos,
       // REFACTOR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
       axesValues: {

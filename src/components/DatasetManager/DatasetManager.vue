@@ -117,9 +117,9 @@ import Vue from 'vue'
 import Clipboard from '@/components/Export/Clipboard.vue'
 import { datasetMapper } from '@/store/modules/dataset'
 import { Plots } from '@/types'
-import { AxesManager } from '@/domains/AxesManager'
+import { Axes } from '@/domains/AxesManager'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
-const am = AxesManager.instance
+const am = Axes.instance
 
 export default Vue.extend({
   components: {
@@ -169,10 +169,10 @@ export default Vue.extend({
       }
       const calculator = new XYAxesCalculator(
         {
-          x1: am.axes.x1,
-          x2: am.axes.x2,
-          y1: am.axes.y1,
-          y2: am.axes.y2,
+          x1: am.x1,
+          x2: am.x2,
+          y1: am.y1,
+          y2: am.y2,
         },
         {
           x: am.xIsLog,

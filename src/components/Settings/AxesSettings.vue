@@ -69,36 +69,36 @@
         </tr>
       </tbody>
     </v-simple-table>
-    <p class="red--text">{{ axesValuesErrorMessage }}</p>
+    <p class="red--text">{{ axes.error }}</p>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-import { AxesManager as AM } from '@/domains/AxesManager'
+import { Axes } from '@/domains/AxesManager'
 import { axesMapper } from '@/store/modules/axes'
-const am = AM.instance
+const axes = Axes.instance
 
 export default Vue.extend({
   computed: {
-    ...axesMapper.mapGetters(['axesValuesErrorMessage']),
+    ...axesMapper.mapGetters(['axes']),
     x1() {
-      return am.axes.x1.value
+      return axes.x1.value
     },
     x2() {
-      return am.axes.x2.value
+      return axes.x2.value
     },
     y1() {
-      return am.axes.y1.value
+      return axes.y1.value
     },
     y2() {
-      return am.axes.y2.value
+      return axes.y2.value
     },
     xIsLog() {
-      return am.xIsLog
+      return axes.xIsLog
     },
     yIsLog() {
-      return am.yIsLog
+      return axes.yIsLog
     },
   },
   data() {

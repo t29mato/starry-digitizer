@@ -5,37 +5,23 @@ import {
   Module,
   createMapper,
 } from 'vuex-smart-module'
-import { Axes, AxesManager as AM, AxesManager } from '@/domains/AxesManager'
+import { Axes } from '@/domains/AxesManager'
 import { Plot, Plots } from '@/types'
 import { DatasetManager as DatasetDomain } from '@/domains/DatasetManager'
-const am = AM.instance
 
 class state {
-  axes = am.axes
-  xIsLog = am.xIsLog
-  yIsLog = am.yIsLog
-  axesValuesErrorMessage = am.axesValuesErrorMessage
-  am = am
+  axes = Axes.instance
 }
 
 class getters extends Getters<state> {
   get axes() {
     return this.state.axes
   }
-  get xIsLog() {
-    return this.state.xIsLog
-  }
-  get yIsLog() {
-    return this.state.yIsLog
-  }
-  get axesValuesErrorMessage() {
-    return this.state.axesValuesErrorMessage
-  }
 }
 
 class mutations extends Mutations<state> {
-  updateAM(am: AM) {
-    this.state.am = am
+  updateAxes(axes: Axes) {
+    this.state.axes = axes
   }
 }
 
@@ -47,28 +33,28 @@ class actions extends Actions<state, getters, mutations> {
   }
 
   setX1Value(value: number) {
-    am.axes.x1.value = value
-    this.commit('updateAM', am)
+    Axes.instance.x1.value = value
+    this.commit('updateAxes', Axes.instance)
   }
   setX2Value(value: number) {
-    am.axes.x2.value = value
-    this.commit('updateAM', am)
+    Axes.instance.x2.value = value
+    this.commit('updateAxes', Axes.instance)
   }
   setY1Value(value: number) {
-    am.axes.y1.value = value
-    this.commit('updateAM', am)
+    Axes.instance.y1.value = value
+    this.commit('updateAxes', Axes.instance)
   }
   setY2Value(value: number) {
-    am.axes.y1.value = value
-    this.commit('updateAM', am)
+    Axes.instance.y1.value = value
+    this.commit('updateAxes', Axes.instance)
   }
   setXIsLog(value: boolean) {
-    am.xIsLog = value
-    this.commit('updateAM', am)
+    Axes.instance.xIsLog = value
+    this.commit('updateAxes', Axes.instance)
   }
   setYIsLog(value: boolean) {
-    am.yIsLog = value
-    this.commit('updateAM', am)
+    Axes.instance.yIsLog = value
+    this.commit('updateAxes', Axes.instance)
   }
 }
 

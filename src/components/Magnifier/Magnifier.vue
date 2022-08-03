@@ -82,8 +82,8 @@ import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
 import { axesMapper } from '@/store/modules/axes'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
-import { AxesManager } from '@/domains/AxesManager'
-const ad = AxesManager.instance
+import { Axes } from '@/domains/AxesManager'
+const ad = Axes.instance
 
 export default Vue.extend({
   data() {
@@ -108,7 +108,7 @@ export default Vue.extend({
       'crosshairSizePx',
       'magnifierSizePx',
     ]),
-    ...axesMapper.mapGetters(['axes', 'xIsLog', 'yIsLog']),
+    ...axesMapper.mapGetters(['axes']),
     // FIXME: CanvasScaleが反映されない。→Storeを導入して解決する
     magnifierHalfSize(): number {
       return this.magnifierSizePx / 2
@@ -123,26 +123,27 @@ export default Vue.extend({
         yPx: Math.ceil(this.canvasCursor.yPx),
       }
     },
+    // TODO: scaleRatioを引数として渡すことでドメイン層に持たせることができる？
     scaledAxes() {
       return {
         x1: {
           xPx: this.axes.x1.xPx * this.canvasScale,
-          yPx: this.axes.x1.xPx * this.canvasScale,
+          yPx: this.axes.x1.yPx * this.canvasScale,
           value: this.axes.x1.value,
         },
         x2: {
           xPx: this.axes.x2.xPx * this.canvasScale,
-          yPx: this.axes.x2.xPx * this.canvasScale,
+          yPx: this.axes.x2.yPx * this.canvasScale,
           value: this.axes.x2.value,
         },
         y1: {
           xPx: this.axes.y1.xPx * this.canvasScale,
-          yPx: this.axes.y1.xPx * this.canvasScale,
+          yPx: this.axes.y1.yPx * this.canvasScale,
           value: this.axes.y1.value,
         },
         y2: {
           xPx: this.axes.y2.xPx * this.canvasScale,
-          yPx: this.axes.y2.xPx * this.canvasScale,
+          yPx: this.axes.y2.yPx * this.canvasScale,
           value: this.axes.y2.value,
         },
       }
@@ -157,10 +158,10 @@ export default Vue.extend({
       }
       const calculator = new XYAxesCalculator(
         {
-          x1: ad.axes.x1,
-          x2: ad.axes.x2,
-          y1: ad.axes.y1,
-          y2: ad.axes.y2,
+          x1: ad.x1,
+          x2: ad.x2,
+          y1: ad.y1,
+          y2: ad.y2,
         },
         {
           x: ad.xIsLog,

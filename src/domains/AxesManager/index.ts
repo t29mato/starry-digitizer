@@ -7,61 +7,52 @@ export type Axis = {
   value: number
 }
 
-export type Axes = {
-  x1: Axis
-  x2: Axis
-  y1: Axis
-  y2: Axis
-}
-
-export class AxesManager {
+export class Axes {
   // TODO: x1, x2, y1, y2はそれぞれプロパティとして分ける。
-  axes: Axes = {
-    x1: {
-      xPx: -999,
-      yPx: -999,
-      value: 0,
-    },
-    x2: {
-      xPx: -999,
-      yPx: -999,
-      value: 1,
-    },
-    y1: {
-      xPx: -999,
-      yPx: -999,
-      value: 0,
-    },
-    y2: {
-      xPx: -999,
-      yPx: -999,
-      value: 1,
-    },
+  x1: Axis = {
+    xPx: -999,
+    yPx: -999,
+    value: 0,
+  }
+  x2: Axis = {
+    xPx: -999,
+    yPx: -999,
+    value: 1,
+  }
+  y1: Axis = {
+    xPx: -999,
+    yPx: -999,
+    value: 0,
+  }
+  y2: Axis = {
+    xPx: -999,
+    yPx: -999,
+    value: 1,
   }
   xIsLog = false
   yIsLog = false
-  axesValuesErrorMessage = ''
+  error = ''
 
-  static #instance: AxesManager
-  static get instance(): AxesManager {
+  static #instance: Axes
+  static get instance(): Axes {
     if (!this.#instance) {
-      this.#instance = new AxesManager()
+      this.#instance = new Axes()
     }
     return this.#instance
   }
 
   get nextAxis() {
-    if (this.axes.x1.xPx + this.axes.x1.yPx < 0) {
-      return this.axes.x1
+    if (this.x1.xPx + this.x1.yPx < 0) {
+      return this.x1
     }
-    if (this.axes.x2.xPx + this.axes.x2.yPx < 0) {
-      return this.axes.x2
+    if (this.x2.xPx + this.x2.yPx < 0) {
+      return this.x2
     }
-    if (this.axes.y1.xPx + this.axes.y1.yPx < 0) {
-      return this.axes.y1
+    if (this.y1.xPx + this.y1.yPx < 0) {
+      return this.y1
     }
-    if (this.axes.y2.xPx + this.axes.y2.yPx < 0) {
-      return this.axes.y2
+    if (this.y2.xPx + this.y2.yPx < 0) {
+      return this.y2
     }
     return null
   }
@@ -69,20 +60,20 @@ export class AxesManager {
   get axesPos() {
     return [
       {
-        xPx: this.axes.x1.xPx,
-        yPx: this.axes.x1.yPx,
+        xPx: this.x1.xPx,
+        yPx: this.x1.yPx,
       },
       {
-        xPx: this.axes.x2.xPx,
-        yPx: this.axes.x2.yPx,
+        xPx: this.x2.xPx,
+        yPx: this.x2.yPx,
       },
       {
-        xPx: this.axes.y1.xPx,
-        yPx: this.axes.y1.yPx,
+        xPx: this.y1.xPx,
+        yPx: this.y1.yPx,
       },
       {
-        xPx: this.axes.y2.xPx,
-        yPx: this.axes.y2.yPx,
+        xPx: this.y2.xPx,
+        yPx: this.y2.yPx,
       },
     ]
   }
@@ -96,29 +87,20 @@ export class AxesManager {
   }
 
   validateAxes(): boolean {
-    if (this.axes.x1.value === this.axes.x2.value) {
-      this.axesValuesErrorMessage = 'x1 and x2 should not be same value'
+    if (this.x1.value === this.x2.value) {
+      this.error = 'x1 and x2 should not be same value'
       return false
     }
-    if (this.axes.y1.value === this.axes.y2.value) {
-      this.axesValuesErrorMessage = 'y1 and y2 should not be same value'
+    if (this.y1.value === this.y2.value) {
+      this.error = 'y1 and y2 should not be same value'
       return false
     }
     // if (Object.values(this.axesValues).includes()) {
-    //   this.axesValuesErrorMessage = 'axes values should not be empty'
+    //   this.error = 'axes values should not be empty'
     //   return false
     // }
-    this.axesValuesErrorMessage = ''
+    this.error = ''
     return true
     // return this.axesPos.length === 4
   }
-
-  // get axesValues() {
-  //   return [
-  //     this.axes.x1.value,
-  //     this.axes.x2.value,
-  //     this.axes.y1.value,
-  //     this.axes.y2.value,
-  //   ]
-  // }
 }
