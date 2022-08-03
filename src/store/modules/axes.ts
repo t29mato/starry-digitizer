@@ -34,9 +34,6 @@ class getters extends Getters<state> {
 }
 
 class mutations extends Mutations<state> {
-  updateAxes(newAxes: Axes) {
-    this.state.axes = newAxes
-  }
   updateAM(am: AM) {
     this.state.am = am
   }
@@ -55,15 +52,15 @@ class actions extends Actions<state, getters, mutations> {
   }
   setX2Value(value: number) {
     am.axes.x2.value = value
-    this.commit('updateAxes', am.axes)
+    this.commit('updateAM', am)
   }
   setY1Value(value: number) {
     am.axes.y1.value = value
-    this.commit('updateAxes', am.axes)
+    this.commit('updateAM', am)
   }
   setY2Value(value: number) {
     am.axes.y1.value = value
-    this.commit('updateAxes', am.axes)
+    this.commit('updateAM', am)
   }
   setXIsLog(value: boolean) {
     am.xIsLog = value

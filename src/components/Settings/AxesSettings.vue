@@ -106,18 +106,25 @@ export default Vue.extend({
   },
   props: {},
   methods: {
-    ...axesMapper.mapActions(['setX1Value', 'setXIsLog', 'setYIsLog']),
+    ...axesMapper.mapActions([
+      'setX1Value',
+      'setX2Value',
+      'setY1Value',
+      'setY2Value',
+      'setXIsLog',
+      'setYIsLog',
+    ]),
     setX1(value: string) {
       this.setX1Value(parseInt(value))
     },
     setX2(value: string) {
-      this.setX1Value(parseInt(value))
+      this.setX2Value(parseInt(value))
     },
     setY1(value: string) {
-      this.setX1Value(parseInt(value))
+      this.setY1Value(parseInt(value))
     },
     setY2(value: string) {
-      this.setX1Value(parseInt(value))
+      this.setY2Value(parseInt(value))
     },
     setXIsLog(value: boolean) {
       this.setXIsLog(value)
