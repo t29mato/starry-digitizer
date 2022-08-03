@@ -103,4 +103,29 @@ export class Axes {
     return true
     // return this.axesPos.length === 4
   }
+
+  scaledAxes(scale: number) {
+    return {
+      x1: {
+        xPx: this.x1.xPx * scale,
+        yPx: this.x1.yPx * scale,
+        value: this.x1.value,
+      },
+      x2: {
+        xPx: this.x2.xPx * scale,
+        yPx: this.x2.yPx * scale,
+        value: this.x2.value,
+      },
+      y1: {
+        xPx: this.y1.xPx * scale,
+        yPx: this.y1.yPx * scale,
+        value: this.y1.value,
+      },
+      y2: {
+        xPx: this.y2.xPx * scale,
+        yPx: this.y2.yPx * scale,
+        value: this.y2.value,
+      },
+    }
+  }
 }

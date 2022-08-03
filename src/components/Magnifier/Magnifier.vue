@@ -123,30 +123,8 @@ export default Vue.extend({
         yPx: Math.ceil(this.canvasCursor.yPx),
       }
     },
-    // TODO: scaleRatioを引数として渡すことでドメイン層に持たせることができる？
     scaledAxes() {
-      return {
-        x1: {
-          xPx: this.axes.x1.xPx * this.canvasScale,
-          yPx: this.axes.x1.yPx * this.canvasScale,
-          value: this.axes.x1.value,
-        },
-        x2: {
-          xPx: this.axes.x2.xPx * this.canvasScale,
-          yPx: this.axes.x2.yPx * this.canvasScale,
-          value: this.axes.x2.value,
-        },
-        y1: {
-          xPx: this.axes.y1.xPx * this.canvasScale,
-          yPx: this.axes.y1.yPx * this.canvasScale,
-          value: this.axes.y1.value,
-        },
-        y2: {
-          xPx: this.axes.y2.xPx * this.canvasScale,
-          yPx: this.axes.y2.yPx * this.canvasScale,
-          value: this.axes.y2.value,
-        },
-      }
+      return ad.scaledAxes(this.canvasScale)
     },
     xyValue(): {
       xV: string
