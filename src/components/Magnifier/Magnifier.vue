@@ -108,7 +108,6 @@ export default Vue.extend({
       'magnifierSizePx',
     ]),
     ...axesMapper.mapGetters(['axes']),
-    // FIXME: CanvasScaleが反映されない。→Storeを導入して解決する
     magnifierHalfSize(): number {
       return this.magnifierSizePx / 2
     },
