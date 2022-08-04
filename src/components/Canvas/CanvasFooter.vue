@@ -31,6 +31,7 @@
 <script lang="ts">
 import Vue, { PropType } from 'vue'
 import { datasetMapper } from '@/store/modules/dataset'
+import { axesMapper } from '@/store/modules/axes'
 
 export default Vue.extend({
   props: {
@@ -46,17 +47,13 @@ export default Vue.extend({
         }[]
       >,
     },
-    // FIXME: clearAxes doesn't work
-    clearAxes: {
-      type: Function,
-      required: true,
-    },
   },
   computed: {
     ...datasetMapper.mapGetters(['activeScaledPlots', 'plotsAreActive']),
   },
   methods: {
     ...datasetMapper.mapActions(['clearPlots', 'clearActivePlots']),
+    ...axesMapper.mapActions(['clearAxes']),
   },
 })
 </script>
