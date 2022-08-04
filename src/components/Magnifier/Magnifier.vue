@@ -29,7 +29,7 @@
         :crosshairSizePx="crosshairSizePx"
       ></magnifier-horizontal-line>
       <div v-for="(axis, index) in scaledAxes" :key="index">
-        <magnifier-axes
+        <magnifier-axis
           :axis="axis"
           :isActive="isMovingAxis && axes.activeIndex === index"
           :index="index"
@@ -38,7 +38,7 @@
           :magnifierScale="magnifierScale"
           :magnifierSize="magnifierSizePx"
           :label="showAxisName(index)"
-        ></magnifier-axes>
+        ></magnifier-axis>
       </div>
       <div
         v-for="plot in activeScaledPlots"
@@ -72,7 +72,7 @@ import Vue, { PropType } from 'vue'
 import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
-import MagnifierAxes from './MagnifierAxes.vue'
+import MagnifierAxis from './MagnifierAxis.vue'
 import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
@@ -92,7 +92,7 @@ export default Vue.extend({
     MagnifierVerticalLine,
     MagnifierHorizontalLine,
     MagnifierImage,
-    MagnifierAxes,
+    MagnifierAxis,
     MagnifierPlots,
     MagnifierSettings,
     MagnifierSettingsBtn,
