@@ -62,6 +62,14 @@ class actions extends Actions<state, getters, mutations> {
     Axes.instance.addAxisPosition(axis.xPx, axis.yPx)
     this.commit('updateAxes', Axes.instance)
   }
+  moveActiveAxis(arrow: string) {
+    Axes.instance.moveActiveAxis(arrow)
+    this.commit('updateAxes', Axes.instance)
+  }
+  inactivateAxis() {
+    Axes.instance.inactivateAxis()
+    this.commit('updateAxes', Axes.instance)
+  }
 }
 
 export const axes = new Module({

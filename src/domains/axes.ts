@@ -34,6 +34,7 @@ export class Axes {
   error = ''
   sizePx = 10
   activeIndex = -1
+  nextIndex = 0
 
   static #instance: Axes
   static get instance(): Axes {
@@ -61,6 +62,14 @@ export class Axes {
       return 'y2'
     }
     return ''
+  }
+
+  get isActive() {
+    return this.activeIndex >= 0
+  }
+
+  get hasNext() {
+    return this.nextIndex >= 0
   }
 
   get nextAxis() {
@@ -107,6 +116,16 @@ export class Axes {
   }
 
   get activeAxis() {
+    switch (this.activeIndex) {
+      case 0:
+        return this.x1
+      case 1:
+        return this.x2
+      case 2:
+        return this.y1
+      case 3:
+        return this.y2
+    }
     return this.axesPos[this.activeIndex]
   }
 
@@ -130,13 +149,13 @@ export class Axes {
       case 'ArrowUp':
         this.activeAxis.yPx--
         break
-      case 'arrowRight':
+      case 'ArrowRight':
         this.activeAxis.xPx++
         break
-      case 'arrowDown':
+      case 'ArrowDown':
         this.activeAxis.yPx++
         break
-      case 'arrowLeft':
+      case 'ArrowLeft':
         this.activeAxis.xPx--
         break
       default:
@@ -145,17 +164,28 @@ export class Axes {
   }
 
   clearAxes() {
-    this.x1 = this.y1 = {
+    this.x1 = {
       xPx: -999,
       yPx: -999,
       value: 0,
     }
-    this.x2 = this.y2 = {
+    this.x2 = {
+      xPx: -999,
+      yPx: -999,
+      value: 1,
+    }
+    this.y1 = {
+      xPx: -999,
+      yPx: -999,
+      value: 0,
+    }
+    this.y2 = {
       xPx: -999,
       yPx: -999,
       value: 1,
     }
     this.activeIndex = -1
+    this.nextIndex = 0
   }
 
   addAxisPosition(xPx: number, yPx: number) {
@@ -165,6 +195,14 @@ export class Axes {
     this.nextAxis.xPx = xPx
     this.nextAxis.yPx = yPx
     this.activeIndex++
+    this.nextIndex++
+    if (this.nextIndex === 4) {
+      this.nextIndex = -1
+    }
+  }
+
+  inactivateAxis() {
+    this.activeIndex = -1
   }
 
   validateAxes(): boolean {

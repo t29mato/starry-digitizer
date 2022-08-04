@@ -52,13 +52,7 @@
               }"
               id="maskCanvas"
             ></canvas>
-            <div v-for="(axis, index) in showAxesPos" :key="index">
-              <canvas-axes
-                :axis="axis"
-                :isActive="isMovingAxis && axes.activeIndex === index"
-                :index="index"
-              ></canvas-axes>
-            </div>
+            <canvas-axes></canvas-axes>
             <canvas-plots
               v-show="shouldShowPoints"
               :plotSizePx="plotSizePx"
@@ -358,7 +352,12 @@ export default Vue.extend({
     setMaskMode(mode: number) {
       this.maskMode = mode
     },
-    ...axesMapper.mapActions(['clearAxes', 'addAxis']),
+    ...axesMapper.mapActions([
+      'clearAxes',
+      'addAxis',
+      'moveActiveAxis',
+      'inactivateAxis',
+    ]),
     setPenToolSize(size: string) {
       this.penToolSize = parseInt(size)
     },
@@ -400,8 +399,8 @@ export default Vue.extend({
       }
       e.preventDefault()
       this.cursorIsMoved = true
-      if (this.isMovingAxis) {
-        this.axes.moveActiveAxis(key)
+      if (this.axes.isActive) {
+        this.moveActiveAxis(key)
         this.canvasCursor = this.axes.activeAxis
       }
       if (this.plotsAreActive) {
@@ -430,7 +429,7 @@ export default Vue.extend({
     },
     async extractPlots() {
       this.isExtracting = true
-      this.isMovingAxis = false
+      this.inactivateAxis()
       this.clearPlots()
       try {
         let extractor: ExtractStrategyInterface
@@ -506,26 +505,23 @@ export default Vue.extend({
       if (isOnCanvasPlot) {
         return
       }
-      if (am.nextAxis) {
-        this.isMovingAxis = true
-        this.cursorIsMoved = false
+      if (this.axes.hasNext) {
         this.addAxis({
           xPx: (e.offsetX - offsetPx) / cm.canvasScale,
           yPx: e.offsetY / cm.canvasScale,
         })
         return
       }
-      this.isMovingAxis = false
 
       this.addPlot({
         xPx: (e.offsetX - offsetPx) / cm.canvasScale,
         yPx: e.offsetY / cm.canvasScale,
       })
+      this.inactivateAxis()
       this.shouldShowPoints = true
     },
     clearAxes() {
       this.clearAxes()
-      this.cursorIsMoved = false
     },
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
