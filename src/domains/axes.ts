@@ -69,6 +69,18 @@ export class Axes {
     return this.nextIndex >= 0
   }
 
+  get exist() {
+    if (
+      this.x1.xPx >= 0 ||
+      this.x2.xPx >= 0 ||
+      this.y1.xPx >= 0 ||
+      this.y2.xPx >= 0
+    ) {
+      return true
+    }
+    return false
+  }
+
   get nextAxis() {
     if (this.nextAxisKey === '') {
       return

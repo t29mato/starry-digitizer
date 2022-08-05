@@ -66,7 +66,6 @@
             ></canvas-cursor>
           </div>
           <canvas-footer
-            :axes="showAxesPos"
             :shouldShowPoints="shouldShowPoints"
             :clearAxes="clearAxes"
             :switchShowPlots="switchShowPlots"
@@ -159,16 +158,14 @@ import { DatasetManager } from './DatasetManager'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
 import { Canvas } from '@/domains/canvas'
-import { Axes } from '@/domains/axes'
 import { datasetMapper } from '@/store/modules/dataset'
 import { canvasMapper } from '@/store/modules/canvas'
 import { axesMapper } from '@/store/modules/axes'
 
-const [black, red] = ['#000000ff', '#ff0000ff']
+const [black] = ['#000000ff']
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 const cm = Canvas.instance
-const am = Axes.instance
 const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
 export default Vue.extend({
@@ -222,12 +219,10 @@ export default Vue.extend({
       isExtracting: false,
       plotSizePx: 10,
       cursorIsMoved: false,
-      red,
       canvasWidth: 0,
       canvasHeight: 0,
       swatches: [...Array(5)].map(() => []) as string[][],
       isDrawnMask: cm.isDrawnMask,
-      axesValuesErrorMessage: '',
       penToolSize: 50,
       eraserSize: 30,
     }
@@ -235,14 +230,6 @@ export default Vue.extend({
   computed: {
     ...datasetMapper.mapGetters(['datasets']),
     ...axesMapper.mapGetters(['axes']),
-    showAxesPos(): Position[] {
-      return am.axesPos.map((axis) => {
-        return {
-          xPx: axis.xPx * cm.canvasScale,
-          yPx: axis.yPx * cm.canvasScale,
-        }
-      })
-    },
     showCanvasCursor(): Position {
       return {
         xPx: this.canvasCursor.xPx * cm.canvasScale,
