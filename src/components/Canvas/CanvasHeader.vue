@@ -25,9 +25,9 @@ export default Vue.extend({
     },
   },
   computed: {
-    ...canvasMapper.mapGetters(['canvasScale']),
+    ...canvasMapper.mapGetters(['canvas']),
     showCanvasScale(): string {
-      return Math.trunc(this.canvasScale * 100) + '%'
+      return Math.trunc(this.canvas.scale * 100) + '%'
     },
   },
   methods: {

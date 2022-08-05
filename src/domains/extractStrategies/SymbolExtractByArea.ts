@@ -52,7 +52,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     const width = canvas.imageElement.width
     const maskCanvasColors = canvas.originalSizeMaskCanvasColors
     const graphCanvasColors = canvas.originalImageCanvasColors
-    const canvasScale = canvas.canvasScale
+    const scale = canvas.scale
 
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>

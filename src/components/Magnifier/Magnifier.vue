@@ -14,9 +14,9 @@
       ></magnifier-settings-btn>
       <magnifier-image
         :src="uploadImageUrl"
-        :canvasScale="canvasScale"
-        :cursorX="canvasCursor.xPx / canvasScale"
-        :cursorY="canvasCursor.yPx / canvasScale"
+        :canvasScale="canvas.scale"
+        :cursorX="canvasCursor.xPx / canvas.scale"
+        :cursorY="canvasCursor.yPx / canvas.scale"
       ></magnifier-image>
       <magnifier-vertical-line></magnifier-vertical-line>
       <magnifier-horizontal-line></magnifier-horizontal-line>
@@ -27,7 +27,7 @@
         :key="plot.id"
       >
         <magnifier-plots
-          :canvasScale="canvasScale"
+          :canvasScale="canvas.scale"
           :cursor="canvasCursor"
           :plotSize="plotSizePx"
           :plot="plot"
@@ -79,7 +79,7 @@ export default Vue.extend({
   },
   computed: {
     ...datasetMapper.mapGetters(['datasets']),
-    ...canvasMapper.mapGetters(['canvasScale']),
+    ...canvasMapper.mapGetters(['canvas']),
     ...magnifierMapper.mapGetters(['magnifier']),
     ...axesMapper.mapGetters(['axes']),
     // magnifierHalfSize(): number {

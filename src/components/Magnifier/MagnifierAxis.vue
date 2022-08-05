@@ -3,38 +3,42 @@
     <div
       :style="{
         position: 'absolute',
-        top: `${((yPx - axes.halfSizePx) / canvasScale) * magnifier.scale}px`,
-        left: `${((xPx - axes.halfSizePx) / canvasScale) * magnifier.scale}px`,
+        top: `${((yPx - axes.halfSizePx) / canvas.scale) * magnifier.scale}px`,
+        left: `${((xPx - axes.halfSizePx) / canvas.scale) * magnifier.scale}px`,
         'pointer-events': 'none',
         transform: `scale(${magnifier.scale}) translate(-${
-          canvasCursor.xPx / canvasScale - magnifierHalfSizePx / magnifier.scale
+          canvasCursor.xPx / canvas.scale -
+          magnifierHalfSizePx / magnifier.scale
         }px, -${
-          canvasCursor.yPx / canvasScale - magnifierHalfSizePx / magnifier.scale
+          canvasCursor.yPx / canvas.scale -
+          magnifierHalfSizePx / magnifier.scale
         }px)`,
         'transform-origin': 'top left',
-        width: `${axes.sizePx / canvasScale}px`,
-        height: `${axes.sizePx / canvasScale}px`,
+        width: `${axes.sizePx / canvas.scale}px`,
+        height: `${axes.sizePx / canvas.scale}px`,
         'border-radius': '50%',
         'background-color': isActive ? 'red' : 'dodgerblue',
-        outline: `${1 / canvasScale}px solid white`,
+        outline: `${1 / canvas.scale}px solid white`,
       }"
     ></div>
     <span
       :style="{
         position: 'absolute',
         top: `${
-          ((yPx - axes.halfSizePx - axes.sizePx) / canvasScale - 3) *
+          ((yPx - axes.halfSizePx - axes.sizePx) / canvas.scale - 3) *
           magnifier.scale
         }px`,
         left: `${
-          ((xPx - axes.halfSizePx + axes.sizePx) / canvasScale + 3) *
+          ((xPx - axes.halfSizePx + axes.sizePx) / canvas.scale + 3) *
           magnifier.scale
         }px`,
         'pointer-events': 'none',
         transform: `scale(${magnifier.scale}) translate(-${
-          canvasCursor.xPx / canvasScale - magnifierHalfSizePx / magnifier.scale
+          canvasCursor.xPx / canvas.scale -
+          magnifierHalfSizePx / magnifier.scale
         }px, -${
-          canvasCursor.yPx / canvasScale - magnifierHalfSizePx / magnifier.scale
+          canvasCursor.yPx / canvas.scale -
+          magnifierHalfSizePx / magnifier.scale
         }px)`,
         'transform-origin': 'top left',
       }"
@@ -56,14 +60,14 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...canvasMapper.mapGetters(['canvasScale']),
+    ...canvasMapper.mapGetters(['canvas']),
     ...axesMapper.mapGetters(['axes']),
     ...magnifierMapper.mapGetters(['magnifier']),
     xPx(): number {
-      return this.axis.xPx * this.canvasScale
+      return this.axis.xPx * this.canvas.scale
     },
     yPx(): number {
-      return this.axis.yPx * this.canvasScale
+      return this.axis.yPx * this.canvas.scale
     },
     magnifierHalfSizePx(): number {
       return this.magnifier.sizePx / 2

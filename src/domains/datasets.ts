@@ -59,8 +59,8 @@ export class Datasets {
     const plots = this.activeDataset.plots.map((plot) => {
       return {
         id: plot.id,
-        xPx: plot.xPx * cm.canvasScale,
-        yPx: plot.yPx * cm.canvasScale,
+        xPx: plot.xPx * cm.scale,
+        yPx: plot.yPx * cm.scale,
       }
     })
     return plots
@@ -70,7 +70,10 @@ export class Datasets {
     if (this.activeDataset.plots.length === 0) {
       return 1
     }
-    return this.activeDataset.plots[this.activeDataset.plots.length - 1].id + 1
+    const biggestId = Math.max(
+      ...this.activeDataset.plots.map((plot) => plot.id)
+    )
+    return biggestId + 1
   }
 
   get plotsAreActive(): boolean {
@@ -95,7 +98,7 @@ export class Datasets {
   }
 
   setPlots(plots: Plots) {
-    this.activePlotIds.length = 0
+    this.activePlotIds = []
     this.activeDataset.plots = plots
   }
 

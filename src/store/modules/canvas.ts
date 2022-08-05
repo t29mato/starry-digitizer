@@ -8,40 +8,40 @@ import {
 import { Canvas } from '@/domains/canvas'
 
 class state {
-  canvasScale: number = Canvas.instance.canvasScale
+  canvas: Canvas = Canvas.instance
 }
 
 class getters extends Getters<state> {
-  get canvasScale() {
-    return this.state.canvasScale
+  get canvas() {
+    return this.state.canvas
   }
 }
 
 class mutations extends Mutations<state> {
-  updateCanvasScale(newScale: number) {
-    this.state.canvasScale = newScale
+  updateCanvas(newCanvas: Canvas) {
+    this.state.canvas = newCanvas
   }
 }
 
 class actions extends Actions<state, getters, mutations> {
   scaleUp() {
     Canvas.instance.scaleUp()
-    this.commit('updateCanvasScale', Canvas.instance.canvasScale)
+    this.commit('updateCanvas', Canvas.instance)
   }
 
   scaleDown() {
     Canvas.instance.scaleDown()
-    this.commit('updateCanvasScale', Canvas.instance.canvasScale)
+    this.commit('updateCanvas', Canvas.instance)
   }
 
   resizeCanvasToOriginal() {
     Canvas.instance.drawOriginalSizeImage()
-    this.commit('updateCanvasScale', Canvas.instance.canvasScale)
+    this.commit('updateCanvas', Canvas.instance)
   }
 
   drawFitSizeImage() {
     Canvas.instance.drawFitSizeImage()
-    this.commit('updateCanvasScale', Canvas.instance.canvasScale)
+    this.commit('updateCanvas', Canvas.instance)
   }
 }
 

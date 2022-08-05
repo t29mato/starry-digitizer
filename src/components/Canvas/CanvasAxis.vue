@@ -34,12 +34,12 @@ import Vue from 'vue'
 export default Vue.extend({
   computed: {
     ...axesMapper.mapGetters(['axes']),
-    ...canvasMapper.mapGetters(['canvasScale']),
+    ...canvasMapper.mapGetters(['canvas']),
     xPx(): number {
-      return this.axis.xPx * this.canvasScale
+      return this.axis.xPx * this.canvas.scale
     },
     yPx(): number {
-      return this.axis.yPx * this.canvasScale
+      return this.axis.yPx * this.canvas.scale
     },
   },
   props: {

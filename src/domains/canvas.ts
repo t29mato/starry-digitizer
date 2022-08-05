@@ -12,7 +12,7 @@ export class Canvas {
   isDrawnMask = false
   #tempMaskCanvas?: HTMLCanvasElement
   #imageElement?: HTMLImageElement
-  canvasScale = 1
+  scale = 1
   #cursor: Position = { xPx: 0, yPx: 0 }
   #rectangle = {
     startX: 0,
@@ -238,8 +238,8 @@ export class Canvas {
     return this.imageElement.height
   }
 
-  // set canvasScale(canvasScale: number) {
-  //   this.#canvasScale = canvasScale
+  // set scale(scale: number) {
+  //   this.#scale = scale
   // }
 
   get canvasWrapper() {
@@ -249,11 +249,11 @@ export class Canvas {
     return this.#canvasWrapper
   }
 
-  // get canvasScale() {
-  //   if (!this.#canvasScale) {
-  //     throw new Error('#canvasScale is undefined.')
+  // get scale() {
+  //   if (!this.#scale) {
+  //     throw new Error('#scale is undefined.')
   //   }
-  //   return this.#canvasScale
+  //   return this.#scale
   // }
 
   get imageElement() {
@@ -330,32 +330,32 @@ export class Canvas {
 
   drawFitSizeImage() {
     const wrapperWidthPx = this.canvasWrapper.offsetWidth
-    const canvasScale = wrapperWidthPx / this.originalWidth
-    const wrapperHeightPx = this.originalHeight * canvasScale
+    const scale = wrapperWidthPx / this.originalWidth
+    const wrapperHeightPx = this.originalHeight * scale
     this.resize(wrapperWidthPx, wrapperHeightPx)
-    this.canvasScale = canvasScale
+    this.scale = scale
   }
 
   scaleDown() {
-    if (this.canvasScale <= 0.1) {
+    if (this.scale <= 0.1) {
       throw new Error(`The scale doesn't allow it to be a minus.`)
     }
-    this.canvasScale = this.canvasScale - 0.1
-    const scaledWidth = this.originalWidth * this.canvasScale
-    const scaledHeight = this.originalHeight * this.canvasScale
+    this.scale = this.scale - 0.1
+    const scaledWidth = this.originalWidth * this.scale
+    const scaledHeight = this.originalHeight * this.scale
     this.resize(scaledWidth, scaledHeight)
   }
 
   scaleUp() {
-    this.canvasScale = this.canvasScale + 0.1
-    const scaledWidth = this.originalWidth * this.canvasScale
-    const scaledHeight = this.originalHeight * this.canvasScale
+    this.scale = this.scale + 0.1
+    const scaledWidth = this.originalWidth * this.scale
+    const scaledHeight = this.originalHeight * this.scale
     this.resize(scaledWidth, scaledHeight)
   }
 
   drawOriginalSizeImage() {
     this.resize(this.originalWidth, this.originalHeight)
-    this.canvasScale = 1
+    this.scale = 1
   }
 
   resize(width: number, height: number) {

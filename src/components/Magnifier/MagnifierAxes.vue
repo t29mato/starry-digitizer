@@ -37,7 +37,7 @@ export default Vue.extend({
     MagnifierAxis,
   },
   computed: {
-    ...canvasMapper.mapGetters(['canvasScale']),
+    ...canvasMapper.mapGetters(['canvas']),
     ...axesMapper.mapGetters(['axes']),
   },
   props: {

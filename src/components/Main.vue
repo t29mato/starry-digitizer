@@ -230,17 +230,18 @@ export default Vue.extend({
   computed: {
     ...datasetMapper.mapGetters(['datasets']),
     ...axesMapper.mapGetters(['axes']),
+    ...canvasMapper.mapGetters(['canvas']),
     showCanvasCursor(): Position {
       return {
-        xPx: this.canvasCursor.xPx * cm.canvasScale,
-        yPx: this.canvasCursor.yPx * cm.canvasScale,
+        xPx: this.canvasCursor.xPx * this.canvas.scale,
+        yPx: this.canvasCursor.yPx * this.canvas.scale,
       }
     },
     showPenToolSize(): number {
-      return this.penToolSize * cm.canvasScale
+      return this.penToolSize * this.canvas.scale
     },
     showEraserSize(): number {
-      return this.eraserSize * cm.canvasScale
+      return this.eraserSize * this.canvas.scale
     },
     cursorLabel(): string {
       switch (this.maskMode) {
@@ -482,15 +483,15 @@ export default Vue.extend({
       }
       if (this.axes.hasNext) {
         this.addAxis({
-          xPx: (e.offsetX - offsetPx) / cm.canvasScale,
-          yPx: e.offsetY / cm.canvasScale,
+          xPx: (e.offsetX - offsetPx) / this.canvas.scale,
+          yPx: e.offsetY / this.canvas.scale,
         })
         return
       }
 
       this.addPlot({
-        xPx: (e.offsetX - offsetPx) / cm.canvasScale,
-        yPx: e.offsetY / cm.canvasScale,
+        xPx: (e.offsetX - offsetPx) / this.canvas.scale,
+        yPx: e.offsetY / this.canvas.scale,
       })
       this.inactivateAxis()
       this.shouldShowPoints = true
@@ -506,8 +507,8 @@ export default Vue.extend({
       this.cursorIsMoved = false
       this.shouldShowLabel = true
       this.canvasCursor = {
-        xPx: xPx / cm.canvasScale,
-        yPx: yPx / cm.canvasScale,
+        xPx: xPx / this.canvas.scale,
+        yPx: yPx / this.canvas.scale,
       }
       // INFO: 左クリックされていない状態
       const isClicking = e.buttons === 1
