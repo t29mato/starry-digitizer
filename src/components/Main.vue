@@ -208,16 +208,8 @@ export default Vue.extend({
         width: 1,
         interval: 10,
       } as LineExtractProps,
-      plotShapeMode: 0,
       maskMode: -1,
       uploadImageUrl: '',
-      // REFACTOR: v-text-fieldのv-modeがstringのためだが、利用時はnumberなので読みやすい方法考える
-      axesValues: {
-        x1: '0',
-        x2: '1',
-        y1: '0',
-        y2: '1',
-      },
       canvasCursor: {
         xPx: 0,
         yPx: 0,
