@@ -141,10 +141,6 @@ export default Vue.extend({
       type: Number,
       required: true,
     },
-    isMovingAxis: {
-      type: Boolean,
-      required: true,
-    },
     activePlotIds: {
       type: Array as PropType<number[]>,
       required: true,

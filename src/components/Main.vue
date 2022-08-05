@@ -77,7 +77,6 @@
           <magnifier
             :uploadImageUrl="uploadImageUrl"
             :canvasCursor="showCanvasCursor"
-            :isMovingAxis="isMovingAxis"
             :plotSizePx="plotSizePx"
             :activePlotIds="activePlotIds"
             :shouldShowPoints="shouldShowPoints"
@@ -230,8 +229,6 @@ export default Vue.extend({
       colorPicker: black,
       isExtracting: false,
       plotSizePx: 10,
-      // REFACTOR: 変数名を変更 → axesIsActive
-      isMovingAxis: false,
       cursorIsMoved: false,
       red,
       canvasWidth: 0,
