@@ -4,15 +4,17 @@
     <v-card class="mx-auto" flat>
       <v-list dense>
         <v-list-item
-          v-for="dataset in datasets"
+          v-for="dataset in datasets.datasets"
           :key="dataset.id"
           link
           @click="setActiveDataset(dataset.id)"
-          :class="dataset.id === activeDataset.id && 'blue lighten-4'"
+          :class="dataset.id === datasets.activeDataset.id && 'blue lighten-4'"
         >
           <v-list-item-content>
             <v-list-item-title
-              :class="dataset.id === activeDataset.id && 'font-weight-bold'"
+              :class="
+                dataset.id === datasets.activeDataset.id && 'font-weight-bold'
+              "
               v-text="`${dataset.name} (${dataset.plots.length})`"
             ></v-list-item-title>
           </v-list-item-content>
@@ -23,7 +25,7 @@
         small
         class="mt-2"
         @click="shouldShowActiveDataset = true"
-        :disabled="activeDataset.plots.length === 0"
+        :disabled="datasets.activeDataset.plots.length === 0"
         >Show Plots</v-btn
       >
     </v-card>
@@ -47,7 +49,7 @@
                 <v-btn
                   small
                   @click="popDataset"
-                  :disabled="this.datasets.length === 1"
+                  :disabled="this.datasets.datasets.length === 1"
                   ><v-icon>mdi-minus</v-icon></v-btn
                 >
                 <v-simple-table dense>
@@ -60,7 +62,10 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="dataset in datasets" :key="dataset.id">
+                      <tr
+                        v-for="dataset in datasets.datasets"
+                        :key="dataset.id"
+                      >
                         <td>{{ dataset.id }}</td>
                         <td>
                           <v-text-field
@@ -132,9 +137,9 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...datasetMapper.mapGetters(['activeDataset', 'datasets']),
+    ...datasetMapper.mapGetters(['datasets']),
     activeCalculatedPlots(): Plots {
-      const newPlots = this.activeDataset.plots.map((plot) => {
+      const newPlots = this.datasets.activeDataset.plots.map((plot) => {
         const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
         return {
           id: plot.id,

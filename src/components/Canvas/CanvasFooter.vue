@@ -6,14 +6,16 @@
     <v-btn
       small
       class="ml-2"
-      :disabled="activeScaledPlots.length === 0"
+      :disabled="datasets.activeScaledPlots.length === 0"
       @click="clearPlots"
       >Clear Plots</v-btn
     >
     <v-btn
       small
       class="ml-2"
-      :disabled="activeScaledPlots.length === 0 || !plotsAreActive"
+      :disabled="
+        datasets.activeScaledPlots.length === 0 || !datasets.plotsAreActive
+      "
       @click="clearActivePlots"
       >Clear Active Plot</v-btn
     >
@@ -49,7 +51,7 @@ export default Vue.extend({
     },
   },
   computed: {
-    ...datasetMapper.mapGetters(['activeScaledPlots', 'plotsAreActive']),
+    ...datasetMapper.mapGetters(['datasets']),
   },
   methods: {
     ...datasetMapper.mapActions(['clearPlots', 'clearActivePlots']),

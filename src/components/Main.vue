@@ -56,7 +56,7 @@
             <canvas-plots
               v-show="shouldShowPoints"
               :plotSizePx="plotSizePx"
-              :isActive="activePlotIds.includes(plot.id)"
+              :isActive="datasets.activePlotIds.includes(plot.id)"
             >
             </canvas-plots>
             <canvas-cursor
@@ -78,7 +78,7 @@
             :uploadImageUrl="uploadImageUrl"
             :canvasCursor="showCanvasCursor"
             :plotSizePx="plotSizePx"
-            :activePlotIds="activePlotIds"
+            :activePlotIds="datasets.activePlotIds"
             :shouldShowPoints="shouldShowPoints"
           ></magnifier>
           <h4>Automatic Extraction</h4>
@@ -241,11 +241,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...datasetMapper.mapGetters([
-      'activeDataset',
-      'plotsAreActive',
-      'activePlotIds',
-    ]),
+    ...datasetMapper.mapGetters(['datasets']),
     ...axesMapper.mapGetters(['axes']),
     showAxesPos(): Position[] {
       return am.axesPos.map((axis) => {
@@ -374,7 +370,7 @@ export default Vue.extend({
       this.shouldShowPoints = !this.shouldShowPoints
     },
     sortPlots() {
-      this.activeDataset.plots.sort((a, b) => {
+      this.datasets.activeDataset.plots.sort((a, b) => {
         return a.xPx - b.xPx
       })
     },
@@ -403,10 +399,10 @@ export default Vue.extend({
         this.moveActiveAxis(key)
         this.canvasCursor = this.axes.activeAxis
       }
-      if (this.plotsAreActive) {
+      if (this.datasets.plotsAreActive) {
         this.moveActivePlot(e.key)
-        this.canvasCursor = this.activeDataset.plots.filter((plot) =>
-          this.activePlotIds.includes(plot.id)
+        this.canvasCursor = this.datasets.activeDataset.plots.filter((plot) =>
+          this.datasets.activePlotIds.includes(plot.id)
         )[0]
       }
     },

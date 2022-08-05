@@ -1,11 +1,11 @@
 <template>
   <div>
     <canvas-plot
-      v-for="plot in activeScaledPlots"
+      v-for="plot in datasets.activeScaledPlots"
       :key="plot.id"
       :plotSizePx="plotSizePx"
       :plot="plot"
-      :isActive="activePlotIds.includes(plot.id)"
+      :isActive="datasets.activePlotIds.includes(plot.id)"
     ></canvas-plot>
   </div>
 </template>
@@ -20,7 +20,7 @@ export default Vue.extend({
     CanvasPlot,
   },
   computed: {
-    ...datasetMapper.mapGetters(['activeScaledPlots', 'activePlotIds']),
+    ...datasetMapper.mapGetters(['datasets']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },

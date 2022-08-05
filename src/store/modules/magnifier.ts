@@ -6,8 +6,6 @@ import {
   createMapper,
 } from 'vuex-smart-module'
 import { magnifier as MD } from '@/domains/magnifier'
-import { Plot, Plots } from '@/types'
-import { DatasetManager as DatasetDomain } from '@/domains/DatasetManager'
 
 class state {
   magnifier = MD.instance

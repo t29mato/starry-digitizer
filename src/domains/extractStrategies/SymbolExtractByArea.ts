@@ -3,7 +3,6 @@ import diff from 'color-diff'
 import { Plot, DiameterRange } from '@/types'
 import { Canvas } from '../canvas'
 
-// FIXME: Executeしても画面にすぐ反映されない
 export default class SymbolExtractByArea implements ExtractStrategyInterface {
   #minDiameterPx = 5
   #maxDiameterPx = 100

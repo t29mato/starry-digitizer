@@ -1,28 +1,46 @@
-import { Datasets, Dataset, Plots } from '@/types'
 import { Canvas } from '@/domains/canvas'
 const cm = Canvas.instance
 
-export class DatasetManager {
-  static #instance: DatasetManager
-  #datasets: Datasets = [
-    {
-      id: 1,
+export type Position = {
+  xPx: number
+  yPx: number
+}
+export type Plot = {
+  id: number
+  xPx: number
+  yPx: number
+}
+
+export type Plots = Plot[]
+
+export class Dataset {
+  name: string
+  plots: Plots
+  id: number
+  constructor(dataset: Dataset) {
+    this.name = dataset.name
+    this.plots = dataset.plots
+    this.id = dataset.id
+  }
+}
+
+export class Datasets {
+  static #instance: Datasets
+  datasets: Dataset[] = [
+    new Dataset({
       name: 'dataset 1',
       plots: [],
-    },
+      id: 1,
+    }),
   ]
   activeDatasetId = 1
   activePlotIds: number[] = []
 
-  static get instance(): DatasetManager {
+  static get instance(): Datasets {
     if (!this.#instance) {
-      this.#instance = new DatasetManager()
+      this.#instance = new Datasets()
     }
     return this.#instance
-  }
-
-  get datasets(): Datasets {
-    return this.#datasets
   }
 
   async initialize() {}
@@ -47,20 +65,6 @@ export class DatasetManager {
     })
     return plots
   }
-
-  // get activeCalculatedPlots(): Plots {
-  //   const newPlots = this.activeDataset.plots.map((plot) => {
-  //     const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
-  //     return {
-  //       id: plot.id,
-  //       xPx: plot.xPx,
-  //       yPx: plot.yPx,
-  //       xV,
-  //       yV,
-  //     }
-  //   })
-  //   return newPlots
-  // }
 
   get nextPlotId(): number {
     if (this.activeDataset.plots.length === 0) {
@@ -93,17 +97,6 @@ export class DatasetManager {
   setPlots(plots: Plots) {
     this.activePlotIds.length = 0
     this.activeDataset.plots = plots
-  }
-
-  // HACK: Vue instance cannot detect the Canvas scale change.
-  // FIXME: this methods doesn't need anymore.
-  refreshPlots() {
-    this.activeDataset.plots.push({
-      id: this.nextPlotId,
-      xPx: 0,
-      yPx: 0,
-    })
-    this.activeDataset.plots.pop()
   }
 
   setActiveDataset(id: number) {

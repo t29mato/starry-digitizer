@@ -22,7 +22,7 @@
       <magnifier-horizontal-line></magnifier-horizontal-line>
       <magnifier-axes :canvasCursor="canvasCursor"></magnifier-axes>
       <div
-        v-for="plot in activeScaledPlots"
+        v-for="plot in datasets.activeScaledPlots"
         v-show="shouldShowPoints"
         :key="plot.id"
       >
@@ -78,7 +78,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...datasetMapper.mapGetters(['activeScaledPlots']),
+    ...datasetMapper.mapGetters(['datasets']),
     ...canvasMapper.mapGetters(['canvasScale']),
     ...magnifierMapper.mapGetters(['magnifier']),
     ...axesMapper.mapGetters(['axes']),

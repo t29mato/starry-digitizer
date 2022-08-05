@@ -6,8 +6,6 @@ import {
   createMapper,
 } from 'vuex-smart-module'
 import { Canvas } from '@/domains/canvas'
-import { Plot, Plots } from '@/types'
-import { DatasetManager as DatasetDomain } from '@/domains/DatasetManager'
 
 class state {
   canvasScale: number = Canvas.instance.canvasScale
