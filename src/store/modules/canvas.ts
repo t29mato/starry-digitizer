@@ -5,12 +5,12 @@ import {
   Module,
   createMapper,
 } from 'vuex-smart-module'
-import { CanvasManager as CanvasDomain } from '@/domains/CanvasManager'
+import { Canvas } from '@/domains/canvas'
 import { Plot, Plots } from '@/types'
 import { DatasetManager as DatasetDomain } from '@/domains/DatasetManager'
 
 class state {
-  canvasScale: number = CanvasDomain.instance.canvasScale
+  canvasScale: number = Canvas.instance.canvasScale
 }
 
 class getters extends Getters<state> {
@@ -26,30 +26,24 @@ class mutations extends Mutations<state> {
 }
 
 class actions extends Actions<state, getters, mutations> {
-  canvasDomain
-  constructor() {
-    super()
-    this.canvasDomain = CanvasDomain.instance
-  }
-
   scaleUp() {
-    this.canvasDomain.scaleUp()
-    this.commit('updateCanvasScale', this.canvasDomain.canvasScale)
+    Canvas.instance.scaleUp()
+    this.commit('updateCanvasScale', Canvas.instance.canvasScale)
   }
 
   scaleDown() {
-    this.canvasDomain.scaleDown()
-    this.commit('updateCanvasScale', this.canvasDomain.canvasScale)
+    Canvas.instance.scaleDown()
+    this.commit('updateCanvasScale', Canvas.instance.canvasScale)
   }
 
   resizeCanvasToOriginal() {
-    this.canvasDomain.drawOriginalSizeImage()
-    this.commit('updateCanvasScale', this.canvasDomain.canvasScale)
+    Canvas.instance.drawOriginalSizeImage()
+    this.commit('updateCanvasScale', Canvas.instance.canvasScale)
   }
 
   drawFitSizeImage() {
-    this.canvasDomain.drawFitSizeImage()
-    this.commit('updateCanvasScale', this.canvasDomain.canvasScale)
+    Canvas.instance.drawFitSizeImage()
+    this.commit('updateCanvasScale', Canvas.instance.canvasScale)
   }
 }
 

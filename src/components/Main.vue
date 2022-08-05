@@ -32,7 +32,7 @@
             @mousedown="mouseDown"
             @mouseup="mouseUp"
           >
-            <!-- TODO: uploadImageUrlはcanvasManagerで描画してるのでdataプロパティ上は不要 -->
+            <!-- TODO: uploadImageUrlはCanvasで描画してるのでdataプロパティ上は不要 -->
             <canvas id="imageCanvas" :src="uploadImageUrl"></canvas>
             <canvas
               id="tempMaskCanvas"
@@ -158,7 +158,7 @@ import {
 import { DatasetManager } from './DatasetManager'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
-import { CanvasManager } from '@/domains/CanvasManager'
+import { Canvas } from '@/domains/canvas'
 import { Axes } from '@/domains/axes'
 import { datasetMapper } from '@/store/modules/dataset'
 import { canvasMapper } from '@/store/modules/canvas'
@@ -167,7 +167,7 @@ import { axesMapper } from '@/store/modules/axes'
 const [black, red] = ['#000000ff', '#ff0000ff']
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
-const cm = CanvasManager.instance
+const cm = Canvas.instance
 const am = Axes.instance
 const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
@@ -465,7 +465,7 @@ export default Vue.extend({
         if (typeof fr.result !== 'string') {
           throw new Error('file is not string type')
         }
-        // TODO: CanvasManagerを利用する
+        // TODO: Canvasを利用する
         const image = await this.loadImage(fr.result)
         cm.changeImage(image)
         this.drawFitSizeImage()
@@ -539,7 +539,7 @@ export default Vue.extend({
       if (!isClicking) {
         cm.resetDrawMaskPos()
       } else {
-        // TODO: 呼び出すメソッドはCanvasManagerに移譲したい
+        // TODO: 呼び出すメソッドはCanvasに移譲したい
         switch (this.maskMode) {
           case 0: // INFO: pen mask
             cm.mouseMoveForPen(xPx, yPx, this.showPenToolSize)

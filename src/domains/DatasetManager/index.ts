@@ -1,6 +1,6 @@
 import { Datasets, Dataset, Plots } from '@/types'
-import { CanvasManager as CM } from '@/domains/CanvasManager'
-const cm = CM.instance
+import { Canvas } from '@/domains/canvas'
+const cm = Canvas.instance
 
 export class DatasetManager {
   static #instance: DatasetManager
@@ -95,7 +95,8 @@ export class DatasetManager {
     this.activeDataset.plots = plots
   }
 
-  // HACK: Vue instance cannot detect the CanvasManager scale change.
+  // HACK: Vue instance cannot detect the Canvas scale change.
+  // FIXME: this methods doesn't need anymore.
   refreshPlots() {
     this.activeDataset.plots.push({
       id: this.nextPlotId,

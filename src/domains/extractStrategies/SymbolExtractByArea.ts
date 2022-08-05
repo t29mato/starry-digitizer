@@ -1,8 +1,9 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
 import diff from 'color-diff'
 import { Plot, DiameterRange } from '@/types'
-import { CanvasManager } from '../CanvasManager'
+import { Canvas } from '../canvas'
 
+// FIXME: Executeしても画面にすぐ反映されない
 export default class SymbolExtractByArea implements ExtractStrategyInterface {
   #minDiameterPx = 5
   #maxDiameterPx = 100
@@ -43,16 +44,16 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
   }
 
   execute(
-    cm: CanvasManager,
+    canvas: Canvas,
     targetColor: [number, number, number],
     colorMatchThreshold: number,
     isDrawnMask: boolean
   ) {
-    const height = cm.imageElement.height
-    const width = cm.imageElement.width
-    const maskCanvasColors = cm.originalSizeMaskCanvasColors
-    const graphCanvasColors = cm.originalImageCanvasColors
-    const canvasScale = cm.canvasScale
+    const height = canvas.imageElement.height
+    const width = canvas.imageElement.width
+    const maskCanvasColors = canvas.originalSizeMaskCanvasColors
+    const graphCanvasColors = canvas.originalImageCanvasColors
+    const canvasScale = canvas.canvasScale
 
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>

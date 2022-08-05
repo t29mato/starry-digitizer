@@ -1,10 +1,10 @@
 import { Position } from '@/types'
 import ColorThief from 'colorthief'
-import XYAxesCalculator from '../XYAxesCalculator'
+import XYAxesCalculator from './XYAxesCalculator'
 const colorThief = new ColorThief()
 
-export class CanvasManager {
-  static #instance: CanvasManager
+export class Canvas {
+  static #instance: Canvas
   #canvasWrapper?: HTMLDivElement
   #imageCanvas?: HTMLCanvasElement
   #maskCanvas?: HTMLCanvasElement
@@ -21,9 +21,9 @@ export class CanvasManager {
     endY: 0,
   }
 
-  static get instance(): CanvasManager {
+  static get instance(): Canvas {
     if (!this.#instance) {
-      this.#instance = new CanvasManager()
+      this.#instance = new Canvas()
     }
     return this.#instance
   }

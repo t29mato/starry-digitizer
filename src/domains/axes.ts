@@ -1,6 +1,3 @@
-import { CanvasManager as CanvasDomain } from '@/domains/CanvasManager'
-const cd = CanvasDomain.instance
-
 export type Axis = {
   xPx: number
   yPx: number
