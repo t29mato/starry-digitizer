@@ -7,9 +7,12 @@ export class magnifier {
     return this.#instance
   }
 
-  magnifierScale = 5
-  showSettingsDialog = false
+  scale = 5
   magnifierSettingError = ''
   crosshairSizePx = 1
-  magnifierSizePx = 200
+  sizePx = 200
+
+  setScale(scale: number) {
+    this.scale = scale
+  }
 }

@@ -3,8 +3,8 @@
     <div
       :style="{
         overflow: 'hidden',
-        width: `${magnifierSizePx}px`,
-        height: `${magnifierSizePx}px`,
+        width: `${magnifier.sizePx}px`,
+        height: `${magnifier.sizePx}px`,
         position: 'relative',
         outline: '1px solid grey',
       }"
@@ -14,55 +14,34 @@
       ></magnifier-settings-btn>
       <magnifier-image
         :src="uploadImageUrl"
-        :magnifierScale="magnifierScale"
         :canvasScale="canvasScale"
         :cursorX="canvasCursor.xPx / canvasScale"
         :cursorY="canvasCursor.yPx / canvasScale"
-        :size="magnifierSizePx"
       ></magnifier-image>
-      <magnifier-vertical-line
-        :magnifierSize="magnifierSizePx"
-        :crosshairSizePx="crosshairSizePx"
-      ></magnifier-vertical-line>
-      <magnifier-horizontal-line
-        :magnifierSize="magnifierSizePx"
-        :crosshairSizePx="crosshairSizePx"
-      ></magnifier-horizontal-line>
-      <div v-for="(axis, index) in scaledAxes" :key="index">
-        <magnifier-axis
-          :axis="axis"
-          :isActive="isMovingAxis && axes.activeIndex === index"
-          :index="index"
-          :canvasScale="canvasScale"
-          :canvasCursor="canvasCursor"
-          :magnifierScale="magnifierScale"
-          :magnifierSize="magnifierSizePx"
-          :label="showAxisName(index)"
-        ></magnifier-axis>
-      </div>
+      <magnifier-vertical-line></magnifier-vertical-line>
+      <magnifier-horizontal-line></magnifier-horizontal-line>
+      <magnifier-axes :canvasCursor="canvasCursor"></magnifier-axes>
       <div
         v-for="plot in activeScaledPlots"
         v-show="shouldShowPoints"
         :key="plot.id"
       >
         <magnifier-plots
-          :magnifierScale="magnifierScale"
           :canvasScale="canvasScale"
           :cursor="canvasCursor"
           :plotSize="plotSizePx"
           :plot="plot"
-          :magnifierSize="magnifierSizePx"
+          :magnifierSize="magnifier.sizePx"
           :isActive="activePlotIds.includes(plot.id)"
         ></magnifier-plots>
       </div>
     </div>
     <span>x: {{ xyValue.xV }}, y: {{ xyValue.yV }}</span>
     <magnifier-settings
-      :magnifierScale="magnifierScale"
-      :showSettingsDialog="showSettingsDialog"
-      :setMagnifierScale="setMagnifierScale"
+      :shouldShowSettingsDialog="shouldShowSettingsDialog"
       :toggleSettingsDialog="toggleSettingsDialog"
       :magnifierSettingError="magnifierSettingError"
+      :setMagnifierScale="setMagnifierScale"
     ></magnifier-settings>
   </div>
 </template>
@@ -72,7 +51,7 @@ import Vue, { PropType } from 'vue'
 import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
-import MagnifierAxis from './MagnifierAxis.vue'
+import MagnifierAxes from './MagnifierAxes.vue'
 import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
@@ -81,67 +60,59 @@ import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
 import { axesMapper } from '@/store/modules/axes'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
-import { Axes } from '@/domains/axes'
-const ad = Axes.instance
 
 export default Vue.extend({
-  data() {
-    return {}
-  },
   components: {
     MagnifierVerticalLine,
     MagnifierHorizontalLine,
     MagnifierImage,
-    MagnifierAxis,
+    MagnifierAxes,
     MagnifierPlots,
     MagnifierSettings,
     MagnifierSettingsBtn,
   },
+  data() {
+    return {
+      magnifierSettingError: '',
+      shouldShowSettingsDialog: false,
+    }
+  },
   computed: {
     ...datasetMapper.mapGetters(['activeScaledPlots']),
     ...canvasMapper.mapGetters(['canvasScale']),
-    ...magnifierMapper.mapGetters([
-      'magnifierScale',
-      'showSettingsDialog',
-      'magnifierSettingError',
-      'crosshairSizePx',
-      'magnifierSizePx',
-    ]),
+    ...magnifierMapper.mapGetters(['magnifier']),
     ...axesMapper.mapGetters(['axes']),
-    magnifierHalfSize(): number {
-      return this.magnifierSizePx / 2
-    },
+    // magnifierHalfSize(): number {
+    //   return this.magnifier.sizePx / 2
+    // },
     // INFO: 小数点ありのピクセル表示するとユーザーを混乱させるので表示上は切り上げ
-    canvasCursorCeil(): {
-      xPx: number
-      yPx: number
-    } {
-      return {
-        xPx: Math.ceil(this.canvasCursor.xPx),
-        yPx: Math.ceil(this.canvasCursor.yPx),
-      }
-    },
-    scaledAxes() {
-      return ad.scaledAxes(this.canvasScale)
-    },
+    // canvasCursorCeil(): {
+    //   xPx: number
+    //   yPx: number
+    // } {
+    //   return {
+    //     xPx: Math.ceil(this.canvasCursor.xPx),
+    //     yPx: Math.ceil(this.canvasCursor.yPx),
+    //   }
+    // },
     xyValue(): {
       xV: string
       yV: string
     } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (!ad.validateAxes()) {
+      if (!this.axes.validateAxes()) {
         return { xV: '0', yV: '0' }
       }
       const calculator = new XYAxesCalculator(
         {
-          x1: ad.x1,
-          x2: ad.x2,
-          y1: ad.y1,
-          y2: ad.y2,
+          x1: this.axes.x1,
+          x2: this.axes.x2,
+          y1: this.axes.y1,
+          y2: this.axes.y2,
         },
         {
-          x: ad.xIsLog,
-          y: ad.yIsLog,
+          x: this.axes.xIsLog,
+          y: this.axes.yIsLog,
         }
       )
       return calculator.calculateXYValues(
@@ -170,14 +141,6 @@ export default Vue.extend({
       type: Number,
       required: true,
     },
-    // axes: {
-    //   type: Array as PropType<
-    //     {
-    //       xPx: number
-    //       yPx: number
-    //     }[]
-    //   >,
-    // },
     isMovingAxis: {
       type: Boolean,
       required: true,
@@ -187,7 +150,9 @@ export default Vue.extend({
       required: true,
     },
   },
+
   methods: {
+    ...magnifierMapper.mapActions(['setScale']),
     showAxisName(index: number): string {
       switch (index) {
         case 0:
@@ -203,18 +168,18 @@ export default Vue.extend({
       }
     },
     toggleSettingsDialog(): void {
-      this.showSettingsDialog = !this.showSettingsDialog
+      this.shouldShowSettingsDialog = !this.shouldShowSettingsDialog
     },
-    setMagnifierScale(inputValue: string): void {
-      const scale = parseInt(inputValue)
+    setMagnifierScale(value: string): void {
+      const scale = parseInt(value)
       this.magnifierSettingError = ''
       if (scale < 2) {
         this.magnifierSettingError =
           'The Magnifier scale is supposed to be larger than 2 times.'
-        this.magnifierScale = 2
+        this.setScale(2)
         return
       }
-      this.magnifierScale = scale
+      this.setScale(parseInt(value))
     },
   },
 })

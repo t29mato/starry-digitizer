@@ -3,13 +3,13 @@
     <div
       :style="{
         position: 'absolute',
-        top: `${((yPx - axes.halfSizePx) / canvasScale) * magnifierScale}px`,
-        left: `${((xPx - axes.halfSizePx) / canvasScale) * magnifierScale}px`,
+        top: `${((yPx - axes.halfSizePx) / canvasScale) * magnifier.scale}px`,
+        left: `${((xPx - axes.halfSizePx) / canvasScale) * magnifier.scale}px`,
         'pointer-events': 'none',
-        transform: `scale(${magnifierScale}) translate(-${
-          canvasCursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
+        transform: `scale(${magnifier.scale}) translate(-${
+          canvasCursor.xPx / canvasScale - magnifierHalfSizePx / magnifier.scale
         }px, -${
-          canvasCursor.yPx / canvasScale - magnifierHalfSize / magnifierScale
+          canvasCursor.yPx / canvasScale - magnifierHalfSizePx / magnifier.scale
         }px)`,
         'transform-origin': 'top left',
         width: `${axes.sizePx / canvasScale}px`,
@@ -24,17 +24,17 @@
         position: 'absolute',
         top: `${
           ((yPx - axes.halfSizePx - axes.sizePx) / canvasScale - 3) *
-          magnifierScale
+          magnifier.scale
         }px`,
         left: `${
           ((xPx - axes.halfSizePx + axes.sizePx) / canvasScale + 3) *
-          magnifierScale
+          magnifier.scale
         }px`,
         'pointer-events': 'none',
-        transform: `scale(${magnifierScale}) translate(-${
-          canvasCursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
+        transform: `scale(${magnifier.scale}) translate(-${
+          canvasCursor.xPx / canvasScale - magnifierHalfSizePx / magnifier.scale
         }px, -${
-          canvasCursor.yPx / canvasScale - magnifierHalfSize / magnifierScale
+          canvasCursor.yPx / canvasScale - magnifierHalfSizePx / magnifier.scale
         }px)`,
         'transform-origin': 'top left',
       }"
@@ -44,30 +44,38 @@
 </template>
 
 <script lang="ts">
-// FIXME: アクティブな座標の色が変わらない
 import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
-import Vue from 'vue'
+import { magnifierMapper } from '@/store/modules/magnifier'
+import { Position } from '@/types'
+import Vue, { PropType } from 'vue'
 export default Vue.extend({
+  data() {
+    return {
+      hoge: '',
+    }
+  },
   computed: {
     ...canvasMapper.mapGetters(['canvasScale']),
     ...axesMapper.mapGetters(['axes']),
-    magnifierHalfSize(): number {
-      return this.magnifierSize / 2
-    },
+    ...magnifierMapper.mapGetters(['magnifier']),
     xPx(): number {
-      return this.axis.xPx
+      return this.axis.xPx * this.canvasScale
     },
     yPx(): number {
-      return this.axis.yPx
+      return this.axis.yPx * this.canvasScale
+    },
+    magnifierHalfSizePx(): number {
+      return this.magnifier.sizePx / 2
     },
   },
   props: {
     axis: {
-      type: Object as () => {
-        xPx: number
-        yPx: number
-      },
+      type: Object as () => Position,
+      required: true,
+    },
+    label: {
+      type: String,
       required: true,
     },
     isActive: {
@@ -75,23 +83,16 @@ export default Vue.extend({
       required: true,
     },
     canvasCursor: {
-      type: Object as () => {
-        xPx: Number
-        yPx: Number
-      },
+      type: Object as PropType<{
+        xPx: number
+        yPx: number
+      }>,
       required: true,
     },
-    magnifierScale: {
-      type: Number,
-      required: true,
-    },
-    magnifierSize: {
-      type: Number,
-      required: true,
-    },
-    label: {
-      type: String,
-      required: true,
+  },
+  methods: {
+    hogehoge(): void {
+      this.hoge = 'hoge'
     },
   },
 })

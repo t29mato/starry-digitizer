@@ -6,9 +6,9 @@
         position: 'absolute',
         top: 0,
         left: 0,
-        transform: `scale(${magnifierScale}) translate(-${
-          cursorX - halfSize / magnifierScale
-        }px, -${cursorY - halfSize / magnifierScale}px)`,
+        transform: `scale(${magnifier.scale}) translate(-${
+          cursorX - halfSize / magnifier.scale
+        }px, -${cursorY - halfSize / magnifier.scale}px)`,
         'transform-origin': 'top left',
       }"
     />
@@ -20,10 +20,10 @@
         left: 0,
         opacity: 0.5,
         transform: `scale(${
-          this.magnifierScale / this.canvasScale
+          this.magnifier.scale / this.canvasScale
         }) translate(-${
-          (cursorX - halfSize / magnifierScale) * canvasScale
-        }px, -${(cursorY - halfSize / magnifierScale) * canvasScale}px)`,
+          (cursorX - halfSize / magnifier.scale) * canvasScale
+        }px, -${(cursorY - halfSize / magnifier.scale) * canvasScale}px)`,
         'transform-origin': 'top left',
       }"
     ></canvas>
@@ -31,20 +31,19 @@
 </template>
 
 <script lang="ts">
+// FIXME: カーソルのラベルを十字キーで移動する際に間違った場所で表示される。
+import { magnifierMapper } from '@/store/modules/magnifier'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
+    ...magnifierMapper.mapGetters(['magnifier']),
     halfSize(): number {
-      return this.size / 2
+      return this.magnifier.sizePx / 2
     },
   },
   props: {
     src: {
       type: String,
-      required: true,
-    },
-    magnifierScale: {
-      type: Number,
       required: true,
     },
     canvasScale: {
@@ -56,10 +55,6 @@ export default Vue.extend({
       required: true,
     },
     cursorY: {
-      type: Number,
-      required: true,
-    },
-    size: {
       type: Number,
       required: true,
     },

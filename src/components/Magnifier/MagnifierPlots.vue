@@ -4,12 +4,12 @@
     class="magnifier-plots"
     :style="{
       position: 'absolute',
-      top: `${((yPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
-      left: `${((xPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
-      transform: `scale(${magnifierScale}) translate(-${
-        cursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
+      top: `${((yPx - plotHalfSize) / canvasScale) * magnifier.scale}px`,
+      left: `${((xPx - plotHalfSize) / canvasScale) * magnifier.scale}px`,
+      transform: `scale(${magnifier.scale}) translate(-${
+        cursor.xPx / canvasScale - magnifierHalfSize / magnifier.scale
       }px, -${
-        cursor.yPx / canvasScale - magnifierHalfSize / magnifierScale
+        cursor.yPx / canvasScale - magnifierHalfSize / magnifier.scale
       }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
@@ -23,10 +23,12 @@
 </template>
 
 <script lang="ts">
+import { magnifierMapper } from '@/store/modules/magnifier'
 import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
+    ...magnifierMapper.mapGetters(['magnifier']),
     plotHalfSize(): number {
       return this.plotSize / 2
     },
@@ -59,10 +61,6 @@ export default Vue.extend({
         xPx: Number
         yPx: Number
       },
-      required: true,
-    },
-    magnifierScale: {
-      type: Number,
       required: true,
     },
     magnifierSize: {
