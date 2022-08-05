@@ -7,7 +7,9 @@
       'pointer-events': 'none',
     }"
   >
-    {{ label }}
+    <div v-if="shouldShowLabel">
+      {{ label }}
+    </div>
   </div>
 </template>
 
@@ -24,6 +26,10 @@ export default Vue.extend({
     },
     label: {
       type: String,
+      required: true,
+    },
+    shouldShowLabel: {
+      type: Boolean,
       required: true,
     },
   },

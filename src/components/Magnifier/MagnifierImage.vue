@@ -31,7 +31,6 @@
 </template>
 
 <script lang="ts">
-// FIXME: カーソルのラベルを十字キーで移動する際に間違った場所で表示される。
 import { magnifierMapper } from '@/store/modules/magnifier'
 import Vue from 'vue'
 export default Vue.extend({

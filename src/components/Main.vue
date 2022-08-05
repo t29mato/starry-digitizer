@@ -62,6 +62,7 @@
             <canvas-cursor
               :cursor="showCanvasCursor"
               :label="cursorLabel"
+              :shouldShowLabel="shouldShowLabel"
             ></canvas-cursor>
           </div>
           <canvas-footer
@@ -196,6 +197,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      shouldShowLabel: true,
       extractAlgorithms,
       version,
       extractAlgorithm: 'Symbol Extract' as ExtractAlgorithm,
@@ -400,6 +402,7 @@ export default Vue.extend({
       e.preventDefault()
       this.cursorIsMoved = true
       if (this.axes.isActive) {
+        this.shouldShowLabel = false
         this.moveActiveAxis(key)
         this.canvasCursor = this.axes.activeAxis
       }
@@ -529,6 +532,7 @@ export default Vue.extend({
       const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
       const yPx = e.offsetY + parseFloat(target.style.top)
       this.cursorIsMoved = false
+      this.shouldShowLabel = true
       this.canvasCursor = {
         xPx: xPx / cm.canvasScale,
         yPx: yPx / cm.canvasScale,
