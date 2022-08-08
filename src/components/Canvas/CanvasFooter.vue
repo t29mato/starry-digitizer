@@ -17,14 +17,6 @@
       @click="clearActivePlots"
       >Clear Active Plot</v-btn
     >
-    <!-- TODO: プロットを非表示にするケースが少ないので一旦使わない -->
-    <!-- <v-btn
-      small
-      class="ml-2"
-      :disabled="activeScaledPlots.length === 0"
-      @click="hidePlots"
-      >{{ shouldShowPoints ? 'Hide Plots' : 'Show Plots' }}</v-btn
-    > -->
   </div>
 </template>
 

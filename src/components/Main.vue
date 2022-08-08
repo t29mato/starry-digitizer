@@ -60,10 +60,7 @@
         </v-col>
         <v-col class="pt-1" cols="3">
           <!-- TODO: 有効数字を追加する -->
-          <magnifier-main
-            :uploadImageUrl="uploadImageUrl"
-            :shouldShowPoints="shouldShowPoints"
-          ></magnifier-main>
+          <magnifier-main :uploadImageUrl="uploadImageUrl"></magnifier-main>
           <h4>Automatic Extraction</h4>
           <v-select
             v-model="extractAlgorithm"
@@ -175,7 +172,6 @@ export default Vue.extend({
       uploadImageUrl: '',
       // REFACTOR: color typeを作成する
       colors: [] as { R: number; G: number; B: number }[][],
-      shouldShowPoints: true,
       colorDistancePct: 5,
       colorPicker: black,
       isExtracting: false,
