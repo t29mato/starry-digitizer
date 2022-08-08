@@ -126,11 +126,7 @@ import {
   CanvasPlots,
   CanvasCursor,
 } from './Canvas'
-import {
-  DiameterRange,
-  ExtractAlgorithm,
-  LineExtractProps,
-} from '../types'
+import { DiameterRange, ExtractAlgorithm, LineExtractProps } from '../types'
 import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
 import LineExtract from '@/domains/extractStrategies/LineExtract'
 import {
@@ -197,7 +193,6 @@ export default Vue.extend({
       colorDistancePct: 5,
       colorPicker: black,
       isExtracting: false,
-      cursorIsMoved: false,
       swatches: [...Array(5)].map(() => []) as string[][],
       penToolSize: 50,
       eraserSize: 30,
@@ -331,7 +326,6 @@ export default Vue.extend({
         return
       }
       e.preventDefault()
-      this.cursorIsMoved = true
       if (this.axes.isActive) {
         this.shouldShowLabel = false
         this.moveActiveAxis(key)
@@ -461,7 +455,6 @@ export default Vue.extend({
       const target = e.target as HTMLElement
       const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
       const yPx = e.offsetY + parseFloat(target.style.top)
-      this.cursorIsMoved = false
       this.shouldShowLabel = true
       this.setCanvasCursor({
         xPx: xPx / this.canvas.scale,
