@@ -71,7 +71,6 @@
           <magnifier
             :uploadImageUrl="uploadImageUrl"
             :canvasCursor="showCanvasCursor"
-            :activePlotIds="datasets.activePlotIds"
             :shouldShowPoints="shouldShowPoints"
           ></magnifier>
           <h4>Automatic Extraction</h4>

@@ -31,7 +31,7 @@
           :cursor="canvasCursor"
           :plot="plot"
           :magnifierSize="magnifier.sizePx"
-          :isActive="activePlotIds.includes(plot.id)"
+          :isActive="datasets.activePlotIds.includes(plot.id)"
         ></magnifier-plots>
       </div>
     </div>
@@ -134,10 +134,6 @@ export default Vue.extend({
     },
     shouldShowPoints: {
       type: Boolean,
-      required: true,
-    },
-    activePlotIds: {
-      type: Array as PropType<number[]>,
       required: true,
     },
   },
