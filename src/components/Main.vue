@@ -64,11 +64,11 @@
         </v-col>
         <v-col class="pt-1" cols="3">
           <!-- TODO: 有効数字を追加する -->
-          <magnifier
+          <magnifier-main
             :uploadImageUrl="uploadImageUrl"
             :canvasCursor="showCanvasCursor"
             :shouldShowPoints="shouldShowPoints"
-          ></magnifier>
+          ></magnifier-main>
           <h4>Automatic Extraction</h4>
           <v-select
             v-model="extractAlgorithm"
@@ -120,7 +120,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Magnifier } from './Magnifier'
+import { MagnifierMain } from '@/components/Magnifier'
 import {
   CanvasHeader,
   CanvasFooter,
@@ -157,7 +157,7 @@ const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
 export default Vue.extend({
   components: {
-    Magnifier,
+    MagnifierMain,
     CanvasAxes,
     CanvasPlots,
     CanvasCursor,

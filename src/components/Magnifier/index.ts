@@ -1,3 +1,3 @@
-import Magnifier from './Magnifier.vue'
+import MagnifierMain from './MagnifierMain.vue'
 
-export { Magnifier }
+export { MagnifierMain }

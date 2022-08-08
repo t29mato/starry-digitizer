@@ -1,9 +1,9 @@
-import Magnifier from './Magnifier.vue'
+import MagnifierMain from './MagnifierMain.vue'
 
 // More on default export: https://storybook.js.org/docs/vue/writing-stories/introduction#default-export
 export default {
-  title: 'Components/Magnifier',
-  component: Magnifier,
+  title: 'Components/MagnifierMain',
+  component: MagnifierMain,
   // More on argTypes: https://storybook.js.org/docs/vue/api/argtypes
   argTypes: {
     magnifierSizePx: {
@@ -34,7 +34,7 @@ export default {
 
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
-  components: { Magnifier },
+  components: { MagnifierMain },
   template: '<magnifier v-bind="$props" />',
 })
 
