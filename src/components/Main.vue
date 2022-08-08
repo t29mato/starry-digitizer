@@ -54,10 +54,7 @@
             ></canvas>
             <canvas-axes></canvas-axes>
             <canvas-plots></canvas-plots>
-            <canvas-cursor
-              :label="cursorLabel"
-              :shouldShowLabel="shouldShowLabel"
-            ></canvas-cursor>
+            <canvas-cursor :label="cursorLabel"></canvas-cursor>
           </div>
           <canvas-footer :clearAxes="clearAxes"></canvas-footer>
         </v-col>
@@ -173,7 +170,6 @@ export default Vue.extend({
   },
   data() {
     return {
-      shouldShowLabel: true,
       extractAlgorithms,
       version,
       extractAlgorithm: 'Symbol Extract' as ExtractAlgorithm,
@@ -327,7 +323,6 @@ export default Vue.extend({
       }
       e.preventDefault()
       if (this.axes.isActive) {
-        this.shouldShowLabel = false
         this.moveActiveAxis(key)
         this.setCanvasCursor(this.axes.activeAxis)
       }
@@ -455,7 +450,6 @@ export default Vue.extend({
       const target = e.target as HTMLElement
       const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
       const yPx = e.offsetY + parseFloat(target.style.top)
-      this.shouldShowLabel = true
       this.setCanvasCursor({
         xPx: xPx / this.canvas.scale,
         yPx: yPx / this.canvas.scale,
