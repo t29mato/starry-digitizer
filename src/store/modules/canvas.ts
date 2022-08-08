@@ -54,6 +54,26 @@ class actions extends Actions<state, getters, mutations> {
     Canvas.instance.cursor = position
     this.commit('updateCanvas', Canvas.instance)
   }
+
+  setPenToolSizePx(size: number) {
+    Canvas.instance.penToolSizePx = size
+    this.commit('updateCanvas', Canvas.instance)
+  }
+
+  setMaskMode(mode: number) {
+    Canvas.instance.maskMode = mode
+    this.commit('updateCanvas', Canvas.instance)
+  }
+
+  setEraserSizePx(size: number) {
+    Canvas.instance.eraserSizePx = size
+    this.commit('updateCanvas', Canvas.instance)
+  }
+
+  mouseMoveOnCanvas(position: Position) {
+    Canvas.instance.mouseMove(position.xPx, position.yPx)
+    this.commit('updateCanvas', Canvas.instance)
+  }
 }
 
 export const canvas = new Module({

@@ -21,6 +21,9 @@ export class Canvas {
     endY: 0,
   }
   plotSizePx = 10
+  maskMode = -1
+  penToolSizePx = 50
+  eraserSizePx = 30
 
   static get instance(): Canvas {
     if (!this.#instance) {
@@ -72,8 +75,44 @@ export class Canvas {
     }
   }
 
+  // FIXME: このsetterいる？
   set CanvasCursor(position: Position) {
     this.cursor = position
+  }
+
+  // set PenToolSizePx(size: number) {
+  //   this.penToolSizePx = size
+  // }
+
+  get scaledPenToolSizePx(): number {
+    return this.penToolSizePx * this.scale
+  }
+
+  get isDrawingMask(): boolean {
+    switch (this.maskMode) {
+      case 0:
+      case 1:
+      case 2:
+        return true
+      default:
+        return false
+    }
+  }
+
+  mouseMove(xPx: number, yPx: number) {
+    switch (this.maskMode) {
+      case 0: // INFO: pen mask
+        this.mouseMoveForPen(xPx, yPx, this.penToolSizePx)
+        break
+      case 1: // INFO: box mask
+        this.mouseMoveForBox(xPx, yPx)
+        break
+      case 2: // INFO: eraser mask
+        this.mouseMoveForEraser(xPx, yPx, this.eraserSizePx)
+        break
+      default:
+        break
+    }
   }
 
   mouseMoveForPen(xPx: number, yPx: number, penSize: number) {

@@ -54,7 +54,7 @@
             ></canvas>
             <canvas-axes></canvas-axes>
             <canvas-plots></canvas-plots>
-            <canvas-cursor :label="cursorLabel"></canvas-cursor>
+            <canvas-cursor></canvas-cursor>
           </div>
           <canvas-footer :clearAxes="clearAxes"></canvas-footer>
         </v-col>
@@ -82,16 +82,7 @@
               @input="setLineExtractProps"
             ></line-extract-settings>
           </div>
-          <mask-settings
-            :maskMode="maskMode"
-            :setMaskMode="setMaskMode"
-            :isDrawnMask="canvas.isDrawnMask"
-            :clearMask="clearMask"
-            :penToolSize="penToolSize"
-            :eraserSize="eraserSize"
-            :setPenToolSize="setPenToolSize"
-            :setEraserSize="setEraserSize"
-          ></mask-settings>
+          <mask-settings :clearMask="clearMask"></mask-settings>
           <color-settings
             :colorPicker="colorPicker"
             :setColorPicker="setColorPicker"
@@ -181,7 +172,6 @@ export default Vue.extend({
         width: 1,
         interval: 10,
       } as LineExtractProps,
-      maskMode: -1,
       uploadImageUrl: '',
       // REFACTOR: color typeを作成する
       colors: [] as { R: number; G: number; B: number }[][],
@@ -190,31 +180,12 @@ export default Vue.extend({
       colorPicker: black,
       isExtracting: false,
       swatches: [...Array(5)].map(() => []) as string[][],
-      penToolSize: 50,
-      eraserSize: 30,
     }
   },
   computed: {
     ...datasetMapper.mapGetters(['datasets']),
     ...axesMapper.mapGetters(['axes']),
     ...canvasMapper.mapGetters(['canvas']),
-    showPenToolSize(): number {
-      return this.penToolSize * this.canvas.scale
-    },
-    showEraserSize(): number {
-      return this.eraserSize * this.canvas.scale
-    },
-    cursorLabel(): string {
-      switch (this.maskMode) {
-        case 0:
-          return 'Pen'
-        case 1:
-          return 'Box'
-        case 2:
-          return 'Eraser'
-      }
-      return this.axes.nextAxisKey
-    },
     targetColor(): { R: number; G: number; B: number } {
       return {
         R: parseInt(this.colorPicker.slice(1, 3), 16),
@@ -229,16 +200,6 @@ export default Vue.extend({
         this.targetColor.G.toString(16) +
         this.targetColor.B.toString(16)
       )
-    },
-    isDrawingMask(): boolean {
-      switch (this.maskMode) {
-        case 0:
-        case 1:
-        case 2:
-          return true
-        default:
-          return false
-      }
     },
   },
   async mounted() {
@@ -275,22 +236,17 @@ export default Vue.extend({
       'clearPlots',
       'setPlots',
     ]),
-    ...canvasMapper.mapActions(['drawFitSizeImage', 'setCanvasCursor']),
-    setMaskMode(mode: number) {
-      this.maskMode = mode
-    },
+    ...canvasMapper.mapActions([
+      'drawFitSizeImage',
+      'setCanvasCursor',
+      'mouseMoveOnCanvas',
+    ]),
     ...axesMapper.mapActions([
       'clearAxes',
       'addAxis',
       'moveActiveAxis',
       'inactivateAxis',
     ]),
-    setPenToolSize(size: string) {
-      this.penToolSize = parseInt(size)
-    },
-    setEraserSize(size: string) {
-      this.eraserSize = parseInt(size)
-    },
     // TODO: setSymbolExtractPropsに変更する
     setDiameterRange(diameterRange: DiameterRange) {
       this.diameterRange = diameterRange
@@ -419,7 +375,7 @@ export default Vue.extend({
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき
-      if (this.isDrawingMask) {
+      if (this.canvas.isDrawingMask) {
         return
       }
       const target = e.target as HTMLElement
@@ -460,39 +416,27 @@ export default Vue.extend({
         return
       }
       // TODO: 呼び出すメソッドはCanvasに移譲したい
-      switch (this.maskMode) {
-        case 0: // INFO: pen mask
-          this.canvas.mouseMoveForPen(xPx, yPx, this.showPenToolSize)
-          break
-        case 1: // INFO: box mask
-          this.canvas.mouseMoveForBox(xPx, yPx)
-          break
-        case 2: // INFO: eraser mask
-          this.canvas.mouseMoveForEraser(xPx, yPx, this.showEraserSize)
-          break
-        default:
-          break
-      }
+      this.mouseMoveOnCanvas({ xPx, yPx })
     },
     mouseDown(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
       const target = e.target as HTMLElement
       const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
       const yPx = e.offsetY + parseFloat(target.style.top)
-      if (this.maskMode === 1) {
+      if (this.canvas.maskMode === 1) {
         this.canvas.mouseDownForBox(xPx, yPx)
       }
     },
     mouseUp() {
-      if (this.maskMode === 1) {
+      if (this.canvas.maskMode === 1) {
         this.canvas.mouseUpForBox()
       }
     },
     clearMask() {
       this.canvas.clearMask()
       // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
-      if (this.maskMode === 2) {
-        this.maskMode = -1
+      if (this.canvas.maskMode === 2) {
+        this.canvas.maskMode = -1
       }
     },
     setColorPicker(color: string) {
