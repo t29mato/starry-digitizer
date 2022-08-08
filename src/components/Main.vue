@@ -217,8 +217,6 @@ export default Vue.extend({
       isExtracting: false,
       plotSizePx: 10,
       cursorIsMoved: false,
-      canvasWidth: 0,
-      canvasHeight: 0,
       swatches: [...Array(5)].map(() => []) as string[][],
       penToolSize: 50,
       eraserSize: 30,
@@ -294,9 +292,6 @@ export default Vue.extend({
       )
       this.drawFitSizeImage()
       this.uploadImageUrl = this.initialGraphImagePath
-      // FIXME: canvasWidthはcanvas domainに持たせる
-      this.canvasWidth = this.canvas.imageCanvas.width
-      this.canvasHeight = this.canvas.imageCanvas.height
       this.updateSwatches(this.canvas.colorSwatches)
     } finally {
       //
