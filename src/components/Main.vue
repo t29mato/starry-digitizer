@@ -266,13 +266,6 @@ export default Vue.extend({
         this.targetColor.B.toString(16)
       )
     },
-    canvasHeightInt(): number {
-      return Math.floor(this.canvasHeight)
-    },
-    // TODO: canvasWidthIntは利用していないので削除する
-    canvasWidthInt(): number {
-      return Math.floor(this.canvasWidth)
-    },
     isDrawingMask(): boolean {
       switch (this.maskMode) {
         case 0:
