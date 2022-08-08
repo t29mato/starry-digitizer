@@ -4,19 +4,17 @@
     class="magnifier-plots"
     :style="{
       position: 'absolute',
-      top: `${((yPx - plotHalfSize) / canvasScale) * magnifier.scale}px`,
-      left: `${((xPx - plotHalfSize) / canvasScale) * magnifier.scale}px`,
+      top: `${((yPx - plotHalfSize) / canvas.scale) * magnifier.scale}px`,
+      left: `${((xPx - plotHalfSize) / canvas.scale) * magnifier.scale}px`,
       transform: `scale(${magnifier.scale}) translate(-${
-        cursor.xPx / canvasScale - magnifierHalfSize / magnifier.scale
-      }px, -${
-        cursor.yPx / canvasScale - magnifierHalfSize / magnifier.scale
-      }px)`,
+        canvas.cursor.xPx - magnifierHalfSize / magnifier.scale
+      }px, -${canvas.cursor.yPx - magnifierHalfSize / magnifier.scale}px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      width: `${canvas.plotSizePx / canvasScale}px`,
-      height: `${canvas.plotSizePx / canvasScale}px`,
+      width: `${canvas.plotSizePx / canvas.scale}px`,
+      height: `${canvas.plotSizePx / canvas.scale}px`,
       'background-color': isActive ? 'red' : 'dodgerblue',
-      outline: `${1 / canvasScale}px solid white`,
+      outline: `${1 / canvas.scale}px solid white`,
       'border-radius': '50%',
     }"
   ></div>
@@ -47,18 +45,6 @@ export default Vue.extend({
   props: {
     plot: {
       type: Object as () => Position,
-      required: true,
-    },
-    canvasScale: {
-      type: Number,
-      required: true,
-    },
-    cursor: {
-      // REFACTOR: Position typeを利用する
-      type: Object as () => {
-        xPx: Number
-        yPx: Number
-      },
       required: true,
     },
     magnifierSize: {

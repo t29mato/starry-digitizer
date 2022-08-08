@@ -7,12 +7,8 @@
         left: `${((xPx - axes.halfSizePx) / canvas.scale) * magnifier.scale}px`,
         'pointer-events': 'none',
         transform: `scale(${magnifier.scale}) translate(-${
-          canvasCursor.xPx / canvas.scale -
-          magnifierHalfSizePx / magnifier.scale
-        }px, -${
-          canvasCursor.yPx / canvas.scale -
-          magnifierHalfSizePx / magnifier.scale
-        }px)`,
+          canvas.cursor.xPx - magnifierHalfSizePx / magnifier.scale
+        }px, -${canvas.cursor.yPx - magnifierHalfSizePx / magnifier.scale}px)`,
         'transform-origin': 'top left',
         width: `${axes.sizePx / canvas.scale}px`,
         height: `${axes.sizePx / canvas.scale}px`,
@@ -34,12 +30,8 @@
         }px`,
         'pointer-events': 'none',
         transform: `scale(${magnifier.scale}) translate(-${
-          canvasCursor.xPx / canvas.scale -
-          magnifierHalfSizePx / magnifier.scale
-        }px, -${
-          canvasCursor.yPx / canvas.scale -
-          magnifierHalfSizePx / magnifier.scale
-        }px)`,
+          canvas.cursor.xPx - magnifierHalfSizePx / magnifier.scale
+        }px, -${canvas.cursor.yPx - magnifierHalfSizePx / magnifier.scale}px)`,
         'transform-origin': 'top left',
       }"
       >{{ label }}</span
@@ -52,7 +44,7 @@ import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
 import { Position } from '@/types'
-import Vue, { PropType } from 'vue'
+import Vue from 'vue'
 export default Vue.extend({
   data() {
     return {
@@ -86,18 +78,7 @@ export default Vue.extend({
       type: Boolean,
       required: true,
     },
-    canvasCursor: {
-      type: Object as PropType<{
-        xPx: number
-        yPx: number
-      }>,
-      required: true,
-    },
   },
-  methods: {
-    hogehoge(): void {
-      this.hoge = 'hoge'
-    },
-  },
+  methods: {},
 })
 </script>

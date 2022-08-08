@@ -13,7 +13,7 @@ export class Canvas {
   #tempMaskCanvas?: HTMLCanvasElement
   #imageElement?: HTMLImageElement
   scale = 1
-  #cursor: Position = { xPx: 0, yPx: 0 }
+  cursor: Position = { xPx: 0, yPx: 0 }
   #rectangle = {
     startX: 0,
     startY: 0,
@@ -65,21 +65,31 @@ export class Canvas {
     })
   }
 
+  get scaledCursor(): Position {
+    return {
+      xPx: this.cursor.xPx * this.scale,
+      yPx: this.cursor.yPx * this.scale,
+    }
+  }
+
+  set CanvasCursor(position: Position) {
+    this.cursor = position
+  }
+
   mouseMoveForPen(xPx: number, yPx: number, penSize: number) {
     const ctx = this.maskCanvasCtx
     ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     ctx.beginPath()
-    if (this.#cursor.xPx === 0) {
+    if (this.cursor.xPx === 0) {
       ctx.moveTo(xPx, yPx)
     } else {
-      ctx.moveTo(this.#cursor.xPx, this.#cursor.yPx)
+      ctx.moveTo(this.scaledCursor.xPx, this.scaledCursor.yPx)
     }
     ctx.lineTo(xPx, yPx)
     ctx.lineCap = 'round'
     ctx.lineWidth = penSize
     ctx.stroke()
     this.isDrawnMask = true
-    this.#cursor = { xPx, yPx }
     this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
   }
 
@@ -88,17 +98,16 @@ export class Canvas {
     ctx.globalCompositeOperation = 'destination-out'
     ctx.strokeStyle = '#000000' // INFO: black
     ctx.beginPath()
-    if (this.#cursor.xPx === 0) {
+    if (this.scaledCursor.xPx === 0) {
       ctx.moveTo(xPx, yPx)
     } else {
-      ctx.moveTo(this.#cursor.xPx, this.#cursor.yPx)
+      ctx.moveTo(this.scaledCursor.xPx, this.scaledCursor.yPx)
     }
     ctx.lineTo(xPx, yPx)
     ctx.lineCap = 'round'
     ctx.lineWidth = penSize
     ctx.stroke()
     this.isDrawnMask = true
-    this.#cursor = { xPx, yPx }
     ctx.globalCompositeOperation = 'source-over'
     this.magnifierMaskCanvasCtx.clearRect(
       0,
@@ -160,9 +169,9 @@ export class Canvas {
     }
   }
 
-  resetDrawMaskPos() {
-    this.#cursor = { xPx: 0, yPx: 0 }
-  }
+  // resetDrawMaskPos() {
+  //   this.cursor = { xPx: 0, yPx: 0 }
+  // }
 
   get originalImageCanvasColors() {
     const newCanvas = document.createElement('canvas')

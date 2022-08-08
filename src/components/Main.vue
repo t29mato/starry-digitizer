@@ -55,7 +55,6 @@
             <canvas-axes></canvas-axes>
             <canvas-plots></canvas-plots>
             <canvas-cursor
-              :cursor="showCanvasCursor"
               :label="cursorLabel"
               :shouldShowLabel="shouldShowLabel"
             ></canvas-cursor>
@@ -66,7 +65,6 @@
           <!-- TODO: 有効数字を追加する -->
           <magnifier-main
             :uploadImageUrl="uploadImageUrl"
-            :canvasCursor="showCanvasCursor"
             :shouldShowPoints="shouldShowPoints"
           ></magnifier-main>
           <h4>Automatic Extraction</h4>
@@ -129,7 +127,6 @@ import {
   CanvasCursor,
 } from './Canvas'
 import {
-  Position,
   DiameterRange,
   ExtractAlgorithm,
   LineExtractProps,
@@ -194,10 +191,6 @@ export default Vue.extend({
       } as LineExtractProps,
       maskMode: -1,
       uploadImageUrl: '',
-      canvasCursor: {
-        xPx: 0,
-        yPx: 0,
-      } as Position,
       // REFACTOR: color typeを作成する
       colors: [] as { R: number; G: number; B: number }[][],
       shouldShowPoints: true,
@@ -214,12 +207,6 @@ export default Vue.extend({
     ...datasetMapper.mapGetters(['datasets']),
     ...axesMapper.mapGetters(['axes']),
     ...canvasMapper.mapGetters(['canvas']),
-    showCanvasCursor(): Position {
-      return {
-        xPx: this.canvasCursor.xPx * this.canvas.scale,
-        yPx: this.canvasCursor.yPx * this.canvas.scale,
-      }
-    },
     showPenToolSize(): number {
       return this.penToolSize * this.canvas.scale
     },
@@ -297,7 +284,7 @@ export default Vue.extend({
       'clearPlots',
       'setPlots',
     ]),
-    ...canvasMapper.mapActions(['drawFitSizeImage']),
+    ...canvasMapper.mapActions(['drawFitSizeImage', 'setCanvasCursor']),
     setMaskMode(mode: number) {
       this.maskMode = mode
     },
@@ -348,13 +335,15 @@ export default Vue.extend({
       if (this.axes.isActive) {
         this.shouldShowLabel = false
         this.moveActiveAxis(key)
-        this.canvasCursor = this.axes.activeAxis
+        this.setCanvasCursor(this.axes.activeAxis)
       }
       if (this.datasets.plotsAreActive) {
         this.moveActivePlot(e.key)
-        this.canvasCursor = this.datasets.activeDataset.plots.filter((plot) =>
-          this.datasets.activePlotIds.includes(plot.id)
-        )[0]
+        this.setCanvasCursor(
+          this.datasets.activeDataset.plots.filter((plot) =>
+            this.datasets.activePlotIds.includes(plot.id)
+          )[0]
+        )
       }
     },
     pasteHandler(event: ClipboardEvent) {
@@ -474,29 +463,28 @@ export default Vue.extend({
       const yPx = e.offsetY + parseFloat(target.style.top)
       this.cursorIsMoved = false
       this.shouldShowLabel = true
-      this.canvasCursor = {
+      this.setCanvasCursor({
         xPx: xPx / this.canvas.scale,
         yPx: yPx / this.canvas.scale,
-      }
+      })
       // INFO: 左クリックされていない状態
       const isClicking = e.buttons === 1
       if (!isClicking) {
-        this.canvas.resetDrawMaskPos()
-      } else {
-        // TODO: 呼び出すメソッドはCanvasに移譲したい
-        switch (this.maskMode) {
-          case 0: // INFO: pen mask
-            this.canvas.mouseMoveForPen(xPx, yPx, this.showPenToolSize)
-            break
-          case 1: // INFO: box mask
-            this.canvas.mouseMoveForBox(xPx, yPx)
-            break
-          case 2: // INFO: eraser mask
-            this.canvas.mouseMoveForEraser(xPx, yPx, this.showEraserSize)
-            break
-          default:
-            break
-        }
+        return
+      }
+      // TODO: 呼び出すメソッドはCanvasに移譲したい
+      switch (this.maskMode) {
+        case 0: // INFO: pen mask
+          this.canvas.mouseMoveForPen(xPx, yPx, this.showPenToolSize)
+          break
+        case 1: // INFO: box mask
+          this.canvas.mouseMoveForBox(xPx, yPx)
+          break
+        case 2: // INFO: eraser mask
+          this.canvas.mouseMoveForEraser(xPx, yPx, this.showEraserSize)
+          break
+        default:
+          break
       }
     },
     mouseDown(e: MouseEvent) {

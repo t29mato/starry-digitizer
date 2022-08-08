@@ -6,6 +6,7 @@ import {
   createMapper,
 } from 'vuex-smart-module'
 import { Canvas } from '@/domains/canvas'
+import { Position } from '@/domains/datasets'
 
 class state {
   canvas: Canvas = Canvas.instance
@@ -46,6 +47,11 @@ class actions extends Actions<state, getters, mutations> {
 
   mouseMoveForPen(config: { xPx: number; yPx: number; penSize: number }) {
     Canvas.instance.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
+    this.commit('updateCanvas', Canvas.instance)
+  }
+
+  setCanvasCursor(position: Position) {
+    Canvas.instance.cursor = position
     this.commit('updateCanvas', Canvas.instance)
   }
 }

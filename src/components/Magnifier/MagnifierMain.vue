@@ -12,19 +12,13 @@
       <magnifier-settings-btn
         :toggleSettingsDialog="toggleSettingsDialog"
       ></magnifier-settings-btn>
-      <magnifier-image
-        :src="uploadImageUrl"
-        :canvasScale="canvas.scale"
-        :cursorX="canvasCursor.xPx / canvas.scale"
-        :cursorY="canvasCursor.yPx / canvas.scale"
-      ></magnifier-image>
+      <magnifier-image :src="uploadImageUrl"></magnifier-image>
       <magnifier-vertical-line></magnifier-vertical-line>
       <magnifier-horizontal-line></magnifier-horizontal-line>
-      <magnifier-axes :canvasCursor="canvasCursor"></magnifier-axes>
+      <magnifier-axes></magnifier-axes>
       <div v-for="plot in datasets.activeScaledPlots" :key="plot.id">
         <magnifier-plots
           :canvasScale="canvas.scale"
-          :cursor="canvasCursor"
           :plot="plot"
           :magnifierSize="magnifier.sizePx"
           :isActive="datasets.activePlotIds.includes(plot.id)"
@@ -42,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from 'vue'
+import Vue from 'vue'
 import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
@@ -111,21 +105,14 @@ export default Vue.extend({
         }
       )
       return calculator.calculateXYValues(
-        this.canvasCursor.xPx,
-        this.canvasCursor.yPx
+        this.canvas.cursor.xPx,
+        this.canvas.cursor.yPx
       )
     },
   },
   props: {
     uploadImageUrl: {
       type: String,
-      required: true,
-    },
-    canvasCursor: {
-      type: Object as PropType<{
-        xPx: number
-        yPx: number
-      }>,
       required: true,
     },
   },

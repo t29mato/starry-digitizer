@@ -7,8 +7,8 @@
         top: 0,
         left: 0,
         transform: `scale(${magnifier.scale}) translate(-${
-          cursorX - halfSize / magnifier.scale
-        }px, -${cursorY - halfSize / magnifier.scale}px)`,
+          canvas.cursor.xPx - halfSize / magnifier.scale
+        }px, -${canvas.cursor.yPx - halfSize / magnifier.scale}px)`,
         'transform-origin': 'top left',
       }"
     />
@@ -20,10 +20,12 @@
         left: 0,
         opacity: 0.5,
         transform: `scale(${
-          this.magnifier.scale / this.canvasScale
+          this.magnifier.scale / this.canvas.scale
         }) translate(-${
-          (cursorX - halfSize / magnifier.scale) * canvasScale
-        }px, -${(cursorY - halfSize / magnifier.scale) * canvasScale}px)`,
+          (canvas.cursor.xPx - halfSize / magnifier.scale) * canvas.scale
+        }px, -${
+          (canvas.cursor.yPx - halfSize / magnifier.scale) * canvas.scale
+        }px)`,
         'transform-origin': 'top left',
       }"
     ></canvas>
@@ -31,11 +33,13 @@
 </template>
 
 <script lang="ts">
+import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
     ...magnifierMapper.mapGetters(['magnifier']),
+    ...canvasMapper.mapGetters(['canvas']),
     halfSize(): number {
       return this.magnifier.sizePx / 2
     },
@@ -43,18 +47,6 @@ export default Vue.extend({
   props: {
     src: {
       type: String,
-      required: true,
-    },
-    canvasScale: {
-      type: Number,
-      required: true,
-    },
-    cursorX: {
-      type: Number,
-      required: true,
-    },
-    cursorY: {
-      type: Number,
       required: true,
     },
   },

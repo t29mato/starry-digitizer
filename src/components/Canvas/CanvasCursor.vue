@@ -2,8 +2,8 @@
   <div
     :style="{
       position: 'absolute',
-      top: `${cursor.yPx - 12}px`,
-      left: `${cursor.xPx + 7}px`,
+      top: `${canvas.scaledCursor.yPx - 12}px`,
+      left: `${canvas.scaledCursor.xPx + 7}px`,
       'pointer-events': 'none',
     }"
   >
@@ -14,16 +14,10 @@
 </template>
 
 <script lang="ts">
+import { canvasMapper } from '@/store/modules/canvas'
 import Vue from 'vue'
 export default Vue.extend({
   props: {
-    cursor: {
-      type: Object as () => {
-        xPx: Number
-        yPx: Number
-      },
-      required: true,
-    },
     label: {
       type: String,
       required: true,
@@ -32,6 +26,9 @@ export default Vue.extend({
       type: Boolean,
       required: true,
     },
+  },
+  computed: {
+    ...canvasMapper.mapGetters(['canvas']),
   },
 })
 </script>
