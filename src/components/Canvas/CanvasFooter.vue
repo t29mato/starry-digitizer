@@ -34,12 +34,7 @@ import { datasetMapper } from '@/store/modules/dataset'
 import { axesMapper } from '@/store/modules/axes'
 
 export default Vue.extend({
-  props: {
-    shouldShowPoints: {
-      type: Boolean,
-      required: true,
-    },
-  },
+  props: {},
   computed: {
     ...axesMapper.mapGetters(['axes']),
     ...datasetMapper.mapGetters(['datasets']),

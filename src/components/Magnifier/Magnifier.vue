@@ -21,11 +21,7 @@
       <magnifier-vertical-line></magnifier-vertical-line>
       <magnifier-horizontal-line></magnifier-horizontal-line>
       <magnifier-axes :canvasCursor="canvasCursor"></magnifier-axes>
-      <div
-        v-for="plot in datasets.activeScaledPlots"
-        v-show="shouldShowPoints"
-        :key="plot.id"
-      >
+      <div v-for="plot in datasets.activeScaledPlots" :key="plot.id">
         <magnifier-plots
           :canvasScale="canvas.scale"
           :cursor="canvasCursor"
@@ -130,10 +126,6 @@ export default Vue.extend({
         xPx: number
         yPx: number
       }>,
-      required: true,
-    },
-    shouldShowPoints: {
-      type: Boolean,
       required: true,
     },
   },

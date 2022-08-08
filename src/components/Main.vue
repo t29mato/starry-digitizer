@@ -53,18 +53,14 @@
               id="maskCanvas"
             ></canvas>
             <canvas-axes></canvas-axes>
-            <canvas-plots v-show="shouldShowPoints"></canvas-plots>
+            <canvas-plots></canvas-plots>
             <canvas-cursor
               :cursor="showCanvasCursor"
               :label="cursorLabel"
               :shouldShowLabel="shouldShowLabel"
             ></canvas-cursor>
           </div>
-          <canvas-footer
-            :shouldShowPoints="shouldShowPoints"
-            :clearAxes="clearAxes"
-            :switchShowPlots="switchShowPlots"
-          ></canvas-footer>
+          <canvas-footer :clearAxes="clearAxes"></canvas-footer>
         </v-col>
         <v-col class="pt-1" cols="3">
           <!-- TODO: 有効数字を追加する -->
@@ -324,9 +320,6 @@ export default Vue.extend({
     setLineExtractProps(props: LineExtractProps) {
       this.lineExtractProps = props
     },
-    switchShowPlots(): void {
-      this.shouldShowPoints = !this.shouldShowPoints
-    },
     sortPlots() {
       this.datasets.activeDataset.plots.sort((a, b) => {
         return a.xPx - b.xPx
@@ -405,7 +398,6 @@ export default Vue.extend({
           )
         )
         this.sortPlots()
-        this.shouldShowPoints = true
       } catch (e) {
         console.error('failed to extractPlots', { cause: e })
       } finally {
@@ -471,7 +463,6 @@ export default Vue.extend({
         yPx: e.offsetY / this.canvas.scale,
       })
       this.inactivateAxis()
-      this.shouldShowPoints = true
     },
     clearAxes() {
       this.clearAxes()
