@@ -38,8 +38,7 @@ export default class LineExtract implements ExtractStrategyInterface {
   execute(
     canvas: Canvas,
     targetColor: [number, number, number],
-    colorMatchThreshold: number,
-    isDrawnMask: boolean
+    colorMatchThreshold: number
   ) {
     const height = canvas.imageElement.height
     const width = canvas.imageElement.width
@@ -51,7 +50,7 @@ export default class LineExtract implements ExtractStrategyInterface {
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
       Array(width).fill(false)
     )
-    if (isDrawnMask) {
+    if (canvas.isDrawnMask) {
       for (let h = 0; h < height; h++) {
         for (let w = 0; w < width; w++) {
           // const [r1, g1, b1, a1] = graphCanvasColors.slice(

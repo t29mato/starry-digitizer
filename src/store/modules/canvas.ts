@@ -43,6 +43,11 @@ class actions extends Actions<state, getters, mutations> {
     Canvas.instance.drawFitSizeImage()
     this.commit('updateCanvas', Canvas.instance)
   }
+
+  mouseMoveForPen(config: { xPx: number; yPx: number; penSize: number }) {
+    Canvas.instance.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
+    this.commit('updateCanvas', Canvas.instance)
+  }
 }
 
 export const canvas = new Module({

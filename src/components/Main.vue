@@ -101,7 +101,7 @@
           <mask-settings
             :maskMode="maskMode"
             :setMaskMode="setMaskMode"
-            :isDrawnMask="isDrawnMask"
+            :isDrawnMask="canvas.isDrawnMask"
             :clearMask="clearMask"
             :penToolSize="penToolSize"
             :eraserSize="eraserSize"
@@ -157,7 +157,6 @@ import {
 import { DatasetManager } from './DatasetManager'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
-import { Canvas } from '@/domains/canvas'
 import { datasetMapper } from '@/store/modules/dataset'
 import { canvasMapper } from '@/store/modules/canvas'
 import { axesMapper } from '@/store/modules/axes'
@@ -165,7 +164,6 @@ import { axesMapper } from '@/store/modules/axes'
 const [black] = ['#000000ff']
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
-const cm = Canvas.instance
 const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
 export default Vue.extend({
@@ -222,7 +220,6 @@ export default Vue.extend({
       canvasWidth: 0,
       canvasHeight: 0,
       swatches: [...Array(5)].map(() => []) as string[][],
-      isDrawnMask: cm.isDrawnMask,
       penToolSize: 50,
       eraserSize: 30,
     }
@@ -294,7 +291,7 @@ export default Vue.extend({
       return
     }
     try {
-      await cm.initialize(
+      await this.canvas.initialize(
         'canvasWrapper',
         'imageCanvas',
         'maskCanvas',
@@ -304,9 +301,10 @@ export default Vue.extend({
       )
       this.drawFitSizeImage()
       this.uploadImageUrl = this.initialGraphImagePath
-      this.canvasWidth = cm.imageCanvas.width
-      this.canvasHeight = cm.imageCanvas.height
-      this.updateSwatches(cm.colorSwatches)
+      // FIXME: canvasWidthはcanvas domainに持たせる
+      this.canvasWidth = this.canvas.imageCanvas.width
+      this.canvasHeight = this.canvas.imageCanvas.height
+      this.updateSwatches(this.canvas.colorSwatches)
     } finally {
       //
     }
@@ -421,10 +419,9 @@ export default Vue.extend({
         }
         this.setPlots(
           extractor.execute(
-            cm,
+            this.canvas,
             [this.targetColor.R, this.targetColor.G, this.targetColor.B],
-            this.colorDistancePct,
-            this.isDrawnMask
+            this.colorDistancePct
           )
         )
         this.sortPlots()
@@ -443,9 +440,9 @@ export default Vue.extend({
         }
         // TODO: Canvasを利用する
         const image = await this.loadImage(fr.result)
-        cm.changeImage(image)
+        this.canvas.changeImage(image)
         this.drawFitSizeImage()
-        this.updateSwatches(cm.colorSwatches)
+        this.updateSwatches(this.canvas.colorSwatches)
         this.uploadImageUrl = fr.result
         this.clearAxes()
         this.clearPlots()
@@ -513,19 +510,18 @@ export default Vue.extend({
       // INFO: 左クリックされていない状態
       const isClicking = e.buttons === 1
       if (!isClicking) {
-        cm.resetDrawMaskPos()
+        this.canvas.resetDrawMaskPos()
       } else {
         // TODO: 呼び出すメソッドはCanvasに移譲したい
         switch (this.maskMode) {
           case 0: // INFO: pen mask
-            cm.mouseMoveForPen(xPx, yPx, this.showPenToolSize)
-            this.isDrawnMask = cm.isDrawnMask
+            this.canvas.mouseMoveForPen(xPx, yPx, this.showPenToolSize)
             break
           case 1: // INFO: box mask
-            cm.mouseMoveForBox(xPx, yPx)
+            this.canvas.mouseMoveForBox(xPx, yPx)
             break
           case 2: // INFO: eraser mask
-            cm.mouseMoveForEraser(xPx, yPx, this.showEraserSize)
+            this.canvas.mouseMoveForEraser(xPx, yPx, this.showEraserSize)
             break
           default:
             break
@@ -538,18 +534,16 @@ export default Vue.extend({
       const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
       const yPx = e.offsetY + parseFloat(target.style.top)
       if (this.maskMode === 1) {
-        cm.mouseDownForBox(xPx, yPx)
+        this.canvas.mouseDownForBox(xPx, yPx)
       }
     },
     mouseUp() {
       if (this.maskMode === 1) {
-        cm.mouseUpForBox()
-        this.isDrawnMask = cm.isDrawnMask
+        this.canvas.mouseUpForBox()
       }
     },
     clearMask() {
-      cm.clearMask()
-      this.isDrawnMask = cm.isDrawnMask
+      this.canvas.clearMask()
       // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
       if (this.maskMode === 2) {
         this.maskMode = -1

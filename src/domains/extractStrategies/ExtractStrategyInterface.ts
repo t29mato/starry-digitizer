@@ -6,7 +6,6 @@ export default interface ExtractStrategyInterface {
   execute(
     cm: Canvas,
     targetColor: [number, number, number],
-    colorMatchThreshold: number,
-    isDrawnMask: boolean
+    colorMatchThreshold: number
   ): Plot[]
 }
