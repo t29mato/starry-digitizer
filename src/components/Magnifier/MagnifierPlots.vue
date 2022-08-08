@@ -13,8 +13,8 @@
       }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      width: `${plotSize / canvasScale}px`,
-      height: `${plotSize / canvasScale}px`,
+      width: `${canvas.plotSizePx / canvasScale}px`,
+      height: `${canvas.plotSizePx / canvasScale}px`,
       'background-color': isActive ? 'red' : 'dodgerblue',
       outline: `${1 / canvasScale}px solid white`,
       'border-radius': '50%',
@@ -23,14 +23,16 @@
 </template>
 
 <script lang="ts">
+import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
 import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
     ...magnifierMapper.mapGetters(['magnifier']),
+    ...canvasMapper.mapGetters(['canvas']),
     plotHalfSize(): number {
-      return this.plotSize / 2
+      return this.canvas.plotSizePx / 2
     },
     magnifierHalfSize(): number {
       return this.magnifierSize / 2
@@ -45,10 +47,6 @@ export default Vue.extend({
   props: {
     plot: {
       type: Object as () => Position,
-      required: true,
-    },
-    plotSize: {
-      type: Number,
       required: true,
     },
     canvasScale: {

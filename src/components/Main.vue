@@ -53,12 +53,7 @@
               id="maskCanvas"
             ></canvas>
             <canvas-axes></canvas-axes>
-            <canvas-plots
-              v-show="shouldShowPoints"
-              :plotSizePx="plotSizePx"
-              :isActive="datasets.activePlotIds.includes(plot.id)"
-            >
-            </canvas-plots>
+            <canvas-plots v-show="shouldShowPoints"></canvas-plots>
             <canvas-cursor
               :cursor="showCanvasCursor"
               :label="cursorLabel"
@@ -76,7 +71,6 @@
           <magnifier
             :uploadImageUrl="uploadImageUrl"
             :canvasCursor="showCanvasCursor"
-            :plotSizePx="plotSizePx"
             :activePlotIds="datasets.activePlotIds"
             :shouldShowPoints="shouldShowPoints"
           ></magnifier>
@@ -215,7 +209,6 @@ export default Vue.extend({
       colorDistancePct: 5,
       colorPicker: black,
       isExtracting: false,
-      plotSizePx: 10,
       cursorIsMoved: false,
       swatches: [...Array(5)].map(() => []) as string[][],
       penToolSize: 50,

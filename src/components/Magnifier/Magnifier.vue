@@ -29,7 +29,6 @@
         <magnifier-plots
           :canvasScale="canvas.scale"
           :cursor="canvasCursor"
-          :plotSize="plotSizePx"
           :plot="plot"
           :magnifierSize="magnifier.sizePx"
           :isActive="activePlotIds.includes(plot.id)"
@@ -135,10 +134,6 @@ export default Vue.extend({
     },
     shouldShowPoints: {
       type: Boolean,
-      required: true,
-    },
-    plotSizePx: {
-      type: Number,
       required: true,
     },
     activePlotIds: {

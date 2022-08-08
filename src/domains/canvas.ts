@@ -20,6 +20,7 @@ export class Canvas {
     endX: 0,
     endY: 0,
   }
+  plotSizePx = 10
 
   static get instance(): Canvas {
     if (!this.#instance) {
