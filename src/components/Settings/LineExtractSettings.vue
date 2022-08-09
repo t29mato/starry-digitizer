@@ -18,6 +18,7 @@
 </template>
 
 <script lang="ts">
+import { lineExtractMapper } from '@/store/modules/lineExtract'
 import { LineExtractProps } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
@@ -29,14 +30,12 @@ export default Vue.extend({
     },
   },
   methods: {
-    inputWidth(value: number) {
-      this.$emit('input', Object.assign(this.$props.settings, { width: value }))
+    ...lineExtractMapper.mapActions(['setIntervalPx', 'setLineWidthPx']),
+    inputWidth(value: string) {
+      this.setLineWidthPx(parseInt(value))
     },
-    inputInterval(value: number) {
-      this.$emit(
-        'input',
-        Object.assign(this.$props.settings, { interval: value })
-      )
+    inputInterval(value: string) {
+      this.setIntervalPx(parseInt(value))
     },
   },
 })

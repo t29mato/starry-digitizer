@@ -63,17 +63,18 @@
           <magnifier-main :uploadImageUrl="uploadImageUrl"></magnifier-main>
           <h4>Automatic Extraction</h4>
           <v-select
-            v-model="extractAlgorithm"
-            :items="extractAlgorithms"
+            @input="setExtractStrategy"
+            :value="extractor.strategy.name"
+            :items="extractor.strategies"
             label="Select Algorithm"
           ></v-select>
-          <div v-if="extractAlgorithm === 'Symbol Extract'">
+          <div v-if="extractor.strategy.name === 'Symbol Extract'">
             <symbol-extract-settings
               :diameterRange="diameterRange"
               @input="setDiameterRange"
             ></symbol-extract-settings>
           </div>
-          <div v-else-if="extractAlgorithm === 'Line Extract'">
+          <div v-else-if="extractor.strategy.name === 'Line Extract'">
             <line-extract-settings
               :settings="lineExtractProps"
               @input="setLineExtractProps"
@@ -111,7 +112,7 @@ import {
   CanvasPlots,
   CanvasCursor,
 } from './Canvas'
-import { DiameterRange, ExtractAlgorithm, LineExtractProps } from '../types'
+import { DiameterRange, LineExtractProps } from '../types'
 import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
 import LineExtract from '@/domains/extractStrategies/LineExtract'
 import {
@@ -122,16 +123,16 @@ import {
   ColorSettings,
 } from './Settings'
 import { DatasetManager } from './DatasetManager'
-import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
 import { version } from '../../package.json'
 import { datasetMapper } from '@/store/modules/dataset'
 import { canvasMapper } from '@/store/modules/canvas'
 import { axesMapper } from '@/store/modules/axes'
+import { extractorMapper } from '@/store/modules/extractor'
+import { ExtractStrategy } from '@/domains/extractor'
 
 const [black] = ['#000000ff']
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
-const extractAlgorithms = ['Symbol Extract', 'Line Extract'] as const
 
 export default Vue.extend({
   components: {
@@ -158,9 +159,7 @@ export default Vue.extend({
   },
   data() {
     return {
-      extractAlgorithms,
       version,
-      extractAlgorithm: 'Symbol Extract' as ExtractAlgorithm,
       diameterRange: {
         min: 5,
         max: 100,
@@ -182,6 +181,7 @@ export default Vue.extend({
     ...datasetMapper.mapGetters(['datasets']),
     ...axesMapper.mapGetters(['axes']),
     ...canvasMapper.mapGetters(['canvas']),
+    ...extractorMapper.mapGetters(['extractor']),
     targetColor(): { R: number; G: number; B: number } {
       return {
         R: parseInt(this.colorPicker.slice(1, 3), 16),
@@ -243,6 +243,17 @@ export default Vue.extend({
       'moveActiveAxis',
       'inactivateAxis',
     ]),
+    ...extractorMapper.mapActions(['setStrategy']),
+    setExtractStrategy(strategy: ExtractStrategy) {
+      console.log(strategy)
+      switch (strategy) {
+        case 'Symbol Extract':
+          this.setStrategy(SymbolExtractByArea.instance)
+          break
+        case 'Line Extract':
+          this.setStrategy(LineExtract.instance)
+      }
+    },
     // TODO: setSymbolExtractPropsに変更する
     setDiameterRange(diameterRange: DiameterRange) {
       this.diameterRange = diameterRange
@@ -309,19 +320,8 @@ export default Vue.extend({
       this.inactivateAxis()
       this.clearPlots()
       try {
-        let extractor: ExtractStrategyInterface
-        switch (this.extractAlgorithm) {
-          case 'Symbol Extract':
-            extractor = new SymbolExtractByArea(this.diameterRange)
-            break
-          case 'Line Extract':
-            extractor = new LineExtract(this.lineExtractProps)
-            break
-          default:
-            throw new Error('Extract algorithm is not selected.')
-        }
         this.setPlots(
-          extractor.execute(
+          this.extractor.execute(
             this.canvas,
             [this.targetColor.R, this.targetColor.G, this.targetColor.B],
             this.colorDistancePct

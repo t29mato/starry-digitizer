@@ -5,6 +5,9 @@ import { dataset } from './modules/dataset'
 import { magnifier } from './modules/magnifier'
 import { axes } from './modules/axes'
 import { createStore, Module } from 'vuex-smart-module'
+import { symbolExtractByArea } from './modules/symbolExtractByArea'
+import { lineExtract } from './modules/lineExtract'
+import { extractor } from './modules/extractor'
 
 Vue.use(Vuex)
 
@@ -14,6 +17,9 @@ const module = new Module({
     dataset,
     magnifier,
     axes,
+    symbolExtractByArea,
+    lineExtract,
+    extractor,
   },
 })
 

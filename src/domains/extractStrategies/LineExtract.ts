@@ -4,16 +4,21 @@ import { Plot, DiameterRange, LineExtractProps } from '@/types'
 import { Canvas } from '../canvas'
 
 export default class LineExtract implements ExtractStrategyInterface {
-  #interval = 10
-  #lineWidth = 10
+  name = 'Line Extract'
+  intervalPx = 10
+  lineWidthPx = 10
 
-  constructor(props: LineExtractProps) {
-    this.#interval = props.interval
-    this.#lineWidth = props.width
-  }
+  // constructor(props: LineExtractProps) {
+  //   this.interval = props.interval
+  //   this.lineWidth = props.width
+  // }
 
-  #isWhite(r: number, g: number, b: number, a: number): boolean {
-    return r === 255 && g === 255 && b === 255 && a > 0
+  static #instance: LineExtract
+  static get instance(): LineExtract {
+    if (!this.#instance) {
+      this.#instance = new LineExtract()
+    }
+    return this.#instance
   }
 
   // TODO: 背景色をスキップするか選択できるようにする
@@ -113,7 +118,7 @@ export default class LineExtract implements ExtractStrategyInterface {
                 if (nh < 0 || nw < 0 || nh >= height || nw >= width) {
                   continue
                 }
-                if (Math.abs(nw - w) > this.#interval) {
+                if (Math.abs(nw - w) > this.intervalPx) {
                   continue
                 }
                 if (visitedArea[nh][nw]) {
@@ -161,7 +166,7 @@ export default class LineExtract implements ExtractStrategyInterface {
           const yPxMed = (yPxMax + yPxMin) / 2
           const lineWidth = yPxMax - yPxMin
           const area = pixels.length
-          if (this.#lineWidth < lineWidth) {
+          if (this.lineWidthPx < lineWidth) {
             // To avoid gaps between calculation and rendering
             // INFO: In manual, pixels are limited to moving one pixel at a time.
             const offsetPx = 0.5
