@@ -12,7 +12,7 @@
       <magnifier-settings-btn
         :toggleSettingsDialog="toggleSettingsDialog"
       ></magnifier-settings-btn>
-      <magnifier-image :src="uploadImageUrl"></magnifier-image>
+      <magnifier-image></magnifier-image>
       <magnifier-vertical-line></magnifier-vertical-line>
       <magnifier-horizontal-line></magnifier-horizontal-line>
       <magnifier-axes></magnifier-axes>
@@ -110,12 +110,7 @@ export default Vue.extend({
       )
     },
   },
-  props: {
-    uploadImageUrl: {
-      type: String,
-      required: true,
-    },
-  },
+  props: {},
 
   methods: {
     ...magnifierMapper.mapActions(['setScale']),

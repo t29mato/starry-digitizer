@@ -24,6 +24,7 @@ export class Canvas {
   maskMode = -1
   penToolSizePx = 50
   eraserSizePx = 30
+  uploadImageUrl = ''
 
   static get instance(): Canvas {
     if (!this.#instance) {

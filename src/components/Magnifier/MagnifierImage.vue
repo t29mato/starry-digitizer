@@ -1,7 +1,7 @@
 <template>
   <div>
     <img
-      :src="src"
+      :src="canvas.uploadImageUrl"
       :style="{
         position: 'absolute',
         top: 0,
@@ -44,11 +44,6 @@ export default Vue.extend({
       return this.magnifier.sizePx / 2
     },
   },
-  props: {
-    src: {
-      type: String,
-      required: true,
-    },
-  },
+  props: {},
 })
 </script>

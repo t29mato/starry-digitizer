@@ -70,6 +70,11 @@ class actions extends Actions<state, getters, mutations> {
     this.commit('updateCanvas', Canvas.instance)
   }
 
+  setUploadImageUrl(url: string) {
+    Canvas.instance.uploadImageUrl = url
+    this.commit('updateCanvas', Canvas.instance)
+  }
+
   mouseMoveOnCanvas(position: Position) {
     Canvas.instance.mouseMove(position.xPx, position.yPx)
     this.commit('updateCanvas', Canvas.instance)

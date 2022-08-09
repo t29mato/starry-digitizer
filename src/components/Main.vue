@@ -32,8 +32,7 @@
             @mousedown="mouseDown"
             @mouseup="mouseUp"
           >
-            <!-- TODO: uploadImageUrlはCanvasで描画してるのでdataプロパティ上は不要 -->
-            <canvas id="imageCanvas" :src="uploadImageUrl"></canvas>
+            <canvas id="imageCanvas"></canvas>
             <canvas
               id="tempMaskCanvas"
               :style="{
@@ -60,7 +59,7 @@
         </v-col>
         <v-col class="pt-1" cols="3">
           <!-- TODO: 有効数字を追加する -->
-          <magnifier-main :uploadImageUrl="uploadImageUrl"></magnifier-main>
+          <magnifier-main></magnifier-main>
           <extractor-settings></extractor-settings>
           <p class="text-caption text-right">v{{ version }}</p>
         </v-col>
@@ -113,7 +112,6 @@ export default Vue.extend({
   data() {
     return {
       version,
-      uploadImageUrl: '',
     }
   },
   computed: {
@@ -137,7 +135,8 @@ export default Vue.extend({
         this.initialGraphImagePath
       )
       this.drawFitSizeImage()
-      this.uploadImageUrl = this.initialGraphImagePath
+      this.setUploadImageUrl(this.initialGraphImagePath)
+
       // FIXME: setSwatchesはcolorSettingsのmountedに移す
       this.setSwatches(this.canvas.colorSwatches)
     } finally {
@@ -160,6 +159,7 @@ export default Vue.extend({
       'drawFitSizeImage',
       'setCanvasCursor',
       'mouseMoveOnCanvas',
+      'setUploadImageUrl',
     ]),
     ...axesMapper.mapActions([
       'clearAxes',
@@ -221,7 +221,7 @@ export default Vue.extend({
         this.canvas.changeImage(image)
         this.drawFitSizeImage()
         this.setSwatches(this.canvas.colorSwatches)
-        this.uploadImageUrl = fr.result
+        this.setUploadImageUrl(fr.result)
         this.clearAxes()
         this.clearPlots()
       } finally {
