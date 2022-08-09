@@ -31,8 +31,22 @@ class actions extends Actions<state, getters, mutations> {
     // this.md = md.instance
   }
 
+  setColorDistancePct(colorDistancePct: number) {
+    Extractor.instance.colorDistancePct = colorDistancePct
+    this.commit('updateExtractor', Extractor.instance)
+  }
   setStrategy(strategy: ExtractStrategyInterface) {
     Extractor.instance.strategy = strategy
+    this.commit('updateExtractor', Extractor.instance)
+  }
+
+  setColorPicker(color: string) {
+    Extractor.instance.colorPicker = color
+    this.commit('updateExtractor', Extractor.instance)
+  }
+
+  setSwatches(colorSwatches: string[]) {
+    Extractor.instance.updateSwatches(colorSwatches)
     this.commit('updateExtractor', Extractor.instance)
   }
 }

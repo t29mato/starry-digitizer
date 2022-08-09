@@ -72,6 +72,10 @@ class actions extends Actions<state, getters, mutations> {
     this.dd.setActiveDataset(id)
     this.commit('updateDatasets', this.dd)
   }
+  sortPlots() {
+    this.dd.sortPlots()
+    this.commit('updateDatasets', this.dd)
+  }
 }
 
 export const dataset = new Module({

@@ -102,6 +102,12 @@ export class Datasets {
     this.activeDataset.plots = plots
   }
 
+  sortPlots() {
+    this.activeDataset.plots.sort((a, b) => {
+      return a.xPx - b.xPx
+    })
+  }
+
   setActiveDataset(id: number) {
     this.activeDatasetId = id
   }

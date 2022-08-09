@@ -61,40 +61,7 @@
         <v-col class="pt-1" cols="3">
           <!-- TODO: 有効数字を追加する -->
           <magnifier-main :uploadImageUrl="uploadImageUrl"></magnifier-main>
-          <h4>Automatic Extraction</h4>
-          <v-select
-            @input="setExtractStrategy"
-            :value="extractor.strategy.name"
-            :items="extractor.strategies"
-            label="Select Algorithm"
-          ></v-select>
-          <div v-if="extractor.strategy.name === 'Symbol Extract'">
-            <symbol-extract-settings
-              :diameterRange="diameterRange"
-              @input="setDiameterRange"
-            ></symbol-extract-settings>
-          </div>
-          <div v-else-if="extractor.strategy.name === 'Line Extract'">
-            <line-extract-settings
-              :settings="lineExtractProps"
-              @input="setLineExtractProps"
-            ></line-extract-settings>
-          </div>
-          <mask-settings :clearMask="clearMask"></mask-settings>
-          <color-settings
-            :colorPicker="colorPicker"
-            :setColorPicker="setColorPicker"
-            :swatches="swatches"
-            :colorDistancePct="colorDistancePct"
-            :setColorDistancePct="setColorDistancePct"
-          ></color-settings>
-          <v-btn
-            :loading="isExtracting"
-            @click="extractPlots"
-            color="primary"
-            small
-            >Run</v-btn
-          >
+          <extractor-settings></extractor-settings>
           <p class="text-caption text-right">v{{ version }}</p>
         </v-col>
       </v-row>
@@ -113,24 +80,14 @@ import {
   CanvasCursor,
 } from './Canvas'
 import { DiameterRange, LineExtractProps } from '../types'
-import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
-import LineExtract from '@/domains/extractStrategies/LineExtract'
-import {
-  AxesSettings,
-  SymbolExtractSettings,
-  LineExtractSettings,
-  MaskSettings,
-  ColorSettings,
-} from './Settings'
+import { AxesSettings, ExtractorSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { version } from '../../package.json'
 import { datasetMapper } from '@/store/modules/dataset'
 import { canvasMapper } from '@/store/modules/canvas'
 import { axesMapper } from '@/store/modules/axes'
 import { extractorMapper } from '@/store/modules/extractor'
-import { ExtractStrategy } from '@/domains/extractor'
 
-const [black] = ['#000000ff']
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 
@@ -143,11 +100,8 @@ export default Vue.extend({
     CanvasHeader,
     CanvasFooter,
     AxesSettings,
-    SymbolExtractSettings,
-    LineExtractSettings,
-    MaskSettings,
-    ColorSettings,
     DatasetManager,
+    ExtractorSettings,
   },
   props: {
     // should be imported by require function
@@ -169,34 +123,12 @@ export default Vue.extend({
         interval: 10,
       } as LineExtractProps,
       uploadImageUrl: '',
-      // REFACTOR: color typeを作成する
-      colors: [] as { R: number; G: number; B: number }[][],
-      colorDistancePct: 5,
-      colorPicker: black,
-      isExtracting: false,
-      swatches: [...Array(5)].map(() => []) as string[][],
     }
   },
   computed: {
     ...datasetMapper.mapGetters(['datasets']),
     ...axesMapper.mapGetters(['axes']),
     ...canvasMapper.mapGetters(['canvas']),
-    ...extractorMapper.mapGetters(['extractor']),
-    targetColor(): { R: number; G: number; B: number } {
-      return {
-        R: parseInt(this.colorPicker.slice(1, 3), 16),
-        G: parseInt(this.colorPicker.slice(3, 5), 16),
-        B: parseInt(this.colorPicker.slice(5, 7), 16),
-      }
-    },
-    targetColorHex(): string {
-      return (
-        '#' +
-        this.targetColor.R.toString(16) +
-        this.targetColor.G.toString(16) +
-        this.targetColor.B.toString(16)
-      )
-    },
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
@@ -215,7 +147,8 @@ export default Vue.extend({
       )
       this.drawFitSizeImage()
       this.uploadImageUrl = this.initialGraphImagePath
-      this.updateSwatches(this.canvas.colorSwatches)
+      // FIXME: setSwatchesはcolorSettingsのmountedに移す
+      this.setSwatches(this.canvas.colorSwatches)
     } finally {
       //
     }
@@ -243,35 +176,13 @@ export default Vue.extend({
       'moveActiveAxis',
       'inactivateAxis',
     ]),
-    ...extractorMapper.mapActions(['setStrategy']),
-    setExtractStrategy(strategy: ExtractStrategy) {
-      console.log(strategy)
-      switch (strategy) {
-        case 'Symbol Extract':
-          this.setStrategy(SymbolExtractByArea.instance)
-          break
-        case 'Line Extract':
-          this.setStrategy(LineExtract.instance)
-      }
-    },
+    ...extractorMapper.mapActions(['setSwatches']),
     // TODO: setSymbolExtractPropsに変更する
     setDiameterRange(diameterRange: DiameterRange) {
       this.diameterRange = diameterRange
     },
     setLineExtractProps(props: LineExtractProps) {
       this.lineExtractProps = props
-    },
-    sortPlots() {
-      this.datasets.activeDataset.plots.sort((a, b) => {
-        return a.xPx - b.xPx
-      })
-    },
-    updateSwatches(colorSwatches: string[]) {
-      this.swatches = [...Array(5)].map(() => [])
-      colorSwatches.forEach((color, index) => {
-        this.swatches[index % this.swatches.length].push(color)
-      })
-      this.colorPicker = colorSwatches[0]
     },
     keyDownHandler(e: KeyboardEvent) {
       const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
@@ -315,25 +226,6 @@ export default Vue.extend({
       }
       this.uploadImage(imageFile)
     },
-    async extractPlots() {
-      this.isExtracting = true
-      this.inactivateAxis()
-      this.clearPlots()
-      try {
-        this.setPlots(
-          this.extractor.execute(
-            this.canvas,
-            [this.targetColor.R, this.targetColor.G, this.targetColor.B],
-            this.colorDistancePct
-          )
-        )
-        this.sortPlots()
-      } catch (e) {
-        console.error('failed to extractPlots', { cause: e })
-      } finally {
-        this.isExtracting = false
-      }
-    },
     async uploadImage(file: File) {
       try {
         const fr = await this.readFile(file)
@@ -344,7 +236,7 @@ export default Vue.extend({
         const image = await this.loadImage(fr.result)
         this.canvas.changeImage(image)
         this.drawFitSizeImage()
-        this.updateSwatches(this.canvas.colorSwatches)
+        this.setSwatches(this.canvas.colorSwatches)
         this.uploadImageUrl = fr.result
         this.clearAxes()
         this.clearPlots()
@@ -394,9 +286,6 @@ export default Vue.extend({
       })
       this.inactivateAxis()
     },
-    clearAxes() {
-      this.clearAxes()
-    },
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
       const target = e.target as HTMLElement
@@ -427,19 +316,6 @@ export default Vue.extend({
       if (this.canvas.maskMode === 1) {
         this.canvas.mouseUpForBox()
       }
-    },
-    clearMask() {
-      this.canvas.clearMask()
-      // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
-      if (this.canvas.maskMode === 2) {
-        this.canvas.maskMode = -1
-      }
-    },
-    setColorPicker(color: string) {
-      this.colorPicker = color
-    },
-    setColorDistancePct(distance: number) {
-      this.colorDistancePct = distance
     },
   },
 })

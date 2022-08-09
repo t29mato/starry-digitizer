@@ -41,10 +41,6 @@ export default Vue.extend({
     ...canvasMapper.mapGetters(['canvas']),
   },
   props: {
-    clearMask: {
-      type: Function,
-      required: true,
-    },
     // penToolSize: {
     //   type: Number,
     //   required: true,
@@ -66,6 +62,13 @@ export default Vue.extend({
         return
       }
       this.setMaskMode(value)
+    },
+    clearMask() {
+      this.canvas.clearMask()
+      // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
+      if (this.canvas.maskMode === 2) {
+        this.canvas.maskMode = -1
+      }
     },
   },
 })

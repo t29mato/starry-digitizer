@@ -24,17 +24,11 @@
 <script lang="ts">
 import { symbolExtractByAreaMapper } from '@/store/modules/symbolExtractByArea'
 import Vue from 'vue'
-import { DiameterRange } from '../../types'
 export default Vue.extend({
   computed: {
     ...symbolExtractByAreaMapper.mapGetters(['symbolExtractByArea']),
   },
-  props: {
-    diameterRange: {
-      type: Object as () => DiameterRange,
-      required: true,
-    },
-  },
+  props: {},
   methods: {
     ...symbolExtractByAreaMapper.mapActions([
       'setMinDiameterPx',
