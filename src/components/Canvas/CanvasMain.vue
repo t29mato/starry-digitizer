@@ -56,14 +56,21 @@ export default Vue.extend({
     CanvasCursor,
   },
   props: {},
+  mounted() {
+    document.addEventListener('keydown', this.keyDownHandler.bind(this))
+  },
+  beforeDestroy() {
+    document.removeEventListener('keydown', this.keyDownHandler)
+  },
   computed: {
     ...canvasMapper.mapGetters(['canvas']),
     ...axesMapper.mapGetters(['axes']),
+    ...datasetMapper.mapGetters(['datasets']),
   },
   methods: {
-    ...datasetMapper.mapActions(['addPlot']),
+    ...datasetMapper.mapActions(['addPlot', 'moveActivePlot']),
     ...canvasMapper.mapActions(['mouseMoveOnCanvas', 'setCanvasCursor']),
-    ...axesMapper.mapActions(['addAxis', 'inactivateAxis']),
+    ...axesMapper.mapActions(['addAxis', 'inactivateAxis', 'moveActiveAxis']),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき
@@ -119,6 +126,31 @@ export default Vue.extend({
     mouseUp() {
       if (this.canvas.maskMode === 1) {
         this.canvas.mouseUpForBox()
+      }
+    },
+    keyDownHandler(e: KeyboardEvent) {
+      const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
+        'ArrowUp',
+        'ArrowRight',
+        'ArrowDown',
+        'ArrowLeft',
+      ]
+      const key = e.key
+      if (![arrowUp, arrowRight, arrowDown, arrowLeft].includes(key)) {
+        return
+      }
+      e.preventDefault()
+      if (this.axes.isActive) {
+        this.moveActiveAxis(key)
+        this.setCanvasCursor(this.axes.activeAxis)
+      }
+      if (this.datasets.plotsAreActive) {
+        this.moveActivePlot(e.key)
+        this.setCanvasCursor(
+          this.datasets.activeDataset.plots.filter((plot) =>
+            this.datasets.activePlotIds.includes(plot.id)
+          )[0]
+        )
       }
     },
   },

@@ -72,7 +72,6 @@ export default Vue.extend({
     ...canvasMapper.mapGetters(['canvas']),
   },
   async mounted() {
-    document.addEventListener('keydown', this.keyDownHandler.bind(this))
     document.addEventListener('paste', this.pasteHandler.bind(this))
     if (!this.initialGraphImagePath) {
       return
@@ -97,43 +96,17 @@ export default Vue.extend({
   },
   created() {},
   beforeDestroy() {
-    document.removeEventListener('keydown', this.keyDownHandler)
     document.removeEventListener('paste', this.pasteHandler)
   },
   methods: {
-    ...datasetMapper.mapActions(['moveActivePlot', 'clearPlots']),
+    ...datasetMapper.mapActions(['clearPlots']),
     ...canvasMapper.mapActions([
       'drawFitSizeImage',
       'setCanvasCursor',
       'setUploadImageUrl',
     ]),
-    ...axesMapper.mapActions(['clearAxes', 'moveActiveAxis']),
+    ...axesMapper.mapActions(['clearAxes']),
     ...extractorMapper.mapActions(['setSwatches']),
-    keyDownHandler(e: KeyboardEvent) {
-      const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
-        'ArrowUp',
-        'ArrowRight',
-        'ArrowDown',
-        'ArrowLeft',
-      ]
-      const key = e.key
-      if (![arrowUp, arrowRight, arrowDown, arrowLeft].includes(key)) {
-        return
-      }
-      e.preventDefault()
-      if (this.axes.isActive) {
-        this.moveActiveAxis(key)
-        this.setCanvasCursor(this.axes.activeAxis)
-      }
-      if (this.datasets.plotsAreActive) {
-        this.moveActivePlot(e.key)
-        this.setCanvasCursor(
-          this.datasets.activeDataset.plots.filter((plot) =>
-            this.datasets.activePlotIds.includes(plot.id)
-          )[0]
-        )
-      }
-    },
     pasteHandler(event: ClipboardEvent) {
       if (!event.clipboardData) {
         return
