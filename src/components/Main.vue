@@ -79,7 +79,6 @@ import {
   CanvasPlots,
   CanvasCursor,
 } from './Canvas'
-import { DiameterRange, LineExtractProps } from '../types'
 import { AxesSettings, ExtractorSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { version } from '../../package.json'
@@ -114,14 +113,6 @@ export default Vue.extend({
   data() {
     return {
       version,
-      diameterRange: {
-        min: 5,
-        max: 100,
-      },
-      lineExtractProps: {
-        width: 1,
-        interval: 10,
-      } as LineExtractProps,
       uploadImageUrl: '',
     }
   },
@@ -177,13 +168,6 @@ export default Vue.extend({
       'inactivateAxis',
     ]),
     ...extractorMapper.mapActions(['setSwatches']),
-    // TODO: setSymbolExtractPropsに変更する
-    setDiameterRange(diameterRange: DiameterRange) {
-      this.diameterRange = diameterRange
-    },
-    setLineExtractProps(props: LineExtractProps) {
-      this.lineExtractProps = props
-    },
     keyDownHandler(e: KeyboardEvent) {
       const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
         'ArrowUp',
