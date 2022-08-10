@@ -29,7 +29,6 @@ export class Axes {
   xIsLog = false
   yIsLog = false
   error = ''
-  sizePx = 10
   activeIndex = -1
   nextIndex = 0
 
@@ -39,10 +38,6 @@ export class Axes {
       this.#instance = new Axes()
     }
     return this.#instance
-  }
-
-  get halfSizePx() {
-    return this.sizePx / 2
   }
 
   get nextAxisKey() {

@@ -3,11 +3,11 @@
     <div
       :style="{
         position: 'absolute',
-        top: `${yPx - axes.halfSizePx}px`,
-        left: `${xPx - axes.halfSizePx}px`,
+        top: `${yPx - axisHalfSizePx}px`,
+        left: `${xPx - axisHalfSizePx}px`,
         'pointer-events': 'none',
-        width: `${axes.sizePx}px`,
-        height: `${axes.sizePx}px`,
+        width: `${axisSizePx}px`,
+        height: `${axisSizePx}px`,
         'border-radius': '50%',
         'background-color': isActive ? 'red' : 'dodgerblue',
         outline: `1px solid white`,
@@ -16,8 +16,8 @@
     <span
       :style="{
         position: 'absolute',
-        top: `${yPx - axes.halfSizePx - 9}px`,
-        left: `${xPx - axes.halfSizePx + 12}px`,
+        top: `${yPx - axisHalfSizePx - 9}px`,
+        left: `${xPx - axisHalfSizePx + 12}px`,
         'pointer-events': 'none',
         'user-select': 'none',
       }"
@@ -27,13 +27,13 @@
 </template>
 
 <script lang="ts">
-import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
+import { styleMapper } from '@/store/modules/style'
 import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
-    ...axesMapper.mapGetters(['axes']),
+    ...styleMapper.mapGetters(['axisSizePx', 'axisHalfSizePx']),
     ...canvasMapper.mapGetters(['canvas']),
     xPx(): number {
       return this.axis.xPx * this.canvas.scale
