@@ -45,6 +45,7 @@ import { canvasMapper } from '@/store/modules/canvas'
 import { axesMapper } from '@/store/modules/axes'
 import { datasetMapper } from '@/store/modules/dataset'
 import { CanvasAxes, CanvasPlots, CanvasCursor } from '.'
+import { extractorMapper } from '@/store/modules/extractor'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -55,9 +56,8 @@ export default Vue.extend({
     CanvasPlots,
     CanvasCursor,
   },
-  props: {},
-  mounted() {
-    document.addEventListener('keydown', this.keyDownHandler.bind(this))
+  props: {
+    imagePath: String,
   },
   beforeDestroy() {
     document.removeEventListener('keydown', this.keyDownHandler)
@@ -67,10 +67,31 @@ export default Vue.extend({
     ...axesMapper.mapGetters(['axes']),
     ...datasetMapper.mapGetters(['datasets']),
   },
+  async mounted() {
+    document.addEventListener('keydown', this.keyDownHandler.bind(this))
+
+    if (!this.imagePath) {
+      return
+    }
+    try {
+      await this.canvas.initialize(this.imagePath)
+      this.drawFitSizeImage()
+      this.setUploadImageUrl(this.imagePath)
+      this.setSwatches(this.canvas.colorSwatches)
+    } finally {
+      //
+    }
+  },
   methods: {
     ...datasetMapper.mapActions(['addPlot', 'moveActivePlot']),
-    ...canvasMapper.mapActions(['mouseMoveOnCanvas', 'setCanvasCursor']),
+    ...canvasMapper.mapActions([
+      'mouseMoveOnCanvas',
+      'setCanvasCursor',
+      'drawFitSizeImage',
+      'setUploadImageUrl',
+    ]),
     ...axesMapper.mapActions(['addAxis', 'inactivateAxis', 'moveActiveAxis']),
+    ...extractorMapper.mapActions(['setSwatches']),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき

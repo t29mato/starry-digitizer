@@ -9,7 +9,7 @@
         </v-col>
         <v-col class="pt-1" cols="7">
           <canvas-header></canvas-header>
-          <canvas-main></canvas-main>
+          <canvas-main :imagePath="initialGraphImagePath"></canvas-main>
           <canvas-footer></canvas-footer>
         </v-col>
         <v-col class="pt-1" cols="3">
@@ -30,8 +30,6 @@ import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
 import { AxesSettings, ExtractorSettings, ImageSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { version } from '../../package.json'
-import { canvasMapper } from '@/store/modules/canvas'
-import { extractorMapper } from '@/store/modules/extractor'
 
 export default Vue.extend({
   components: {
@@ -56,27 +54,6 @@ export default Vue.extend({
     return {
       version,
     }
-  },
-  computed: {
-    ...canvasMapper.mapGetters(['canvas']),
-  },
-  async mounted() {
-    if (!this.initialGraphImagePath) {
-      return
-    }
-    try {
-      await this.canvas.initialize(this.initialGraphImagePath)
-      this.drawFitSizeImage()
-      this.setUploadImageUrl(this.initialGraphImagePath)
-      this.setSwatches(this.canvas.colorSwatches)
-    } finally {
-      //
-    }
-  },
-  created() {},
-  methods: {
-    ...canvasMapper.mapActions(['drawFitSizeImage', 'setUploadImageUrl']),
-    ...extractorMapper.mapActions(['setSwatches']),
   },
 })
 </script>
