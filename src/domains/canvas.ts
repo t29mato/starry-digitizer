@@ -1,9 +1,10 @@
 import { Position } from '@/types'
 import ColorThief from 'colorthief'
+import { CanvasInterface } from './canvasInterface'
 import { HTMLCanvas } from './dom/HTMLCanvas'
 const colorThief = new ColorThief()
 
-export class Canvas {
+export class Canvas implements CanvasInterface {
   static #instance: Canvas
   isDrawnMask = false
   #imageElement?: HTMLImageElement

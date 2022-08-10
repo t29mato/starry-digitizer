@@ -1,7 +1,7 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
 import diff from 'color-diff'
 import { Plot, DiameterRange } from '@/types'
-import { Canvas } from '../canvas'
+import { CanvasInterface } from '../canvasInterface'
 
 export default class SymbolExtractByArea implements ExtractStrategyInterface {
   name = 'Symbol Extract'
@@ -36,7 +36,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
   }
 
   execute(
-    canvas: Canvas,
+    canvas: CanvasInterface,
     targetColor: [number, number, number],
     colorMatchThreshold: number
   ) {

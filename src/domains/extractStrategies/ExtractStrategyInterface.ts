@@ -1,11 +1,11 @@
 import { Plot } from '@/types'
-import { Canvas } from '../canvas'
+import { CanvasInterface } from '../canvasInterface'
 
 // INFO: Strategy Pattern
 export default interface ExtractStrategyInterface {
   name: string
   execute(
-    cm: Canvas,
+    cm: CanvasInterface,
     targetColor: [number, number, number],
     colorMatchThreshold: number
   ): Plot[]

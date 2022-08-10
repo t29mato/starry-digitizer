@@ -1,7 +1,7 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
 import diff from 'color-diff'
 import { Plot, DiameterRange, LineExtractProps } from '@/types'
-import { Canvas } from '../canvas'
+import { CanvasInterface } from '../canvasInterface'
 
 export default class LineExtract implements ExtractStrategyInterface {
   name = 'Line Extract'
@@ -41,7 +41,7 @@ export default class LineExtract implements ExtractStrategyInterface {
   }
 
   execute(
-    canvas: Canvas,
+    canvas: CanvasInterface,
     targetColor: [number, number, number],
     colorMatchThreshold: number
   ) {

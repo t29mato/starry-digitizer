@@ -1,6 +1,5 @@
-import { Canvas } from './canvas'
+import { CanvasInterface } from './canvasInterface'
 import ExtractStrategyInterface from './extractStrategies/ExtractStrategyInterface'
-import LineExtract from './extractStrategies/LineExtract'
 import SymbolExtractByArea from './extractStrategies/SymbolExtractByArea'
 
 export type ExtractStrategy = 'Symbol Extract' | 'Line Extract'
@@ -22,7 +21,7 @@ export class Extractor {
   }
 
   execute(
-    canvas: Canvas,
+    canvas: CanvasInterface,
     targetColor: [number, number, number],
     colorMatchThreshold: number
   ) {
