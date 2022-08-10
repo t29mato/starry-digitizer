@@ -1,7 +1,7 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
-import diff from 'color-diff'
-import { Plot, DiameterRange } from '@/types'
+import { Plot } from '@/types'
 import { CanvasInterface } from '../canvasInterface'
+import { ExtractorInterface } from '../extractorInterface'
 
 export default class SymbolExtractByArea implements ExtractStrategyInterface {
   name = 'Symbol Extract'
@@ -35,16 +35,18 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     return diffRatio < matchRatio
   }
 
-  execute(
-    canvas: CanvasInterface,
-    targetColor: [number, number, number],
-    colorMatchThreshold: number
-  ) {
+  execute(canvas: CanvasInterface, extractor: ExtractorInterface) {
     const height = canvas.imageElement.height
     const width = canvas.imageElement.width
     const maskCanvasColors = canvas.originalSizeMaskCanvasColors
     const graphCanvasColors = canvas.originalImageCanvasColors
     const scale = canvas.scale
+    const targetColor = [
+      extractor.targetColor.R,
+      extractor.targetColor.G,
+      extractor.targetColor.B,
+    ] as [number, number, number]
+    const colorMatchThreshold = extractor.colorDistancePct
 
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>

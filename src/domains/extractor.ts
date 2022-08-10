@@ -1,3 +1,4 @@
+import { Plots } from '@/types'
 import { CanvasInterface } from './canvasInterface'
 import ExtractStrategyInterface from './extractStrategies/ExtractStrategyInterface'
 
@@ -15,12 +16,8 @@ export class Extractor {
     this.strategy = strategy
   }
 
-  execute(
-    canvas: CanvasInterface,
-    targetColor: [number, number, number],
-    colorMatchThreshold: number
-  ) {
-    return this.strategy.execute(canvas, targetColor, colorMatchThreshold)
+  execute(canvas: CanvasInterface): Plots {
+    return this.strategy.execute(canvas, this)
   }
 
   get targetColor(): { R: number; G: number; B: number } {

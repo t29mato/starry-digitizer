@@ -70,17 +70,7 @@ export default Vue.extend({
       this.inactivateAxis()
       this.clearPlots()
       try {
-        this.setPlots(
-          this.extractor.execute(
-            this.canvas,
-            [
-              this.extractor.targetColor.R,
-              this.extractor.targetColor.G,
-              this.extractor.targetColor.B,
-            ],
-            this.extractor.colorDistancePct
-          )
-        )
+        this.setPlots(this.extractor.execute(this.canvas))
         this.sortPlots()
       } catch (e) {
         console.error('failed to extractPlots', { cause: e })
