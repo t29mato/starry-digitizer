@@ -5,12 +5,6 @@ const colorThief = new ColorThief()
 
 export class Canvas {
   static #instance: Canvas
-  #canvasWrapperId = 'canvasWrapper'
-  #canvasWrapper?: HTMLDivElement
-  #imageCanvasId: string = 'imageCanvas'
-  #maskCanvasId: string = 'maskCanvas'
-  #magnifierMaskCanvasId: string = 'magnifierMaskCanvas'
-  #tempMaskCanvasId: string = 'tempMaskCanvas'
   isDrawnMask = false
   #imageElement?: HTMLImageElement
   scale = 1
@@ -35,7 +29,6 @@ export class Canvas {
   }
 
   async initialize(graphImagePath: string) {
-    this.#canvasWrapper = this.#getDivElementById(this.#canvasWrapperId)
     this.#imageElement = await this.loadImage(graphImagePath)
   }
 
@@ -263,10 +256,7 @@ export class Canvas {
   }
 
   get canvasWrapper() {
-    if (!this.#canvasWrapper) {
-      throw new Error('#canvasWrapper is undefined.')
-    }
-    return this.#canvasWrapper
+    return this.#getDivElementById('canvasWrapper')
   }
 
   get imageElement() {
@@ -277,19 +267,19 @@ export class Canvas {
   }
 
   get imageCanvas() {
-    return new HTMLCanvas(this.#imageCanvasId)
+    return new HTMLCanvas('imageCanvas')
   }
 
   get maskCanvas() {
-    return new HTMLCanvas(this.#maskCanvasId)
+    return new HTMLCanvas('maskCanvas')
   }
 
   get tempMaskCanvas() {
-    return new HTMLCanvas(this.#tempMaskCanvasId)
+    return new HTMLCanvas('tempMaskCanvas')
   }
 
   get magnifierMaskCanvas() {
-    return new HTMLCanvas(this.#magnifierMaskCanvasId)
+    return new HTMLCanvas('magnifierMaskCanvas')
   }
 
   drawFitSizeImage() {
