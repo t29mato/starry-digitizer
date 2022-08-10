@@ -1,3 +1,5 @@
+import { Dataset } from './dataset'
+
 export type Position = {
   xPx: number
   yPx: number
@@ -10,26 +12,9 @@ export type Plot = {
 
 export type Plots = Plot[]
 
-export class Dataset {
-  name: string
-  plots: Plots
-  id: number
-  constructor(dataset: Dataset) {
-    this.name = dataset.name
-    this.plots = dataset.plots
-    this.id = dataset.id
-  }
-}
-
 export class Datasets {
   static #instance: Datasets
-  datasets: Dataset[] = [
-    new Dataset({
-      name: 'dataset 1',
-      plots: [],
-      id: 1,
-    }),
-  ]
+  datasets: Dataset[] = [new Dataset('dataset 1', [], 1)]
   activeDatasetId = 1
   activePlotIds: number[] = []
 
@@ -53,24 +38,11 @@ export class Datasets {
   }
 
   activeScaledPlots(scale: number): Plots {
-    const plots = this.activeDataset.plots.map((plot) => {
-      return {
-        id: plot.id,
-        xPx: plot.xPx * scale,
-        yPx: plot.yPx * scale,
-      }
-    })
-    return plots
+    return this.activeDataset.scaledPlots(scale)
   }
 
   get nextPlotId(): number {
-    if (this.activeDataset.plots.length === 0) {
-      return 1
-    }
-    const biggestId = Math.max(
-      ...this.activeDataset.plots.map((plot) => plot.id)
-    )
-    return biggestId + 1
+    return this.activeDataset.nextPlotId
   }
 
   get plotsAreActive(): boolean {
@@ -87,15 +59,10 @@ export class Datasets {
   addPlot(xPx: number, yPx: number) {
     this.activePlotIds.length = 0
     this.activePlotIds.push(this.nextPlotId)
-    this.activeDataset.plots.push({
-      id: this.nextPlotId,
-      xPx,
-      yPx,
-    })
+    this.activeDataset.addPlot(xPx, yPx)
   }
 
   setPlots(plots: Plots) {
-    this.activePlotIds = []
     this.activeDataset.plots = plots
   }
 
@@ -120,11 +87,9 @@ export class Datasets {
   }
 
   addDataset() {
-    this.datasets.push({
-      id: this.nextDatasetId,
-      name: `dataset ${this.nextDatasetId}`,
-      plots: [],
-    })
+    this.datasets.push(
+      new Dataset(`dataset ${this.nextDatasetId}`, [], this.nextDatasetId)
+    )
   }
   popDataset() {
     if (this.datasets.length === 1) {
@@ -134,32 +99,7 @@ export class Datasets {
   }
 
   moveActivePlot(arrow: string) {
-    //  'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'
-    switch (arrow) {
-      case 'ArrowUp':
-        this.activeDataset.plots
-          .filter((plot) => this.activePlotIds.includes(plot.id))
-          .map((plot) => plot.yPx--)
-        break
-      case 'ArrowRight':
-        this.activeDataset.plots
-          .filter((plot) => this.activePlotIds.includes(plot.id))
-          .map((plot) => plot.xPx++)
-        break
-      case 'ArrowDown':
-        this.activeDataset.plots
-          .filter((plot) => this.activePlotIds.includes(plot.id))
-          .map((plot) => plot.yPx++)
-        break
-      case 'ArrowLeft':
-        this.activeDataset.plots
-          .filter((plot) => this.activePlotIds.includes(plot.id))
-          .map((plot) => plot.xPx--)
-        break
-      default:
-        throw new Error('unknown arrow')
-        break
-    }
+    this.activeDataset.moveActivePlot(this.activePlotIds, arrow)
   }
 
   activatePlot(id: number) {

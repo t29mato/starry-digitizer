@@ -6,7 +6,7 @@ import {
   createMapper,
 } from 'vuex-smart-module'
 import { Plots, Position } from '@/types'
-import { Dataset, Datasets, Datasets as DD } from '@/domains/datasets'
+import { Datasets, Datasets as DD } from '@/domains/datasets'
 const dd = DD.instance
 
 class state {
