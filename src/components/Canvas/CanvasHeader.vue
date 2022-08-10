@@ -18,12 +18,7 @@ import Vue from 'vue'
 import { canvasMapper } from '@/store/modules/canvas'
 
 export default Vue.extend({
-  props: {
-    uploadImage: {
-      type: Function,
-      required: true,
-    },
-  },
+  props: {},
   computed: {
     ...canvasMapper.mapGetters(['canvas']),
     showCanvasScale(): string {
