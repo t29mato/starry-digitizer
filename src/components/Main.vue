@@ -77,14 +77,7 @@ export default Vue.extend({
       return
     }
     try {
-      await this.canvas.initialize(
-        'canvasWrapper',
-        'imageCanvas',
-        'maskCanvas',
-        'tempMaskCanvas',
-        'magnifierMaskCanvas',
-        this.initialGraphImagePath
-      )
+      await this.canvas.initialize(this.initialGraphImagePath)
       this.drawFitSizeImage()
       this.setUploadImageUrl(this.initialGraphImagePath)
 

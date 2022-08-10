@@ -5,12 +5,17 @@ const colorThief = new ColorThief()
 
 export class Canvas {
   static #instance: Canvas
+  #canvasWrapperId = 'canvasWrapper'
   #canvasWrapper?: HTMLDivElement
+  #imageCanvasId = 'imageCanvas'
   #imageCanvas?: HTMLCanvasElement
+  #maskCanvasId = 'maskCanvas'
   #maskCanvas?: HTMLCanvasElement
+  #magnifierMaskCanvasId = 'magnifierMaskCanvas'
   #magnifierMaskCanvas?: HTMLCanvasElement
-  isDrawnMask = false
+  #tempMaskCanvasId = 'tempMaskCanvas'
   #tempMaskCanvas?: HTMLCanvasElement
+  isDrawnMask = false
   #imageElement?: HTMLImageElement
   scale = 1
   cursor: Position = { xPx: 0, yPx: 0 }
@@ -33,31 +38,31 @@ export class Canvas {
     return this.#instance
   }
 
-  async initialize(
-    canvasWrapperId: string,
-    imageCanvasId: string,
-    maskCanvasId: string,
-    tempMaskCanvasId: string,
-    magnifierMaskCanvasId: string,
-    graphImagePath: string
-  ) {
-    this.#canvasWrapper = this.#getDivElementById(canvasWrapperId)
-    this.#imageCanvas = this.#getCanvasElementById(imageCanvasId)
-    this.#maskCanvas = this.#getCanvasElementById(maskCanvasId)
-    this.#tempMaskCanvas = this.#getCanvasElementById(tempMaskCanvasId)
+  async initialize(graphImagePath: string) {
+    this.#canvasWrapper = this.#getDivElementById(this.#canvasWrapperId)
+    this.#imageCanvas = this.#getCanvasElementById(this.#imageCanvasId)
+    this.#maskCanvas = this.#getCanvasElementById(this.#maskCanvasId)
     this.#magnifierMaskCanvas = this.#getCanvasElementById(
-      magnifierMaskCanvasId
+      this.#magnifierMaskCanvasId
     )
+    this.#tempMaskCanvas = this.#getCanvasElementById(this.#tempMaskCanvasId)
     this.#imageElement = await this.loadImage(graphImagePath)
   }
 
-  #getDivElementById(id: string) {
-    return document.getElementById(id) as HTMLDivElement
+  #getDivElementById(id: string): HTMLDivElement {
+    const element = document.getElementById(id)
+    if (element instanceof HTMLDivElement) {
+      return element as HTMLDivElement
+    }
+    throw new Error(`element ID ${id} is not instance of a HTMLDivElement`)
   }
 
-  // TODO: TypeがHTMLCanvasElementでなければここでエラー出す。
-  #getCanvasElementById(id: string) {
-    return document.getElementById(id) as HTMLCanvasElement
+  #getCanvasElementById(id: string): HTMLCanvasElement {
+    const element = document.getElementById(id)
+    if (element instanceof HTMLCanvasElement) {
+      return element as HTMLCanvasElement
+    }
+    throw new Error(`element ID ${id} is not instance of a HTMLCanvasElement`)
   }
 
   loadImage(src: string): Promise<HTMLImageElement> {
@@ -288,23 +293,12 @@ export class Canvas {
     return this.imageElement.height
   }
 
-  // set scale(scale: number) {
-  //   this.#scale = scale
-  // }
-
   get canvasWrapper() {
     if (!this.#canvasWrapper) {
       throw new Error('#canvasWrapper is undefined.')
     }
     return this.#canvasWrapper
   }
-
-  // get scale() {
-  //   if (!this.#scale) {
-  //     throw new Error('#scale is undefined.')
-  //   }
-  //   return this.#scale
-  // }
 
   get imageElement() {
     if (!this.#imageElement) {
