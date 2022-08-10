@@ -1,4 +1,4 @@
-import { Dataset } from './dataset'
+import { DatasetInterface } from './datasetInterface'
 
 export type Position = {
   xPx: number
@@ -13,21 +13,17 @@ export type Plot = {
 export type Plots = Plot[]
 
 export class Datasets {
-  static #instance: Datasets
-  datasets: Dataset[] = [new Dataset('dataset 1', [], 1)]
+  datasets: DatasetInterface[]
   activeDatasetId = 1
   activePlotIds: number[] = []
 
-  static get instance(): Datasets {
-    if (!this.#instance) {
-      this.#instance = new Datasets()
-    }
-    return this.#instance
+  constructor(dataset: DatasetInterface) {
+    this.datasets = [dataset]
   }
 
   async initialize() {}
 
-  get activeDataset(): Dataset {
+  get activeDataset(): DatasetInterface {
     const targetDataset = this.datasets.find((dataset) => {
       return dataset.id === this.activeDatasetId
     })
@@ -86,10 +82,8 @@ export class Datasets {
     targetDataset.name = newName
   }
 
-  addDataset() {
-    this.datasets.push(
-      new Dataset(`dataset ${this.nextDatasetId}`, [], this.nextDatasetId)
-    )
+  addDataset(dataset: DatasetInterface) {
+    this.datasets.push(dataset)
   }
   popDataset() {
     if (this.datasets.length === 1) {

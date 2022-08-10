@@ -6,11 +6,11 @@ import {
   createMapper,
 } from 'vuex-smart-module'
 import { Plots, Position } from '@/types'
-import { Datasets, Datasets as DD } from '@/domains/datasets'
-const dd = DD.instance
+import { Datasets } from '@/domains/datasets'
+import { Dataset } from '@/domains/dataset'
 
 class state {
-  datasets: Datasets = dd
+  datasets: Datasets = new Datasets(new Dataset('dataset 1', [], 1))
 }
 
 class getters extends Getters<state> {
@@ -26,55 +26,49 @@ class mutations extends Mutations<state> {
 }
 
 class actions extends Actions<state, getters, mutations> {
-  dd
-  constructor() {
-    super()
-    this.dd = dd
-  }
-
   addPlot(plot: Position) {
-    this.dd.addPlot(plot.xPx, plot.yPx)
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.addPlot(plot.xPx, plot.yPx)
+    this.commit('updateDatasets', this.state.datasets)
   }
   addDataset() {
-    this.dd.addDataset()
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.addDataset(new Dataset('dataset 1', [], 1))
+    this.commit('updateDatasets', this.state.datasets)
   }
   popDataset() {
-    this.dd.popDataset()
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.popDataset()
+    this.commit('updateDatasets', this.state.datasets)
   }
   moveActivePlot(arrow: string) {
-    this.dd.moveActivePlot(arrow)
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.moveActivePlot(arrow)
+    this.commit('updateDatasets', this.state.datasets)
   }
   clearPlots() {
-    this.dd.clearPlots()
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.clearPlots()
+    this.commit('updateDatasets', this.state.datasets)
   }
   clearActivePlots() {
-    this.dd.clearActivePlots()
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.clearActivePlots()
+    this.commit('updateDatasets', this.state.datasets)
   }
   setPlots(plots: Plots) {
-    this.dd.setPlots(plots)
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.setPlots(plots)
+    this.commit('updateDatasets', this.state.datasets)
   }
   toggleActivatedPlot(id: number) {
-    this.dd.toggleActivatedPlot(id)
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.toggleActivatedPlot(id)
+    this.commit('updateDatasets', this.state.datasets)
   }
   activatePlot(id: number) {
-    this.dd.activatePlot(id)
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.activatePlot(id)
+    this.commit('updateDatasets', this.state.datasets)
   }
   setActiveDataset(id: number) {
-    this.dd.setActiveDataset(id)
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.setActiveDataset(id)
+    this.commit('updateDatasets', this.state.datasets)
   }
   sortPlots() {
-    this.dd.sortPlots()
-    this.commit('updateDatasets', this.dd)
+    this.state.datasets.sortPlots()
+    this.commit('updateDatasets', this.state.datasets)
   }
 }
 
