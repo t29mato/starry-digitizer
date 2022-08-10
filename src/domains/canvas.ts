@@ -15,7 +15,6 @@ export class Canvas {
     endX: 0,
     endY: 0,
   }
-  plotSizePx = 10
   maskMode = -1
   penToolSizePx = 50
   eraserSizePx = 30

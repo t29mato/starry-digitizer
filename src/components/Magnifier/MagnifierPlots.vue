@@ -11,8 +11,8 @@
       }px, -${canvas.cursor.yPx - magnifierHalfSize / magnifier.scale}px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      width: `${canvas.plotSizePx / canvas.scale}px`,
-      height: `${canvas.plotSizePx / canvas.scale}px`,
+      width: `${plotSizePx / canvas.scale}px`,
+      height: `${plotSizePx / canvas.scale}px`,
       'background-color': isActive ? 'red' : 'dodgerblue',
       outline: `${1 / canvas.scale}px solid white`,
       'border-radius': '50%',
@@ -22,6 +22,7 @@
 
 <script lang="ts">
 import { canvasMapper } from '@/store/modules/canvas'
+import { styleMapper } from '@/store/modules/style'
 import { magnifierMapper } from '@/store/modules/magnifier'
 import { Position } from '@/types'
 import Vue from 'vue'
@@ -29,8 +30,9 @@ export default Vue.extend({
   computed: {
     ...magnifierMapper.mapGetters(['magnifier']),
     ...canvasMapper.mapGetters(['canvas']),
+    ...styleMapper.mapGetters(['plotSizePx']),
     plotHalfSize(): number {
-      return this.canvas.plotSizePx / 2
+      return this.plotSizePx / 2
     },
     magnifierHalfSize(): number {
       return this.magnifierSize / 2

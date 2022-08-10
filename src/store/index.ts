@@ -8,6 +8,7 @@ import { createStore, Module } from 'vuex-smart-module'
 import { symbolExtractByArea } from './modules/symbolExtractByArea'
 import { lineExtract } from './modules/lineExtract'
 import { extractor } from './modules/extractor'
+import { style } from './modules/style'
 
 Vue.use(Vuex)
 
@@ -20,6 +21,7 @@ const module = new Module({
     symbolExtractByArea,
     lineExtract,
     extractor,
+    style,
   },
 })
 

@@ -3,7 +3,7 @@
     <canvas-plot
       v-for="plot in datasets.activeScaledPlots"
       :key="plot.id"
-      :plotSizePx="canvas.plotSizePx"
+      :plotSizePx="plotSizePx"
       :plot="plot"
       :isActive="datasets.activePlotIds.includes(plot.id)"
     ></canvas-plot>
@@ -15,6 +15,7 @@ import CanvasPlot from '@/components/Canvas/CanvasPlot.vue'
 import Vue from 'vue'
 import { datasetMapper } from '@/store/modules/dataset'
 import { canvasMapper } from '@/store/modules/canvas'
+import { styleMapper } from '@/store/modules/style'
 
 export default Vue.extend({
   components: {
@@ -23,8 +24,9 @@ export default Vue.extend({
   computed: {
     ...datasetMapper.mapGetters(['datasets']),
     ...canvasMapper.mapGetters(['canvas']),
+    ...styleMapper.mapGetters(['plotSizePx']),
     plotHalfSize(): number {
-      return this.canvas.plotSizePx / 2
+      return this.plotSizePx / 2
     },
   },
   data() {
