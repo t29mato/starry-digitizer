@@ -1,23 +1,18 @@
 import { CanvasInterface } from './canvasInterface'
 import ExtractStrategyInterface from './extractStrategies/ExtractStrategyInterface'
-import SymbolExtractByArea from './extractStrategies/SymbolExtractByArea'
 
 export type ExtractStrategy = 'Symbol Extract' | 'Line Extract'
 
 export class Extractor {
-  strategy: ExtractStrategyInterface = SymbolExtractByArea.instance
+  strategy: ExtractStrategyInterface
   strategies: ExtractStrategy[] = ['Symbol Extract', 'Line Extract']
   colorPicker = '#000000ff'
   colors = [] as { R: number; G: number; B: number }[][]
   colorDistancePct = 5
   swatches = [...Array(5)].map(() => []) as string[][]
 
-  static #instance: Extractor
-  static get instance(): Extractor {
-    if (!this.#instance) {
-      this.#instance = new Extractor()
-    }
-    return this.#instance
+  constructor(strategy: ExtractStrategyInterface) {
+    this.strategy = strategy
   }
 
   execute(

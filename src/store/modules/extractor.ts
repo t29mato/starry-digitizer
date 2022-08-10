@@ -5,11 +5,12 @@ import {
   Module,
   createMapper,
 } from 'vuex-smart-module'
-import { Extractor, ExtractStrategy } from '@/domains/extractor'
+import { Extractor } from '@/domains/extractor'
 import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
+import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
 
 class state {
-  extractor = Extractor.instance
+  extractor = new Extractor(SymbolExtractByArea.instance)
 }
 
 class getters extends Getters<state> {
@@ -32,22 +33,22 @@ class actions extends Actions<state, getters, mutations> {
   }
 
   setColorDistancePct(colorDistancePct: number) {
-    Extractor.instance.colorDistancePct = colorDistancePct
-    this.commit('updateExtractor', Extractor.instance)
+    this.state.extractor.colorDistancePct = colorDistancePct
+    this.commit('updateExtractor', this.state.extractor)
   }
   setStrategy(strategy: ExtractStrategyInterface) {
-    Extractor.instance.strategy = strategy
-    this.commit('updateExtractor', Extractor.instance)
+    this.state.extractor.strategy = strategy
+    this.commit('updateExtractor', this.state.extractor)
   }
 
   setColorPicker(color: string) {
-    Extractor.instance.colorPicker = color
-    this.commit('updateExtractor', Extractor.instance)
+    this.state.extractor.colorPicker = color
+    this.commit('updateExtractor', this.state.extractor)
   }
 
   setSwatches(colorSwatches: string[]) {
-    Extractor.instance.updateSwatches(colorSwatches)
-    this.commit('updateExtractor', Extractor.instance)
+    this.state.extractor.updateSwatches(colorSwatches)
+    this.commit('updateExtractor', this.state.extractor)
   }
 }
 
