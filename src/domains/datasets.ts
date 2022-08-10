@@ -1,6 +1,3 @@
-import { Canvas } from '@/domains/canvas'
-const cm = Canvas.instance
-
 export type Position = {
   xPx: number
   yPx: number
@@ -55,12 +52,12 @@ export class Datasets {
     return targetDataset
   }
 
-  get activeScaledPlots(): Plots {
+  activeScaledPlots(scale: number): Plots {
     const plots = this.activeDataset.plots.map((plot) => {
       return {
         id: plot.id,
-        xPx: plot.xPx * cm.scale,
-        yPx: plot.yPx * cm.scale,
+        xPx: plot.xPx * scale,
+        yPx: plot.yPx * scale,
       }
     })
     return plots

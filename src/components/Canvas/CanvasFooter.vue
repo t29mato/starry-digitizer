@@ -4,7 +4,7 @@
     <v-btn
       small
       class="ml-2"
-      :disabled="datasets.activeScaledPlots.length === 0"
+      :disabled="datasets.activeDataset.plots.length === 0"
       @click="clearPlots"
       >Clear Plots</v-btn
     >
@@ -12,7 +12,7 @@
       small
       class="ml-2"
       :disabled="
-        datasets.activeScaledPlots.length === 0 || !datasets.plotsAreActive
+        datasets.activeDataset.plots.length === 0 || !datasets.plotsAreActive
       "
       @click="clearActivePlots"
       >Clear Active Plot</v-btn

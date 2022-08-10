@@ -1,7 +1,7 @@
 <template>
   <div>
     <canvas-plot
-      v-for="plot in datasets.activeScaledPlots"
+      v-for="plot in datasets.activeScaledPlots(canvas.scale)"
       :key="plot.id"
       :plotSizePx="plotSizePx"
       :plot="plot"
