@@ -2,8 +2,12 @@ import ExtractStrategyInterface from './ExtractStrategyInterface'
 import { Plot } from '@/types'
 import { CanvasInterface } from '../canvasInterface'
 import { ExtractorInterface } from '../extractorInterface'
+import { ExtractParent } from './extractParent'
 
-export default class SymbolExtractByArea implements ExtractStrategyInterface {
+export default class SymbolExtractByArea
+  extends ExtractParent
+  implements ExtractStrategyInterface
+{
   name = 'Symbol Extract'
   minDiameterPx = 5
   maxDiameterPx = 100
@@ -15,24 +19,8 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     }
     return this.#instance
   }
-
-  // TODO: 背景色をスキップするか選択できるようにする
-  #isOnMask(r: number, g: number, b: number, a: number): boolean {
-    return r === 255 && g === 255 && b === 0 && a > 0
-  }
-
-  matchColor(
-    rgb1: [number, number, number],
-    rgb2: [number, number, number],
-    matchRatio: number
-  ) {
-    const diffRatio =
-      (rgb1.reduce((prev, _, i) => {
-        return prev + Math.pow(rgb1[i] - rgb2[i], 2)
-      }, 0) /
-        (Math.pow(255, 2) * 3)) *
-      100
-    return diffRatio < matchRatio
+  constructor() {
+    super()
   }
 
   execute(canvas: CanvasInterface, extractor: ExtractorInterface) {
@@ -67,7 +55,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
             (h * width + w) * 4,
             (h * width + w + 1) * 4
           )
-          if (!this.#isOnMask(r2, g2, b2, a2)) {
+          if (!this.isOnMask(r2, g2, b2, a2)) {
             visitedArea[h][w] = true
           }
         }
