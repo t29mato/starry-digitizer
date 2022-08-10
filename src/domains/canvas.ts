@@ -7,10 +7,10 @@ export class Canvas {
   static #instance: Canvas
   #canvasWrapperId = 'canvasWrapper'
   #canvasWrapper?: HTMLDivElement
-  #imageCanvas?: HTMLCanvas
-  #maskCanvas?: HTMLCanvas
-  #magnifierMaskCanvas?: HTMLCanvas
-  #tempMaskCanvas?: HTMLCanvas
+  #imageCanvasId: string = 'imageCanvas'
+  #maskCanvasId: string = 'maskCanvas'
+  #magnifierMaskCanvasId: string = 'magnifierMaskCanvas'
+  #tempMaskCanvasId: string = 'tempMaskCanvas'
   isDrawnMask = false
   #imageElement?: HTMLImageElement
   scale = 1
@@ -36,10 +36,6 @@ export class Canvas {
 
   async initialize(graphImagePath: string) {
     this.#canvasWrapper = this.#getDivElementById(this.#canvasWrapperId)
-    this.#imageCanvas = new HTMLCanvas('imageCanvas')
-    this.#maskCanvas = new HTMLCanvas('maskCanvas')
-    this.#magnifierMaskCanvas = new HTMLCanvas('magnifierMaskCanvas')
-    this.#tempMaskCanvas = new HTMLCanvas('tempMaskCanvas')
     this.#imageElement = await this.loadImage(graphImagePath)
   }
 
@@ -281,31 +277,19 @@ export class Canvas {
   }
 
   get imageCanvas() {
-    if (!this.#imageCanvas) {
-      throw new Error('#imageCanvas is undefined.')
-    }
-    return this.#imageCanvas
+    return new HTMLCanvas(this.#imageCanvasId)
   }
 
   get maskCanvas() {
-    if (!this.#maskCanvas) {
-      throw new Error('#maskCanvas is undefined.')
-    }
-    return this.#maskCanvas
+    return new HTMLCanvas(this.#maskCanvasId)
   }
 
   get tempMaskCanvas() {
-    if (!this.#tempMaskCanvas) {
-      throw new Error('#tempMaskCanvas is undefined.')
-    }
-    return this.#tempMaskCanvas
+    return new HTMLCanvas(this.#tempMaskCanvasId)
   }
 
   get magnifierMaskCanvas() {
-    if (!this.#magnifierMaskCanvas) {
-      throw new Error('#magnifierMaskCanvas is undefined.')
-    }
-    return this.#magnifierMaskCanvas
+    return new HTMLCanvas(this.#magnifierMaskCanvasId)
   }
 
   drawFitSizeImage() {
