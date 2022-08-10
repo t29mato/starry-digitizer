@@ -80,8 +80,6 @@ export default Vue.extend({
       await this.canvas.initialize(this.initialGraphImagePath)
       this.drawFitSizeImage()
       this.setUploadImageUrl(this.initialGraphImagePath)
-
-      // FIXME: setSwatchesはcolorSettingsのmountedに移す
       this.setSwatches(this.canvas.colorSwatches)
     } finally {
       //
