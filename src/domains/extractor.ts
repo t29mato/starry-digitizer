@@ -17,7 +17,15 @@ export class Extractor {
   }
 
   execute(canvas: CanvasInterface): Plots {
-    return this.strategy.execute(canvas, this)
+    return this.strategy.execute(
+      canvas.imageElement.height,
+      canvas.imageElement.width,
+      canvas.originalImageCanvasColors,
+      canvas.originalSizeMaskCanvasColors,
+      canvas.isDrawnMask,
+      [this.targetColor.R, this.targetColor.G, this.targetColor.B],
+      this.colorDistancePct
+    )
   }
 
   get targetColor(): { R: number; G: number; B: number } {

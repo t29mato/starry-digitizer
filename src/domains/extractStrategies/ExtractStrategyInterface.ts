@@ -6,9 +6,12 @@ import { ExtractorInterface } from '../extractorInterface'
 export default interface ExtractStrategyInterface {
   name: string
   execute(
-    cm: CanvasInterface,
-    extractor: ExtractorInterface
-    // targetColor: [number, number, number],
-    // colorMatchThreshold: number
+    height: number,
+    width: number,
+    imageColors: Uint8ClampedArray,
+    maskColors: Uint8ClampedArray,
+    isDrawnMask: boolean,
+    targetColor: [number, number, number],
+    colorMatchThreshold: number
   ): Plot[]
 }

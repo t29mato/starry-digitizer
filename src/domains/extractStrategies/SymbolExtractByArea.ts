@@ -23,27 +23,23 @@ export default class SymbolExtractByArea
     super()
   }
 
-  execute(canvas: CanvasInterface, extractor: ExtractorInterface) {
-    const height = canvas.imageElement.height
-    const width = canvas.imageElement.width
-    const maskCanvasColors = canvas.originalSizeMaskCanvasColors
-    const graphCanvasColors = canvas.originalImageCanvasColors
-    const scale = canvas.scale
-    const targetColor = [
-      extractor.targetColor.R,
-      extractor.targetColor.G,
-      extractor.targetColor.B,
-    ] as [number, number, number]
-    const colorMatchThreshold = extractor.colorDistancePct
-
+  execute(
+    height: number,
+    width: number,
+    imageColors: Uint8ClampedArray,
+    maskColors: Uint8ClampedArray,
+    isDrawnMask: boolean,
+    targetColor: [number, number, number],
+    colorMatchThreshold: number
+  ) {
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
       Array(width).fill(false)
     )
-    if (canvas.isDrawnMask) {
+    if (isDrawnMask) {
       for (let h = 0; h < height; h++) {
         for (let w = 0; w < width; w++) {
-          // const [r1, g1, b1, a1] = graphCanvasColors.slice(
+          // const [r1, g1, b1, a1] = imageColors.slice(
           //   (h * width + w) * 4,
           //   (h * width + w + 1) * 4
           // )
@@ -51,7 +47,7 @@ export default class SymbolExtractByArea
           //   visitedArea[h][w] = true
           //   continue
           // }
-          const [r2, g2, b2, a2] = maskCanvasColors.slice(
+          const [r2, g2, b2, a2] = maskColors.slice(
             (h * width + w) * 4,
             (h * width + w + 1) * 4
           )
@@ -68,7 +64,7 @@ export default class SymbolExtractByArea
         if (visitedArea[h][w]) {
           continue
         }
-        const [r1, g1, b1, a1] = graphCanvasColors.slice(
+        const [r1, g1, b1, a1] = imageColors.slice(
           (h * width + w) * 4,
           (h * width + w + 1) * 4
         )
@@ -106,7 +102,7 @@ export default class SymbolExtractByArea
                   continue
                 }
                 count++
-                const [r, g, b] = graphCanvasColors.slice(
+                const [r, g, b] = imageColors.slice(
                   (nh * width + nw) * 4,
                   (nh * width + nw + 1) * 4
                 )
