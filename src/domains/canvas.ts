@@ -1,20 +1,16 @@
 import { Position } from '@/types'
 import ColorThief from 'colorthief'
-import XYAxesCalculator from './XYAxesCalculator'
+import { HTMLCanvas } from './dom/HTMLCanvas'
 const colorThief = new ColorThief()
 
 export class Canvas {
   static #instance: Canvas
   #canvasWrapperId = 'canvasWrapper'
   #canvasWrapper?: HTMLDivElement
-  #imageCanvasId = 'imageCanvas'
-  #imageCanvas?: HTMLCanvasElement
-  #maskCanvasId = 'maskCanvas'
-  #maskCanvas?: HTMLCanvasElement
-  #magnifierMaskCanvasId = 'magnifierMaskCanvas'
-  #magnifierMaskCanvas?: HTMLCanvasElement
-  #tempMaskCanvasId = 'tempMaskCanvas'
-  #tempMaskCanvas?: HTMLCanvasElement
+  #imageCanvas?: HTMLCanvas
+  #maskCanvas?: HTMLCanvas
+  #magnifierMaskCanvas?: HTMLCanvas
+  #tempMaskCanvas?: HTMLCanvas
   isDrawnMask = false
   #imageElement?: HTMLImageElement
   scale = 1
@@ -40,12 +36,10 @@ export class Canvas {
 
   async initialize(graphImagePath: string) {
     this.#canvasWrapper = this.#getDivElementById(this.#canvasWrapperId)
-    this.#imageCanvas = this.#getCanvasElementById(this.#imageCanvasId)
-    this.#maskCanvas = this.#getCanvasElementById(this.#maskCanvasId)
-    this.#magnifierMaskCanvas = this.#getCanvasElementById(
-      this.#magnifierMaskCanvasId
-    )
-    this.#tempMaskCanvas = this.#getCanvasElementById(this.#tempMaskCanvasId)
+    this.#imageCanvas = new HTMLCanvas('imageCanvas')
+    this.#maskCanvas = new HTMLCanvas('maskCanvas')
+    this.#magnifierMaskCanvas = new HTMLCanvas('magnifierMaskCanvas')
+    this.#tempMaskCanvas = new HTMLCanvas('tempMaskCanvas')
     this.#imageElement = await this.loadImage(graphImagePath)
   }
 
@@ -55,14 +49,6 @@ export class Canvas {
       return element as HTMLDivElement
     }
     throw new Error(`element ID ${id} is not instance of a HTMLDivElement`)
-  }
-
-  #getCanvasElementById(id: string): HTMLCanvasElement {
-    const element = document.getElementById(id)
-    if (element instanceof HTMLCanvasElement) {
-      return element as HTMLCanvasElement
-    }
-    throw new Error(`element ID ${id} is not instance of a HTMLCanvasElement`)
   }
 
   loadImage(src: string): Promise<HTMLImageElement> {
@@ -80,15 +66,6 @@ export class Canvas {
       yPx: this.cursor.yPx * this.scale,
     }
   }
-
-  // FIXME: このsetterいる？
-  set CanvasCursor(position: Position) {
-    this.cursor = position
-  }
-
-  // set PenToolSizePx(size: number) {
-  //   this.penToolSizePx = size
-  // }
 
   get scaledPenToolSizePx(): number {
     return this.penToolSizePx * this.scale
@@ -122,7 +99,7 @@ export class Canvas {
   }
 
   mouseMoveForPen(xPx: number, yPx: number, penSize: number) {
-    const ctx = this.maskCanvasCtx
+    const ctx = this.maskCanvas.context
     ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     ctx.beginPath()
     if (this.cursor.xPx === 0) {
@@ -135,11 +112,11 @@ export class Canvas {
     ctx.lineWidth = penSize
     ctx.stroke()
     this.isDrawnMask = true
-    this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
+    this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
   mouseMoveForEraser(xPx: number, yPx: number, penSize: number) {
-    const ctx = this.maskCanvasCtx
+    const ctx = this.maskCanvas.context
     ctx.globalCompositeOperation = 'destination-out'
     ctx.strokeStyle = '#000000' // INFO: black
     ctx.beginPath()
@@ -154,13 +131,13 @@ export class Canvas {
     ctx.stroke()
     this.isDrawnMask = true
     ctx.globalCompositeOperation = 'source-over'
-    this.magnifierMaskCanvasCtx.clearRect(
+    this.magnifierMaskCanvas.context.clearRect(
       0,
       0,
-      this.maskCanvas.width,
-      this.maskCanvas.height
+      this.maskCanvas.element.width,
+      this.maskCanvas.element.height
     )
-    this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
+    this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
   mouseDownForBox(xPx: number, yPx: number) {
@@ -169,16 +146,16 @@ export class Canvas {
   }
 
   mouseMoveForBox(xPx: number, yPx: number) {
-    this.tempMaskCanvasCtx.strokeStyle = '#000000ff' // INFO: black
-    this.tempMaskCanvasCtx.clearRect(
+    this.tempMaskCanvas.context.strokeStyle = '#000000ff' // INFO: black
+    this.tempMaskCanvas.context.clearRect(
       0,
       0,
-      this.maskCanvas.width,
-      this.maskCanvas.height
+      this.maskCanvas.element.width,
+      this.maskCanvas.element.height
     )
     this.#rectangle.endY = yPx - this.#rectangle.startY
     this.#rectangle.endX = xPx - this.#rectangle.startX
-    this.tempMaskCanvasCtx.strokeRect(
+    this.tempMaskCanvas.context.strokeRect(
       this.#rectangle.startX,
       this.#rectangle.startY,
       this.#rectangle.endX,
@@ -187,21 +164,21 @@ export class Canvas {
   }
 
   mouseUpForBox() {
-    this.maskCanvasCtx.fillStyle = '#ffff00ff' // INFO: yellow
-    this.maskCanvasCtx.fillRect(
+    this.maskCanvas.context.fillStyle = '#ffff00ff' // INFO: yellow
+    this.maskCanvas.context.fillRect(
       this.#rectangle.startX,
       this.#rectangle.startY,
       this.#rectangle.endX,
       this.#rectangle.endY
     )
-    this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
+    this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
     this.isDrawnMask = true
     this.clearRectangle()
-    this.tempMaskCanvasCtx.clearRect(
+    this.tempMaskCanvas.context.clearRect(
       0,
       0,
-      this.maskCanvas.width,
-      this.maskCanvas.height
+      this.maskCanvas.element.width,
+      this.maskCanvas.element.height
     )
   }
 
@@ -213,10 +190,6 @@ export class Canvas {
       endY: 0,
     }
   }
-
-  // resetDrawMaskPos() {
-  //   this.cursor = { xPx: 0, yPx: 0 }
-  // }
 
   get originalImageCanvasColors() {
     const newCanvas = document.createElement('canvas')
@@ -239,7 +212,7 @@ export class Canvas {
     newCanvas.setAttribute('height', String(this.originalHeight))
     const ctx = newCanvas.getContext('2d') as CanvasRenderingContext2D
     ctx.drawImage(
-      this.maskCanvas,
+      this.maskCanvas.element,
       0,
       0,
       this.originalWidth,
@@ -270,17 +243,17 @@ export class Canvas {
   }
 
   clearMask() {
-    this.maskCanvasCtx.clearRect(
+    this.maskCanvas.context.clearRect(
       0,
       0,
-      this.maskCanvas.width,
-      this.maskCanvas.height
+      this.maskCanvas.element.width,
+      this.maskCanvas.element.height
     )
-    this.magnifierMaskCanvasCtx.clearRect(
+    this.magnifierMaskCanvas.context.clearRect(
       0,
       0,
-      this.maskCanvas.width,
-      this.maskCanvas.height
+      this.maskCanvas.element.width,
+      this.maskCanvas.element.height
     )
     this.isDrawnMask = false
   }
@@ -314,40 +287,11 @@ export class Canvas {
     return this.#imageCanvas
   }
 
-  get imageCanvasCtx() {
-    if (!this.#imageCanvas) {
-      throw new Error('#imageCanvas is undefined.')
-    }
-    return this.#imageCanvas.getContext('2d') as CanvasRenderingContext2D
-  }
-
-  get imageCanvasColors() {
-    return this.imageCanvasCtx.getImageData(
-      0,
-      0,
-      this.originalWidth,
-      this.originalHeight
-    ).data
-  }
-
   get maskCanvas() {
     if (!this.#maskCanvas) {
       throw new Error('#maskCanvas is undefined.')
     }
     return this.#maskCanvas
-  }
-
-  get maskCanvasCtx() {
-    return this.maskCanvas.getContext('2d') as CanvasRenderingContext2D
-  }
-
-  get maskCanvasColors() {
-    return this.maskCanvasCtx.getImageData(
-      0,
-      0,
-      this.maskCanvas.width,
-      this.maskCanvas.height
-    ).data
   }
 
   get tempMaskCanvas() {
@@ -357,19 +301,11 @@ export class Canvas {
     return this.#tempMaskCanvas
   }
 
-  get tempMaskCanvasCtx() {
-    return this.tempMaskCanvas.getContext('2d') as CanvasRenderingContext2D
-  }
-
   get magnifierMaskCanvas() {
     if (!this.#magnifierMaskCanvas) {
       throw new Error('#magnifierMaskCanvas is undefined.')
     }
     return this.#magnifierMaskCanvas
-  }
-
-  get magnifierMaskCanvasCtx() {
-    return this.magnifierMaskCanvas.getContext('2d') as CanvasRenderingContext2D
   }
 
   drawFitSizeImage() {
@@ -407,19 +343,25 @@ export class Canvas {
     const tempMaskCanvasCtx = tempMaskCanvas.getContext(
       '2d'
     ) as CanvasRenderingContext2D
-    tempMaskCanvas.width = this.maskCanvas.width
-    tempMaskCanvas.height = this.maskCanvas.height
-    tempMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0)
-    this.maskCanvas.width = width
-    this.maskCanvas.height = height
-    this.maskCanvasCtx.drawImage(tempMaskCanvas, 0, 0, width, height)
-    this.tempMaskCanvas.width = width
-    this.tempMaskCanvas.height = height
-    this.imageCanvas.width = width
-    this.imageCanvas.height = height
-    this.imageCanvasCtx.drawImage(this.imageElement, 0, 0, width, height)
-    this.magnifierMaskCanvas.width = width
-    this.magnifierMaskCanvas.height = height
-    this.magnifierMaskCanvasCtx.drawImage(this.maskCanvas, 0, 0, width, height)
+    tempMaskCanvas.width = this.maskCanvas.element.width
+    tempMaskCanvas.height = this.maskCanvas.element.height
+    tempMaskCanvasCtx.drawImage(this.maskCanvas.element, 0, 0)
+    this.maskCanvas.element.width = width
+    this.maskCanvas.element.height = height
+    this.maskCanvas.context.drawImage(tempMaskCanvas, 0, 0, width, height)
+    this.tempMaskCanvas.element.width = width
+    this.tempMaskCanvas.element.height = height
+    this.imageCanvas.element.width = width
+    this.imageCanvas.element.height = height
+    this.imageCanvas.context.drawImage(this.imageElement, 0, 0, width, height)
+    this.magnifierMaskCanvas.element.width = width
+    this.magnifierMaskCanvas.element.height = height
+    this.magnifierMaskCanvas.context.drawImage(
+      this.maskCanvas.element,
+      0,
+      0,
+      width,
+      height
+    )
   }
 }
