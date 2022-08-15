@@ -1,3 +1,4 @@
+/* eslint-disable jest/valid-title */
 /* eslint-disable prettier/prettier */
 import LineExtract from './lineExtract'
 
@@ -30,7 +31,7 @@ wwwwww
     0,0,0,0,
     0,0,0,0,
     0,0,0,0,
-  ], [255,0,0], 10, [], false)
+  ], [], false, [255,0,0], 10)
   expect(plots).toEqual([
     {
       "id": 0,

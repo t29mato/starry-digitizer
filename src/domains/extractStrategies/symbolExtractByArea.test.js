@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable jest/valid-title */
 import SymbolExtractByArea from './symbolExtractByArea'
 
 const extractor = SymbolExtractByArea.instance
@@ -26,7 +27,7 @@ wwr
     0,0,0,0,
     0,0,0,0,
     255,0,0,0,
-  ], [255,0,0], 10, [], false)
+  ], [], false, [255,0,0], 10)
   expect(plots).toEqual([
     {
       id: 0,
@@ -56,7 +57,7 @@ wwr
     0,0,0,0,
     0,0,0,0,
     255,0,0,0,
-  ], [255,0,0], 10, [], false)
+  ], [], false, [255,0,0], 10)
   expect(plots).toEqual([
     {
       id: 0,
@@ -81,7 +82,7 @@ rrr
     0,0,0,0,
     0,0,0,0,
     255,0,0,0,
-  ], [255,0,0], 10, [], false)
+  ], [], false, [255,0,0], 10)
   expect(plots).toEqual([
     {
       id: 0,
@@ -106,7 +107,7 @@ rrr
     255,0,0,0,
     255,0,0,0,
     255,0,0,0,
-  ], [255,0,0], 10, [], false)
+  ], [], false, [255,0,0], 10)
   expect(plots).toEqual([
     {
       id: 0,
@@ -136,7 +137,7 @@ rww
     255,0,0,0,
     0,0,0,0,
     0,0,0,0,
-  ], [255,0,0], 10, [], false)
+  ], [], false, [255,0,0], 10)
   expect(plots).toEqual([
     {
       id: 0,
@@ -169,7 +170,7 @@ rrrr
     255,0,0,0,
     255,0,0,0,
     255,0,0,0,
-  ], [255,0,0], 10, [], false)
+  ], [], false, [255,0,0], 10)
   expect(plots).toEqual([
     {
       id: 0,

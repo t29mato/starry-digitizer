@@ -145,9 +145,9 @@ export default class LineExtract
               .map((pixel) => pixel.yPx)
           )
           const yPxMed = (yPxMax + yPxMin) / 2
-          const lineWidth = yPxMax - yPxMin
+          const lineWidth = yPxMax - yPxMin + 1
           const area = pixels.length
-          if (this.lineWidthPx < lineWidth) {
+          if (this.lineWidthPx <= lineWidth) {
             // To avoid gaps between calculation and rendering
             // INFO: In manual, pixels are limited to moving one pixel at a time.
             const offsetPx = 0.5
