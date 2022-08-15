@@ -40,7 +40,6 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <v-btn small @click="openEditDialog">Manage Datasets</v-btn>
       <v-btn
         small
         class="mt-2"
