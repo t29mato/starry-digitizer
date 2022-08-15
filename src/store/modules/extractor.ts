@@ -6,8 +6,8 @@ import {
   createMapper,
 } from 'vuex-smart-module'
 import { Extractor } from '@/domains/extractor'
-import ExtractStrategyInterface from '@/domains/extractStrategies/ExtractStrategyInterface'
-import SymbolExtractByArea from '@/domains/extractStrategies/SymbolExtractByArea'
+import ExtractStrategyInterface from '@/domains/extractStrategies/extractStrategyInterface'
+import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
 
 class state {
   extractor = new Extractor(SymbolExtractByArea.instance)

@@ -5,7 +5,7 @@ import {
   Module,
   createMapper,
 } from 'vuex-smart-module'
-import LineExtract from '@/domains/extractStrategies/LineExtract'
+import LineExtract from '@/domains/extractStrategies/lineExtract'
 
 class state {
   lineExtract = LineExtract.instance
