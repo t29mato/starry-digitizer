@@ -2,8 +2,8 @@
   <div
     :style="{
       position: 'absolute',
-      top: `${canvas.scaledCursor.yPx - 12}px`,
-      left: `${canvas.scaledCursor.xPx + 7}px`,
+      top: `${canvas.scaledCursor.yPx - axisCrossCursorPx}px`,
+      left: `${canvas.scaledCursor.xPx + axisCrossCursorPx}px`,
       'pointer-events': 'none',
     }"
   >
@@ -14,10 +14,12 @@
 <script lang="ts">
 import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
+import { styleMapper } from '@/store/modules/style'
 import Vue from 'vue'
 export default Vue.extend({
   props: {},
   computed: {
+    ...styleMapper.mapGetters(['axisCrossCursorPx']),
     ...canvasMapper.mapGetters(['canvas']),
     ...axesMapper.mapGetters(['axes']),
     label(): string {

@@ -4,20 +4,30 @@
       :style="{
         position: 'absolute',
         top: `${yPx - axisHalfSizePx}px`,
-        left: `${xPx - axisHalfSizePx}px`,
+        left: `${xPx - axisCrossBorderHalfPx}px`,
         'pointer-events': 'none',
-        width: `${axisSizePx}px`,
+        width: `${axisCrossBorderPx}px`,
         height: `${axisSizePx}px`,
-        'border-radius': '50%',
-        'background-color': isActive ? 'red' : 'dodgerblue',
-        outline: `1px solid white`,
+        background: isActive ? 'red' : 'dodgerblue',
       }"
-    ></div>
+    >
+      <div
+        :style="{
+          content: '',
+          position: 'absolute',
+          top: `${axisCrossTopPx}px`,
+          left: `${-axisCrossTopPx}px`,
+          width: `${axisSizePx}px`,
+          height: `${axisCrossBorderPx}px`,
+          background: isActive ? 'red' : 'dodgerblue',
+        }"
+      ></div>
+    </div>
     <span
       :style="{
         position: 'absolute',
-        top: `${yPx - axisHalfSizePx - 9}px`,
-        left: `${xPx - axisHalfSizePx + 12}px`,
+        top: `${yPx - axisCrossCursorPx}px`,
+        left: `${xPx + axisCrossCursorPx}px`,
         'pointer-events': 'none',
         'user-select': 'none',
       }"
@@ -33,7 +43,14 @@ import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
-    ...styleMapper.mapGetters(['axisSizePx', 'axisHalfSizePx']),
+    ...styleMapper.mapGetters([
+      'axisSizePx',
+      'axisHalfSizePx',
+      'axisCrossBorderHalfPx',
+      'axisCrossBorderPx',
+      'axisCrossTopPx',
+      'axisCrossCursorPx',
+    ]),
     ...canvasMapper.mapGetters(['canvas']),
     xPx(): number {
       return this.axis.xPx * this.canvas.scale

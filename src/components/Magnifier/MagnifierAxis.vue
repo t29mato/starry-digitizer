@@ -4,25 +4,39 @@
       :style="{
         position: 'absolute',
         top: `${((yPx - axisHalfSizePx) / canvas.scale) * magnifier.scale}px`,
-        left: `${((xPx - axisHalfSizePx) / canvas.scale) * magnifier.scale}px`,
+        left: `${
+          ((xPx - axisCrossBorderHalfPx) / canvas.scale) * magnifier.scale
+        }px`,
         'pointer-events': 'none',
         transform: `scale(${magnifier.scale}) translate(-${
           canvas.cursor.xPx - magnifierHalfSizePx / magnifier.scale
         }px, -${canvas.cursor.yPx - magnifierHalfSizePx / magnifier.scale}px)`,
         'transform-origin': 'top left',
-        width: `${axisSizePx / canvas.scale}px`,
+        width: `${axisCrossBorderPx / canvas.scale}px`,
         height: `${axisSizePx / canvas.scale}px`,
-        'border-radius': '50%',
-        'background-color': isActive ? 'red' : 'dodgerblue',
-        outline: `${1 / canvas.scale}px solid white`,
+        background: isActive ? 'red' : 'dodgerblue',
       }"
-    ></div>
+    >
+      <div
+        :style="{
+          content: '',
+          position: 'absolute',
+          top: `${axisCrossTopPx / canvas.scale}px`,
+          left: `${-(axisCrossTopPx / canvas.scale)}px`,
+          width: `${axisSizePx / canvas.scale}px`,
+          height: `${axisCrossBorderPx / canvas.scale}px`,
+          background: isActive ? 'red' : 'dodgerblue',
+        }"
+      ></div>
+    </div>
     <span
       :style="{
         position: 'absolute',
-        top: `${(yPx / canvas.scale - 12) * magnifier.scale}px`,
+        top: `${
+          ((yPx - axisCrossCursorPx) / canvas.scale) * magnifier.scale
+        }px`,
         left: `${
-          ((xPx + axisHalfSizePx) / canvas.scale + 3) * magnifier.scale
+          ((xPx + axisCrossCursorPx) / canvas.scale) * magnifier.scale
         }px`,
         'pointer-events': 'none',
         transform: `scale(${magnifier.scale}) translate(-${
@@ -49,7 +63,14 @@ export default Vue.extend({
   computed: {
     ...canvasMapper.mapGetters(['canvas']),
     ...axesMapper.mapGetters(['axes']),
-    ...styleMapper.mapGetters(['axisSizePx', 'axisHalfSizePx']),
+    ...styleMapper.mapGetters([
+      'axisSizePx',
+      'axisHalfSizePx',
+      'axisCrossBorderHalfPx',
+      'axisCrossBorderPx',
+      'axisCrossTopPx',
+      'axisCrossCursorPx',
+    ]),
     ...magnifierMapper.mapGetters(['magnifier']),
     xPx(): number {
       return this.axis.xPx * this.canvas.scale

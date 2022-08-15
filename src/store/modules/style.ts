@@ -8,7 +8,7 @@ import {
 
 class state {
   plotSizePx = 10
-  axisSizePx = 10
+  axisSizePx = 20
 }
 
 class getters extends Getters<state> {
@@ -20,6 +20,18 @@ class getters extends Getters<state> {
   }
   get axisHalfSizePx() {
     return this.state.axisSizePx / 2
+  }
+  get axisCrossBorderPx() {
+    return this.state.axisSizePx * 0.1
+  }
+  get axisCrossBorderHalfPx() {
+    return this.axisCrossBorderPx * 0.5
+  }
+  get axisCrossTopPx() {
+    return (this.state.axisSizePx - this.axisCrossBorderPx) / 2
+  }
+  get axisCrossCursorPx() {
+    return this.state.axisSizePx * 0.7
   }
 }
 
