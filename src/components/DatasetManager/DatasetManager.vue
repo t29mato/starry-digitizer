@@ -1,22 +1,42 @@
 <template>
   <div>
-    <h4>Datasets</h4>
-    <v-card class="mx-auto" flat>
+    <h4>
+      Datasets
+      <v-btn @click="addDataset" small class="ml-2"
+        ><v-icon>mdi-plus</v-icon></v-btn
+      >
+      <v-btn
+        small
+        @click="popDataset"
+        :disabled="this.datasets.datasets.length === 1"
+        class="ml-2"
+        ><v-icon>mdi-minus</v-icon></v-btn
+      >
+    </h4>
+    <v-card class="mx-auto mt-2" flat>
       <v-list dense>
         <v-list-item
           v-for="dataset in datasets.datasets"
           :key="dataset.id"
+          class="pl-2"
           link
           @click="setActiveDataset(dataset.id)"
           :class="dataset.id === datasets.activeDataset.id && 'blue lighten-4'"
         >
           <v-list-item-content>
-            <v-list-item-title
-              :class="
-                dataset.id === datasets.activeDataset.id && 'font-weight-bold'
-              "
-              v-text="`${dataset.name} (${dataset.plots.length})`"
-            ></v-list-item-title>
+            <v-row>
+              <v-col cols="10">
+                <v-text-field
+                  v-model="dataset.name"
+                  :placeholder="'dataset ' + dataset.id"
+                  hide-details
+                  class="mt-0 pt-0"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="2" class="mt-2">
+                {{ dataset.plots.length }}
+              </v-col>
+            </v-row>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -29,64 +49,6 @@
         >Show Plots</v-btn
       >
     </v-card>
-    <v-dialog
-      v-model="shouldShowEditDialog"
-      origin="center"
-      scrollable
-      max-width="500px"
-    >
-      <v-card height="80vh">
-        <v-card-title>
-          <span class="text-h5">Manage Datasets</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col>
-                <v-btn @click="addDataset" small
-                  ><v-icon>mdi-plus</v-icon></v-btn
-                >
-                <v-btn
-                  small
-                  @click="popDataset"
-                  :disabled="this.datasets.datasets.length === 1"
-                  ><v-icon>mdi-minus</v-icon></v-btn
-                >
-                <v-simple-table dense>
-                  <template v-slot:default>
-                    <thead>
-                      <tr>
-                        <th class="text-left">ID</th>
-                        <th class="text-left">Name</th>
-                        <th class="text-left">Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="dataset in datasets.datasets"
-                        :key="dataset.id"
-                      >
-                        <td>{{ dataset.id }}</td>
-                        <td>
-                          <v-text-field
-                            v-model="dataset.name"
-                            :placeholder="'dataset ' + dataset.id"
-                          ></v-text-field>
-                        </td>
-                        <td>{{ dataset.plots.length }}</td>
-                      </tr>
-                    </tbody>
-                  </template>
-                </v-simple-table>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn @click="shouldShowEditDialog = false"> Close </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
     <v-dialog
       v-model="shouldShowActiveDataset"
       origin="center"
@@ -132,7 +94,6 @@ export default Vue.extend({
   },
   data() {
     return {
-      shouldShowEditDialog: false,
       shouldShowActiveDataset: false,
     }
   },
@@ -164,9 +125,6 @@ export default Vue.extend({
       'setActiveDataset',
       'popDataset',
     ]),
-    openEditDialog() {
-      this.shouldShowEditDialog = true
-    },
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
       if (!am.validateAxes()) {

@@ -92,6 +92,9 @@ export class Datasets {
     if (this.datasets.length === 1) {
       return
     }
+    if (this.datasets[this.datasets.length - 1].id === this.activeDatasetId) {
+      this.setActiveDataset(this.datasets[this.datasets.length - 2].id)
+    }
     this.datasets.pop()
   }
 
