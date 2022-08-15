@@ -1,3 +1,4 @@
+import { Dataset } from './dataset'
 import { DatasetInterface } from './datasetInterface'
 
 export type Position = {
@@ -82,8 +83,10 @@ export class Datasets {
     targetDataset.name = newName
   }
 
-  addDataset(dataset: DatasetInterface) {
-    this.datasets.push(dataset)
+  addDataset() {
+    this.datasets.push(
+      new Dataset(`dataset ${this.nextDatasetId}`, [], this.nextDatasetId)
+    )
   }
   popDataset() {
     if (this.datasets.length === 1) {

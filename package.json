@@ -61,6 +61,7 @@
     "@storybook/addon-links": "^6.3.12",
     "@storybook/vue": "^6.3.12",
     "@types/color-diff": "^1.2.1",
+    "@types/jest": "^28.1.6",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
     "@typescript-eslint/parser": "^4.31.2",
     "@vue/babel-preset-app": "^4.5.15",
