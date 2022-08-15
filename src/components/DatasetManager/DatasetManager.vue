@@ -4,15 +4,17 @@
     <v-card class="mx-auto" flat>
       <v-list dense>
         <v-list-item
-          v-for="dataset in datasets"
+          v-for="dataset in datasets.datasets"
           :key="dataset.id"
           link
           @click="setActiveDataset(dataset.id)"
-          :class="dataset.id === activeDatasetId && 'blue lighten-4'"
+          :class="dataset.id === datasets.activeDataset.id && 'blue lighten-4'"
         >
           <v-list-item-content>
             <v-list-item-title
-              :class="dataset.id === activeDatasetId && 'font-weight-bold'"
+              :class="
+                dataset.id === datasets.activeDataset.id && 'font-weight-bold'
+              "
               v-text="`${dataset.name} (${dataset.plots.length})`"
             ></v-list-item-title>
           </v-list-item-content>
@@ -23,7 +25,7 @@
         small
         class="mt-2"
         @click="shouldShowActiveDataset = true"
-        :disabled="activeDataset.plots.length === 0"
+        :disabled="datasets.activeDataset.plots.length === 0"
         >Show Plots</v-btn
       >
     </v-card>
@@ -41,13 +43,13 @@
           <v-container>
             <v-row>
               <v-col>
-                <v-btn @click="addColumn" small
+                <v-btn @click="addDataset" small
                   ><v-icon>mdi-plus</v-icon></v-btn
                 >
                 <v-btn
                   small
-                  @click="removeColumn"
-                  :disabled="this.datasets.length === 1"
+                  @click="popDataset"
+                  :disabled="this.datasets.datasets.length === 1"
                   ><v-icon>mdi-minus</v-icon></v-btn
                 >
                 <v-simple-table dense>
@@ -60,7 +62,10 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="dataset in datasets" :key="dataset.id">
+                      <tr
+                        v-for="dataset in datasets.datasets"
+                        :key="dataset.id"
+                      >
                         <td>{{ dataset.id }}</td>
                         <td>
                           <v-text-field
@@ -97,8 +102,7 @@
             <v-row>
               <v-col>
                 <clipboard
-                  :plots="calculatedPlots"
-                  :exportPlots="exportPlots"
+                  :plots="activeCalculatedPlots"
                   :exportBtnText="exportBtnText"
                 ></clipboard>
               </v-col>
@@ -114,93 +118,73 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from 'vue'
-import { Datasets, Dataset, Plots } from '@/types'
+import Vue from 'vue'
 import Clipboard from '@/components/Export/Clipboard.vue'
+import { datasetMapper } from '@/store/modules/dataset'
+import { Plots } from '@/types'
+import { Axes } from '@/domains/axes'
+import XYAxesCalculator from '@/domains/XYAxesCalculator'
+const am = Axes.instance
+
 export default Vue.extend({
   components: {
     Clipboard,
   },
   data() {
     return {
-      sideMenus: [
-        {
-          title: 'Datasets',
-          action: 'mdi-silverware-fork-knife',
-          active: true,
-        },
-      ],
-      datasetCount: 1,
       shouldShowEditDialog: false,
       shouldShowActiveDataset: false,
     }
   },
   computed: {
-    nextDatasetId(): number {
-      if (this.datasets.length === 0) {
-        return 1
-      }
-      return this.datasets[this.datasets.length - 1].id + 1
+    ...datasetMapper.mapGetters(['datasets']),
+    activeCalculatedPlots(): Plots {
+      const newPlots = this.datasets.activeDataset.plots.map((plot) => {
+        const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
+        return {
+          id: plot.id,
+          xPx: plot.xPx,
+          yPx: plot.yPx,
+          xV,
+          yV,
+        }
+      })
+      return newPlots
     },
   },
   props: {
-    datasets: {
-      type: Array as PropType<Datasets>,
-      required: true,
-    },
-    addDataset: {
-      type: Function,
-      required: true,
-    },
-    editDataset: {
-      type: Function,
-      required: true,
-    },
-    popDataset: {
-      type: Function,
-      required: true,
-    },
-    setActiveDataset: {
-      type: Function,
-      required: true,
-    },
-    exportPlots: {
-      type: Function,
-      required: false,
-    },
     exportBtnText: {
       type: String,
       required: false,
     },
-    activeDatasetId: {
-      type: Number,
-      required: true,
-    },
-    activeDataset: {
-      type: Object as PropType<Dataset>,
-      required: true,
-    },
-    calculatedPlots: {
-      type: Array as PropType<Plots>,
-      required: true,
-    },
   },
   methods: {
-    addColumn() {
-      this.addDataset({
-        id: this.nextDatasetId,
-        name: `dataset ${this.nextDatasetId}`,
-        plots: [],
-      })
-    },
-    removeColumn() {
-      if (this.datasets.length === 1) {
-        return
-      }
-      this.popDataset()
-    },
+    ...datasetMapper.mapActions([
+      'addDataset',
+      'setActiveDataset',
+      'popDataset',
+    ]),
     openEditDialog() {
       this.shouldShowEditDialog = true
+    },
+    calculateXY(x: number, y: number): { xV: string; yV: string } {
+      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
+      if (!am.validateAxes()) {
+        return { xV: '0', yV: '0' }
+      }
+      const calculator = new XYAxesCalculator(
+        {
+          x1: am.x1,
+          x2: am.x2,
+          y1: am.y1,
+          y2: am.y2,
+        },
+        {
+          x: am.xIsLog,
+          y: am.yIsLog,
+        }
+      )
+      return calculator.calculateXYValues(x, y)
     },
   },
 })

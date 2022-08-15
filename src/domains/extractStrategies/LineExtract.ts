@@ -1,52 +1,37 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
-import diff from 'color-diff'
-import { Plot, DiameterRange, LineExtractProps } from '@/types'
-import { CanvasManager } from '../CanvasManager'
+import { Plot } from '@/types'
+import { CanvasInterface } from '../canvasInterface'
+import { ExtractorInterface } from '../extractorInterface'
+import { ExtractParent } from './extractParent'
 
-export default class LineExtract implements ExtractStrategyInterface {
-  #interval = 10
-  #lineWidth = 10
+export default class LineExtract
+  extends ExtractParent
+  implements ExtractStrategyInterface
+{
+  name = 'Line Extract'
+  intervalPx = 10
+  lineWidthPx = 10
 
-  constructor(props: LineExtractProps) {
-    this.#interval = props.interval
-    this.#lineWidth = props.width
+  static #instance: LineExtract
+  static get instance(): LineExtract {
+    if (!this.#instance) {
+      this.#instance = new LineExtract()
+    }
+    return this.#instance
   }
-
-  #isWhite(r: number, g: number, b: number, a: number): boolean {
-    return r === 255 && g === 255 && b === 255 && a > 0
-  }
-
-  // TODO: 背景色をスキップするか選択できるようにする
-  #isOnMask(r: number, g: number, b: number, a: number): boolean {
-    return r === 255 && g === 255 && b === 0 && a > 0
-  }
-
-  matchColor(
-    rgb1: [number, number, number],
-    rgb2: [number, number, number],
-    matchRatio: number
-  ) {
-    const diffRatio =
-      (rgb1.reduce((prev, _, i) => {
-        return prev + Math.pow(rgb1[i] - rgb2[i], 2)
-      }, 0) /
-        (Math.pow(255, 2) * 3)) *
-      100
-    return diffRatio < matchRatio
+  constructor() {
+    super()
   }
 
   execute(
-    cm: CanvasManager,
+    height: number,
+    width: number,
+    imageColors: Uint8ClampedArray,
+    maskColors: Uint8ClampedArray,
+    isDrawnMask: boolean,
     targetColor: [number, number, number],
-    colorMatchThreshold: number,
-    isDrawnMask: boolean
+    colorMatchThreshold: number
   ) {
-    const height = cm.imageElement.height
-    const width = cm.imageElement.width
-    const maskCanvasColors = cm.originalSizeMaskCanvasColors
-    const graphCanvasColors = cm.originalImageCanvasColors
-    const canvasScale = cm.canvasScale
-
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
       Array(width).fill(false)
@@ -54,7 +39,7 @@ export default class LineExtract implements ExtractStrategyInterface {
     if (isDrawnMask) {
       for (let h = 0; h < height; h++) {
         for (let w = 0; w < width; w++) {
-          // const [r1, g1, b1, a1] = graphCanvasColors.slice(
+          // const [r1, g1, b1, a1] = imageColors.slice(
           //   (h * width + w) * 4,
           //   (h * width + w + 1) * 4
           // )
@@ -62,11 +47,11 @@ export default class LineExtract implements ExtractStrategyInterface {
           //   visitedArea[h][w] = true
           //   continue
           // }
-          const [r2, g2, b2, a2] = maskCanvasColors.slice(
+          const [r2, g2, b2, a2] = maskColors.slice(
             (h * width + w) * 4,
             (h * width + w + 1) * 4
           )
-          if (!this.#isOnMask(r2, g2, b2, a2)) {
+          if (!this.isOnMask(r2, g2, b2, a2)) {
             visitedArea[h][w] = true
           }
         }
@@ -80,7 +65,7 @@ export default class LineExtract implements ExtractStrategyInterface {
         if (visitedArea[h][w]) {
           continue
         }
-        const [r1, g1, b1, a1] = graphCanvasColors.slice(
+        const [r1, g1, b1, a1] = imageColors.slice(
           (h * width + w) * 4,
           (h * width + w + 1) * 4
         )
@@ -114,14 +99,14 @@ export default class LineExtract implements ExtractStrategyInterface {
                 if (nh < 0 || nw < 0 || nh >= height || nw >= width) {
                   continue
                 }
-                if (Math.abs(nw - w) > this.#interval) {
+                if (Math.abs(nw - w) > this.intervalPx) {
                   continue
                 }
                 if (visitedArea[nh][nw]) {
                   continue
                 }
                 count++
-                const [r, g, b] = graphCanvasColors.slice(
+                const [r, g, b] = imageColors.slice(
                   (nh * width + nw) * 4,
                   (nh * width + nw + 1) * 4
                 )
@@ -162,7 +147,7 @@ export default class LineExtract implements ExtractStrategyInterface {
           const yPxMed = (yPxMax + yPxMin) / 2
           const lineWidth = yPxMax - yPxMin
           const area = pixels.length
-          if (this.#lineWidth < lineWidth) {
+          if (this.lineWidthPx < lineWidth) {
             // To avoid gaps between calculation and rendering
             // INFO: In manual, pixels are limited to moving one pixel at a time.
             const offsetPx = 0.5

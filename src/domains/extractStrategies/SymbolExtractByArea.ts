@@ -1,59 +1,37 @@
 import ExtractStrategyInterface from './ExtractStrategyInterface'
-import diff from 'color-diff'
-import { Plot, DiameterRange } from '@/types'
-import { CanvasManager } from '../CanvasManager'
+import { Plot } from '@/types'
+import { CanvasInterface } from '../canvasInterface'
+import { ExtractorInterface } from '../extractorInterface'
+import { ExtractParent } from './extractParent'
 
-export default class SymbolExtractByArea implements ExtractStrategyInterface {
-  #minDiameterPx = 5
-  #maxDiameterPx = 100
+export default class SymbolExtractByArea
+  extends ExtractParent
+  implements ExtractStrategyInterface
+{
+  name = 'Symbol Extract'
+  minDiameterPx = 5
+  maxDiameterPx = 100
 
-  constructor(diameterRange: DiameterRange) {
-    this.#minDiameterPx = diameterRange.min
-    this.#maxDiameterPx = diameterRange.max
+  static #instance: SymbolExtractByArea
+  static get instance(): SymbolExtractByArea {
+    if (!this.#instance) {
+      this.#instance = new SymbolExtractByArea()
+    }
+    return this.#instance
   }
-
-  #isWhite(r: number, g: number, b: number, a: number): boolean {
-    return r === 255 && g === 255 && b === 255 && a > 0
-  }
-
-  // TODO: 背景色をスキップするか選択できるようにする
-  #isOnMask(r: number, g: number, b: number, a: number): boolean {
-    return r === 255 && g === 255 && b === 0 && a > 0
-  }
-
-  #diffColor(
-    color1: { R: number; G: number; B: number },
-    color2: { R: number; G: number; B: number }
-  ): number {
-    return diff.diff(diff.rgb_to_lab(color1), diff.rgb_to_lab(color2))
-  }
-
-  matchColor(
-    rgb1: [number, number, number],
-    rgb2: [number, number, number],
-    matchRatio: number
-  ) {
-    const diffRatio =
-      (rgb1.reduce((prev, _, i) => {
-        return prev + Math.pow(rgb1[i] - rgb2[i], 2)
-      }, 0) /
-        (Math.pow(255, 2) * 3)) *
-      100
-    return diffRatio < matchRatio
+  constructor() {
+    super()
   }
 
   execute(
-    cm: CanvasManager,
+    height: number,
+    width: number,
+    imageColors: Uint8ClampedArray,
+    maskColors: Uint8ClampedArray,
+    isDrawnMask: boolean,
     targetColor: [number, number, number],
-    colorMatchThreshold: number,
-    isDrawnMask: boolean
+    colorMatchThreshold: number
   ) {
-    const height = cm.imageElement.height
-    const width = cm.imageElement.width
-    const maskCanvasColors = cm.originalSizeMaskCanvasColors
-    const graphCanvasColors = cm.originalImageCanvasColors
-    const canvasScale = cm.canvasScale
-
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
       Array(width).fill(false)
@@ -61,7 +39,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
     if (isDrawnMask) {
       for (let h = 0; h < height; h++) {
         for (let w = 0; w < width; w++) {
-          // const [r1, g1, b1, a1] = graphCanvasColors.slice(
+          // const [r1, g1, b1, a1] = imageColors.slice(
           //   (h * width + w) * 4,
           //   (h * width + w + 1) * 4
           // )
@@ -69,11 +47,11 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
           //   visitedArea[h][w] = true
           //   continue
           // }
-          const [r2, g2, b2, a2] = maskCanvasColors.slice(
+          const [r2, g2, b2, a2] = maskColors.slice(
             (h * width + w) * 4,
             (h * width + w + 1) * 4
           )
-          if (!this.#isOnMask(r2, g2, b2, a2)) {
+          if (!this.isOnMask(r2, g2, b2, a2)) {
             visitedArea[h][w] = true
           }
         }
@@ -86,7 +64,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
         if (visitedArea[h][w]) {
           continue
         }
-        const [r1, g1, b1, a1] = graphCanvasColors.slice(
+        const [r1, g1, b1, a1] = imageColors.slice(
           (h * width + w) * 4,
           (h * width + w + 1) * 4
         )
@@ -124,7 +102,7 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
                   continue
                 }
                 count++
-                const [r, g, b] = graphCanvasColors.slice(
+                const [r, g, b] = imageColors.slice(
                   (nh * width + nw) * 4,
                   (nh * width + nw + 1) * 4
                 )
@@ -154,8 +132,8 @@ export default class SymbolExtractByArea implements ExtractStrategyInterface {
           // diameter = r * 2
           const diameter = Math.sqrt(area / Math.PI) * 2
           if (
-            this.#minDiameterPx <= diameter &&
-            diameter <= this.#maxDiameterPx
+            this.minDiameterPx <= diameter &&
+            diameter <= this.maxDiameterPx
           ) {
             // To avoid gaps between calculation and rendering
             // INFO: In manual, pixels are limited to moving one pixel at a time.

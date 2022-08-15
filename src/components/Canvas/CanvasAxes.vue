@@ -1,77 +1,41 @@
 <template>
   <div>
-    <div
-      :style="{
-        position: 'absolute',
-        top: `${yPx - axesHalfSize}px`,
-        left: `${xPx - axesHalfSize}px`,
-        'pointer-events': 'none',
-        width: `${axesSize}px`,
-        height: `${axesSize}px`,
-        'border-radius': '50%',
-        'background-color': isActive ? 'red' : 'dodgerblue',
-        outline: `1px solid white`,
-      }"
-    ></div>
-    <span
-      :style="{
-        position: 'absolute',
-        top: `${yPx - axesHalfSize - 9}px`,
-        left: `${xPx - axesHalfSize + 12}px`,
-        'pointer-events': 'none',
-        'user-select': 'none',
-      }"
-      >{{ showAxisName }}</span
-    >
+    <canvas-axis
+      :axis="axes.x1"
+      label="x1"
+      :isActive="axes.activeIndex === 0"
+    ></canvas-axis>
+    <canvas-axis
+      :axis="axes.x2"
+      label="x2"
+      :isActive="axes.activeIndex === 1"
+    ></canvas-axis>
+    <canvas-axis
+      :axis="axes.y1"
+      label="y1"
+      :isActive="axes.activeIndex === 2"
+    ></canvas-axis>
+    <canvas-axis
+      :axis="axes.y2"
+      label="y2"
+      :isActive="axes.activeIndex === 3"
+    ></canvas-axis>
   </div>
 </template>
 
 <script lang="ts">
-import { Position } from '@/types'
+import { axesMapper } from '@/store/modules/axes'
+import CanvasAxis from '@/components/Canvas/CanvasAxis.vue'
+
 import Vue from 'vue'
 export default Vue.extend({
+  components: {
+    CanvasAxis,
+  },
   computed: {
-    axesHalfSize(): number {
-      return this.axesSize / 2
-    },
-    showAxisName(): string {
-      switch (this.index) {
-        case 0:
-          return 'x1'
-        case 1:
-          return 'x2'
-        case 2:
-          return 'y1'
-        case 3:
-          return 'y2'
-        default:
-          throw new Error('Maximum count of axes is 4')
-      }
-    },
-    xPx(): number {
-      return this.axis.xPx
-    },
-    yPx(): number {
-      return this.axis.yPx
-    },
+    ...axesMapper.mapGetters(['axes']),
   },
-  props: {
-    axis: {
-      type: Object as () => Position,
-      required: true,
-    },
-    isActive: {
-      type: Boolean,
-      required: true,
-    },
-    index: {
-      type: Number,
-      required: true,
-    },
-    axesSize: {
-      type: Number,
-      required: true,
-    },
-  },
+  props: {},
+  methods: {},
 })
 </script>

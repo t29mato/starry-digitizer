@@ -7,7 +7,7 @@
         ><v-icon>mdi-plus</v-icon></v-btn
       >
       <v-btn small class="ml-2" @click="resizeCanvasToOriginal">100%</v-btn>
-      <v-btn small class="ml-2" @click="resizeCanvasToFit">Fit</v-btn>
+      <v-btn small class="ml-2" @click="drawFitSizeImage">Fit</v-btn>
     </div>
     <span class="ma-1">{{ showCanvasScale }}</span>
   </div>
@@ -15,37 +15,23 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { canvasMapper } from '@/store/modules/canvas'
+
 export default Vue.extend({
-  props: {
-    uploadImage: {
-      type: Function,
-      required: true,
-    },
-    resizeCanvasToOriginal: {
-      type: Function,
-      required: true,
-    },
-    resizeCanvasToFit: {
-      type: Function,
-      required: true,
-    },
-    scaleDown: {
-      type: Function,
-      required: true,
-    },
-    scaleUp: {
-      type: Function,
-      required: true,
-    },
-    canvasScale: {
-      type: Number,
-      required: true,
+  props: {},
+  computed: {
+    ...canvasMapper.mapGetters(['canvas']),
+    showCanvasScale(): string {
+      return Math.trunc(this.canvas.scale * 100) + '%'
     },
   },
-  computed: {
-    showCanvasScale(): string {
-      return Math.trunc(this.canvasScale * 100) + '%'
-    },
+  methods: {
+    ...canvasMapper.mapActions([
+      'scaleUp',
+      'scaleDown',
+      'resizeCanvasToOriginal',
+      'drawFitSizeImage',
+    ]),
   },
 })
 </script>

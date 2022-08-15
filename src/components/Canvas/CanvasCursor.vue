@@ -2,8 +2,8 @@
   <div
     :style="{
       position: 'absolute',
-      top: `${cursor.yPx - 12}px`,
-      left: `${cursor.xPx + 7}px`,
+      top: `${canvas.scaledCursor.yPx - 12}px`,
+      left: `${canvas.scaledCursor.xPx + 7}px`,
       'pointer-events': 'none',
     }"
   >
@@ -12,19 +12,24 @@
 </template>
 
 <script lang="ts">
+import { axesMapper } from '@/store/modules/axes'
+import { canvasMapper } from '@/store/modules/canvas'
 import Vue from 'vue'
 export default Vue.extend({
-  props: {
-    cursor: {
-      type: Object as () => {
-        xPx: Number
-        yPx: Number
-      },
-      required: true,
-    },
-    label: {
-      type: String,
-      required: true,
+  props: {},
+  computed: {
+    ...canvasMapper.mapGetters(['canvas']),
+    ...axesMapper.mapGetters(['axes']),
+    label(): string {
+      switch (this.canvas.maskMode) {
+        case 0:
+          return 'Pen'
+        case 1:
+          return 'Box'
+        case 2:
+          return 'Eraser'
+      }
+      return this.axes.nextAxisKey
     },
   },
 })

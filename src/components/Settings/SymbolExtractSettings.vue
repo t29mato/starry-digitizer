@@ -2,7 +2,7 @@
   <v-row class="ma-0">
     <v-col class="pa-0">
       <v-text-field
-        :value="diameterRange.min"
+        :value="symbolExtractByArea.minDiameterPx"
         @input="inputMin"
         label="Min. Diameter (px)"
         type="number"
@@ -11,7 +11,7 @@
     </v-col>
     <v-col class="pa-0">
       <v-text-field
-        :value="diameterRange.max"
+        :value="symbolExtractByArea.maxDiameterPx"
         @input="inputMax"
         label="Max. Diameter (px)"
         type="number"
@@ -22,28 +22,23 @@
 </template>
 
 <script lang="ts">
+import { symbolExtractByAreaMapper } from '@/store/modules/symbolExtractByArea'
 import Vue from 'vue'
-import { DiameterRange } from '../../types'
 export default Vue.extend({
-  computed: {},
-  props: {
-    diameterRange: {
-      type: Object as () => DiameterRange,
-      required: true,
-    },
+  computed: {
+    ...symbolExtractByAreaMapper.mapGetters(['symbolExtractByArea']),
   },
+  props: {},
   methods: {
-    inputMin(value: number) {
-      this.$emit(
-        'input',
-        Object.assign(this.$props.diameterRange, { min: value })
-      )
+    ...symbolExtractByAreaMapper.mapActions([
+      'setMinDiameterPx',
+      'setMaxDiameterPx',
+    ]),
+    inputMin(value: string) {
+      this.setMinDiameterPx(parseInt(value))
     },
-    inputMax(value: number) {
-      this.$emit(
-        'input',
-        Object.assign(this.$props.diameterRange, { max: value })
-      )
+    inputMax(value: string) {
+      this.setMaxDiameterPx(parseInt(value))
     },
   },
 })

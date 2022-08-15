@@ -1,7 +1,9 @@
 /* eslint-disable prettier/prettier */
 import LineExtract from './LineExtract'
 
-const extractor = new LineExtract({width: 1, interval: 3})
+const extractor = LineExtract.instance
+extractor.lineWidthPx = 1
+extractor.intervalPx = 3
 
 // r: red, w: white
 test(`automatic extraction

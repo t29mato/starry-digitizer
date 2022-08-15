@@ -1,14 +1,14 @@
 <template>
   <div>
     <img
-      :src="src"
+      :src="canvas.uploadImageUrl"
       :style="{
         position: 'absolute',
         top: 0,
         left: 0,
-        transform: `scale(${magnifierScale}) translate(-${
-          cursorX - halfSize / magnifierScale
-        }px, -${cursorY - halfSize / magnifierScale}px)`,
+        transform: `scale(${magnifier.scale}) translate(-${
+          canvas.cursor.xPx - halfSize / magnifier.scale
+        }px, -${canvas.cursor.yPx - halfSize / magnifier.scale}px)`,
         'transform-origin': 'top left',
       }"
     />
@@ -20,10 +20,12 @@
         left: 0,
         opacity: 0.5,
         transform: `scale(${
-          this.magnifierScale / this.canvasScale
+          this.magnifier.scale / this.canvas.scale
         }) translate(-${
-          (cursorX - halfSize / magnifierScale) * canvasScale
-        }px, -${(cursorY - halfSize / magnifierScale) * canvasScale}px)`,
+          (canvas.cursor.xPx - halfSize / magnifier.scale) * canvas.scale
+        }px, -${
+          (canvas.cursor.yPx - halfSize / magnifier.scale) * canvas.scale
+        }px)`,
         'transform-origin': 'top left',
       }"
     ></canvas>
@@ -31,38 +33,17 @@
 </template>
 
 <script lang="ts">
+import { canvasMapper } from '@/store/modules/canvas'
+import { magnifierMapper } from '@/store/modules/magnifier'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
+    ...magnifierMapper.mapGetters(['magnifier']),
+    ...canvasMapper.mapGetters(['canvas']),
     halfSize(): number {
-      return this.size / 2
+      return this.magnifier.sizePx / 2
     },
   },
-  props: {
-    src: {
-      type: String,
-      required: true,
-    },
-    magnifierScale: {
-      type: Number,
-      required: true,
-    },
-    canvasScale: {
-      type: Number,
-      required: true,
-    },
-    cursorX: {
-      type: Number,
-      required: true,
-    },
-    cursorY: {
-      type: Number,
-      required: true,
-    },
-    size: {
-      type: Number,
-      required: true,
-    },
-  },
+  props: {},
 })
 </script>

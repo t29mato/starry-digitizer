@@ -4,11 +4,15 @@
     <!-- TODO: 抽出色設定もColorSettingsComponentに入れる -->
     <v-row class="mt-1">
       <v-col cols="4">
-        <input type="color" :value="colorPicker" @input="inputColorPicker" />
+        <input
+          type="color"
+          :value="extractor.colorPicker"
+          @input="inputColorPicker"
+        />
       </v-col>
       <v-col cols="8">
         <v-text-field
-          :value="colorDistancePct"
+          :value="extractor.colorDistancePct"
           @input="inputColorDistancePct"
           label="Color Diff. (%)"
           type="number"
@@ -20,18 +24,19 @@
       </v-col>
     </v-row>
     <v-color-picker
-      :value="colorPicker"
+      :value="extractor.colorPicker"
       @input="setColorPicker"
       hide-canvas
       hide-inputs
       show-swatches
       hide-sliders
-      :swatches="swatches"
+      :swatches="extractor.swatches"
     ></v-color-picker>
   </div>
 </template>
 
 <script lang="ts">
+import { extractorMapper } from '@/store/modules/extractor'
 import Vue from 'vue'
 export default Vue.extend({
   data() {
@@ -39,32 +44,15 @@ export default Vue.extend({
       colorDistancePctErrorMsg: '',
     }
   },
-  computed: {},
-  props: {
-    colorPicker: {
-      type: String,
-      required: true,
-    },
-    setColorPicker: {
-      type: Function,
-      required: true,
-    },
-    swatches: {
-      type: Array as () => string[][],
-      required: true,
-    },
-    colorDistancePct: {
-      type: Number,
-      required: true,
-    },
-    setColorDistancePct: {
-      type: Function,
-      required: true,
-    },
+  computed: {
+    ...extractorMapper.mapGetters(['extractor']),
   },
+  props: {},
   methods: {
-    inputColorPicker(inputEvent: any) {
-      this.setColorPicker(inputEvent.target.value)
+    ...extractorMapper.mapActions(['setColorPicker', 'setColorDistancePct']),
+    inputColorPicker(value: any) {
+      console.log(value)
+      this.setColorPicker(value.target.value)
     },
     inputColorDistancePct(inputValue: string) {
       const distance = parseInt(inputValue)

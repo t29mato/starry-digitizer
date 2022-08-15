@@ -69,6 +69,10 @@ yarn  build
 yarn lint
 ```
 
+## StyleGuide
+- [TypeScript Deep Dive](https://basarat.gitbook.io/typescript/)
+- [Vue.js official style guide](https://v2.vuejs.org/v2/style-guide/index.html)
+
 ## Contributing
 1. Fork it (`git clone https://github.com/t29mato/starry-digitizer.git`)
 2. Create your feature branch (`git checkout -b your-new-feature`)

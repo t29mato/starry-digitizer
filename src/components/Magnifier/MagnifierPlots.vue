@@ -4,31 +4,35 @@
     class="magnifier-plots"
     :style="{
       position: 'absolute',
-      top: `${((yPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
-      left: `${((xPx - plotHalfSize) / canvasScale) * magnifierScale}px`,
-      transform: `scale(${magnifierScale}) translate(-${
-        cursor.xPx / canvasScale - magnifierHalfSize / magnifierScale
-      }px, -${
-        cursor.yPx / canvasScale - magnifierHalfSize / magnifierScale
-      }px)`,
+      top: `${((yPx - plotHalfSize) / canvas.scale) * magnifier.scale}px`,
+      left: `${((xPx - plotHalfSize) / canvas.scale) * magnifier.scale}px`,
+      transform: `scale(${magnifier.scale}) translate(-${
+        canvas.cursor.xPx - magnifierHalfSize / magnifier.scale
+      }px, -${canvas.cursor.yPx - magnifierHalfSize / magnifier.scale}px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      width: `${plotSize / canvasScale}px`,
-      height: `${plotSize / canvasScale}px`,
+      width: `${plotSizePx / canvas.scale}px`,
+      height: `${plotSizePx / canvas.scale}px`,
       'background-color': isActive ? 'red' : 'dodgerblue',
-      outline: `${1 / canvasScale}px solid white`,
+      outline: `${1 / canvas.scale}px solid white`,
       'border-radius': '50%',
     }"
   ></div>
 </template>
 
 <script lang="ts">
+import { canvasMapper } from '@/store/modules/canvas'
+import { styleMapper } from '@/store/modules/style'
+import { magnifierMapper } from '@/store/modules/magnifier'
 import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {
+    ...magnifierMapper.mapGetters(['magnifier']),
+    ...canvasMapper.mapGetters(['canvas']),
+    ...styleMapper.mapGetters(['plotSizePx']),
     plotHalfSize(): number {
-      return this.plotSize / 2
+      return this.plotSizePx / 2
     },
     magnifierHalfSize(): number {
       return this.magnifierSize / 2
@@ -43,26 +47,6 @@ export default Vue.extend({
   props: {
     plot: {
       type: Object as () => Position,
-      required: true,
-    },
-    plotSize: {
-      type: Number,
-      required: true,
-    },
-    canvasScale: {
-      type: Number,
-      required: true,
-    },
-    cursor: {
-      // REFACTOR: Position typeを利用する
-      type: Object as () => {
-        xPx: Number
-        yPx: Number
-      },
-      required: true,
-    },
-    magnifierScale: {
-      type: Number,
       required: true,
     },
     magnifierSize: {

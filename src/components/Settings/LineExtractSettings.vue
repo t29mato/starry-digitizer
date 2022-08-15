@@ -1,14 +1,14 @@
 <template>
   <v-row class="ma-0">
     <v-text-field
-      :value="settings.width"
+      :value="lineExtract.lineWidthPx"
       @input="inputWidth"
       label="Min. Line Width (px)"
       type="number"
       class="ma-0 pl-4"
     ></v-text-field>
     <v-text-field
-      :value="settings.interval"
+      :value="lineExtract.intervalPx"
       @input="inputInterval"
       label="X Direction Interval (px)"
       type="number"
@@ -18,25 +18,20 @@
 </template>
 
 <script lang="ts">
-import { LineExtractProps } from '@/types'
+import { lineExtractMapper } from '@/store/modules/lineExtract'
 import Vue from 'vue'
 export default Vue.extend({
-  computed: {},
-  props: {
-    settings: {
-      type: Object as () => LineExtractProps,
-      required: true,
-    },
+  computed: {
+    ...lineExtractMapper.mapGetters(['lineExtract']),
   },
+  props: {},
   methods: {
-    inputWidth(value: number) {
-      this.$emit('input', Object.assign(this.$props.settings, { width: value }))
+    ...lineExtractMapper.mapActions(['setIntervalPx', 'setLineWidthPx']),
+    inputWidth(value: string) {
+      this.setLineWidthPx(parseInt(value))
     },
-    inputInterval(value: number) {
-      this.$emit(
-        'input',
-        Object.assign(this.$props.settings, { interval: value })
-      )
+    inputInterval(value: string) {
+      this.setIntervalPx(parseInt(value))
     },
   },
 })

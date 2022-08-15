@@ -1,13 +1,17 @@
 import { Plot } from '@/types'
-import { CanvasManager } from '../CanvasManager'
+import { CanvasInterface } from '../canvasInterface'
+import { ExtractorInterface } from '../extractorInterface'
 
 // INFO: Strategy Pattern
 export default interface ExtractStrategyInterface {
-  // TODO: CanvasManagerを直接渡す
+  name: string
   execute(
-    cm: CanvasManager,
+    height: number,
+    width: number,
+    imageColors: Uint8ClampedArray,
+    maskColors: Uint8ClampedArray,
+    isDrawnMask: boolean,
     targetColor: [number, number, number],
-    colorMatchThreshold: number,
-    isDrawnMask: boolean
+    colorMatchThreshold: number
   ): Plot[]
 }
