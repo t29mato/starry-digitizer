@@ -76,4 +76,40 @@ export class Dataset implements DatasetInterface {
         break
     }
   }
+
+  plotsSortedByXAscending(): Plots {
+    return this.plots.sort((a, b) => {
+      return a.xPx - b.xPx
+    })
+  }
+
+  plotsSortedByXDescending(): Plots {
+    return this.plots.sort((a, b) => {
+      return b.xPx - a.xPx
+    })
+  }
+
+  plotsSortedByYAscending(): Plots {
+    return this.plots.sort((a, b) => {
+      return a.yPx - b.yPx
+    })
+  }
+
+  plotsSortedByYDescending(): Plots {
+    return this.plots.sort((a, b) => {
+      return b.yPx - a.yPx
+    })
+  }
+
+  plotsSortedByIdAscending(): Plots {
+    return this.plots.sort((a, b) => {
+      return a.id - b.id
+    })
+  }
+
+  plotsSortedByIdDescending(): Plots {
+    return this.plots.sort((a, b) => {
+      return b.id - a.id
+    })
+  }
 }

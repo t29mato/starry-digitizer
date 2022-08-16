@@ -18,4 +18,10 @@ export interface DatasetInterface {
   get nextPlotId(): number
   addPlot(xPx: number, yPx: number): void
   moveActivePlot(ids: number[], arrow: string): void
+  plotsSortedByXAscending(): Plots
+  plotsSortedByXDescending(): Plots
+  plotsSortedByYAscending(): Plots
+  plotsSortedByYDescending(): Plots
+  plotsSortedByIdAscending(): Plots
+  plotsSortedByIdDescending(): Plots
 }

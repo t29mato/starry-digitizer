@@ -61,11 +61,25 @@
         <v-card-text>
           <v-container>
             <v-row>
-              <v-col>
+              <v-col cols="8">
                 <clipboard
+                  :sortKey="sortKey"
+                  :sortOrder="sortOrder"
                   :plots="activeCalculatedPlots"
                   :exportBtnText="exportBtnText"
                 ></clipboard>
+              </v-col>
+              <v-col cols="4">
+                <v-select
+                  v-model="sortKey"
+                  :items="sortKeys"
+                  label="sort key"
+                ></v-select>
+                <v-select
+                  v-model="sortOrder"
+                  :items="sortOrders"
+                  label="sort order"
+                ></v-select>
               </v-col>
             </v-row>
           </v-container>
@@ -82,10 +96,6 @@
 import Vue from 'vue'
 import Clipboard from '@/components/Export/Clipboard.vue'
 import { datasetMapper } from '@/store/modules/dataset'
-import { Plots } from '@/types'
-import { Axes } from '@/domains/axes'
-import XYAxesCalculator from '@/domains/XYAxesCalculator'
-const am = Axes.instance
 
 export default Vue.extend({
   components: {
@@ -94,23 +104,14 @@ export default Vue.extend({
   data() {
     return {
       shouldShowActiveDataset: false,
+      sortKey: 'time',
+      sortKeys: ['time', 'x', 'y'],
+      sortOrder: 'asc',
+      sortOrders: ['asc', 'desc'],
     }
   },
   computed: {
     ...datasetMapper.mapGetters(['datasets']),
-    activeCalculatedPlots(): Plots {
-      const newPlots = this.datasets.activeDataset.plots.map((plot) => {
-        const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
-        return {
-          id: plot.id,
-          xPx: plot.xPx,
-          yPx: plot.yPx,
-          xV,
-          yV,
-        }
-      })
-      return newPlots
-    },
   },
   props: {
     exportBtnText: {
@@ -124,25 +125,6 @@ export default Vue.extend({
       'setActiveDataset',
       'popDataset',
     ]),
-    calculateXY(x: number, y: number): { xV: string; yV: string } {
-      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (!am.validateAxes()) {
-        return { xV: '0', yV: '0' }
-      }
-      const calculator = new XYAxesCalculator(
-        {
-          x1: am.x1,
-          x2: am.x2,
-          y1: am.y1,
-          y2: am.y2,
-        },
-        {
-          x: am.xIsLog,
-          y: am.yIsLog,
-        }
-      )
-      return calculator.calculateXYValues(x, y)
-    },
   },
 })
 </script>
