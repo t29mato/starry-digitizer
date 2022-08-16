@@ -58,7 +58,29 @@
         <v-card-text>
           <v-container>
             <v-row>
-              <v-col cols="8">
+              <v-col cols="3">
+                <h3>Datasets</h3>
+                <v-list dense>
+                  <v-list-item
+                    v-for="dataset in datasets.datasets"
+                    :key="dataset.id"
+                    class="pl-2"
+                    link
+                    @click="setActiveDataset(dataset.id)"
+                    :class="
+                      dataset.id === datasets.activeDataset.id &&
+                      'blue lighten-4'
+                    "
+                  >
+                    <v-list-item-content>
+                      <v-list-item-title
+                        v-text="dataset.name"
+                      ></v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </v-col>
+              <v-col cols="6">
                 <clipboard
                   :sortKey="sortKey"
                   :sortOrder="sortOrder"
@@ -66,7 +88,7 @@
                   :exportBtnText="exportBtnText"
                 ></clipboard>
               </v-col>
-              <v-col cols="4">
+              <v-col cols="3">
                 <h3>Sort</h3>
                 <v-select
                   v-model="sortKey"
