@@ -40,11 +40,8 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <v-btn
-        small
-        class="mt-2"
-        @click="shouldShowActiveDataset = true"
-        :disabled="datasets.activeDataset.plots.length === 0"
+      <!-- TODO: モーダル上でデータセットを選べるようにする -->
+      <v-btn small class="mt-2" @click="shouldShowActiveDataset = true"
         >Show Plots</v-btn
       >
     </v-card>
@@ -52,7 +49,7 @@
       v-model="shouldShowActiveDataset"
       origin="center"
       scrollable
-      max-width="500px"
+      max-width="800px"
     >
       <v-card height="80vh">
         <v-card-title>
@@ -70,6 +67,7 @@
                 ></clipboard>
               </v-col>
               <v-col cols="4">
+                <h3>Sort</h3>
                 <v-select
                   v-model="sortKey"
                   :items="sortKeys"
