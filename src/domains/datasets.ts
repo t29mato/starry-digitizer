@@ -119,9 +119,20 @@ export class Datasets {
     this.activePlotIds.push(toggledId)
   }
 
+  clearPlot(id: number) {
+    this.activeDataset.plots = this.activeDataset.plots.filter((plot) => {
+      return id !== plot.id
+    })
+    this.activePlotIds.length = 0
+  }
+
   clearPlots() {
     this.activeDataset.plots = []
     this.activePlotIds.length = 0
+  }
+
+  cancelActivePlots() {
+    this.activePlotIds = []
   }
 
   clearActivePlots() {

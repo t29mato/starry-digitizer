@@ -1,5 +1,16 @@
 <template>
   <div>
+    <h4>Manual Extraction</h4>
+    <v-btn-toggle
+      :value="canvas.manualMode"
+      @change="changeManualMode"
+      dense
+      class="pl-2"
+    >
+      <v-btn small color="primary"> Add (A) </v-btn>
+      <v-btn small color="primary"> Edit (E) </v-btn>
+      <v-btn small color="primary"> Delete (D) </v-btn>
+    </v-btn-toggle>
     <h4>Automatic Extraction</h4>
     <v-select
       @input="setExtractStrategy"
@@ -55,7 +66,21 @@ export default Vue.extend({
   methods: {
     ...extractorMapper.mapActions(['setStrategy']),
     ...axesMapper.mapActions(['inactivateAxis']),
-    ...datasetMapper.mapActions(['clearPlots', 'setPlots', 'sortPlots']),
+    ...datasetMapper.mapActions([
+      'clearPlots',
+      'setPlots',
+      'sortPlots',
+      'cancelActivePlots',
+    ]),
+    ...canvasMapper.mapActions(['setManualMode']),
+    changeManualMode(value: any) {
+      this.cancelActivePlots()
+      if (value === undefined) {
+        this.setManualMode(-1)
+        return
+      }
+      this.setManualMode(value)
+    },
     setExtractStrategy(strategy: ExtractStrategy) {
       switch (strategy) {
         case 'Symbol Extract':

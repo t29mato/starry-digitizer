@@ -73,21 +73,6 @@ export default Vue.extend({
       required: true,
     },
   },
-  methods: {
-    showLabel(index: number) {
-      switch (index) {
-        case 0:
-          return 'x1'
-        case 1:
-          return 'x2'
-        case 2:
-          return 'y1'
-        case 3:
-          return 'y2'
-        default:
-          return ''
-      }
-    },
-  },
+  methods: {},
 })
 </script>

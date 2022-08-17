@@ -42,9 +42,16 @@ class actions extends Actions<state, getters, mutations> {
     this.state.datasets.moveActivePlot(arrow)
     this.commit('updateDatasets', this.state.datasets)
   }
+  clearPlot(id: number) {
+    this.state.datasets.clearPlot(id)
+    this.commit('updateDatasets', this.state.datasets)
+  }
   clearPlots() {
     this.state.datasets.clearPlots()
     this.commit('updateDatasets', this.state.datasets)
+  }
+  cancelActivePlots() {
+    this.state.datasets.cancelActivePlots()
   }
   clearActivePlots() {
     this.state.datasets.clearActivePlots()

@@ -17,6 +17,7 @@ export class Canvas implements CanvasInterface {
     endY: 0,
   }
   maskMode = -1
+  manualMode = -1 // INFO: {0: add, 1: Edit, 2: Delete}
   penToolSizePx = 50
   eraserSizePx = 30
   uploadImageUrl = ''

@@ -5,7 +5,7 @@
       position: 'absolute',
       top: `${yPx - plotHalfSize}px`,
       left: `${xPx - plotHalfSize}px`,
-      cursor: 'pointer',
+      cursor: cursor,
       width: `${plotSizePx}px`,
       height: `${plotSizePx}px`,
       'background-color': isActive ? 'red' : 'dodgerblue',
@@ -20,9 +20,11 @@
 import { Plot } from '@/types'
 import Vue from 'vue'
 import { datasetMapper } from '@/store/modules/dataset'
+import { canvasMapper } from '@/store/modules/canvas'
 
 export default Vue.extend({
   computed: {
+    ...canvasMapper.mapGetters(['canvas']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -31,6 +33,13 @@ export default Vue.extend({
     },
     yPx(): number {
       return this.plot.yPx
+    },
+    cursor(): string | undefined {
+      const mode = this.canvas.manualMode
+      if (mode === 1 || mode === 2) {
+        return 'pointer'
+      }
+      return undefined
     },
   },
   props: {
@@ -47,13 +56,29 @@ export default Vue.extend({
     },
   },
   methods: {
-    ...datasetMapper.mapActions(['toggleActivatedPlot', 'activatePlot']),
+    ...datasetMapper.mapActions([
+      'toggleActivatedPlot',
+      'activatePlot',
+      'clearPlot',
+    ]),
     click(event: PointerEvent) {
-      if (event.ctrlKey || event.metaKey) {
-        this.toggleActivatedPlot(this.plot.id)
-        return
+      switch (this.canvas.manualMode) {
+        // INFO: CanvasMain Component -> plot method
+        case 0:
+          return
+        case 1:
+          if (event.ctrlKey || event.metaKey) {
+            this.toggleActivatedPlot(this.plot.id)
+            return
+          }
+          this.activatePlot(this.plot.id)
+          return
+        case 2:
+          this.clearPlot(this.plot.id)
+          return
+        default:
+          break
       }
-      this.activatePlot(this.plot.id)
     },
   },
 })

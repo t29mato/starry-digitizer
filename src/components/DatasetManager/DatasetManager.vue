@@ -84,7 +84,6 @@
                 <clipboard
                   :sortKey="sortKey"
                   :sortOrder="sortOrder"
-                  :plots="activeCalculatedPlots"
                   :exportBtnText="exportBtnText"
                 ></clipboard>
               </v-col>

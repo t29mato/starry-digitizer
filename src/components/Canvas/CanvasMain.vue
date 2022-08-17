@@ -101,6 +101,28 @@ export default Vue.extend({
       const target = e.target as HTMLElement
       const isOnCanvasPlot = target.className === 'canvas-plot'
       // INFO: canvas-plot element上の時は、plot edit modeになるので
+      switch (this.canvas.manualMode) {
+        case 0:
+          this.addPlot({
+            xPx: isOnCanvasPlot
+              ? (e.offsetX + parseFloat(target.style.left) - offsetPx) /
+                this.canvas.scale
+              : (e.offsetX - offsetPx) / this.canvas.scale,
+            yPx: isOnCanvasPlot
+              ? (e.offsetY + parseFloat(target.style.top)) / this.canvas.scale
+              : e.offsetY / this.canvas.scale,
+          })
+          this.inactivateAxis()
+          return
+        case 1:
+          // INFO: CanvasPlot Component -> Click method
+          return
+        case 2:
+          // INFO: CanvasPlot Component -> Click method
+          return
+        default:
+          break
+      }
       if (isOnCanvasPlot) {
         return
       }
@@ -109,14 +131,12 @@ export default Vue.extend({
           xPx: (e.offsetX - offsetPx) / this.canvas.scale,
           yPx: e.offsetY / this.canvas.scale,
         })
+        // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
+        if (!this.axes.hasNext) {
+          this.canvas.manualMode = 0
+        }
         return
       }
-
-      this.addPlot({
-        xPx: (e.offsetX - offsetPx) / this.canvas.scale,
-        yPx: e.offsetY / this.canvas.scale,
-      })
-      this.inactivateAxis()
     },
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる

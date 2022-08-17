@@ -1,6 +1,6 @@
 <template>
   <div class="mt-2">
-    <v-btn small :disabled="!axes.exist" @click="clearAxes"> Clear Axes</v-btn>
+    <v-btn small :disabled="!axes.exist" @click="clickAxes"> Clear Axes</v-btn>
     <v-btn
       small
       class="ml-2"
@@ -24,6 +24,7 @@
 import Vue from 'vue'
 import { datasetMapper } from '@/store/modules/dataset'
 import { axesMapper } from '@/store/modules/axes'
+import { canvasMapper } from '@/store/modules/canvas'
 
 export default Vue.extend({
   props: {},
@@ -34,6 +35,11 @@ export default Vue.extend({
   methods: {
     ...datasetMapper.mapActions(['clearPlots', 'clearActivePlots']),
     ...axesMapper.mapActions(['clearAxes']),
+    ...canvasMapper.mapActions(['setManualMode']),
+    clickAxes() {
+      this.clearAxes()
+      this.setManualMode(-1)
+    },
   },
 })
 </script>

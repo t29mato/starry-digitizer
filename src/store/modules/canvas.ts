@@ -62,6 +62,14 @@ class actions extends Actions<state, getters, mutations> {
 
   setMaskMode(mode: number) {
     Canvas.instance.maskMode = mode
+    Canvas.instance.manualMode = -1
+    this.commit('updateCanvas', Canvas.instance)
+  }
+
+  setManualMode(mode: number) {
+    // TODO: この処理はDomainに持たせるべき？
+    Canvas.instance.manualMode = mode
+    Canvas.instance.maskMode = -1
     this.commit('updateCanvas', Canvas.instance)
   }
 

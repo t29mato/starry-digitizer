@@ -31,6 +31,14 @@ export default Vue.extend({
         case 2:
           return 'Eraser'
       }
+      switch (this.canvas.manualMode) {
+        case 0:
+          return 'Add'
+        case 1:
+          return 'Edit'
+        case 2:
+          return 'Delete'
+      }
       return this.axes.nextAxisKey
     },
   },

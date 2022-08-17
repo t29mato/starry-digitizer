@@ -17,7 +17,7 @@
     <v-text-field
       v-if="canvas.maskMode === 0"
       :value="canvas.penToolSizePx"
-      @change="setPenToolSize"
+      @change="setPenToolSizePx"
       type="number"
       hide-details
       label="Pen Size"
@@ -40,16 +40,7 @@ export default Vue.extend({
   computed: {
     ...canvasMapper.mapGetters(['canvas']),
   },
-  props: {
-    // penToolSize: {
-    //   type: Number,
-    //   required: true,
-    // },
-    // setPenToolSize: {
-    //   type: Function,
-    //   required: true,
-    // },
-  },
+  props: {},
   methods: {
     ...canvasMapper.mapActions([
       'setPenToolSizePx',
