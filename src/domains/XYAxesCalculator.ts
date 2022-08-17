@@ -1,13 +1,13 @@
-import { axesPosList, Position } from '@/types'
+import { Axes } from './axes'
 
 export default class XYAxesCalculator {
   // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
   effectiveDigits: number = 4
 
-  #axesPosList: axesPosList
+  #axes: Axes
   #isLog: { x: boolean; y: boolean }
-  constructor(axesPosList: axesPosList, isLog: { x: boolean; y: boolean }) {
-    this.#axesPosList = axesPosList
+  constructor(axes: Axes, isLog: { x: boolean; y: boolean }) {
+    this.#axes = axes
     this.#isLog = isLog
   }
   calculateXYValues(x: number, y: number): { xV: string; yV: string } {
@@ -36,18 +36,18 @@ export default class XYAxesCalculator {
       return { x, y }
     }
     const [x1x, x1y, x2x, x2y, x1v, x2v, y1x, y1y, y2x, y2y, y1v, y2v] = [
-      this.#axesPosList.x1.xPx,
-      this.#axesPosList.x1.yPx,
-      this.#axesPosList.x2.xPx,
-      this.#axesPosList.x2.yPx,
-      this.#axesPosList.x1.value,
-      this.#axesPosList.x2.value,
-      this.#axesPosList.y1.xPx,
-      this.#axesPosList.y1.yPx,
-      this.#axesPosList.y2.xPx,
-      this.#axesPosList.y2.yPx,
-      this.#axesPosList.y1.value,
-      this.#axesPosList.y2.value,
+      this.#axes.x1.xPx,
+      this.#axes.x1.yPx,
+      this.#axes.x2.xPx,
+      this.#axes.x2.yPx,
+      this.#axes.x1.value,
+      this.#axes.x2.value,
+      this.#axes.y1.xPx,
+      this.#axes.y1.yPx,
+      this.#axes.y2.xPx,
+      this.#axes.y2.yPx,
+      this.#axes.y1.value,
+      this.#axes.y2.value,
     ]
     const xPx = calculateVerticalCrossPoint(x1x, x1y, x2x, x2y, x, y).x
     const yPx = calculateVerticalCrossPoint(y1x, y1y, y2x, y2y, x, y).y
@@ -81,8 +81,8 @@ export default class XYAxesCalculator {
 
   additionalEffectiveDigits(): number {
     return (
-      this.numDigit(this.#axesPosList.x2.value) -
-      this.numDigit(this.#axesPosList.x2.value - this.#axesPosList.x1.value) +
+      this.numDigit(this.#axes.x2.value) -
+      this.numDigit(this.#axes.x2.value - this.#axes.x1.value) +
       this.effectiveDigits
     )
   }

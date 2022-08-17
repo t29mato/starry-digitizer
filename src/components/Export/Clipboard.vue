@@ -112,18 +112,10 @@ export default Vue.extend({
       if (!this.axes.validateAxes()) {
         return { xV: '0', yV: '0' }
       }
-      const calculator = new XYAxesCalculator(
-        {
-          x1: this.axes.x1,
-          x2: this.axes.x2,
-          y1: this.axes.y1,
-          y2: this.axes.y2,
-        },
-        {
-          x: this.axes.xIsLog,
-          y: this.axes.yIsLog,
-        }
-      )
+      const calculator = new XYAxesCalculator(this.axes, {
+        x: this.axes.xIsLog,
+        y: this.axes.yIsLog,
+      })
       return calculator.calculateXYValues(x, y)
     },
   },
