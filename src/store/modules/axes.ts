@@ -8,7 +8,7 @@ import {
 import { Axes } from '@/domains/axes'
 
 class state {
-  axes = Axes.instance
+  axes = new Axes()
 }
 
 class getters extends Getters<state> {
@@ -31,44 +31,44 @@ class actions extends Actions<state, getters, mutations> {
   }
 
   setX1Value(value: number) {
-    Axes.instance.x1.value = value
-    this.commit('updateAxes', Axes.instance)
+    this.state.axes.x1.value = value
+    this.commit('updateAxes', this.state.axes)
   }
   setX2Value(value: number) {
-    Axes.instance.x2.value = value
-    this.commit('updateAxes', Axes.instance)
+    this.state.axes.x2.value = value
+    this.commit('updateAxes', this.state.axes)
   }
   setY1Value(value: number) {
-    Axes.instance.y1.value = value
-    this.commit('updateAxes', Axes.instance)
+    this.state.axes.y1.value = value
+    this.commit('updateAxes', this.state.axes)
   }
   setY2Value(value: number) {
-    Axes.instance.y1.value = value
-    this.commit('updateAxes', Axes.instance)
+    this.state.axes.y2.value = value
+    this.commit('updateAxes', this.state.axes)
   }
   setXIsLog(value: boolean) {
-    Axes.instance.xIsLog = value
-    this.commit('updateAxes', Axes.instance)
+    this.state.axes.xIsLog = value
+    this.commit('updateAxes', this.state.axes)
   }
   setYIsLog(value: boolean) {
-    Axes.instance.yIsLog = value
-    this.commit('updateAxes', Axes.instance)
+    this.state.axes.yIsLog = value
+    this.commit('updateAxes', this.state.axes)
   }
   clearAxes() {
-    Axes.instance.clearAxes()
-    this.commit('updateAxes', Axes.instance)
+    this.state.axes.clearAxes()
+    this.commit('updateAxes', this.state.axes)
   }
   addAxis(axis: { xPx: number; yPx: number }) {
-    Axes.instance.addAxisPosition(axis.xPx, axis.yPx)
-    this.commit('updateAxes', Axes.instance)
+    this.state.axes.addAxisPosition(axis.xPx, axis.yPx)
+    this.commit('updateAxes', this.state.axes)
   }
   moveActiveAxis(arrow: string) {
-    Axes.instance.moveActiveAxis(arrow)
-    this.commit('updateAxes', Axes.instance)
+    this.state.axes.moveActiveAxis(arrow)
+    this.commit('updateAxes', this.state.axes)
   }
   inactivateAxis() {
-    Axes.instance.inactivateAxis()
-    this.commit('updateAxes', Axes.instance)
+    this.state.axes.inactivateAxis()
+    this.commit('updateAxes', this.state.axes)
   }
 }
 

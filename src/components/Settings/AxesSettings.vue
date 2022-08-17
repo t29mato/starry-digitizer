@@ -7,7 +7,7 @@
           <th class="pa-1">X</th>
           <td class="pa-1">
             <v-text-field
-              :value="x1"
+              :value="axes.x1.value"
               @input="setX1"
               type="number"
               class="ma-0 pa-0"
@@ -17,7 +17,7 @@
           </td>
           <td class="pa-1">
             <v-text-field
-              :value="x2"
+              :value="axes.x2.value"
               @input="setX2"
               type="number"
               class="ma-0 pa-0"
@@ -27,7 +27,7 @@
           </td>
           <td class="pa-1">
             <v-checkbox
-              :value="xIsLog"
+              :value="axes.xIsLog"
               @change="setXIsLog"
               dense
               hint="Log"
@@ -39,7 +39,7 @@
           <th class="pa-1">Y</th>
           <td class="pa-1">
             <v-text-field
-              :value="y1"
+              :value="axes.y1.value"
               @input="setY1"
               type="number"
               class="ma-0 pa-0"
@@ -49,7 +49,7 @@
           </td>
           <td class="pa-1">
             <v-text-field
-              :value="y2"
+              :value="axes.y2.value"
               @input="setY2"
               type="number"
               class="ma-0 pa-0"
@@ -59,7 +59,7 @@
           </td>
           <td class="pa-1">
             <v-checkbox
-              :value="yIsLog"
+              :value="axes.yIsLog"
               @change="setYIsLog"
               hint="Log"
               persistent-hint
@@ -75,31 +75,11 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Axes } from '@/domains/axes'
 import { axesMapper } from '@/store/modules/axes'
-const axes = Axes.instance
 
 export default Vue.extend({
   computed: {
     ...axesMapper.mapGetters(['axes']),
-    x1() {
-      return axes.x1.value
-    },
-    x2() {
-      return axes.x2.value
-    },
-    y1() {
-      return axes.y1.value
-    },
-    y2() {
-      return axes.y2.value
-    },
-    xIsLog() {
-      return axes.xIsLog
-    },
-    yIsLog() {
-      return axes.yIsLog
-    },
   },
   data() {
     return {}

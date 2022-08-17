@@ -32,14 +32,6 @@ export class Axes {
   activeIndex = -1
   nextIndex = 0
 
-  static #instance: Axes
-  static get instance(): Axes {
-    if (!this.#instance) {
-      this.#instance = new Axes()
-    }
-    return this.#instance
-  }
-
   get nextAxisKey() {
     if (this.x1.xPx + this.x1.yPx < 0) {
       return 'x1'
