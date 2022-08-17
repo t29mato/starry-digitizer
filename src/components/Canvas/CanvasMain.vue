@@ -89,6 +89,7 @@ export default Vue.extend({
       'setCanvasCursor',
       'drawFitSizeImage',
       'setUploadImageUrl',
+      'setManualMode',
     ]),
     ...axesMapper.mapActions(['addAxis', 'inactivateAxis', 'moveActiveAxis']),
     ...extractorMapper.mapActions(['setSwatches']),
@@ -170,17 +171,35 @@ export default Vue.extend({
       }
     },
     keyDownHandler(e: KeyboardEvent) {
-      const [arrowUp, arrowRight, arrowDown, arrowLeft] = [
+      // INFO: 入力フィールドにカーソルが当たってる場合はスルー
+      if ((e.target as Element).nodeName === 'INPUT') {
+        return
+      }
+      const whiteList = [
         'ArrowUp',
         'ArrowRight',
         'ArrowDown',
         'ArrowLeft',
+        'a',
+        'e',
+        'd',
       ]
       const key = e.key
-      if (![arrowUp, arrowRight, arrowDown, arrowLeft].includes(key)) {
+      if (!whiteList.includes(key)) {
         return
       }
       e.preventDefault()
+      switch (key) {
+        case 'a':
+          this.setManualMode(0)
+          return
+        case 'e':
+          this.setManualMode(1)
+          return
+        case 'd':
+          this.setManualMode(2)
+          return
+      }
       if (this.axes.isActive) {
         this.moveActiveAxis(key)
         this.setCanvasCursor(this.axes.activeAxis)
