@@ -5,7 +5,6 @@ import { HTMLCanvas } from './dom/HTMLCanvas'
 const colorThief = new ColorThief()
 
 export class Canvas implements CanvasInterface {
-  static #instance: Canvas
   isDrawnMask = false
   #imageElement?: HTMLImageElement
   scale = 1
@@ -21,13 +20,6 @@ export class Canvas implements CanvasInterface {
   penToolSizePx = 50
   eraserSizePx = 30
   uploadImageUrl = ''
-
-  static get instance(): Canvas {
-    if (!this.#instance) {
-      this.#instance = new Canvas()
-    }
-    return this.#instance
-  }
 
   async initialize(graphImagePath: string) {
     this.#imageElement = await this.loadImage(graphImagePath)

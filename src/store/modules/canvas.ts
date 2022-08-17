@@ -9,7 +9,7 @@ import { Canvas } from '@/domains/canvas'
 import { Position } from '@/domains/datasetInterface'
 
 class state {
-  canvas: Canvas = Canvas.instance
+  canvas: Canvas = new Canvas()
 }
 
 class getters extends Getters<state> {
@@ -26,66 +26,66 @@ class mutations extends Mutations<state> {
 
 class actions extends Actions<state, getters, mutations> {
   scaleUp() {
-    Canvas.instance.scaleUp()
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.scaleUp()
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   scaleDown() {
-    Canvas.instance.scaleDown()
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.scaleDown()
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   resizeCanvasToOriginal() {
-    Canvas.instance.drawOriginalSizeImage()
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.drawOriginalSizeImage()
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   drawFitSizeImage() {
-    Canvas.instance.drawFitSizeImage()
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.drawFitSizeImage()
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   mouseMoveForPen(config: { xPx: number; yPx: number; penSize: number }) {
-    Canvas.instance.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   setCanvasCursor(position: Position) {
-    Canvas.instance.cursor = position
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.cursor = position
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   setPenToolSizePx(size: number) {
-    Canvas.instance.penToolSizePx = size
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.penToolSizePx = size
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   setMaskMode(mode: number) {
-    Canvas.instance.maskMode = mode
-    Canvas.instance.manualMode = -1
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.maskMode = mode
+    this.state.canvas.manualMode = -1
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   setManualMode(mode: number) {
     // TODO: この処理はDomainに持たせるべき？
-    Canvas.instance.manualMode = mode
-    Canvas.instance.maskMode = -1
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.manualMode = mode
+    this.state.canvas.maskMode = -1
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   setEraserSizePx(size: number) {
-    Canvas.instance.eraserSizePx = size
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.eraserSizePx = size
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   setUploadImageUrl(url: string) {
-    Canvas.instance.uploadImageUrl = url
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.uploadImageUrl = url
+    this.commit('updateCanvas', this.state.canvas)
   }
 
   mouseMoveOnCanvas(position: Position) {
-    Canvas.instance.mouseMove(position.xPx, position.yPx)
-    this.commit('updateCanvas', Canvas.instance)
+    this.state.canvas.mouseMove(position.xPx, position.yPx)
+    this.commit('updateCanvas', this.state.canvas)
   }
 }
 
