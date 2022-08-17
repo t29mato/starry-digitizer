@@ -1,6 +1,4 @@
-import { Plot } from '@/types'
-import { CanvasInterface } from '../canvasInterface'
-import { ExtractorInterface } from '../extractorInterface'
+import { Plot } from '../datasetInterface'
 
 // INFO: Strategy Pattern
 export default interface ExtractStrategyInterface {

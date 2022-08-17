@@ -5,9 +5,9 @@ import {
   Module,
   createMapper,
 } from 'vuex-smart-module'
-import { Plots, Position } from '@/types'
 import { Datasets } from '@/domains/datasets'
 import { Dataset } from '@/domains/dataset'
+import { Plots, Position } from '@/domains/datasetInterface'
 
 class state {
   datasets: Datasets = new Datasets(new Dataset('dataset 1', [], 1))

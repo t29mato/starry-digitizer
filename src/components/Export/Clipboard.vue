@@ -18,11 +18,10 @@
 </template>
 
 <script lang="ts">
-import { PlotValue } from '../../types'
 import Vue from 'vue'
 import colors from 'vuetify/lib/util/colors'
 import { datasetMapper } from '@/store/modules/dataset'
-import { Plots } from '@/domains/datasetInterface'
+import { Plots, PlotValue } from '@/domains/datasetInterface'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
 import { axesMapper } from '@/store/modules/axes'
 

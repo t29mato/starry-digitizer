@@ -10,6 +10,8 @@ export type Plot = {
 
 export type Plots = Plot[]
 
+export type PlotValue = { xV: string; yV: string } & Plot
+
 export interface DatasetInterface {
   name: string
   plots: Plots

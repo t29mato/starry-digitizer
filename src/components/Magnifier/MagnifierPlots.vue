@@ -24,8 +24,8 @@
 import { canvasMapper } from '@/store/modules/canvas'
 import { styleMapper } from '@/store/modules/style'
 import { magnifierMapper } from '@/store/modules/magnifier'
-import { Position } from '@/types'
 import Vue from 'vue'
+import { Position } from '@/domains/datasetInterface'
 export default Vue.extend({
   computed: {
     ...magnifierMapper.mapGetters(['magnifier']),

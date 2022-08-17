@@ -50,11 +50,11 @@
 </template>
 
 <script lang="ts">
+import { Position } from '@/domains/datasetInterface'
 import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
 import { styleMapper } from '@/store/modules/style'
-import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   data() {

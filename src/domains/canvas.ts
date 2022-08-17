@@ -1,6 +1,6 @@
-import { Position } from '@/types'
 import ColorThief from 'colorthief'
 import { CanvasInterface } from './canvasInterface'
+import { Position } from './datasetInterface'
 import { HTMLCanvas } from './dom/HTMLCanvas'
 const colorThief = new ColorThief()
 

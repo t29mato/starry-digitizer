@@ -1,8 +1,6 @@
 import ExtractStrategyInterface from './extractStrategyInterface'
-import { Plot } from '@/types'
-import { CanvasInterface } from '../canvasInterface'
-import { ExtractorInterface } from '../extractorInterface'
 import { ExtractParent } from './extractParent'
+import { Plot } from '../datasetInterface'
 
 export default class SymbolExtractByArea
   extends ExtractParent

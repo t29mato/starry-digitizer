@@ -37,9 +37,9 @@
 </template>
 
 <script lang="ts">
+import { Position } from '@/domains/datasetInterface'
 import { canvasMapper } from '@/store/modules/canvas'
 import { styleMapper } from '@/store/modules/style'
-import { Position } from '@/types'
 import Vue from 'vue'
 export default Vue.extend({
   computed: {

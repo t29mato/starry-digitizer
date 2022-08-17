@@ -1,16 +1,4 @@
-import { DatasetInterface } from './datasetInterface'
-
-export type Position = {
-  xPx: number
-  yPx: number
-}
-export type Plot = {
-  id: number
-  xPx: number
-  yPx: number
-}
-
-export type Plots = Plot[]
+import { DatasetInterface, Plots } from './datasetInterface'
 
 export class Dataset implements DatasetInterface {
   name: string

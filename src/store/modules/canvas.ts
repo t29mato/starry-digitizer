@@ -6,7 +6,7 @@ import {
   createMapper,
 } from 'vuex-smart-module'
 import { Canvas } from '@/domains/canvas'
-import { Position } from '@/domains/datasets'
+import { Position } from '@/domains/datasetInterface'
 
 class state {
   canvas: Canvas = Canvas.instance

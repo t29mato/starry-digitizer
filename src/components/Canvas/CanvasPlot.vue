@@ -17,10 +17,10 @@
 </template>
 
 <script lang="ts">
-import { Plot } from '@/types'
 import Vue from 'vue'
 import { datasetMapper } from '@/store/modules/dataset'
 import { canvasMapper } from '@/store/modules/canvas'
+import { Plot } from '@/domains/datasetInterface'
 
 export default Vue.extend({
   computed: {

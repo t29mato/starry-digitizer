@@ -1,5 +1,5 @@
-import { Plots } from '@/types'
 import { CanvasInterface } from './canvasInterface'
+import { Plots } from './datasetInterface'
 import ExtractStrategyInterface from './extractStrategies/extractStrategyInterface'
 
 export type ExtractStrategy = 'Symbol Extract' | 'Line Extract'
