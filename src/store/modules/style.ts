@@ -25,10 +25,10 @@ class getters extends Getters<state> {
     return this.state.axisSizePx * 0.1
   }
   get axisCrossBorderHalfPx() {
-    return this.axisCrossBorderPx * 0.5
+    return this.getters.axisCrossBorderPx * 0.5
   }
   get axisCrossTopPx() {
-    return (this.state.axisSizePx - this.axisCrossBorderPx) / 2
+    return (this.state.axisSizePx - this.getters.axisCrossBorderPx) / 2
   }
   get axisCrossCursorPx() {
     return this.state.axisSizePx * 0.7
