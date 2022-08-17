@@ -17,14 +17,14 @@
       <magnifier-horizontal-line></magnifier-horizontal-line>
       <magnifier-axes></magnifier-axes>
       <div
-        v-for="plot in datasets.activeScaledPlots(canvas.scale)"
+        v-for="plot in datasets.activeDataset.scaledPlots(canvas.scale)"
         :key="plot.id"
       >
         <magnifier-plots
           :canvasScale="canvas.scale"
           :plot="plot"
           :magnifierSize="magnifier.sizePx"
-          :isActive="datasets.activePlotIds.includes(plot.id)"
+          :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
         ></magnifier-plots>
       </div>
     </div>

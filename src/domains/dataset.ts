@@ -4,6 +4,7 @@ export class Dataset implements DatasetInterface {
   name: string
   plots: Plots
   id: number
+  activePlotIds: number[] = []
   constructor(name: string, plots: Plots, id: number) {
     this.name = name
     this.plots = plots
@@ -20,6 +21,20 @@ export class Dataset implements DatasetInterface {
     })
   }
 
+  get plotsAreActive(): boolean {
+    return this.activePlotIds.length > 0
+  }
+
+  addPlot(xPx: number, yPx: number) {
+    this.activePlotIds.length = 0
+    this.activePlotIds.push(this.nextPlotId)
+    this.plots.push({
+      id: this.nextPlotId,
+      xPx,
+      yPx,
+    })
+  }
+
   get nextPlotId(): number {
     if (this.plots.length === 0) {
       return 1
@@ -28,15 +43,48 @@ export class Dataset implements DatasetInterface {
     return biggestId + 1
   }
 
-  addPlot(xPx: number, yPx: number) {
-    this.plots.push({
-      id: this.nextPlotId,
-      xPx,
-      yPx,
-    })
+  activatePlot(id: number) {
+    this.activePlotIds.length = 0
+    this.activePlotIds.push(id)
   }
 
-  moveActivePlot(ids: number[], arrow: string) {
+  toggleActivatedPlot(toggledId: number) {
+    if (this.activePlotIds.includes(toggledId)) {
+      const activePlotIds = this.activePlotIds.filter((id) => {
+        return id !== toggledId
+      })
+      this.activePlotIds.length = 0
+      this.activePlotIds.push(...activePlotIds)
+      return
+    }
+    this.activePlotIds.push(toggledId)
+  }
+
+  clearPlot(id: number) {
+    this.plots = this.plots.filter((plot) => {
+      return id !== plot.id
+    })
+    this.activePlotIds.length = 0
+  }
+
+  clearPlots() {
+    this.plots = []
+    this.activePlotIds.length = 0
+  }
+
+  cancelActivePlots() {
+    this.activePlotIds = []
+  }
+
+  clearActivePlots() {
+    this.plots = this.plots.filter((plot) => {
+      return !this.activePlotIds.includes(plot.id)
+    })
+    this.activePlotIds.length = 0
+  }
+
+  moveActivePlot(arrow: string) {
+    const ids = this.activePlotIds
     //  'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'
     switch (arrow) {
       case 'ArrowUp':

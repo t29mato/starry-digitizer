@@ -27,7 +27,7 @@ class mutations extends Mutations<state> {
 
 class actions extends Actions<state, getters, mutations> {
   addPlot(plot: Position) {
-    this.state.datasets.addPlot(plot.xPx, plot.yPx)
+    this.state.datasets.activeDataset.addPlot(plot.xPx, plot.yPx)
     this.commit('updateDatasets', this.state.datasets)
   }
   addDataset() {
@@ -39,22 +39,22 @@ class actions extends Actions<state, getters, mutations> {
     this.commit('updateDatasets', this.state.datasets)
   }
   moveActivePlot(arrow: string) {
-    this.state.datasets.moveActivePlot(arrow)
+    this.state.datasets.activeDataset.moveActivePlot(arrow)
     this.commit('updateDatasets', this.state.datasets)
   }
   clearPlot(id: number) {
-    this.state.datasets.clearPlot(id)
+    this.state.datasets.activeDataset.clearPlot(id)
     this.commit('updateDatasets', this.state.datasets)
   }
   clearPlots() {
-    this.state.datasets.clearPlots()
+    this.state.datasets.activeDataset.clearPlots()
     this.commit('updateDatasets', this.state.datasets)
   }
   cancelActivePlots() {
-    this.state.datasets.cancelActivePlots()
+    this.state.datasets.activeDataset.cancelActivePlots()
   }
   clearActivePlots() {
-    this.state.datasets.clearActivePlots()
+    this.state.datasets.activeDataset.clearActivePlots()
     this.commit('updateDatasets', this.state.datasets)
   }
   setPlots(plots: Plots) {
@@ -62,11 +62,11 @@ class actions extends Actions<state, getters, mutations> {
     this.commit('updateDatasets', this.state.datasets)
   }
   toggleActivatedPlot(id: number) {
-    this.state.datasets.toggleActivatedPlot(id)
+    this.state.datasets.activeDataset.toggleActivatedPlot(id)
     this.commit('updateDatasets', this.state.datasets)
   }
   activatePlot(id: number) {
-    this.state.datasets.activatePlot(id)
+    this.state.datasets.activeDataset.activatePlot(id)
     this.commit('updateDatasets', this.state.datasets)
   }
   setActiveDataset(id: number) {

@@ -204,11 +204,11 @@ export default Vue.extend({
         this.moveActiveAxis(key)
         this.setCanvasCursor(this.axes.activeAxis)
       }
-      if (this.datasets.plotsAreActive) {
+      if (this.datasets.activeDataset.plotsAreActive) {
         this.moveActivePlot(e.key)
         this.setCanvasCursor(
           this.datasets.activeDataset.plots.filter((plot) =>
-            this.datasets.activePlotIds.includes(plot.id)
+            this.datasets.activeDataset.activePlotIds.includes(plot.id)
           )[0]
         )
       }

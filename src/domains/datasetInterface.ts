@@ -16,10 +16,18 @@ export interface DatasetInterface {
   name: string
   plots: Plots
   id: number
-  scaledPlots(scale: number): Plots
+  activePlotIds: number[]
   get nextPlotId(): number
+  get plotsAreActive(): boolean
+  scaledPlots(scale: number): Plots
   addPlot(xPx: number, yPx: number): void
-  moveActivePlot(ids: number[], arrow: string): void
+  moveActivePlot(arrow: string): void
+  activatePlot(id: number): void
+  toggleActivatedPlot(toggledId: number): void
+  clearPlot(id: number): void
+  clearPlots(): void
+  cancelActivePlots(): void
+  clearActivePlots(): void
   plotsSortedByXAscending(): Plots
   plotsSortedByXDescending(): Plots
   plotsSortedByYAscending(): Plots

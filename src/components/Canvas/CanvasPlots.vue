@@ -1,11 +1,11 @@
 <template>
   <div>
     <canvas-plot
-      v-for="plot in datasets.activeScaledPlots(canvas.scale)"
+      v-for="plot in datasets.activeDataset.scaledPlots(canvas.scale)"
       :key="plot.id"
       :plotSizePx="plotSizePx"
       :plot="plot"
-      :isActive="datasets.activePlotIds.includes(plot.id)"
+      :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
     ></canvas-plot>
   </div>
 </template>
