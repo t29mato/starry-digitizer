@@ -5,28 +5,28 @@ import {
   Module,
   createMapper,
 } from 'vuex-smart-module'
-import { magnifier as MD } from '@/domains/magnifier'
+import { Magnifier } from '@/domains/magnifier'
 
 class state {
-  magnifier = MD.instance
+  magnifier = new Magnifier()
 }
 
 class getters extends Getters<state> {
-  get magnifier(): MD {
+  get magnifier(): Magnifier {
     return this.state.magnifier
   }
 }
 
 class mutations extends Mutations<state> {
-  updateMagnifier(newMagnifier: MD): void {
+  updateMagnifier(newMagnifier: Magnifier): void {
     this.state.magnifier = newMagnifier
   }
 }
 
 class actions extends Actions<state, getters, mutations> {
   setScale(scale: number): void {
-    MD.instance.setScale(scale)
-    this.commit('updateMagnifier', MD.instance)
+    this.state.magnifier.setScale(scale)
+    this.commit('updateMagnifier', this.state.magnifier)
   }
 }
 

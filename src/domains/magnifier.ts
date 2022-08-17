@@ -1,12 +1,4 @@
-export class magnifier {
-  static #instance: magnifier
-  static get instance(): magnifier {
-    if (!this.#instance) {
-      this.#instance = new magnifier()
-    }
-    return this.#instance
-  }
-
+export class Magnifier {
   scale = 5
   magnifierSettingError = ''
   crosshairSizePx = 1

@@ -24,10 +24,8 @@ class mutations extends Mutations<state> {
 }
 
 class actions extends Actions<state, getters, mutations> {
-  // md
   constructor() {
     super()
-    // this.md = md.instance
   }
 
   setX1Value(value: number) {
