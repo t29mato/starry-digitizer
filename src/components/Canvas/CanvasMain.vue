@@ -83,7 +83,11 @@ export default Vue.extend({
     }
   },
   methods: {
-    ...datasetMapper.mapActions(['addPlot', 'moveActivePlot']),
+    ...datasetMapper.mapActions([
+      'addPlot',
+      'moveActivePlot',
+      'clearActivePlots',
+    ]),
     ...canvasMapper.mapActions([
       'mouseMoveOnCanvas',
       'setCanvasCursor',
@@ -180,6 +184,8 @@ export default Vue.extend({
         'ArrowRight',
         'ArrowDown',
         'ArrowLeft',
+        'Backspace',
+        'Delete',
         'a',
         'e',
         'd',
@@ -199,6 +205,11 @@ export default Vue.extend({
         case 'd':
           this.setManualMode(2)
           return
+      }
+      if (this.datasets.activeDataset.hasActive()) {
+        if (key === 'Backspace' || key === 'Delete') {
+          this.clearActivePlots()
+        }
       }
       if (this.axes.isActive) {
         this.moveActiveAxis(key)

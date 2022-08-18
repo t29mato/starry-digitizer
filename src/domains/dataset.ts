@@ -83,6 +83,10 @@ export class Dataset implements DatasetInterface {
     this.activePlotIds.length = 0
   }
 
+  hasActive(): boolean {
+    return this.activePlotIds.length > 0
+  }
+
   moveActivePlot(arrow: string) {
     const ids = this.activePlotIds
     //  'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'

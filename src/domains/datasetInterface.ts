@@ -23,6 +23,7 @@ export interface DatasetInterface {
   addPlot(xPx: number, yPx: number): void
   moveActivePlot(arrow: string): void
   activatePlot(id: number): void
+  hasActive(): boolean
   toggleActivatedPlot(toggledId: number): void
   clearPlot(id: number): void
   clearPlots(): void
