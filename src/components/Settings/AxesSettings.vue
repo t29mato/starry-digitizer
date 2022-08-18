@@ -95,16 +95,16 @@ export default Vue.extend({
       'setYIsLog',
     ]),
     setX1(value: string) {
-      this.setX1Value(parseInt(value))
+      this.setX1Value(parseFloat(value))
     },
     setX2(value: string) {
-      this.setX2Value(parseInt(value))
+      this.setX2Value(parseFloat(value))
     },
     setY1(value: string) {
-      this.setY1Value(parseInt(value))
+      this.setY1Value(parseFloat(value))
     },
     setY2(value: string) {
-      this.setY2Value(parseInt(value))
+      this.setY2Value(parseFloat(value))
     },
     setXIsLog(value: boolean) {
       this.setXIsLog(value)

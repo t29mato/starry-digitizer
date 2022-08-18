@@ -210,13 +210,8 @@ export class Axes {
       this.error = 'y1 and y2 should not be same value'
       return false
     }
-    // if (Object.values(this.axesValues).includes()) {
-    //   this.error = 'axes values should not be empty'
-    //   return false
-    // }
     this.error = ''
     return true
-    // return this.axesPos.length === 4
   }
 
   scaledAxes(scale: number) {
