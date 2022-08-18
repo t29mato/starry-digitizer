@@ -9,8 +9,6 @@ export class Datasets {
     this.datasets = [dataset]
   }
 
-  async initialize() {}
-
   get activeDataset(): DatasetInterface {
     const targetDataset = this.datasets.find((dataset) => {
       return dataset.id === this.activeDatasetId
