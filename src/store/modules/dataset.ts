@@ -31,7 +31,8 @@ class actions extends Actions<state, getters, mutations> {
     this.commit('updateDatasets', this.state.datasets)
   }
   addDataset() {
-    this.state.datasets.addDataset()
+    const nextId = this.state.datasets.nextDatasetId
+    this.state.datasets.addDataset(new Dataset(`dataset ${nextId}`, [], nextId))
     this.commit('updateDatasets', this.state.datasets)
   }
   popDataset() {

@@ -54,11 +54,10 @@ export class Datasets {
     targetDataset.name = newName
   }
 
-  addDataset() {
-    this.datasets.push(
-      new Dataset(`dataset ${this.nextDatasetId}`, [], this.nextDatasetId)
-    )
+  addDataset(dataset: DatasetInterface) {
+    this.datasets.push(dataset)
   }
+
   popDataset() {
     if (this.datasets.length === 1) {
       return
