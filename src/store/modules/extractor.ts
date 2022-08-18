@@ -1,10 +1,4 @@
-import {
-  Mutations,
-  Actions,
-  Getters,
-  Module,
-  createMapper,
-} from 'vuex-smart-module'
+import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
 import { Extractor } from '@/domains/extractor'
 import ExtractStrategyInterface from '@/domains/extractStrategies/extractStrategyInterface'
 import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
@@ -19,42 +13,25 @@ class getters extends Getters<state> {
   }
 }
 
-class mutations extends Mutations<state> {
-  updateExtractor(extractor: Extractor) {
-    this.state.extractor = extractor
-  }
-}
-
-class actions extends Actions<state, getters, mutations> {
-  // md
-  constructor() {
-    super()
-    // this.md = md.instance
-  }
-
+class actions extends Actions<state, getters> {
   setColorDistancePct(colorDistancePct: number) {
     this.state.extractor.colorDistancePct = colorDistancePct
-    this.commit('updateExtractor', this.state.extractor)
   }
   setStrategy(strategy: ExtractStrategyInterface) {
     this.state.extractor.strategy = strategy
-    this.commit('updateExtractor', this.state.extractor)
   }
 
   setColorPicker(color: string) {
     this.state.extractor.colorPicker = color
-    this.commit('updateExtractor', this.state.extractor)
   }
 
   setSwatches(colorSwatches: string[]) {
     this.state.extractor.updateSwatches(colorSwatches)
-    this.commit('updateExtractor', this.state.extractor)
   }
 }
 
 export const extractor = new Module({
   state,
-  mutations,
   actions,
   getters,
 })
