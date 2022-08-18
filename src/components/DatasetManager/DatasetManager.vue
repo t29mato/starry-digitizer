@@ -42,7 +42,7 @@
       </v-list>
       <!-- TODO: モーダル上でデータセットを選べるようにする -->
       <v-btn small class="mt-2" @click="shouldShowActiveDataset = true"
-        >Show Plots</v-btn
+        >View Datasets</v-btn
       >
     </v-card>
     <v-dialog
@@ -53,7 +53,7 @@
     >
       <v-card height="80vh">
         <v-card-title>
-          <span class="text-h5">Show Plots</span>
+          <span class="text-h5">View Datasets</span>
         </v-card-title>
         <v-card-text>
           <v-container>
