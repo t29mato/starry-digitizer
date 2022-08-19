@@ -1,4 +1,4 @@
-import { AxesInterface } from './axesInterface'
+import { AxesInterface } from './axes/axesInterface'
 
 export default class XYAxesCalculator {
   // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため

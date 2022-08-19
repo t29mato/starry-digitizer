@@ -1,5 +1,5 @@
+import { Coord } from '../datasetInterface'
 import { AxisInterface } from './axisInterface'
-import { Coord } from './datasetInterface'
 
 export interface AxesInterface {
   x1: AxisInterface

@@ -1,4 +1,5 @@
-import { Coord } from './datasetInterface'
+import { Coord } from '../datasetInterface'
+
 export interface AxisInterface {
   name: string
   coord?: Coord

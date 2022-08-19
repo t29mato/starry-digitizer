@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts">
-import { Axis } from '@/domains/axis'
+import { AxisInterface } from '@/domains/axes/axisInterface'
 import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
 import { styleMapper } from '@/store/modules/style'
@@ -85,7 +85,7 @@ export default Vue.extend({
   },
   props: {
     axis: {
-      type: Object as () => Axis,
+      type: Object as () => AxisInterface,
       required: true,
     },
   },
