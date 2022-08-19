@@ -1,7 +1,7 @@
-import { Position } from './datasetInterface'
+import { Coord } from './datasetInterface'
 export class Axis {
   name: string
-  coord?: Position
+  coord?: Coord
   value: number
   constructor(name: string, value: number) {
     this.name = name

@@ -25,7 +25,7 @@ import { canvasMapper } from '@/store/modules/canvas'
 import { styleMapper } from '@/store/modules/style'
 import { magnifierMapper } from '@/store/modules/magnifier'
 import Vue from 'vue'
-import { Position } from '@/domains/datasetInterface'
+import { Coord } from '@/domains/datasetInterface'
 export default Vue.extend({
   computed: {
     ...magnifierMapper.mapGetters(['magnifier']),
@@ -46,7 +46,7 @@ export default Vue.extend({
   },
   props: {
     plot: {
-      type: Object as () => Position,
+      type: Object as () => Coord,
       required: true,
     },
     magnifierSize: {

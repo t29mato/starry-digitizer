@@ -1,7 +1,7 @@
 import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
 import { Datasets } from '@/domains/datasets'
 import { Dataset } from '@/domains/dataset'
-import { Plots, Position } from '@/domains/datasetInterface'
+import { Plots, Coord } from '@/domains/datasetInterface'
 
 class state {
   datasets: Datasets = new Datasets(new Dataset('dataset 1', [], 1))
@@ -14,7 +14,7 @@ class getters extends Getters<state> {
 }
 
 class actions extends Actions<state, getters> {
-  addPlot(plot: Position) {
+  addPlot(plot: Coord) {
     this.state.datasets.activeDataset.addPlot(plot.xPx, plot.yPx)
   }
   addDataset() {

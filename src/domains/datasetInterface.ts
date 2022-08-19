@@ -1,5 +1,5 @@
-// FIXME: Position -> Coord
-export type Position = {
+// INFO: Coord is coordinate
+export type Coord = {
   xPx: number
   yPx: number
 }

@@ -1,5 +1,5 @@
 import { Axis } from './axis'
-import { Position } from './datasetInterface'
+import { Coord } from './datasetInterface'
 
 export class Axes {
   x1: Axis = new Axis('x1', 0)
@@ -77,7 +77,7 @@ export class Axes {
     this.activeAxisName = ''
   }
 
-  addAxisPosition(coord: Position) {
+  addAxisCoord(coord: Coord) {
     if (!this.nextAxis) {
       throw new Error('The axes already filled.')
     }

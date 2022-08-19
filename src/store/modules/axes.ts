@@ -1,6 +1,6 @@
 import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
 import { Axes } from '@/domains/axes'
-import { Position } from '@/domains/datasetInterface'
+import { Coord } from '@/domains/datasetInterface'
 
 class state {
   axes = new Axes()
@@ -38,8 +38,8 @@ class actions extends Actions<state, getters> {
   clearAxesCoords() {
     this.state.axes.clearAxesCoords()
   }
-  addAxisCoord(coord: Position) {
-    this.state.axes.addAxisPosition(coord)
+  addAxisCoord(coord: Coord) {
+    this.state.axes.addAxisCoord(coord)
   }
   moveActiveAxis(arrow: string) {
     this.state.axes.moveActiveAxis(arrow)

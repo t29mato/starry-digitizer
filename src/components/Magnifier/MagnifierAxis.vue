@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts">
-import { Position } from '@/domains/datasetInterface'
+import { Coord } from '@/domains/datasetInterface'
 import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
@@ -84,7 +84,7 @@ export default Vue.extend({
   },
   props: {
     axis: {
-      type: Object as () => Position,
+      type: Object as () => Coord,
       required: true,
     },
     label: {

@@ -1,6 +1,6 @@
 import ColorThief from 'colorthief'
 import { CanvasInterface } from './canvasInterface'
-import { Position } from './datasetInterface'
+import { Coord } from './datasetInterface'
 import { HTMLCanvas } from './dom/HTMLCanvas'
 const colorThief = new ColorThief()
 
@@ -8,7 +8,7 @@ export class Canvas implements CanvasInterface {
   isDrawnMask = false
   #imageElement?: HTMLImageElement
   scale = 1
-  cursor: Position = { xPx: 0, yPx: 0 }
+  cursor: Coord = { xPx: 0, yPx: 0 }
   #rectangle = {
     startX: 0,
     startY: 0,
@@ -42,7 +42,7 @@ export class Canvas implements CanvasInterface {
     })
   }
 
-  get scaledCursor(): Position {
+  get scaledCursor(): Coord {
     return {
       xPx: this.cursor.xPx * this.scale,
       yPx: this.cursor.yPx * this.scale,

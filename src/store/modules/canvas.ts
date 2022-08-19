@@ -1,6 +1,6 @@
 import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
 import { Canvas } from '@/domains/canvas'
-import { Position } from '@/domains/datasetInterface'
+import { Coord } from '@/domains/datasetInterface'
 
 class state {
   canvas: Canvas = new Canvas()
@@ -33,8 +33,8 @@ class actions extends Actions<state, getters> {
     this.state.canvas.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
   }
 
-  setCanvasCursor(position: Position) {
-    this.state.canvas.cursor = position
+  setCanvasCursor(coord: Coord) {
+    this.state.canvas.cursor = coord
   }
 
   setPenToolSizePx(size: number) {
@@ -60,8 +60,8 @@ class actions extends Actions<state, getters> {
     this.state.canvas.uploadImageUrl = url
   }
 
-  mouseMoveOnCanvas(position: Position) {
-    this.state.canvas.mouseMove(position.xPx, position.yPx)
+  mouseMoveOnCanvas(coord: Coord) {
+    this.state.canvas.mouseMove(coord.xPx, coord.yPx)
   }
 }
 
