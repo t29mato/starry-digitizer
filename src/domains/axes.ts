@@ -1,22 +1,33 @@
-import { Axis } from './axis'
+import { AxisInterface } from './axisInterface'
 import { Coord } from './datasetInterface'
 
 export class Axes {
-  x1: Axis = new Axis('x1', 0)
-  x2: Axis = new Axis('x2', 1)
-  y1: Axis = new Axis('y1', 0)
-  y2: Axis = new Axis('y2', 1)
+  x1: AxisInterface
+  x2: AxisInterface
+  y1: AxisInterface
+  y2: AxisInterface
   xIsLog = false
   yIsLog = false
-  error = ''
   activeAxisName = ''
   x1IsSameAsY1 = true
+
+  constructor(
+    x1: AxisInterface,
+    x2: AxisInterface,
+    y1: AxisInterface,
+    y2: AxisInterface
+  ) {
+    this.x1 = x1
+    this.x2 = x2
+    this.y1 = y1
+    this.y2 = y2
+  }
 
   get hasAtLeastOneAxis(): boolean {
     return !!(this.x1.coord || this.x2.coord || this.y1.coord || this.y2.coord)
   }
 
-  get activeAxis(): Axis | null {
+  get activeAxis(): AxisInterface | null {
     switch (this.activeAxisName) {
       case 'x1':
         return this.x1
@@ -31,7 +42,7 @@ export class Axes {
     }
   }
 
-  get nextAxis(): Axis | null {
+  get nextAxis(): AxisInterface | null {
     if (!this.x1.coord) {
       return this.x1
     }

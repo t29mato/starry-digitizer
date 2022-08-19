@@ -1,7 +1,21 @@
 import { Axes } from './axes'
+import { Axis } from './axis'
+import { AxisInterface } from './axisInterface'
+
+let x1: AxisInterface
+let x2: AxisInterface
+let y1: AxisInterface
+let y2: AxisInterface
+let axes: Axes
+beforeEach(() => {
+  x1 = new Axis('x1', 0)
+  x2 = new Axis('x2', 1)
+  y1 = new Axis('y1', 0)
+  y2 = new Axis('y2', 1)
+  axes = new Axes(x1, x2, y1, y2)
+})
 
 test('it has at least one axis', () => {
-  const axes = new Axes()
   expect(axes.hasAtLeastOneAxis).toBe(false)
   axes.addAxisCoord({ xPx: 100, yPx: 100 }) // x1, y1
   expect(axes.hasAtLeastOneAxis).toBe(true)
@@ -13,7 +27,6 @@ test('it has at least one axis', () => {
 })
 
 test('x1 and y1 coordinates are same', () => {
-  const axes = new Axes()
   axes.addAxisCoord({ xPx: 100, yPx: 100 }) // x1, y1
   expect(axes.x1.coord).toEqual({
     xPx: 100,
@@ -26,9 +39,8 @@ test('x1 and y1 coordinates are same', () => {
 })
 
 test('x1 and y1 coordinates are not same', () => {
-  const axes = new Axes()
   axes.x1IsSameAsY1 = false
-  axes.addAxisCoord({ xPx: 100, yPx: 100 }) // x1, y1
+  axes.addAxisCoord({ xPx: 100, yPx: 100 }) // x1
   expect(axes.x1.coord).toEqual({
     xPx: 100,
     yPx: 100,
@@ -37,7 +49,6 @@ test('x1 and y1 coordinates are not same', () => {
 })
 
 test('active axis', () => {
-  const axes = new Axes()
   axes.addAxisCoord({ xPx: 100, yPx: 100 })
   expect(axes.activeAxis).toEqual(axes.x1)
   axes.addAxisCoord({ xPx: 100, yPx: 100 })
@@ -47,7 +58,6 @@ test('active axis', () => {
 })
 
 test('active axis when x1 and y1 coordinates are not same', () => {
-  const axes = new Axes()
   axes.x1IsSameAsY1 = false
   axes.addAxisCoord({ xPx: 100, yPx: 100 })
   expect(axes.activeAxis).toEqual(axes.x1)
@@ -60,7 +70,6 @@ test('active axis when x1 and y1 coordinates are not same', () => {
 })
 
 test('inactivate axis', () => {
-  const axes = new Axes()
   axes.addAxisCoord({ xPx: 100, yPx: 100 })
   expect(axes.activeAxis).toEqual(axes.x1)
   axes.inactivateAxis()
@@ -68,7 +77,6 @@ test('inactivate axis', () => {
 })
 
 test('next axis', () => {
-  const axes = new Axes()
   expect(axes.nextAxis).toEqual(axes.x1)
   axes.addAxisCoord({ xPx: 100, yPx: 100 })
   expect(axes.nextAxis).toEqual(axes.x2)
@@ -79,7 +87,6 @@ test('next axis', () => {
 })
 
 test('move active axis', () => {
-  const axes = new Axes()
   expect(() => axes.moveActiveAxis('ArrowUp')).toThrow(
     "active axis's coord is undefined"
   )
@@ -98,7 +105,6 @@ test('move active axis', () => {
 })
 
 test('add axis coodinate when all axes are filled', () => {
-  const axes = new Axes()
   axes.addAxisCoord({ xPx: 10, yPx: 100 })
   axes.addAxisCoord({ xPx: 10, yPx: 100 })
   axes.addAxisCoord({ xPx: 10, yPx: 100 })

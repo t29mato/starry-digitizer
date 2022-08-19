@@ -1,5 +1,6 @@
+import { AxisInterface } from './axisInterface'
 import { Coord } from './datasetInterface'
-export class Axis {
+export class Axis implements AxisInterface {
   name: string
   coord?: Coord
   value: number

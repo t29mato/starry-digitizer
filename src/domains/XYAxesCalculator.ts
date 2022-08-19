@@ -1,12 +1,12 @@
-import { Axes } from './axes'
+import { AxesInterface } from './axesInterface'
 
 export default class XYAxesCalculator {
   // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
   effectiveDigits: number = 4
 
-  #axes: Axes
+  #axes: AxesInterface
   #isLog: { x: boolean; y: boolean }
-  constructor(axes: Axes, isLog: { x: boolean; y: boolean }) {
+  constructor(axes: AxesInterface, isLog: { x: boolean; y: boolean }) {
     this.#axes = axes
     this.#isLog = isLog
   }

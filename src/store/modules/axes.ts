@@ -1,9 +1,15 @@
 import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
 import { Axes } from '@/domains/axes'
 import { Coord } from '@/domains/datasetInterface'
+import { Axis } from '@/domains/axis'
 
 class state {
-  axes = new Axes()
+  axes = new Axes(
+    new Axis('x1', 0),
+    new Axis('x2', 1),
+    new Axis('y1', 0),
+    new Axis('y2', 1)
+  )
 }
 
 class getters extends Getters<state> {
