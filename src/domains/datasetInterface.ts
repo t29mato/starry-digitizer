@@ -1,3 +1,4 @@
+// FIXME: Position -> Coord
 export type Position = {
   xPx: number
   yPx: number
@@ -27,6 +28,7 @@ export interface DatasetInterface {
   toggleActivatedPlot(toggledId: number): void
   clearPlot(id: number): void
   clearPlots(): void
+  // FIXME: cancelActivePlots→inactivatePlots
   cancelActivePlots(): void
   clearActivePlots(): void
   plotsSortedByXAscending(): Plots

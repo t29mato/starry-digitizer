@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="axis.coord">
     <div
       :style="{
         position: 'absolute',
@@ -27,17 +27,18 @@
       :style="{
         position: 'absolute',
         top: `${yPx - axisCrossCursorPx}px`,
-        left: `${xPx + axisCrossCursorPx}px`,
+        left: `${labelLeft}px`,
         'pointer-events': 'none',
         'user-select': 'none',
       }"
-      >{{ label }}</span
+      >{{ axis.name }}</span
     >
   </div>
 </template>
 
 <script lang="ts">
-import { Position } from '@/domains/datasetInterface'
+import { Axis } from '@/domains/axis'
+import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
 import { styleMapper } from '@/store/modules/style'
 import Vue from 'vue'
@@ -52,24 +53,39 @@ export default Vue.extend({
       'axisCrossCursorPx',
     ]),
     ...canvasMapper.mapGetters(['canvas']),
+    ...axesMapper.mapGetters(['axes']),
     xPx(): number {
-      return this.axis.xPx * this.canvas.scale
+      if (this.axis.coord) {
+        return this.axis.coord.xPx * this.canvas.scale
+      }
+      return -999
     },
     yPx(): number {
-      return this.axis.yPx * this.canvas.scale
+      if (this.axis.coord) {
+        return this.axis.coord.yPx * this.canvas.scale
+      }
+      return -999
+    },
+    labelLeft(): number {
+      if (this.axis.name === 'y1' && this.axes.x1IsSameAsY1) {
+        return this.xPx + this.axisCrossCursorPx + 21
+      }
+      return this.xPx + this.axisCrossCursorPx
+    },
+    isActive(): boolean {
+      if (this.axes.x1IsSameAsY1) {
+        if (this.axes.activeAxisName === 'x1') {
+          if (this.axis.name === 'y1') {
+            return true
+          }
+        }
+      }
+      return this.axes.activeAxisName === this.axis.name
     },
   },
   props: {
     axis: {
-      type: Object as () => Position,
-      required: true,
-    },
-    label: {
-      type: String,
-      required: true,
-    },
-    isActive: {
-      type: Boolean,
+      type: Object as () => Axis,
       required: true,
     },
   },

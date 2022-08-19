@@ -108,9 +108,6 @@ export default Vue.extend({
     },
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (!this.axes.validateAxes()) {
-        return { xV: '0', yV: '0' }
-      }
       const calculator = new XYAxesCalculator(this.axes, {
         x: this.axes.xIsLog,
         y: this.axes.yIsLog,

@@ -1,241 +1,94 @@
-export type Axis = {
-  xPx: number
-  yPx: number
-  value: number
-}
+import { Axis } from './axis'
+import { Position } from './datasetInterface'
 
 export class Axes {
-  // TODO: x1, x2, y1, y2はそれぞれプロパティとして分ける。
-  x1: Axis = {
-    xPx: -999,
-    yPx: -999,
-    value: 0,
-  }
-  x2: Axis = {
-    xPx: -999,
-    yPx: -999,
-    value: 1,
-  }
-  y1: Axis = {
-    xPx: -999,
-    yPx: -999,
-    value: 0,
-  }
-  y2: Axis = {
-    xPx: -999,
-    yPx: -999,
-    value: 1,
-  }
+  x1: Axis = new Axis('x1', 0)
+  x2: Axis = new Axis('x2', 1)
+  y1: Axis = new Axis('y1', 0)
+  y2: Axis = new Axis('y2', 1)
   xIsLog = false
   yIsLog = false
   error = ''
-  activeIndex = -1
-  nextIndex = 0
+  activeAxisName = ''
+  x1IsSameAsY1 = true
 
-  get nextAxisKey() {
-    if (this.x1.xPx + this.x1.yPx < 0) {
-      return 'x1'
-    }
-    if (this.x2.xPx + this.x2.yPx < 0) {
-      return 'x2'
-    }
-    if (this.y1.xPx + this.y1.yPx < 0) {
-      return 'y1'
-    }
-    if (this.y2.xPx + this.y2.yPx < 0) {
-      return 'y2'
-    }
-    return ''
+  get hasAtLeastOneAxis(): boolean {
+    return !!(this.x1.coord || this.x2.coord || this.y1.coord || this.y2.coord)
   }
 
-  get isActive() {
-    return this.activeIndex >= 0
-  }
-
-  get hasNext() {
-    return this.nextIndex >= 0
-  }
-
-  get exist() {
-    if (
-      this.x1.xPx >= 0 ||
-      this.x2.xPx >= 0 ||
-      this.y1.xPx >= 0 ||
-      this.y2.xPx >= 0
-    ) {
-      return true
-    }
-    return false
-  }
-
-  get nextAxis() {
-    if (this.nextAxisKey === '') {
-      return
-    }
-    return this[this.nextAxisKey]
-  }
-
-  get axesPos() {
-    return [
-      {
-        xPx: this.x1.xPx,
-        yPx: this.x1.yPx,
-      },
-      {
-        xPx: this.x2.xPx,
-        yPx: this.x2.yPx,
-      },
-      {
-        xPx: this.y1.xPx,
-        yPx: this.y1.yPx,
-      },
-      {
-        xPx: this.y2.xPx,
-        yPx: this.y2.yPx,
-      },
-    ]
-  }
-
-  get activeKey() {
-    switch (this.activeIndex) {
-      case 0:
-        return 'x1'
-      case 1:
-        return 'x2'
-      case 2:
-        return 'y1'
-      case 3:
-        return 'y2'
-      default:
-        return ''
-    }
-  }
-
-  get activeAxis() {
-    switch (this.activeIndex) {
-      case 0:
+  get activeAxis(): Axis | null {
+    switch (this.activeAxisName) {
+      case 'x1':
         return this.x1
-      case 1:
+      case 'x2':
         return this.x2
-      case 2:
+      case 'y1':
         return this.y1
-      case 3:
+      case 'y2':
         return this.y2
+      default:
+        return null
     }
-    return this.axesPos[this.activeIndex]
   }
 
-  axisName(index: number) {
-    switch (index) {
-      case 0:
-        return 'x1'
-      case 1:
-        return 'x2'
-      case 2:
-        return 'y1'
-      case 3:
-        return 'y2'
-      default:
-        return ''
+  get nextAxis(): Axis | null {
+    if (!this.x1.coord) {
+      return this.x1
     }
+    if (!this.x2.coord) {
+      return this.x2
+    }
+    if (!this.y1.coord) {
+      return this.y1
+    }
+    if (!this.y2.coord) {
+      return this.y2
+    }
+    return null
   }
 
   moveActiveAxis(arrow: string) {
+    if (!this.activeAxis || !this.activeAxis.coord) {
+      throw new Error("active axis's coord is undefined")
+    }
     switch (arrow) {
       case 'ArrowUp':
-        this.activeAxis.yPx--
+        this.activeAxis.coord.yPx--
         break
       case 'ArrowRight':
-        this.activeAxis.xPx++
+        this.activeAxis.coord.xPx++
         break
       case 'ArrowDown':
-        this.activeAxis.yPx++
+        this.activeAxis.coord.yPx++
         break
       case 'ArrowLeft':
-        this.activeAxis.xPx--
+        this.activeAxis.coord.xPx--
         break
       default:
-        break
+        throw new Error(`undefined arrow: ${arrow}`)
     }
   }
 
-  clearAxes() {
-    this.x1 = {
-      xPx: -999,
-      yPx: -999,
-      value: 0,
-    }
-    this.x2 = {
-      xPx: -999,
-      yPx: -999,
-      value: 1,
-    }
-    this.y1 = {
-      xPx: -999,
-      yPx: -999,
-      value: 0,
-    }
-    this.y2 = {
-      xPx: -999,
-      yPx: -999,
-      value: 1,
-    }
-    this.activeIndex = -1
-    this.nextIndex = 0
+  clearAxesCoords() {
+    this.x1.clearCoord()
+    this.x2.clearCoord()
+    this.y1.clearCoord()
+    this.y2.clearCoord()
+    this.activeAxisName = ''
   }
 
-  addAxisPosition(xPx: number, yPx: number) {
+  addAxisPosition(coord: Position) {
     if (!this.nextAxis) {
       throw new Error('The axes already filled.')
     }
-    this.nextAxis.xPx = xPx
-    this.nextAxis.yPx = yPx
-    this.activeIndex++
-    this.nextIndex++
-    if (this.nextIndex === 4) {
-      this.nextIndex = -1
+    this.activeAxisName = this.nextAxis.name
+    this.nextAxis.coord = coord
+    if (this.activeAxisName === 'x1' && this.x1IsSameAsY1) {
+      this.y1.coord = Object.assign(coord)
     }
   }
 
   inactivateAxis() {
-    this.activeIndex = -1
-  }
-
-  validateAxes(): boolean {
-    if (this.x1.value === this.x2.value) {
-      this.error = 'x1 and x2 should not be same value'
-      return false
-    }
-    if (this.y1.value === this.y2.value) {
-      this.error = 'y1 and y2 should not be same value'
-      return false
-    }
-    this.error = ''
-    return true
-  }
-
-  scaledAxes(scale: number) {
-    return {
-      x1: {
-        xPx: this.x1.xPx * scale,
-        yPx: this.x1.yPx * scale,
-        value: this.x1.value,
-      },
-      x2: {
-        xPx: this.x2.xPx * scale,
-        yPx: this.x2.yPx * scale,
-        value: this.x2.value,
-      },
-      y1: {
-        xPx: this.y1.xPx * scale,
-        yPx: this.y1.yPx * scale,
-        value: this.y1.value,
-      },
-      y2: {
-        xPx: this.y2.xPx * scale,
-        yPx: this.y2.yPx * scale,
-        value: this.y2.value,
-      },
-    }
+    this.activeAxisName = ''
   }
 }

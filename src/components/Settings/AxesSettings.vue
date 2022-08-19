@@ -69,7 +69,13 @@
         </tr>
       </tbody>
     </v-simple-table>
-    <p class="red--text">{{ axes.error }}</p>
+    <v-checkbox
+      label="X1 = Y1 coord"
+      dense
+      v-model="axes.x1IsSameAsY1"
+      :disabled="axes.hasAtLeastOneAxis"
+    ></v-checkbox>
+    <p class="red--text">{{ errorMessage }}</p>
   </div>
 </template>
 
@@ -80,6 +86,27 @@ import { axesMapper } from '@/store/modules/axes'
 export default Vue.extend({
   computed: {
     ...axesMapper.mapGetters(['axes']),
+    errorMessage(): string {
+      if (this.axes.xIsLog) {
+        if (this.axes.x1.value === 0 || this.axes.x2.value === 0) {
+          return 'x1 or x2 should not be 0'
+        }
+      } else {
+        if (this.axes.x1.value === this.axes.x2.value) {
+          return 'x1 and x2 should not be same value'
+        }
+      }
+      if (this.axes.yIsLog) {
+        if (this.axes.y1.value === 0 || this.axes.y2.value === 0) {
+          return 'y1 or y2 should not be 0'
+        }
+      } else {
+        if (this.axes.y1.value === this.axes.y2.value) {
+          return 'y1 and y2 should not be same value'
+        }
+      }
+      return ''
+    },
   },
   data() {
     return {}
@@ -105,12 +132,6 @@ export default Vue.extend({
     },
     setY2(value: string) {
       this.setY2Value(parseFloat(value))
-    },
-    setXIsLog(value: boolean) {
-      this.setXIsLog(value)
-    },
-    setYIsLog(value: boolean) {
-      this.setYIsLog(value)
     },
   },
 })

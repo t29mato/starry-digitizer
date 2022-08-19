@@ -1,9 +1,11 @@
 <template>
   <div class="mt-2">
-    <v-btn small :disabled="axes.nextIndex !== 2" @click="sameAsX1"
-      >Same as X1</v-btn
+    <v-btn
+      class="ml-2"
+      small
+      :disabled="!axes.hasAtLeastOneAxis"
+      @click="clickAxes"
     >
-    <v-btn class="ml-2" small :disabled="!axes.exist" @click="clickAxes">
       Clear Axes</v-btn
     >
     <v-btn
@@ -39,14 +41,11 @@ export default Vue.extend({
   },
   methods: {
     ...datasetMapper.mapActions(['clearPlots', 'clearActivePlots']),
-    ...axesMapper.mapActions(['clearAxes', 'addAxis']),
+    ...axesMapper.mapActions(['clearAxesCoords']),
     ...canvasMapper.mapActions(['setManualMode']),
     clickAxes() {
-      this.clearAxes()
+      this.clearAxesCoords()
       this.setManualMode(-1)
-    },
-    sameAsX1() {
-      this.addAxis(this.axes.x1)
     },
   },
 })

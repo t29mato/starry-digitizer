@@ -36,7 +36,7 @@ export default Vue.extend({
   props: {},
   methods: {
     ...canvasMapper.mapActions(['drawFitSizeImage', 'setUploadImageUrl']),
-    ...axesMapper.mapActions(['clearAxes']),
+    ...axesMapper.mapActions(['clearAxesCoords']),
     ...datasetMapper.mapActions(['clearPlots']),
     ...extractorMapper.mapActions(['setSwatches']),
     async uploadImage(file: File) {
@@ -51,7 +51,7 @@ export default Vue.extend({
         this.drawFitSizeImage()
         this.setSwatches(this.canvas.colorSwatches)
         this.setUploadImageUrl(fr.result)
-        this.clearAxes()
+        this.clearAxesCoords()
         this.clearPlots()
       } finally {
         //

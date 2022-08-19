@@ -39,7 +39,13 @@ export default Vue.extend({
         case 2:
           return 'Delete'
       }
-      return this.axes.nextAxisKey
+      if (this.axes.nextAxis) {
+        if (this.axes.nextAxis.name === 'x1' && this.axes.x1IsSameAsY1) {
+          return 'x1 y1'
+        }
+        return this.axes.nextAxis.name
+      }
+      return ''
     },
   },
 })

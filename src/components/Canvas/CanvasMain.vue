@@ -87,6 +87,7 @@ export default Vue.extend({
       'addPlot',
       'moveActivePlot',
       'clearActivePlots',
+      'cancelActivePlots',
     ]),
     ...canvasMapper.mapActions([
       'mouseMoveOnCanvas',
@@ -95,7 +96,11 @@ export default Vue.extend({
       'setUploadImageUrl',
       'setManualMode',
     ]),
-    ...axesMapper.mapActions(['addAxis', 'inactivateAxis', 'moveActiveAxis']),
+    ...axesMapper.mapActions([
+      'addAxisCoord',
+      'inactivateAxis',
+      'moveActiveAxis',
+    ]),
     ...extractorMapper.mapActions(['setSwatches']),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
@@ -131,13 +136,14 @@ export default Vue.extend({
       if (isOnCanvasPlot) {
         return
       }
-      if (this.axes.hasNext) {
-        this.addAxis({
+      if (this.axes.nextAxis) {
+        this.addAxisCoord({
           xPx: (e.offsetX - offsetPx) / this.canvas.scale,
           yPx: e.offsetY / this.canvas.scale,
         })
+        this.cancelActivePlots()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
-        if (!this.axes.hasNext) {
+        if (!this.axes.nextAxis) {
           this.canvas.manualMode = 0
         }
         return
@@ -211,9 +217,9 @@ export default Vue.extend({
           this.clearActivePlots()
         }
       }
-      if (this.axes.isActive) {
+      if (this.axes.activeAxis && this.axes.activeAxis.coord) {
         this.moveActiveAxis(key)
-        this.setCanvasCursor(this.axes.activeAxis)
+        this.setCanvasCursor(this.axes.activeAxis.coord)
       }
       if (this.datasets.activeDataset.plotsAreActive) {
         this.moveActivePlot(e.key)

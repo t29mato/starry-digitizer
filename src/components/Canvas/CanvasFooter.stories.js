@@ -23,8 +23,8 @@ export default {
         { xPx: 48, yPx: 380 },
       ],
     },
-    clearAxes: {
-      action: 'clearAxes',
+    clearAxesCoords: {
+      action: 'clearAxesCoords',
     },
     clearPlots: {
       action: 'clearPlots',

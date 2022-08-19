@@ -35,17 +35,34 @@ export default class XYAxesCalculator {
         : ((x2y - x1y) * x + x2x * x1y - x1x * x2y) / (x2x - x1x)
       return { x, y }
     }
+    if (
+      !(
+        this.#axes.x1.coord &&
+        this.#axes.x2.coord &&
+        this.#axes.y1.coord &&
+        this.#axes.y2.coord
+      )
+    ) {
+      return { xV: 'NaN', yV: 'NaN' }
+    }
+    if (
+      this.#axes.x1.value === this.#axes.x2.value ||
+      this.#axes.y1.value === this.#axes.y2.value
+    ) {
+      return { xV: 'NaN', yV: 'NaN' }
+    }
+
     const [x1x, x1y, x2x, x2y, x1v, x2v, y1x, y1y, y2x, y2y, y1v, y2v] = [
-      this.#axes.x1.xPx,
-      this.#axes.x1.yPx,
-      this.#axes.x2.xPx,
-      this.#axes.x2.yPx,
+      this.#axes.x1.coord.xPx,
+      this.#axes.x1.coord.yPx,
+      this.#axes.x2.coord.xPx,
+      this.#axes.x2.coord.yPx,
       this.#axes.x1.value,
       this.#axes.x2.value,
-      this.#axes.y1.xPx,
-      this.#axes.y1.yPx,
-      this.#axes.y2.xPx,
-      this.#axes.y2.yPx,
+      this.#axes.y1.coord.xPx,
+      this.#axes.y1.coord.yPx,
+      this.#axes.y2.coord.xPx,
+      this.#axes.y2.coord.yPx,
       this.#axes.y1.value,
       this.#axes.y2.value,
     ]

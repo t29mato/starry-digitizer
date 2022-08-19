@@ -1,5 +1,6 @@
 import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
 import { Axes } from '@/domains/axes'
+import { Position } from '@/domains/datasetInterface'
 
 class state {
   axes = new Axes()
@@ -34,17 +35,20 @@ class actions extends Actions<state, getters> {
   setYIsLog(value: boolean) {
     this.state.axes.yIsLog = value
   }
-  clearAxes() {
-    this.state.axes.clearAxes()
+  clearAxesCoords() {
+    this.state.axes.clearAxesCoords()
   }
-  addAxis(axis: { xPx: number; yPx: number }) {
-    this.state.axes.addAxisPosition(axis.xPx, axis.yPx)
+  addAxisCoord(coord: Position) {
+    this.state.axes.addAxisPosition(coord)
   }
   moveActiveAxis(arrow: string) {
     this.state.axes.moveActiveAxis(arrow)
   }
   inactivateAxis() {
     this.state.axes.inactivateAxis()
+  }
+  setX1IsSameAsY1(x1IsSameAsY1: boolean) {
+    this.state.axes.x1IsSameAsY1 = x1IsSameAsY1
   }
 }
 

@@ -1,25 +1,9 @@
 <template>
   <div>
-    <canvas-axis
-      :axis="axes.x1"
-      label="x1"
-      :isActive="axes.activeIndex === 0"
-    ></canvas-axis>
-    <canvas-axis
-      :axis="axes.x2"
-      label="x2"
-      :isActive="axes.activeIndex === 1"
-    ></canvas-axis>
-    <canvas-axis
-      :axis="axes.y1"
-      label="y1"
-      :isActive="axes.activeIndex === 2"
-    ></canvas-axis>
-    <canvas-axis
-      :axis="axes.y2"
-      label="y2"
-      :isActive="axes.activeIndex === 3"
-    ></canvas-axis>
+    <canvas-axis :axis="axes.x1"></canvas-axis>
+    <canvas-axis :axis="axes.x2"></canvas-axis>
+    <canvas-axis :axis="axes.y1"></canvas-axis>
+    <canvas-axis :axis="axes.y2"></canvas-axis>
   </div>
 </template>
 
