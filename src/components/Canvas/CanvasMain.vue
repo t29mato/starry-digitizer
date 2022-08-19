@@ -87,7 +87,7 @@ export default Vue.extend({
       'addPlot',
       'moveActivePlot',
       'clearActivePlots',
-      'cancelActivePlots',
+      'inactivatePlots',
     ]),
     ...canvasMapper.mapActions([
       'mouseMoveOnCanvas',
@@ -141,7 +141,7 @@ export default Vue.extend({
           xPx: (e.offsetX - offsetPx) / this.canvas.scale,
           yPx: e.offsetY / this.canvas.scale,
         })
-        this.cancelActivePlots()
+        this.inactivatePlots()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
         if (!this.axes.nextAxis) {
           this.canvas.manualMode = 0

@@ -33,8 +33,8 @@ class actions extends Actions<state, getters> {
   clearPlots() {
     this.state.datasets.activeDataset.clearPlots()
   }
-  cancelActivePlots() {
-    this.state.datasets.activeDataset.cancelActivePlots()
+  inactivatePlots() {
+    this.state.datasets.activeDataset.inactivatePlots()
   }
   clearActivePlots() {
     this.state.datasets.activeDataset.clearActivePlots()

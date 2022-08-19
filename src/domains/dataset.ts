@@ -72,7 +72,7 @@ export class Dataset implements DatasetInterface {
     this.activePlotIds.length = 0
   }
 
-  cancelActivePlots() {
+  inactivatePlots() {
     this.activePlotIds = []
   }
 

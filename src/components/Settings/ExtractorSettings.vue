@@ -70,11 +70,11 @@ export default Vue.extend({
       'clearPlots',
       'setPlots',
       'sortPlots',
-      'cancelActivePlots',
+      'inactivatePlots',
     ]),
     ...canvasMapper.mapActions(['setManualMode']),
     changeManualMode(value: any) {
-      this.cancelActivePlots()
+      this.inactivatePlots()
       if (value === undefined) {
         this.setManualMode(-1)
         return

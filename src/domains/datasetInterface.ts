@@ -28,8 +28,7 @@ export interface DatasetInterface {
   toggleActivatedPlot(toggledId: number): void
   clearPlot(id: number): void
   clearPlots(): void
-  // FIXME: cancelActivePlots→inactivatePlots
-  cancelActivePlots(): void
+  inactivatePlots(): void
   clearActivePlots(): void
   plotsSortedByXAscending(): Plots
   plotsSortedByXDescending(): Plots
