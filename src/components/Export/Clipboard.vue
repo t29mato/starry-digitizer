@@ -67,7 +67,7 @@ export default Vue.extend({
           } else {
             throw new Error(`undefined sort order ${this.sortOrder}`)
           }
-        case 'time':
+        case 'as added':
           if (this.sortOrder === 'asc') {
             return this.datasets.activeDataset.plotsSortedByIdAscending()
           } else if (this.sortOrder === 'desc') {

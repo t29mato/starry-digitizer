@@ -123,8 +123,8 @@ export default Vue.extend({
   data() {
     return {
       shouldShowActiveDataset: false,
-      sortKey: 'time',
-      sortKeys: ['time', 'x', 'y'],
+      sortKey: 'as added',
+      sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'asc',
       sortOrders: ['asc', 'desc'],
     }
