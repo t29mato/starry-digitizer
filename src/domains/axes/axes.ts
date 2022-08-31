@@ -24,7 +24,12 @@ export class Axes {
   }
 
   get hasAtLeastOneAxis(): boolean {
-    return !!(this.x1.coord || this.x2.coord || this.y1.coord || this.y2.coord)
+    return !!(
+      this.x1.coordIsFilled ||
+      this.x2.coordIsFilled ||
+      this.y1.coordIsFilled ||
+      this.y2.coordIsFilled
+    )
   }
 
   get activeAxis(): AxisInterface | null {
@@ -43,16 +48,16 @@ export class Axes {
   }
 
   get nextAxis(): AxisInterface | null {
-    if (!this.x1.coord) {
+    if (!this.x1.coordIsFilled) {
       return this.x1
     }
-    if (!this.x2.coord) {
+    if (!this.x2.coordIsFilled) {
       return this.x2
     }
-    if (!this.y1.coord) {
+    if (!this.y1.coordIsFilled) {
       return this.y1
     }
-    if (!this.y2.coord) {
+    if (!this.y2.coordIsFilled) {
       return this.y2
     }
     return null

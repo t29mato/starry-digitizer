@@ -5,5 +5,5 @@ test('clear coordinates', () => {
   axis.coord = { xPx: 100, yPx: 100 }
   expect(axis.coord).toEqual({ xPx: 100, yPx: 100 })
   axis.clearCoord()
-  expect(axis.coord).toBeUndefined()
+  expect(axis.coord).toEqual(axis.initialCoord)
 })

@@ -45,7 +45,7 @@ test('x1 and y1 coordinates are not same', () => {
     xPx: 100,
     yPx: 100,
   })
-  expect(axes.y1.coord).toBeUndefined()
+  expect(axes.y1.coord).toEqual(axes.y1.initialCoord)
 })
 
 test('active axis', () => {
