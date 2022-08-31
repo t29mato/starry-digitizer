@@ -28,29 +28,22 @@
           background: isActive ? 'red' : 'dodgerblue',
         }"
       ></div>
+      <div
+        :style="{
+          'pointer-events': 'none',
+          width: '100px',
+          'margin-left': `${21 / canvas.scale}px`,
+          'line-height': 1,
+        }"
+      >
+        {{ label }}
+      </div>
     </div>
-    <span
-      :style="{
-        position: 'absolute',
-        top: `${
-          ((yPx - axisCrossCursorPx) / canvas.scale) * magnifier.scale
-        }px`,
-        left: `${
-          ((xPx + axisCrossCursorPx) / canvas.scale) * magnifier.scale
-        }px`,
-        'pointer-events': 'none',
-        transform: `scale(${magnifier.scale}) translate(-${
-          canvas.cursor.xPx - magnifierHalfSizePx / magnifier.scale
-        }px, -${canvas.cursor.yPx - magnifierHalfSizePx / magnifier.scale}px)`,
-        'transform-origin': 'top left',
-      }"
-      >{{ label }}</span
-    >
   </div>
 </template>
 
 <script lang="ts">
-import { Coord } from '@/domains/datasetInterface'
+import { AxisInterface } from '@/domains/axes/axisInterface'
 import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
@@ -73,26 +66,33 @@ export default Vue.extend({
     ]),
     ...magnifierMapper.mapGetters(['magnifier']),
     xPx(): number {
-      return this.axis.xPx * this.canvas.scale
+      return this.axis.coord.xPx * this.canvas.scale
     },
     yPx(): number {
-      return this.axis.yPx * this.canvas.scale
+      return this.axis.coord.yPx * this.canvas.scale
     },
     magnifierHalfSizePx(): number {
       return this.magnifier.sizePx / 2
     },
+    label(): string {
+      if (!this.axes.x1IsSameAsY1) {
+        return this.axis.name
+      }
+      if (this.axis.name === 'x1') {
+        return 'x1 y1'
+      }
+      if (this.axis.name === 'y1') {
+        return ''
+      }
+      return this.axis.name
+    },
+    icActive(): boolean {
+      return this.axes.activeAxisName === this.axis.name
+    },
   },
   props: {
     axis: {
-      type: Object as () => Coord,
-      required: true,
-    },
-    label: {
-      type: String,
-      required: true,
-    },
-    isActive: {
-      type: Boolean,
+      type: Object as () => AxisInterface,
       required: true,
     },
   },
