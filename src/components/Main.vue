@@ -30,8 +30,10 @@ import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
 import { AxesSettings, ExtractorSettings, ImageSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { version } from '../../package.json'
+import store from '@/store'
 
 export default Vue.extend({
+  store,
   components: {
     MagnifierMain,
     CanvasHeader,

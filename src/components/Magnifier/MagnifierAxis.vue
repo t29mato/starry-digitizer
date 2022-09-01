@@ -86,13 +86,14 @@ export default Vue.extend({
       }
       return this.axis.name
     },
-    icActive(): boolean {
-      return this.axes.activeAxisName === this.axis.name
-    },
   },
   props: {
     axis: {
       type: Object as () => AxisInterface,
+      required: true,
+    },
+    isActive: {
+      type: Boolean,
       required: true,
     },
   },

@@ -1,9 +1,21 @@
 <template>
   <div>
-    <magnifier-axis :axis="axes.x1"></magnifier-axis>
-    <magnifier-axis :axis="axes.x2"></magnifier-axis>
-    <magnifier-axis :axis="axes.y1"></magnifier-axis>
-    <magnifier-axis :axis="axes.y2"></magnifier-axis>
+    <magnifier-axis
+      :axis="axes.x1"
+      :isActive="axes.activeAxisName === 'x1'"
+    ></magnifier-axis>
+    <magnifier-axis
+      :axis="axes.x2"
+      :isActive="axes.activeAxisName === 'x2'"
+    ></magnifier-axis>
+    <magnifier-axis
+      :axis="axes.y1"
+      :isActive="axes.activeAxisName === 'y1'"
+    ></magnifier-axis>
+    <magnifier-axis
+      :axis="axes.y2"
+      :isActive="axes.activeAxisName === 'y2'"
+    ></magnifier-axis>
   </div>
 </template>
 
