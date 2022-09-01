@@ -12,7 +12,9 @@
         >Copy to Clipboard</v-btn
       >
       <!-- TODO: export機能を実装する -->
-      <v-btn v-if="exportBtnText" class="ml-2">{{ exportBtnText }}</v-btn>
+      <v-btn v-if="exportBtnText" class="ml-2" @click="click">{{
+        exportBtnText
+      }}</v-btn>
     </div>
   </div>
 </template>
@@ -24,11 +26,13 @@ import { datasetMapper } from '@/store/modules/dataset'
 import { Plots, PlotValue } from '@/domains/datasetInterface'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
 import { axesMapper } from '@/store/modules/axes'
+import { canvasMapper } from '@/store/modules/canvas'
 
 export default Vue.extend({
   computed: {
     ...datasetMapper.mapGetters(['datasets']),
     ...axesMapper.mapGetters(['axes']),
+    ...canvasMapper.mapGetters(['canvas']),
     convertPlotsIntoText(): string {
       return this.activeCalculatedPlots
         .reduce((prev, cur) => {
@@ -90,6 +94,10 @@ export default Vue.extend({
     exportBtnText: {
       type: String,
     },
+    exportBtnClick: {
+      type: Function,
+      required: false,
+    },
     sortKey: {
       type: String,
       required: true,
@@ -113,6 +121,13 @@ export default Vue.extend({
         y: this.axes.yIsLog,
       })
       return calculator.calculateXYValues(x, y)
+    },
+    click() {
+      this.exportBtnClick({
+        canvas: this.canvas,
+        datasets: this.datasets,
+        axes: this.axes,
+      })
     },
   },
 })

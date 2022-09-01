@@ -5,7 +5,10 @@
         <v-col cols="2">
           <image-settings></image-settings>
           <axes-settings></axes-settings>
-          <dataset-manager :exportBtnText="exportBtnText"></dataset-manager>
+          <dataset-manager
+            :exportBtnText="exportBtnText"
+            :exportBtnClick="exportBtnClick"
+          ></dataset-manager>
         </v-col>
         <v-col class="pt-1" cols="7">
           <canvas-header></canvas-header>
@@ -51,6 +54,10 @@ export default Vue.extend({
       required: true,
     },
     exportBtnText: String,
+    exportBtnClick: {
+      type: Function,
+      required: false,
+    },
   },
   data() {
     return {

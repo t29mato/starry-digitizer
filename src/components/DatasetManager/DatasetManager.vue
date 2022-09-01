@@ -85,6 +85,7 @@
                   :sortKey="sortKey"
                   :sortOrder="sortOrder"
                   :exportBtnText="exportBtnText"
+                  :exportBtnClick="exportBtnClick"
                 ></clipboard>
               </v-col>
               <v-col cols="3">
@@ -135,6 +136,10 @@ export default Vue.extend({
   props: {
     exportBtnText: {
       type: String,
+      required: false,
+    },
+    exportBtnClick: {
+      type: Function,
       required: false,
     },
   },
