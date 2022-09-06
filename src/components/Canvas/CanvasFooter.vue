@@ -13,7 +13,7 @@
       class="ml-2"
       :disabled="datasets.activeDataset.plots.length === 0"
       @click="clearPlots"
-      >Clear Plots</v-btn
+      >Clear Points</v-btn
     >
     <v-btn
       small
@@ -22,7 +22,7 @@
         datasets.activeDataset.plots.length === 0 || !datasets.plotsAreActive
       "
       @click="clearActivePlots"
-      >Clear Active Plot</v-btn
+      >Clear Active Point</v-btn
     >
   </div>
 </template>

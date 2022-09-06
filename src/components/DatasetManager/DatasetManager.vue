@@ -125,8 +125,8 @@ export default Vue.extend({
       shouldShowActiveDataset: false,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
-      sortOrder: 'asc',
-      sortOrders: ['asc', 'desc'],
+      sortOrder: 'ascending',
+      sortOrders: ['ascending', 'descending'],
     }
   },
   computed: {
