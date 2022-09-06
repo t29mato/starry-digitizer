@@ -52,25 +52,26 @@ export default Vue.extend({
     sortedPlots(): Plots {
       switch (this.sortKey) {
         case 'x':
-          if (this.sortOrder === 'asc') {
+          if (this.sortOrder === 'ascending') {
             return this.datasets.activeDataset.plotsSortedByXAscending()
-          } else if (this.sortOrder === 'desc') {
+          } else if (this.sortOrder === 'descending') {
             return this.datasets.activeDataset.plotsSortedByXDescending()
           } else {
             throw new Error(`undefined sort order ${this.sortOrder}`)
           }
         case 'y':
-          if (this.sortOrder === 'asc') {
-            return this.datasets.activeDataset.plotsSortedByYAscending()
-          } else if (this.sortOrder === 'desc') {
+          // INFO: Pixel value xy is from top left to bottom, so y is the opposite of the value you want to sort by
+          if (this.sortOrder === 'ascending') {
             return this.datasets.activeDataset.plotsSortedByYDescending()
+          } else if (this.sortOrder === 'descending') {
+            return this.datasets.activeDataset.plotsSortedByYAscending()
           } else {
             throw new Error(`undefined sort order ${this.sortOrder}`)
           }
         case 'as added':
-          if (this.sortOrder === 'asc') {
+          if (this.sortOrder === 'ascending') {
             return this.datasets.activeDataset.plotsSortedByIdAscending()
-          } else if (this.sortOrder === 'desc') {
+          } else if (this.sortOrder === 'descending') {
             return this.datasets.activeDataset.plotsSortedByIdDescending()
           } else {
             throw new Error(`undefined sort order ${this.sortOrder}`)
