@@ -70,7 +70,7 @@
       </tbody>
     </v-simple-table>
     <v-checkbox
-      label="X1 = Y1 coord"
+      label="X1 = Y1 coordinates"
       dense
       v-model="axes.x1IsSameAsY1"
       :disabled="axes.hasAtLeastOneAxis"

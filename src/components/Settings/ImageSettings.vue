@@ -6,7 +6,7 @@
       @change="uploadImage"
       :clearable="false"
       dense
-      label="choose image file"
+      label="choose an image file"
       class="mt-2"
     ></v-file-input>
   </div>
