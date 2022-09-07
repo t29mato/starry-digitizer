@@ -11,8 +11,7 @@
       <v-btn small @click="copy" :disabled="convertPlotsIntoText.length === 0"
         >Copy to Clipboard</v-btn
       >
-      <!-- TODO: export機能を実装する -->
-      <v-btn v-if="exportBtnText" class="ml-2" @click="click">{{
+      <v-btn small v-if="exportBtnText" class="ml-2" @click="click">{{
         exportBtnText
       }}</v-btn>
     </div>
