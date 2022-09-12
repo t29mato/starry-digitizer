@@ -182,7 +182,8 @@ export default Vue.extend({
     },
     keyDownHandler(e: KeyboardEvent) {
       // INFO: 入力フィールドにカーソルが当たってる場合はスルー
-      if ((e.target as Element).nodeName === 'INPUT') {
+      const targetName = (e.target as Element).nodeName
+      if (targetName === 'INPUT' || targetName === 'TEXTAREA') {
         return
       }
       const whiteList = [
