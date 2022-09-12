@@ -44,9 +44,13 @@
       <v-btn small class="mt-2" @click="shouldShowActiveDataset = true"
         >View Datasets</v-btn
       >
-      <v-btn small v-if="exportBtnText" class="ml-2 mt-2" @click="click">{{
-        exportBtnText
-      }}</v-btn>
+      <v-btn
+        small
+        v-if="exportBtnText"
+        class="ml-2 mt-2"
+        @click="exportBtnClick"
+        >{{ exportBtnText }}</v-btn
+      >
     </v-card>
     <v-dialog
       v-model="shouldShowActiveDataset"
