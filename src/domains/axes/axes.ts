@@ -1,7 +1,8 @@
 import { Coord } from '../datasetInterface'
+import { AxesInterface } from './axesInterface'
 import { AxisInterface } from './axisInterface'
 
-export class Axes {
+export class Axes implements AxesInterface {
   x1: AxisInterface
   x2: AxisInterface
   y1: AxisInterface
