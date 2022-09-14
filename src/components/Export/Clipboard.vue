@@ -129,6 +129,7 @@ export default Vue.extend({
         datasets: this.datasets,
         axes: this.axes,
         activePlots: this.activeCalculatedPlots,
+        plotsText: this.textArea,
       })
     },
   },
