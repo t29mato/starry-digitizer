@@ -123,10 +123,12 @@ export default Vue.extend({
       return calculator.calculateXYValues(x, y)
     },
     click() {
+      // TODO: DatasetにCalculatedPlotsをどう入れるか検討
       this.exportBtnClick({
         canvas: this.canvas,
         datasets: this.datasets,
         axes: this.axes,
+        activePlots: this.activeCalculatedPlots,
       })
     },
   },
