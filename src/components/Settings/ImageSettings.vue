@@ -74,6 +74,11 @@ export default Vue.extend({
       })
     },
     pasteHandler(event: ClipboardEvent) {
+      // INFO: 入力フィールドにカーソルが当たってる場合はスルー
+      const targetName = (event.target as Element).nodeName
+      if (targetName === 'INPUT' || targetName === 'TEXTAREA') {
+        return
+      }
       if (!event.clipboardData) {
         return
       }
