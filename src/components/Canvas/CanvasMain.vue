@@ -181,8 +181,13 @@ export default Vue.extend({
       }
     },
     keyDownHandler(e: KeyboardEvent) {
+      const target = e.target as Element
+      // INFO: 編集可能HTMLにカーソルが当たってる場合はスルー
+      if (target.hasAttribute('contentEditable')) {
+        return
+      }
       // INFO: 入力フィールドにカーソルが当たってる場合はスルー
-      const targetName = (e.target as Element).nodeName
+      const targetName = target.nodeName
       if (targetName === 'INPUT' || targetName === 'TEXTAREA') {
         return
       }
