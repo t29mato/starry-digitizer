@@ -100,6 +100,9 @@ export default class LineExtract
                 if (Math.abs(nw - w) > this.intervalPx) {
                   continue
                 }
+                if (Math.abs(nh - h) > this.lineWidthPx) {
+                  continue
+                }
                 if (visitedArea[nh][nw]) {
                   continue
                 }
@@ -145,17 +148,15 @@ export default class LineExtract
           const yPxMed = (yPxMax + yPxMin) / 2
           const lineWidth = yPxMax - yPxMin + 1
           const area = pixels.length
-          if (this.lineWidthPx <= lineWidth) {
-            // To avoid gaps between calculation and rendering
-            // INFO: In manual, pixels are limited to moving one pixel at a time.
-            const offsetPx = 0.5
-            // TODO: ここで桁数を指定する必要ない。表示時のみ対応でOK。
-            plots.push({
-              id: plots.length,
-              xPx: parseFloat((xPxTotal / pixels.length + offsetPx).toFixed(1)),
-              yPx: parseFloat((yPxTotal / pixels.length + offsetPx).toFixed(1)),
-            })
-          }
+          // To avoid gaps between calculation and rendering
+          // INFO: In manual, pixels are limited to moving one pixel at a time.
+          const offsetPx = 0.5
+          // TODO: ここで桁数を指定する必要ない。表示時のみ対応でOK。
+          plots.push({
+            id: plots.length,
+            xPx: parseFloat((xPxTotal / pixels.length + offsetPx).toFixed(1)),
+            yPx: parseFloat((yPxTotal / pixels.length + offsetPx).toFixed(1)),
+          })
         }
       }
     }

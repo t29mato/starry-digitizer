@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-main>
-      <Main :initialGraphImagePath="require('@/assets/sample_graph.png')" />
+      <Main :initialGraphImagePath="require('@/assets/sample_graph_curve.png')" />
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
