@@ -12,12 +12,12 @@ class getters extends Getters<state> {
 }
 
 class actions extends Actions<state, getters> {
-  setIntervalPx(intervalPx: number) {
-    LineExtract.instance.intervalPx = intervalPx
+  setDyPx(dyPx: number) {
+    LineExtract.instance.dyPx = dyPx
   }
 
-  setLineWidthPx(lineWidthPx: number) {
-    LineExtract.instance.lineWidthPx = lineWidthPx
+  setDxPx(dxPx: number) {
+    LineExtract.instance.dxPx = dxPx
   }
 }
 

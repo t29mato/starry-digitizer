@@ -3,8 +3,8 @@
 import LineExtract from './lineExtract'
 
 const extractor = LineExtract.instance
-extractor.lineWidthPx = 1
-extractor.intervalPx = 3
+extractor.dxPx = 1
+extractor.dyPx = 3
 
 // r: red, w: white
 test(`automatic extraction

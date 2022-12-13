@@ -7,8 +7,8 @@ export default class LineExtract
   implements ExtractStrategyInterface
 {
   name = 'Line Extract'
-  intervalPx = 10
-  lineWidthPx = 10
+  dyPx = 10
+  dxPx = 10
 
   static #instance: LineExtract
   static get instance(): LineExtract {
@@ -97,10 +97,10 @@ export default class LineExtract
                 if (nh < 0 || nw < 0 || nh >= height || nw >= width) {
                   continue
                 }
-                if (Math.abs(nw - w) > this.intervalPx) {
+                if (Math.abs(nw - w) > this.dyPx) {
                   continue
                 }
-                if (Math.abs(nh - h) > this.lineWidthPx) {
+                if (Math.abs(nh - h) > this.dxPx) {
                   continue
                 }
                 if (visitedArea[nh][nw]) {
@@ -131,23 +131,6 @@ export default class LineExtract
           const yPxTotal = pixels.reduce((prev, cur) => {
             return prev + cur.yPx
           }, 0)
-          // INFO: 実際に存在する点を取得するため、Xの中間地点のY値を求めている
-          const xPxMax = Math.max(...pixels.map((pixel) => pixel.xPx))
-          const xPxMin = Math.min(...pixels.map((pixel) => pixel.xPx))
-          const xPxMed = Math.floor((xPxMax + xPxMin) / 2)
-          const yPxMax = Math.max(
-            ...pixels
-              .filter((pixel) => pixel.xPx === xPxMed)
-              .map((pixel) => pixel.yPx)
-          )
-          const yPxMin = Math.min(
-            ...pixels
-              .filter((pixel) => pixel.xPx === xPxMed)
-              .map((pixel) => pixel.yPx)
-          )
-          const yPxMed = (yPxMax + yPxMin) / 2
-          const lineWidth = yPxMax - yPxMin + 1
-          const area = pixels.length
           // To avoid gaps between calculation and rendering
           // INFO: In manual, pixels are limited to moving one pixel at a time.
           const offsetPx = 0.5

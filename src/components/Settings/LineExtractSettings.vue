@@ -1,16 +1,17 @@
 <template>
   <v-row class="ma-0">
+    <!--  TODO: pxはappendixで追加する -->
     <v-text-field
-      :value="lineExtract.lineWidthPx"
-      @input="inputWidth"
-      label="Min. Line Width (px)"
+      :value="lineExtract.dxPx"
+      @input="inputDxPx"
+      label="ΔX (px)"
       type="number"
       class="ma-0 pl-4"
     ></v-text-field>
     <v-text-field
-      :value="lineExtract.intervalPx"
-      @input="inputInterval"
-      label="X Direction Interval (px)"
+      :value="lineExtract.dyPx"
+      @input="inputDyPx"
+      label="ΔY (px)"
       type="number"
       class="ma-0 pl-4"
     ></v-text-field>
@@ -26,12 +27,12 @@ export default Vue.extend({
   },
   props: {},
   methods: {
-    ...lineExtractMapper.mapActions(['setIntervalPx', 'setLineWidthPx']),
-    inputWidth(value: string) {
-      this.setLineWidthPx(parseInt(value))
+    ...lineExtractMapper.mapActions(['setDyPx', 'setDxPx']),
+    inputDyPx(value: string) {
+      this.setDxPx(parseInt(value))
     },
-    inputInterval(value: string) {
-      this.setIntervalPx(parseInt(value))
+    inputDxPx(value: string) {
+      this.setDyPx(parseInt(value))
     },
   },
 })
