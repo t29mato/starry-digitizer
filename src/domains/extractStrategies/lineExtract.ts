@@ -7,8 +7,8 @@ export default class LineExtract
   implements ExtractStrategyInterface
 {
   name = 'Line Extract'
-  dyPx = 10
   dxPx = 10
+  dyPx = 10
 
   static #instance: LineExtract
   static get instance(): LineExtract {
@@ -63,7 +63,7 @@ export default class LineExtract
         if (visitedArea[h][w]) {
           continue
         }
-        const [r1, g1, b1, a1] = imageColors.slice(
+        const [r1, g1, b1, _] = imageColors.slice(
           (h * width + w) * 4,
           (h * width + w + 1) * 4
         )

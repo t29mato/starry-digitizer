@@ -28,10 +28,10 @@ export default Vue.extend({
   props: {},
   methods: {
     ...lineExtractMapper.mapActions(['setDyPx', 'setDxPx']),
-    inputDyPx(value: string) {
+    inputDxPx(value: string) {
       this.setDxPx(parseInt(value))
     },
-    inputDxPx(value: string) {
+    inputDyPx(value: string) {
       this.setDyPx(parseInt(value))
     },
   },
