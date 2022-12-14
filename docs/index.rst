@@ -1,4 +1,4 @@
-.. StarryDigizier documentation master file, created by
+.. StarryDigitizer documentation master file, created by
    sphinx-quickstart on Thu Jul  7 12:23:37 2022.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -113,9 +113,10 @@ XY軸の指定直後はアクティブになっており、カーソル移動で
 ----------------------------
 線グラフに向いています。
 色により線の中心を抽出します。
+ΔXとΔYを調整することで次点との距離を調整できます。
 
-- 「でMin. Line Width (px)」：指定した線幅以上の線を抽出するフィルタリングです。傾きが大きな線については線幅を大きく誤抽出します。
-- 「X Direction Interval (px)」：X方向のインターバルを指定します。X方向に希望のpx単位でプロットを抽出できます。
+.. image:: ./_static/line_extract_dx_dy.png
+
 
 9-3. Selection Area
 ---------------------
