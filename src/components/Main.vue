@@ -18,7 +18,9 @@
         <v-col class="pt-1" cols="3">
           <!-- TODO: 有効数字を追加する -->
           <magnifier-main></magnifier-main>
-          <extractor-settings></extractor-settings>
+          <extractor-settings
+            :initialExtractorStrategy="initialExtractorStrategy"
+          ></extractor-settings>
           <p class="text-caption text-right">v{{ version }}</p>
         </v-col>
       </v-row>
@@ -52,6 +54,10 @@ export default Vue.extend({
     initialGraphImagePath: {
       type: String,
       required: true,
+    },
+    initialExtractorStrategy: {
+      type: String,
+      required: false,
     },
     exportBtnText: String,
     exportBtnClick: {

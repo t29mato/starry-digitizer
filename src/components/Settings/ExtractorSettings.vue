@@ -62,7 +62,21 @@ export default Vue.extend({
     ...extractorMapper.mapGetters(['extractor']),
     ...canvasMapper.mapGetters(['canvas']),
   },
-  props: {},
+  props: {
+    initialExtractorStrategy: {
+      type: String,
+      required: false,
+    },
+  },
+  mounted() {
+    switch (this.initialExtractorStrategy) {
+      case 'Symbol Extract':
+        this.setStrategy(SymbolExtractByArea.instance)
+        break
+      case 'Line Extract':
+        this.setStrategy(LineExtract.instance)
+    }
+  },
   methods: {
     ...extractorMapper.mapActions(['setStrategy']),
     ...axesMapper.mapActions(['inactivateAxis']),
