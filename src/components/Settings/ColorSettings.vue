@@ -10,7 +10,7 @@
             :value="extractor.colorPicker"
             @input="inputColorPicker"
           />
-          <v-icon small>mdi-eyedropper</v-icon>
+          <v-icon small>mdi-palette</v-icon>
         </label>
       </v-col>
       <v-col cols="8">
