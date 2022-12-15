@@ -89,7 +89,7 @@ export class Canvas implements CanvasInterface {
     } else {
       // HACK: Firefox v107.0, Google Chrome v108.0.5359.124では問題ないが、
       // HACK: Safari v15.3でなんらか数値計算をしない限り線が描画されないため対応
-      ctx.moveTo(this.scaledCursor.xPx, this.scaledCursor.yPx + 0.0000001)
+      ctx.moveTo(this.scaledCursor.xPx + 0.0001, this.scaledCursor.yPx + 0.0001)
     }
     ctx.lineTo(xPx, yPx)
     ctx.lineCap = 'round'
