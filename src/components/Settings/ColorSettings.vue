@@ -4,11 +4,14 @@
     <!-- TODO: 抽出色設定もColorSettingsComponentに入れる -->
     <v-row class="mt-1">
       <v-col cols="4">
-        <input
-          type="color"
-          :value="extractor.colorPicker"
-          @input="inputColorPicker"
-        />
+        <label class="d-flex">
+          <input
+            type="color"
+            :value="extractor.colorPicker"
+            @input="inputColorPicker"
+          />
+          <v-icon small>mdi-eyedropper</v-icon>
+        </label>
       </v-col>
       <v-col cols="8">
         <v-text-field
