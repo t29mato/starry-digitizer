@@ -97,10 +97,10 @@ export default class LineExtract
                 if (nh < 0 || nw < 0 || nh >= height || nw >= width) {
                   continue
                 }
-                if (Math.abs(nw - w) > this.dyPx) {
+                if (Math.abs(nw - w) > this.dxPx) {
                   continue
                 }
-                if (Math.abs(nh - h) > this.dxPx) {
+                if (Math.abs(nh - h) > this.dyPx) {
                   continue
                 }
                 if (visitedArea[nh][nw]) {
