@@ -9,7 +9,7 @@
       width: `${plotSizePx}px`,
       height: `${plotSizePx}px`,
       'background-color': isActive ? 'red' : 'dodgerblue',
-      outline: '1px solid white',
+      border: '1px solid white',
       'border-radius': '50%',
     }"
     @click="click"
