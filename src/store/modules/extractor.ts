@@ -1,10 +1,10 @@
 import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
 import { Extractor } from '@/domains/extractor'
 import ExtractStrategyInterface from '@/domains/extractStrategies/extractStrategyInterface'
-import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
+import LineExtract from '@/domains/extractStrategies/lineExtract'
 
 class state {
-  extractor = new Extractor(SymbolExtractByArea.instance)
+  extractor = new Extractor(LineExtract.instance)
 }
 
 class getters extends Getters<state> {
