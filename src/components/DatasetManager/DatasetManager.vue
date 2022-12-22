@@ -20,7 +20,7 @@
           :key="dataset.id"
           class="pl-2"
           link
-          @click="setActiveDataset(dataset.id)"
+          @click="activateDataset(dataset.id)"
           :class="dataset.id === datasets.activeDataset.id && 'blue lighten-4'"
         >
           <v-list-item-content>
@@ -69,7 +69,7 @@
                     :key="dataset.id"
                     class="pl-2"
                     link
-                    @click="setActiveDataset(dataset.id)"
+                    @click="activateDataset(dataset.id)"
                     :class="
                       dataset.id === datasets.activeDataset.id &&
                       'blue lighten-4'
@@ -119,6 +119,7 @@
 import Vue from 'vue'
 import Clipboard from '@/components/Export/Clipboard.vue'
 import { datasetMapper } from '@/store/modules/dataset'
+import { canvasMapper } from '@/store/modules/canvas'
 
 export default Vue.extend({
   components: {
@@ -135,6 +136,7 @@ export default Vue.extend({
   },
   computed: {
     ...datasetMapper.mapGetters(['datasets']),
+    ...canvasMapper.mapGetters(['canvas']),
   },
   props: {
     exportBtnText: {
@@ -152,6 +154,12 @@ export default Vue.extend({
       'setActiveDataset',
       'popDataset',
     ]),
+    activateDataset(id: number) {
+      this.setActiveDataset(id)
+      // INFO: データセットが変えた時はマスクをクリアすることが多いので。
+      this.canvas.clearMask()
+      this.canvas.maskMode = -1
+    },
   },
 })
 </script>
