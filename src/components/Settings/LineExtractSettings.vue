@@ -4,7 +4,7 @@
     <v-col class="pa-0">
       <v-text-field
         :value="lineExtract.dxPx"
-        @input="inputDxPx"
+        @input="inputDxDyPx"
         label="ΔX (px)"
         type="number"
         class="ma-0 pl-4"
@@ -13,7 +13,7 @@
     <v-col class="pa-0">
       <v-text-field
         :value="lineExtract.dyPx"
-        @input="inputDyPx"
+        @input="inputDxDyPx"
         label="ΔY (px)"
         type="number"
         class="ma-0 pl-4"
@@ -32,10 +32,8 @@ export default Vue.extend({
   props: {},
   methods: {
     ...lineExtractMapper.mapActions(['setDyPx', 'setDxPx']),
-    inputDxPx(value: string) {
+    inputDxDyPx(value: string) {
       this.setDxPx(parseInt(value))
-    },
-    inputDyPx(value: string) {
       this.setDyPx(parseInt(value))
     },
   },
