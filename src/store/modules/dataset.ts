@@ -2,6 +2,7 @@ import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
 import { Datasets } from '@/domains/datasets'
 import { Dataset } from '@/domains/dataset'
 import { Plots, Coord } from '@/domains/datasetInterface'
+import { Vector } from '@/domains/axes/axesInterface'
 
 class state {
   datasets: Datasets = new Datasets(new Dataset('dataset 1', [], 1))
@@ -24,8 +25,8 @@ class actions extends Actions<state, getters> {
   popDataset() {
     this.state.datasets.popDataset()
   }
-  moveActivePlot(arrow: string) {
-    this.state.datasets.activeDataset.moveActivePlot(arrow)
+  moveActivePlot(vector: Vector) {
+    this.state.datasets.activeDataset.moveActivePlot(vector)
   }
   clearPlot(id: number) {
     this.state.datasets.activeDataset.clearPlot(id)

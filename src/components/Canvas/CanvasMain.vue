@@ -46,6 +46,7 @@ import { axesMapper } from '@/store/modules/axes'
 import { datasetMapper } from '@/store/modules/dataset'
 import { CanvasAxes, CanvasPlots, CanvasCursor } from '.'
 import { extractorMapper } from '@/store/modules/extractor'
+import { Vector } from '@/domains/axes/axesInterface'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -223,12 +224,17 @@ export default Vue.extend({
           this.clearActivePlots()
         }
       }
+      const shiftKeyIsPressed = e.shiftKey
+      const vector: Vector = {
+        direction: this.getDirectionFromKey(key),
+        distancePx: shiftKeyIsPressed ? 10 : 1
+      }
       if (this.axes.activeAxis && this.axes.activeAxis.coord) {
-        this.moveActiveAxis(key)
+        this.moveActiveAxis(vector)
         this.setCanvasCursor(this.axes.activeAxis.coord)
       }
       if (this.datasets.activeDataset.plotsAreActive) {
-        this.moveActivePlot(e.key)
+        this.moveActivePlot(vector)
         this.setCanvasCursor(
           this.datasets.activeDataset.plots.filter((plot) =>
             this.datasets.activeDataset.activePlotIds.includes(plot.id)
@@ -236,6 +242,20 @@ export default Vue.extend({
         )
       }
     },
+    getDirectionFromKey(key: string) {
+      switch (key) {
+        case 'ArrowUp':
+          return 'up'
+        case 'ArrowDown':
+          return 'down'
+        case 'ArrowRight':
+          return 'right'
+        case 'ArrowLeft':
+          return 'left'
+        default:
+          throw new Error(`undefined direction: ${key}`)
+      }
+    }
   },
 })
 </script>
