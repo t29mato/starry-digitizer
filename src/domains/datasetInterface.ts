@@ -1,3 +1,5 @@
+import { Vector } from "./axes/axesInterface"
+
 // INFO: Coord is coordinate
 export type Coord = {
   xPx: number
@@ -22,7 +24,7 @@ export interface DatasetInterface {
   get plotsAreActive(): boolean
   scaledPlots(scale: number): Plots
   addPlot(xPx: number, yPx: number): void
-  moveActivePlot(arrow: string): void
+  moveActivePlot(vector: Vector): void
   activatePlot(id: number): void
   hasActive(): boolean
   toggleActivatedPlot(toggledId: number): void

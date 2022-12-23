@@ -1,3 +1,4 @@
+import { Vector } from './axes/axesInterface'
 import { DatasetInterface, Plots } from './datasetInterface'
 
 export class Dataset implements DatasetInterface {
@@ -87,32 +88,28 @@ export class Dataset implements DatasetInterface {
     return this.activePlotIds.length > 0
   }
 
-  moveActivePlot(arrow: string) {
+  moveActivePlot(vector: Vector) {
     const ids = this.activePlotIds
-    //  'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'
-    switch (arrow) {
-      case 'ArrowUp':
+    switch (vector.direction) {
+      case 'up':
         this.plots
           .filter((plot) => ids.includes(plot.id))
-          .map((plot) => plot.yPx--)
+          .map((plot) => plot.yPx -= vector.distancePx)
         break
-      case 'ArrowRight':
+      case 'right':
         this.plots
           .filter((plot) => ids.includes(plot.id))
-          .map((plot) => plot.xPx++)
+          .map((plot) => plot.xPx += vector.distancePx)
         break
-      case 'ArrowDown':
+      case 'down':
         this.plots
           .filter((plot) => ids.includes(plot.id))
-          .map((plot) => plot.yPx++)
+          .map((plot) => plot.yPx += vector.distancePx)
         break
-      case 'ArrowLeft':
+      case 'left':
         this.plots
           .filter((plot) => ids.includes(plot.id))
-          .map((plot) => plot.xPx--)
-        break
-      default:
-        throw new Error('unknown arrow')
+          .map((plot) => plot.xPx -= vector.distancePx)
         break
     }
   }

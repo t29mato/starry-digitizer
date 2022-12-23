@@ -1,5 +1,5 @@
 import { Coord } from '../datasetInterface'
-import { AxesInterface } from './axesInterface'
+import { AxesInterface, Vector } from './axesInterface'
 import { AxisInterface } from './axisInterface'
 
 export class Axes implements AxesInterface {
@@ -64,25 +64,25 @@ export class Axes implements AxesInterface {
     return null
   }
 
-  moveActiveAxis(arrow: string) {
+  moveActiveAxis(vector: Vector) {
     if (!this.activeAxis || !this.activeAxis.coord) {
       throw new Error("active axis's coord is undefined")
     }
-    switch (arrow) {
-      case 'ArrowUp':
-        this.activeAxis.coord.yPx--
+    switch (vector.direction) {
+      case 'up':
+        this.activeAxis.coord.yPx -= vector.distancePx
         break
-      case 'ArrowRight':
-        this.activeAxis.coord.xPx++
+      case 'right':
+        this.activeAxis.coord.xPx += vector.distancePx
         break
-      case 'ArrowDown':
-        this.activeAxis.coord.yPx++
+      case 'down':
+        this.activeAxis.coord.yPx += vector.distancePx
         break
-      case 'ArrowLeft':
-        this.activeAxis.coord.xPx--
+      case 'left':
+        this.activeAxis.coord.xPx -= vector.distancePx
         break
       default:
-        throw new Error(`undefined arrow: ${arrow}`)
+        throw new Error(`undefined direction: ${vector.direction}`)
     }
   }
 
