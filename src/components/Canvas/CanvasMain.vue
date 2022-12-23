@@ -227,7 +227,7 @@ export default Vue.extend({
       const shiftKeyIsPressed = e.shiftKey
       const vector: Vector = {
         direction: this.getDirectionFromKey(key),
-        distancePx: shiftKeyIsPressed ? 10 : 1
+        distancePx: shiftKeyIsPressed ? 10 : 1,
       }
       if (this.axes.activeAxis && this.axes.activeAxis.coord) {
         this.moveActiveAxis(vector)
@@ -255,7 +255,7 @@ export default Vue.extend({
         default:
           throw new Error(`undefined direction: ${key}`)
       }
-    }
+    },
   },
 })
 </script>

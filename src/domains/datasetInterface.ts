@@ -1,4 +1,4 @@
-import { Vector } from "./axes/axesInterface"
+import { Vector } from './axes/axesInterface'
 
 // INFO: Coord is coordinate
 export type Coord = {

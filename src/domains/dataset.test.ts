@@ -147,13 +147,13 @@ test('sort in descending order on ID', () => {
 test('move plots', () => {
   const dataset = new Dataset('dataset 1', [], 1)
   dataset.addPlot(0, 0)
-  dataset.moveActivePlot({direction: 'up', distancePx: 10})
-  dataset.moveActivePlot({direction: 'right', distancePx: 10})
-  dataset.moveActivePlot({direction: 'down', distancePx: 20})
-  dataset.moveActivePlot({direction: 'left', distancePx: 20})
+  dataset.moveActivePlot({ direction: 'up', distancePx: 10 })
+  dataset.moveActivePlot({ direction: 'right', distancePx: 10 })
+  dataset.moveActivePlot({ direction: 'down', distancePx: 20 })
+  dataset.moveActivePlot({ direction: 'left', distancePx: 20 })
   expect(dataset.plots[0]).toEqual({
-      id: 1,
-      xPx: -10,
-      yPx: 10,
+    id: 1,
+    xPx: -10,
+    yPx: 10,
   })
 })
