@@ -94,22 +94,22 @@ export class Dataset implements DatasetInterface {
       case 'up':
         this.plots
           .filter((plot) => ids.includes(plot.id))
-          .map((plot) => plot.yPx -= vector.distancePx)
+          .map((plot) => (plot.yPx -= vector.distancePx))
         break
       case 'right':
         this.plots
           .filter((plot) => ids.includes(plot.id))
-          .map((plot) => plot.xPx += vector.distancePx)
+          .map((plot) => (plot.xPx += vector.distancePx))
         break
       case 'down':
         this.plots
           .filter((plot) => ids.includes(plot.id))
-          .map((plot) => plot.yPx += vector.distancePx)
+          .map((plot) => (plot.yPx += vector.distancePx))
         break
       case 'left':
         this.plots
           .filter((plot) => ids.includes(plot.id))
-          .map((plot) => plot.xPx -= vector.distancePx)
+          .map((plot) => (plot.xPx -= vector.distancePx))
         break
     }
   }

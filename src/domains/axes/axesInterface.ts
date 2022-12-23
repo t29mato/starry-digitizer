@@ -3,8 +3,8 @@ import { AxisInterface } from './axisInterface'
 
 // TODO: VectorはDatasetInterfaceでも利用しており共通Typeの場所を用意するべきか検討する
 export type Vector = {
-  direction: 'up' | 'down' | 'right' | 'left',
-  distancePx: number,
+  direction: 'up' | 'down' | 'right' | 'left'
+  distancePx: number
 }
 
 export interface AxesInterface {

@@ -87,17 +87,17 @@ test('next axis', () => {
 })
 
 test('move active axis', () => {
-  expect(() => axes.moveActiveAxis({direction: 'up', distancePx: 1})).toThrow(
+  expect(() => axes.moveActiveAxis({ direction: 'up', distancePx: 1 })).toThrow(
     "active axis's coord is undefined"
   )
   axes.addAxisCoord({ xPx: 10, yPx: 100 })
-  axes.moveActiveAxis({direction: 'up', distancePx: 1})
+  axes.moveActiveAxis({ direction: 'up', distancePx: 1 })
   expect(axes.x1.coord && axes.x1.coord.yPx).toBe(99)
-  axes.moveActiveAxis({direction: 'down', distancePx: 1})
+  axes.moveActiveAxis({ direction: 'down', distancePx: 1 })
   expect(axes.x1.coord && axes.x1.coord.yPx).toBe(100)
-  axes.moveActiveAxis({direction: 'left', distancePx: 1})
+  axes.moveActiveAxis({ direction: 'left', distancePx: 1 })
   expect(axes.x1.coord && axes.x1.coord.xPx).toBe(9)
-  axes.moveActiveAxis({direction: 'right', distancePx: 1})
+  axes.moveActiveAxis({ direction: 'right', distancePx: 1 })
   expect(axes.x1.coord && axes.x1.coord.xPx).toBe(10)
 })
 
@@ -111,13 +111,13 @@ test('add axis coodinate when all axes are filled', () => {
 })
 
 test('move active axis', () => {
-  axes.addAxisCoord({ xPx: 10, yPx: 100})
-  axes.moveActiveAxis({direction:'up', distancePx: 10})
-  axes.moveActiveAxis({direction:'right', distancePx: 10})
-  axes.moveActiveAxis({direction:'down', distancePx: 20})
-  axes.moveActiveAxis({direction:'left', distancePx: 20})
+  axes.addAxisCoord({ xPx: 10, yPx: 100 })
+  axes.moveActiveAxis({ direction: 'up', distancePx: 10 })
+  axes.moveActiveAxis({ direction: 'right', distancePx: 10 })
+  axes.moveActiveAxis({ direction: 'down', distancePx: 20 })
+  axes.moveActiveAxis({ direction: 'left', distancePx: 20 })
   expect(axes.x1.coord).toEqual({
     xPx: 0,
-    yPx: 110
+    yPx: 110,
   })
 })
