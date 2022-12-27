@@ -6,6 +6,7 @@ export class Dataset implements DatasetInterface {
   plots: Plots
   id: number
   activePlotIds: number[] = []
+  plotsAreAdjusting = false
   constructor(name: string, plots: Plots, id: number) {
     this.name = name
     this.plots = plots
@@ -90,6 +91,7 @@ export class Dataset implements DatasetInterface {
 
   moveActivePlot(vector: Vector) {
     const ids = this.activePlotIds
+    this.plotsAreAdjusting = true
     switch (vector.direction) {
       case 'up':
         this.plots

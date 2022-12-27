@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="border: '1px solid red'">
     <div
       :style="{
         position: 'absolute',
@@ -27,16 +27,32 @@
           height: `${axisCrossBorderPx / canvas.scale}px`,
           background: isActive ? 'red' : 'dodgerblue',
         }"
-      ></div>
-      <div
-        :style="{
-          'pointer-events': 'none',
-          width: '100px',
-          'margin-left': `${21 / canvas.scale}px`,
-          'line-height': 1,
-        }"
       >
-        {{ label }}
+        <!-- TODO: magic numberは除外する -->
+        <div v-if="axis.name.includes('x')" :style="{}">
+          <div
+            :style="{
+              position: 'absolute',
+              left: `${5 / canvas.scale}px`,
+              top: `${10 / canvas.scale}px`,
+              'font-size': `${12 / canvas.scale}px`,
+            }"
+          >
+            {{ axis.name }}
+          </div>
+        </div>
+        <div v-if="axis.name.includes('y')" :style="{}">
+          <div
+            :style="{
+              position: 'absolute',
+              left: `${-15 / canvas.scale}px`,
+              top: `${-10 / canvas.scale}px`,
+              'font-size': `${12 / canvas.scale}px`,
+            }"
+          >
+            {{ axis.name }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
