@@ -26,28 +26,11 @@
           background: isActive ? 'red' : 'dodgerblue',
         }"
       >
-        <!-- TODO: magic numberは除外する -->
-        <div v-if="axis.name.includes('x')" :style="{}">
-          <div
-            :style="{
-              position: 'absolute',
-              left: `${5}px`,
-              top: `${10}px`,
-            }"
-          >
-            {{ axis.name }}
-          </div>
+        <div v-if="axis.name.includes('x')">
+          <magnifier-axis-label-x :label="axis.name" />
         </div>
-        <div v-if="axis.name.includes('y')" :style="{}">
-          <div
-            :style="{
-              position: 'absolute',
-              left: `${-15}px`,
-              top: `${-10}px`,
-            }"
-          >
-            {{ axis.name }}
-          </div>
+        <div v-if="axis.name.includes('y')">
+          <magnifier-axis-label-y :label="axis.name" />
         </div>
       </div>
     </div>
@@ -60,8 +43,14 @@ import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
 import { styleMapper } from '@/store/modules/style'
+import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
+import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
 import Vue from 'vue'
 export default Vue.extend({
+  components: {
+    MagnifierAxisLabelX,
+    MagnifierAxisLabelY,
+  },
   data() {
     return {}
   },
@@ -85,18 +74,6 @@ export default Vue.extend({
     },
     magnifierHalfSizePx(): number {
       return this.magnifier.sizePx / 2
-    },
-    label(): string {
-      if (!this.axes.x1IsSameAsY1) {
-        return this.axis.name
-      }
-      if (this.axis.name === 'x1') {
-        return 'x1 y1'
-      }
-      if (this.axis.name === 'y1') {
-        return ''
-      }
-      return this.axis.name
     },
   },
   props: {
