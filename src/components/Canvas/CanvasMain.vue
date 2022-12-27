@@ -155,6 +155,8 @@ export default Vue.extend({
       const target = e.target as HTMLElement
       const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
       const yPx = e.offsetY + parseFloat(target.style.top)
+      this.axes.isAdjusting = false
+      this.datasets.activeDataset.plotsAreAdjusting = false
       this.setCanvasCursor({
         xPx: xPx / this.canvas.scale,
         yPx: yPx / this.canvas.scale,

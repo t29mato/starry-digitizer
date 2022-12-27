@@ -11,6 +11,7 @@ export class Axes implements AxesInterface {
   yIsLog = false
   activeAxisName = ''
   x1IsSameAsY1 = true
+  isAdjusting = false
 
   constructor(
     x1: AxisInterface,
@@ -68,6 +69,7 @@ export class Axes implements AxesInterface {
     if (!this.activeAxis || !this.activeAxis.coord) {
       throw new Error("active axis's coord is undefined")
     }
+    this.isAdjusting = true
     switch (vector.direction) {
       case 'up':
         this.activeAxis.coord.yPx -= vector.distancePx

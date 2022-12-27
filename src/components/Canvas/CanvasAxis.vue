@@ -26,7 +26,7 @@
     <span
       :style="{
         position: 'absolute',
-        top: `${yPx - axisCrossCursorPx}px`,
+        top: `${labelTop}px`,
         left: `${labelLeft}px`,
         'pointer-events': 'none',
         'user-select': 'none',
@@ -43,6 +43,17 @@ import { canvasMapper } from '@/store/modules/canvas'
 import { styleMapper } from '@/store/modules/style'
 import Vue from 'vue'
 export default Vue.extend({
+  props: {
+    axis: {
+      type: Object as () => AxisInterface,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      fontSize: 14,
+    }
+  },
   computed: {
     ...styleMapper.mapGetters([
       'axisSizePx',
@@ -67,10 +78,22 @@ export default Vue.extend({
       return -999
     },
     labelLeft(): number {
-      if (this.axis.name === 'y1' && this.axes.x1IsSameAsY1) {
-        return this.xPx + this.axisCrossCursorPx + 21
+      if (this.axis.name.includes('x')) {
+        return this.xPx - this.axisCrossCursorPx / 2
       }
-      return this.xPx + this.axisCrossCursorPx
+      if (this.axis.name.includes('y')) {
+        return this.xPx - this.axisCrossCursorPx * 2
+      }
+      return 0
+    },
+    labelTop(): number {
+      if (this.axis.name.includes('x')) {
+        return this.yPx + this.axisCrossCursorPx / 2
+      }
+      if (this.axis.name.includes('y')) {
+        return this.yPx - this.axisCrossCursorPx
+      }
+      return 0
     },
     isActive(): boolean {
       if (this.axes.x1IsSameAsY1) {
@@ -81,12 +104,6 @@ export default Vue.extend({
         }
       }
       return this.axes.activeAxisName === this.axis.name
-    },
-  },
-  props: {
-    axis: {
-      type: Object as () => AxisInterface,
-      required: true,
     },
   },
   methods: {},
