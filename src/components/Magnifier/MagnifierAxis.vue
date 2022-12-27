@@ -3,17 +3,15 @@
     <div
       :style="{
         position: 'absolute',
-        top: `${((yPx - axisHalfSizePx) / canvas.scale) * magnifier.scale}px`,
-        left: `${
-          ((xPx - axisCrossBorderHalfPx) / canvas.scale) * magnifier.scale
-        }px`,
+        top: `${(yPx - axisHalfSizePx) * magnifier.scale}px`,
+        left: `${(xPx - axisCrossBorderHalfPx) * magnifier.scale}px`,
         'pointer-events': 'none',
         transform: `scale(${magnifier.scale}) translate(-${
           canvas.cursor.xPx - magnifierHalfSizePx / magnifier.scale
         }px, -${canvas.cursor.yPx - magnifierHalfSizePx / magnifier.scale}px)`,
         'transform-origin': 'top left',
-        width: `${axisCrossBorderPx / canvas.scale}px`,
-        height: `${axisSizePx / canvas.scale}px`,
+        width: `${axisCrossBorderPx}px`,
+        height: `${axisSizePx}px`,
         background: isActive ? 'red' : 'dodgerblue',
       }"
     >
@@ -21,10 +19,10 @@
         :style="{
           content: '',
           position: 'absolute',
-          top: `${axisCrossTopPx / canvas.scale}px`,
-          left: `${-(axisCrossTopPx / canvas.scale)}px`,
-          width: `${axisSizePx / canvas.scale}px`,
-          height: `${axisCrossBorderPx / canvas.scale}px`,
+          top: `${axisCrossTopPx}px`,
+          left: `${-axisCrossTopPx}px`,
+          width: `${axisSizePx}px`,
+          height: `${axisCrossBorderPx}px`,
           background: isActive ? 'red' : 'dodgerblue',
         }"
       >
@@ -33,9 +31,8 @@
           <div
             :style="{
               position: 'absolute',
-              left: `${5 / canvas.scale}px`,
-              top: `${10 / canvas.scale}px`,
-              'font-size': `${12 / canvas.scale}px`,
+              left: `${5}px`,
+              top: `${10}px`,
             }"
           >
             {{ axis.name }}
@@ -45,9 +42,8 @@
           <div
             :style="{
               position: 'absolute',
-              left: `${-15 / canvas.scale}px`,
-              top: `${-10 / canvas.scale}px`,
-              'font-size': `${12 / canvas.scale}px`,
+              left: `${-15}px`,
+              top: `${-10}px`,
             }"
           >
             {{ axis.name }}
@@ -82,10 +78,10 @@ export default Vue.extend({
     ]),
     ...magnifierMapper.mapGetters(['magnifier']),
     xPx(): number {
-      return this.axis.coord.xPx * this.canvas.scale
+      return this.axis.coord.xPx
     },
     yPx(): number {
-      return this.axis.coord.yPx * this.canvas.scale
+      return this.axis.coord.yPx
     },
     magnifierHalfSizePx(): number {
       return this.magnifier.sizePx / 2
