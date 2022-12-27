@@ -4,17 +4,17 @@
     class="magnifier-plots"
     :style="{
       position: 'absolute',
-      top: `${((yPx - plotHalfSize) / canvas.scale) * magnifier.scale}px`,
-      left: `${((xPx - plotHalfSize) / canvas.scale) * magnifier.scale}px`,
+      top: `${(yPx - plotHalfSize) * magnifier.scale}px`,
+      left: `${(xPx - plotHalfSize) * magnifier.scale}px`,
       transform: `scale(${magnifier.scale}) translate(-${
         canvas.cursor.xPx - magnifierHalfSize / magnifier.scale
       }px, -${canvas.cursor.yPx - magnifierHalfSize / magnifier.scale}px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      width: `${plotSizePx / canvas.scale}px`,
-      height: `${plotSizePx / canvas.scale}px`,
+      width: `${plotSizePx}px`,
+      height: `${plotSizePx}px`,
       'background-color': isActive ? 'red' : 'dodgerblue',
-      border: `${1 / canvas.scale}px solid white`,
+      border: `${1}px solid white`,
       'border-radius': '50%',
     }"
   ></div>

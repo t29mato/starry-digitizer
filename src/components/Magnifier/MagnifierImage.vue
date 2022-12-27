@@ -19,13 +19,9 @@
         top: 0,
         left: 0,
         opacity: 0.5,
-        transform: `scale(${
-          this.magnifier.scale / this.canvas.scale
-        }) translate(-${
-          (canvas.cursor.xPx - halfSize / magnifier.scale) * canvas.scale
-        }px, -${
-          (canvas.cursor.yPx - halfSize / magnifier.scale) * canvas.scale
-        }px)`,
+        transform: `scale(${this.magnifier.scale}) translate(-${
+          canvas.cursor.xPx - halfSize / magnifier.scale
+        }px, -${canvas.cursor.yPx - halfSize / magnifier.scale}px)`,
         'transform-origin': 'top left',
       }"
     ></canvas>
