@@ -51,7 +51,7 @@ export default Vue.extend({
       return this.symbolExtractByArea.minDiameterPx * this.magnifier.scale
     },
     symbolMaxDiameter(): number {
-      return this.symbolExtractByArea.minDiameterPx * this.magnifier.scale
+      return this.symbolExtractByArea.maxDiameterPx * this.magnifier.scale
     },
   },
 })
