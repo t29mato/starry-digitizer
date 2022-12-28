@@ -13,9 +13,6 @@
         :toggleSettingsDialog="toggleSettingsDialog"
       ></magnifier-settings-btn>
       <magnifier-image></magnifier-image>
-      <magnifier-vertical-line></magnifier-vertical-line>
-      <magnifier-horizontal-line></magnifier-horizontal-line>
-      <magnifier-axes></magnifier-axes>
       <div v-for="plot in datasets.activeDataset.plots" :key="plot.id">
         <magnifier-plots
           :plot="plot"
@@ -23,6 +20,10 @@
           :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
         ></magnifier-plots>
       </div>
+      <magnifier-extract-size></magnifier-extract-size>
+      <magnifier-axes></magnifier-axes>
+      <magnifier-vertical-line></magnifier-vertical-line>
+      <magnifier-horizontal-line></magnifier-horizontal-line>
     </div>
     <span>x: {{ xyValue.xV }}, y: {{ xyValue.yV }}</span>
     <magnifier-settings
@@ -43,6 +44,7 @@ import MagnifierAxes from './MagnifierAxes.vue'
 import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
+import MagnifierExtractSize from '@/components/Magnifier/MagnifierExtractSize.vue'
 import { datasetMapper } from '@/store/modules/dataset'
 import { canvasMapper } from '@/store/modules/canvas'
 import { magnifierMapper } from '@/store/modules/magnifier'
@@ -58,6 +60,7 @@ export default Vue.extend({
     MagnifierPlots,
     MagnifierSettings,
     MagnifierSettingsBtn,
+    MagnifierExtractSize,
   },
   data() {
     return {
