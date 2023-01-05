@@ -105,20 +105,6 @@ export default Vue.extend({
 
   methods: {
     ...magnifierMapper.mapActions(['setScale']),
-    showAxisName(index: number): string {
-      switch (index) {
-        case 0:
-          return 'x1'
-        case 1:
-          return 'x2'
-        case 2:
-          return 'y1'
-        case 3:
-          return 'y2'
-        default:
-          return '-'
-      }
-    },
     toggleSettingsDialog(): void {
       this.shouldShowSettingsDialog = !this.shouldShowSettingsDialog
     },
