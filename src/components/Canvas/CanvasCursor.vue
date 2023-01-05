@@ -1,28 +1,58 @@
 <template>
-  <div
-    :style="{
-      position: 'absolute',
-      top: `${canvas.scaledCursor.yPx - axisCrossCursorPx}px`,
-      left: `${canvas.scaledCursor.xPx + axisCrossCursorPx}px`,
-      'pointer-events': 'none',
-    }"
-  >
-    {{ label }}
+  <div>
+    <!-- INFO: right label -->
+    <div
+      v-if="!(axes.isAdjusting || datasets.activeDataset.plotsAreAdjusting)"
+      :style="{
+        position: 'absolute',
+        top: `${this.canvas.scaledCursor.yPx - this.axisCrossCursorPx}px`,
+        left: `${this.canvas.scaledCursor.xPx + this.axisCrossCursorPx}px`,
+        'pointer-events': 'none',
+      }"
+    >
+      {{ rightLabel }}
+    </div>
+    <!-- INFO: bottom label -->
+    <div
+      v-if="!axes.isAdjusting"
+      :style="{
+        position: 'absolute',
+        top: `${this.canvas.scaledCursor.yPx + this.axisCrossCursorPx / 2}px`,
+        left: `${this.canvas.scaledCursor.xPx - this.axisCrossCursorPx / 2}px`,
+        'pointer-events': 'none',
+      }"
+    >
+      {{ bottomLabel }}
+    </div>
+    <!-- INFO: left label -->
+    <div
+      v-if="!axes.isAdjusting"
+      :style="{
+        position: 'absolute',
+        top: `${this.canvas.scaledCursor.yPx - this.axisCrossCursorPx}px`,
+        left: `${this.canvas.scaledCursor.xPx - this.axisCrossCursorPx * 2}px`,
+        'pointer-events': 'none',
+      }"
+    >
+      {{ leftLabel }}
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
+import { datasetMapper } from '@/store/modules/dataset'
 import { styleMapper } from '@/store/modules/style'
 import Vue from 'vue'
 export default Vue.extend({
   props: {},
   computed: {
-    ...styleMapper.mapGetters(['axisCrossCursorPx']),
+    ...styleMapper.mapGetters(['axisCrossCursorPx', 'axisHalfSizePx']),
     ...canvasMapper.mapGetters(['canvas']),
     ...axesMapper.mapGetters(['axes']),
-    label(): string {
+    ...datasetMapper.mapGetters(['datasets']),
+    rightLabel(): string {
       switch (this.canvas.maskMode) {
         case 0:
           return 'Pen'
@@ -39,11 +69,20 @@ export default Vue.extend({
         case 2:
           return 'Delete'
       }
-      if (this.axes.nextAxis) {
-        if (this.axes.nextAxis.name === 'x1' && this.axes.x1IsSameAsY1) {
-          return 'x1 y1'
-        }
+      return ''
+    },
+    bottomLabel(): string {
+      if (this.axes.nextAxis?.name.includes('x')) {
         return this.axes.nextAxis.name
+      }
+      return ''
+    },
+    leftLabel(): string {
+      if (this.axes.nextAxis?.name.includes('y')) {
+        return this.axes.nextAxis.name
+      }
+      if (this.axes.nextAxis?.name === 'x1' && this.axes.x1IsSameAsY1) {
+        return 'y1'
       }
       return ''
     },

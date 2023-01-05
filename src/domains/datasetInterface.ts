@@ -19,6 +19,7 @@ export interface DatasetInterface {
   name: string
   plots: Plots
   id: number
+  plotsAreAdjusting: boolean
   activePlotIds: number[]
   get nextPlotId(): number
   get plotsAreActive(): boolean
