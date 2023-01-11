@@ -34,6 +34,14 @@ export class Axes implements AxesInterface {
     )
   }
 
+  get hasXAxis(): boolean {
+    return this.x1.coordIsFilled || this.x2.coordIsFilled
+  }
+
+  get hasYAxis(): boolean {
+    return this.y1.coordIsFilled || this.y2.coordIsFilled
+  }
+
   get activeAxis(): AxisInterface | null {
     switch (this.activeAxisName) {
       case 'x1':
@@ -91,6 +99,18 @@ export class Axes implements AxesInterface {
   clearAxesCoords() {
     this.x1.clearCoord()
     this.x2.clearCoord()
+    this.y1.clearCoord()
+    this.y2.clearCoord()
+    this.activeAxisName = ''
+  }
+
+  clearXAxisCoords() {
+    this.x1.clearCoord()
+    this.x2.clearCoord()
+    this.activeAxisName = ''
+  }
+
+  clearYAxisCoords() {
     this.y1.clearCoord()
     this.y2.clearCoord()
     this.activeAxisName = ''

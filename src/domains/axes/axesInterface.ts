@@ -19,10 +19,14 @@ export interface AxesInterface {
   isAdjusting: boolean
 
   get hasAtLeastOneAxis(): boolean
+  get hasXAxis(): boolean
+  get hasYAxis(): boolean
   get activeAxis(): AxisInterface | null
   get nextAxis(): AxisInterface | null
   moveActiveAxis(vector: Vector): void
   clearAxesCoords(): void
+  clearXAxisCoords(): void
+  clearYAxisCoords(): void
   addAxisCoord(coord: Coord): void
   inactivateAxis(): void
 }
