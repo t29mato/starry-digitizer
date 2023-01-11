@@ -45,6 +45,12 @@ class actions extends Actions<state, getters> {
   clearAxesCoords() {
     this.state.axes.clearAxesCoords()
   }
+  clearXAxisCoords() {
+    this.state.axes.clearXAxisCoords()
+  }
+  clearYAxisCoords() {
+    this.state.axes.clearYAxisCoords()
+  }
   addAxisCoord(coord: Coord) {
     this.state.axes.addAxisCoord(coord)
   }
