@@ -32,7 +32,8 @@
     "prepublishOnly": "yarn build",
     "storybook": "start-storybook -p 6006 -s ./public",
     "build-storybook": "build-storybook",
-    "cy:open": "cypress open",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
     "test": "yarn jest"
   },
   "dependencies": {
