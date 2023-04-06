@@ -84,10 +84,20 @@ export default class XYAxesCalculator {
       : ((yPx - y1y) / (y2y - y1y)) * (y2v - y1v) + y1v
     return {
       xV: parseFloat(
-        xV.toPrecision(this.additionalEffectiveDigits())
+        xV.toPrecision(
+          this.calculateEffectiveDigits(
+            this.#axes.x2.value,
+            this.#axes.x1.value
+          )
+        )
       ).toExponential(),
       yV: parseFloat(
-        yV.toPrecision(this.additionalEffectiveDigits())
+        yV.toPrecision(
+          this.calculateEffectiveDigits(
+            this.#axes.y2.value,
+            this.#axes.y1.value
+          )
+        )
       ).toExponential(),
     }
   }
@@ -96,11 +106,10 @@ export default class XYAxesCalculator {
     return Math.floor(Math.log10(Math.abs(num)))
   }
 
-  additionalEffectiveDigits(): number {
+  // 88.81 - 88.71 = 0.10
+  calculateEffectiveDigits(upper: number, lower: number): number {
     return (
-      this.numDigit(this.#axes.x2.value) -
-      this.numDigit(this.#axes.x2.value - this.#axes.x1.value) +
-      this.effectiveDigits
+      this.numDigit(upper) - this.numDigit(upper - lower) + this.effectiveDigits
     )
   }
 }
