@@ -32,6 +32,8 @@
     "prepublishOnly": "yarn build",
     "storybook": "start-storybook -p 6006 -s ./public",
     "build-storybook": "build-storybook",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
     "test": "yarn jest"
   },
   "dependencies": {
@@ -73,6 +75,7 @@
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.3",
     "cross-env": "^7.0.3",
+    "cypress": "^12.3.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-jest": "^26.5.3",

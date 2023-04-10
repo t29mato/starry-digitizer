@@ -18,6 +18,7 @@
     "types": [
       "webpack-env",
       "jest",
+      "cypress",
     ],
     "paths": {
       "@/*": [
@@ -36,7 +37,8 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "tests/**/*.tsx"
+    "tests/**/*.tsx",
+    "cypress/**/*.ts",
   ],
   "exclude": [
     "node_modules"

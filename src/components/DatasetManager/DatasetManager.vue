@@ -33,7 +33,11 @@
                   class="mt-0 pt-0"
                 ></v-text-field>
               </v-col>
-              <v-col cols="2" class="mt-2">
+              <v-col
+                cols="2"
+                class="mt-2"
+                :class="`dataset-count-${dataset.id}`"
+              >
                 {{ dataset.plots.length }}
               </v-col>
             </v-row>
