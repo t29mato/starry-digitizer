@@ -8,6 +8,7 @@
         label="ΔX (px)"
         type="number"
         class="ma-0 pl-4"
+        id="line-extract-dx"
       ></v-text-field>
     </v-col>
     <v-col class="pa-0">
@@ -17,6 +18,7 @@
         label="ΔY (px)"
         type="number"
         class="ma-0 pl-4"
+        id="line-extract-dy"
       ></v-text-field>
     </v-col>
   </v-row>
