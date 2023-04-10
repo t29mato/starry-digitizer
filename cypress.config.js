@@ -1,5 +1,5 @@
 module.exports = {
-  projectId: 'jjruua',
+  projectId: 'qiq9zf',
   // The rest of the Cypress config options go here...
   viewportWidth: 1280,
   viewportHeight: 700,
