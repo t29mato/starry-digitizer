@@ -4,8 +4,8 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 jobs:
   Deploy-Preview:
     runs-on: ubuntu-latest
@@ -16,20 +16,20 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: install npm packages
-        run: yarn
-      - name: Unit test
-        run: yarn test
-      - name: Cypress run
-        uses: cypress-io/github-action@v4
+      - name: Set Git user
+        run: |
+          git config --local user.email "${{ github.event.sender.email }}"
+          git config --local user.name "${{ github.event.sender.login }}"
+      - name: Update Version and Tag
+        run: |
+          tag=${GITHUB_REF#refs/tags/}
+          npm version "${tag}"
+          git tag -a "${tag}" -m "Release ${tag}"
+          git push --follow-tags
+      - uses: JS-DevTools/npm-publish@v1
         with:
-          start: yarn serve
-          wait-on: 'http://localhost:8080'
-          record: true
-          parallel: true
-        env:
-          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.NPM_TOKEN }}
+          tag: ${GITHUB_REF#refs/tags/}
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
