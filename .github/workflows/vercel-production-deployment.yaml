@@ -16,8 +16,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: install npm packages
-        run: yarn
+#      - name: install npm packages
+#        run: yarn
 #      - name: Unit test
 #        run: yarn test
 #      - name: Cypress run
@@ -44,7 +44,7 @@ jobs:
           git config --local user.name "${{ github.event.sender.login }}"
       - name: Update Version and Tag
         run: |
-          tag=$(echo "${GITHUB_REF}" | sed 's/\/refs\/heads\/release-v\([0-9]*\.[0-9]*\.[0-9]*\)/\1/'
+          tag=$(echo "${GITHUB_REF}" | sed 's/\/refs\/heads\/release-v\([0-9]*\.[0-9]*\.[0-9]*\)/\1/')
           npm version "${tag}"
           git tag -a "${tag}" -m "Release ${tag}"
           git push --follow-tags
