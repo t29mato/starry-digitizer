@@ -55,6 +55,9 @@ jobs:
         with:
           node-version: 16
           cache: 'yarn'
+      - name: Update Version and Tag
+        run: |
+          npm version --no-git-tag-version "${GITHUB_REF#refs/tags/}"
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
