@@ -16,6 +16,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+      - name: install npm packages
+        run: yarn
       - name: Unit test
         run: yarn test
       - name: Cypress run
