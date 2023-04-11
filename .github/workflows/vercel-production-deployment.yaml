@@ -16,6 +16,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+      - name: install npm packages
+        run: yarn
       - name: Set Git user
         run: |
           git config --local user.email "${{ github.event.sender.email }}"
