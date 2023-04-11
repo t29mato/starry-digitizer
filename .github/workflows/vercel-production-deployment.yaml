@@ -20,10 +20,12 @@ jobs:
         run: |
           git config --local user.email "${{ github.event.sender.email }}"
           git config --local user.name "${{ github.event.sender.login }}"
+      - name: Update Version and Tag
+        run: |
+          npm version --no-git-tag-version "${GITHUB_REF#refs/tags/}"
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
-          tag: ${GITHUB_REF#refs/tags/}
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
