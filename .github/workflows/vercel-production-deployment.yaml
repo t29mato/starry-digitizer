@@ -24,8 +24,6 @@ jobs:
         run: |
           tag=${GITHUB_REF#refs/tags/}
           npm version "${tag}"
-          git tag -a "${tag}" -m "Release ${tag}"
-          git push --follow-tags
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
