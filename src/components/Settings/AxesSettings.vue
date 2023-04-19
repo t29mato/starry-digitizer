@@ -121,7 +121,6 @@ export default Vue.extend({
       'setYIsLog',
     ]),
     setX1(value: string) {
-      console.log(value, parseFloat(value))
       this.setX1Value(parseFloat(value))
     },
     setX2(value: string) {
