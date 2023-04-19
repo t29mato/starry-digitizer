@@ -9,7 +9,7 @@
             <v-text-field
               :value="axes.x1.value"
               @input="setX1"
-              type="number"
+              type="text"
               class="ma-0 pa-0"
               hide-details
               label="x1"
@@ -19,7 +19,7 @@
             <v-text-field
               :value="axes.x2.value"
               @input="setX2"
-              type="number"
+              type="text"
               class="ma-0 pa-0"
               hide-details
               label="x2"
@@ -41,7 +41,7 @@
             <v-text-field
               :value="axes.y1.value"
               @input="setY1"
-              type="number"
+              type="text"
               class="ma-0 pa-0"
               hide-details
               label="y1"
@@ -51,7 +51,7 @@
             <v-text-field
               :value="axes.y2.value"
               @input="setY2"
-              type="number"
+              type="text"
               class="ma-0 pa-0"
               hide-details
               label="y2"
@@ -121,6 +121,7 @@ export default Vue.extend({
       'setYIsLog',
     ]),
     setX1(value: string) {
+      console.log(value, parseFloat(value))
       this.setX1Value(parseFloat(value))
     },
     setX2(value: string) {
