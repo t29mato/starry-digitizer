@@ -7,9 +7,9 @@
           <th class="pa-1">X</th>
           <td class="pa-1">
             <v-text-field
-              :value="axes.x1.value"
+              v-model="x1"
               @input="setX1"
-              type="text"
+              type="number"
               class="ma-0 pa-0"
               hide-details
               label="x1"
@@ -17,9 +17,9 @@
           </td>
           <td class="pa-1">
             <v-text-field
-              :value="axes.x2.value"
+              v-model="x2"
               @input="setX2"
-              type="text"
+              type="number"
               class="ma-0 pa-0"
               hide-details
               label="x2"
@@ -39,9 +39,9 @@
           <th class="pa-1">Y</th>
           <td class="pa-1">
             <v-text-field
-              :value="axes.y1.value"
+              v-model="y1"
               @input="setY1"
-              type="text"
+              type="number"
               class="ma-0 pa-0"
               hide-details
               label="y1"
@@ -49,9 +49,9 @@
           </td>
           <td class="pa-1">
             <v-text-field
-              :value="axes.y2.value"
+              v-model="y2"
               @input="setY2"
-              type="text"
+              type="number"
               class="ma-0 pa-0"
               hide-details
               label="y2"
@@ -87,20 +87,20 @@ export default Vue.extend({
     ...axesMapper.mapGetters(['axes']),
     errorMessage(): string {
       if (this.axes.xIsLog) {
-        if (this.axes.x1.value === 0 || this.axes.x2.value === 0) {
+        if (this.x1 === 0 || this.x2 === 0) {
           return 'x1 or x2 should not be 0'
         }
       } else {
-        if (this.axes.x1.value === this.axes.x2.value) {
+        if (this.x1 === this.x2) {
           return 'x1 and x2 should not be same value'
         }
       }
       if (this.axes.yIsLog) {
-        if (this.axes.y1.value === 0 || this.axes.y2.value === 0) {
+        if (this.y1 === 0 || this.y2 === 0) {
           return 'y1 or y2 should not be 0'
         }
       } else {
-        if (this.axes.y1.value === this.axes.y2.value) {
+        if (this.y1 === this.y2) {
           return 'y1 and y2 should not be same value'
         }
       }
@@ -108,7 +108,12 @@ export default Vue.extend({
     },
   },
   data() {
-    return {}
+    return {
+      x1: 0,
+      x2: 1,
+      y1: 0,
+      y2: 1,
+    }
   },
   props: {},
   methods: {
@@ -132,6 +137,12 @@ export default Vue.extend({
     setY2(value: string) {
       this.setY2Value(parseFloat(value))
     },
+  },
+  mounted() {
+    this.x1 = this.axes.x1.value
+    this.x2 = this.axes.x2.value
+    this.y1 = this.axes.y1.value
+    this.y2 = this.axes.y2.value
   },
 })
 </script>
