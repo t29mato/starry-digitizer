@@ -2,7 +2,7 @@
   <v-container fluid>
     <template>
       <v-row>
-        <v-col cols="2">
+        <v-col cols="2" class="pr-0">
           <image-settings></image-settings>
           <axes-settings></axes-settings>
           <dataset-manager

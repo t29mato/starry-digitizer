@@ -8,19 +8,30 @@
           <td class="pa-1">
             <v-text-field
               v-model="x1"
+              id="x1-value"
               @input="setX1"
               type="number"
               class="ma-0 pa-0"
               hide-details
               label="x1"
-              id="number-input"
             >
               <template v-slot:append v-if="xIsLog">
                 <div class="d-flex flex-column">
-                  <v-btn class="pa-0" x-small @click="multiplyByTenX1"
+                  <v-btn
+                    class="pa-0"
+                    x-small
+                    @click="multiplyByTenX1"
+                    id="multiply-by-ten-x1"
+                    icon
                     >x10
                   </v-btn>
-                  <v-btn class="pa-0" x-small @click="divideByTenX1">
+                  <v-btn
+                    class="pa-0"
+                    id="divide-by-ten-x1"
+                    x-small
+                    @click="divideByTenX1"
+                    icon
+                  >
                     x0.1
                   </v-btn>
                 </div>
@@ -30,6 +41,7 @@
           <td class="pa-1">
             <v-text-field
               v-model="x2"
+              id="x2-value"
               @input="setX2"
               type="number"
               class="ma-0 pa-0"
@@ -38,15 +50,29 @@
             >
               <template v-slot:append v-if="xIsLog">
                 <div class="d-flex flex-column">
-                  <v-btn x-small @click="multiplyByTenX2">x10 </v-btn>
-                  <v-btn x-small @click="divideByTenX2"> x0.1 </v-btn>
+                  <v-btn
+                    id="multiply-by-ten-x2"
+                    x-small
+                    @click="multiplyByTenX2"
+                    icon
+                    >x10
+                  </v-btn>
+                  <v-btn
+                    id="divide-by-ten-x2"
+                    x-small
+                    @click="divideByTenX2"
+                    icon
+                  >
+                    x0.1
+                  </v-btn>
                 </div>
               </template>
             </v-text-field>
           </td>
-          <td class="pa-1">
+          <td class="pa-0">
             <v-checkbox
               v-model="xIsLog"
+              id="x-is-log"
               @input="setXIsLog"
               dense
               hint="Log"
@@ -59,6 +85,7 @@
           <td class="pa-1">
             <v-text-field
               v-model="y1"
+              id="y1-value"
               @input="setY1"
               type="number"
               class="ma-0 pa-0"
@@ -67,8 +94,21 @@
             >
               <template v-slot:append v-if="yIsLog">
                 <div class="d-flex flex-column">
-                  <v-btn x-small @click="multiplyByTenY1">x10 </v-btn>
-                  <v-btn x-small @click="divideByTenY1"> x0.1 </v-btn>
+                  <v-btn
+                    id="multiply-by-ten-y1"
+                    x-small
+                    @click="multiplyByTenY1"
+                    icon
+                    >x10
+                  </v-btn>
+                  <v-btn
+                    id="divide-by-ten-y1"
+                    x-small
+                    @click="divideByTenY1"
+                    icon
+                  >
+                    x0.1
+                  </v-btn>
                 </div>
               </template>
             </v-text-field>
@@ -76,6 +116,7 @@
           <td class="pa-1">
             <v-text-field
               v-model="y2"
+              id="y2-value"
               @input="setY2"
               type="number"
               class="ma-0 pa-0"
@@ -84,15 +125,29 @@
             >
               <template v-slot:append v-if="yIsLog">
                 <div class="d-flex flex-column">
-                  <v-btn x-small @click="multiplyByTenY2">x10 </v-btn>
-                  <v-btn x-small @click="divideByTenY2"> x0.1 </v-btn>
+                  <v-btn
+                    id="multiply-by-ten-y2"
+                    x-small
+                    @click="multiplyByTenY2"
+                    icon
+                    >x10
+                  </v-btn>
+                  <v-btn
+                    id="divide-by-ten-y2"
+                    x-small
+                    @click="divideByTenY2"
+                    icon
+                  >
+                    x0.1
+                  </v-btn>
                 </div>
               </template>
             </v-text-field>
           </td>
-          <td class="pa-1">
+          <td class="pa-0">
             <v-checkbox
               v-model="yIsLog"
+              id="y-is-log"
               @input="setYIsLog"
               hint="Log"
               persistent-hint
