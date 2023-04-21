@@ -13,7 +13,19 @@
               class="ma-0 pa-0"
               hide-details
               label="x1"
-            ></v-text-field>
+              id="number-input"
+            >
+              <template v-slot:append v-if="xIsLog">
+                <div class="d-flex flex-column">
+                  <v-btn class="pa-0" x-small @click="multiplyByTenX1"
+                    >x10
+                  </v-btn>
+                  <v-btn class="pa-0" x-small @click="divideByTenX1">
+                    x0.1
+                  </v-btn>
+                </div>
+              </template>
+            </v-text-field>
           </td>
           <td class="pa-1">
             <v-text-field
@@ -23,12 +35,19 @@
               class="ma-0 pa-0"
               hide-details
               label="x2"
-            ></v-text-field>
+            >
+              <template v-slot:append v-if="xIsLog">
+                <div class="d-flex flex-column">
+                  <v-btn x-small @click="multiplyByTenX2">x10 </v-btn>
+                  <v-btn x-small @click="divideByTenX2"> x0.1 </v-btn>
+                </div>
+              </template>
+            </v-text-field>
           </td>
           <td class="pa-1">
             <v-checkbox
-              :value="axes.xIsLog"
-              @change="setXIsLog"
+              v-model="xIsLog"
+              @input="setXIsLog"
               dense
               hint="Log"
               persistent-hint
@@ -45,7 +64,14 @@
               class="ma-0 pa-0"
               hide-details
               label="y1"
-            ></v-text-field>
+            >
+              <template v-slot:append v-if="yIsLog">
+                <div class="d-flex flex-column">
+                  <v-btn x-small @click="multiplyByTenY1">x10 </v-btn>
+                  <v-btn x-small @click="divideByTenY1"> x0.1 </v-btn>
+                </div>
+              </template>
+            </v-text-field>
           </td>
           <td class="pa-1">
             <v-text-field
@@ -55,12 +81,19 @@
               class="ma-0 pa-0"
               hide-details
               label="y2"
-            ></v-text-field>
+            >
+              <template v-slot:append v-if="yIsLog">
+                <div class="d-flex flex-column">
+                  <v-btn x-small @click="multiplyByTenY2">x10 </v-btn>
+                  <v-btn x-small @click="divideByTenY2"> x0.1 </v-btn>
+                </div>
+              </template>
+            </v-text-field>
           </td>
           <td class="pa-1">
             <v-checkbox
-              :value="axes.yIsLog"
-              @change="setYIsLog"
+              v-model="yIsLog"
+              @input="setYIsLog"
               hint="Log"
               persistent-hint
               dense
@@ -87,7 +120,7 @@ export default Vue.extend({
     ...axesMapper.mapGetters(['axes']),
     errorMessage(): string {
       if (this.axes.xIsLog) {
-        if (this.x1 === 0 || this.x2 === 0) {
+        if (this.x1 === '0' || this.x2 === '0') {
           return 'x1 or x2 should not be 0'
         }
       } else {
@@ -96,7 +129,7 @@ export default Vue.extend({
         }
       }
       if (this.axes.yIsLog) {
-        if (this.y1 === 0 || this.y2 === 0) {
+        if (this.y1 === '0' || this.y2 === '0') {
           return 'y1 or y2 should not be 0'
         }
       } else {
@@ -109,10 +142,12 @@ export default Vue.extend({
   },
   data() {
     return {
-      x1: 0,
-      x2: 1,
-      y1: 0,
-      y2: 1,
+      x1: '0',
+      x2: '1',
+      y1: '0',
+      y2: '1',
+      xIsLog: false,
+      yIsLog: false,
     }
   },
   props: {},
@@ -137,12 +172,50 @@ export default Vue.extend({
     setY2(value: string) {
       this.setY2Value(parseFloat(value))
     },
+    multiplyByTenX1() {
+      this.x1 = String(this.multiplyByTen(parseFloat(this.x1)))
+    },
+    divideByTenX1() {
+      this.x1 = String(this.divideByTen(parseFloat(this.x1)))
+    },
+    multiplyByTenX2() {
+      this.x2 = String(this.multiplyByTen(parseFloat(this.x2)))
+    },
+    divideByTenX2() {
+      this.x2 = String(this.divideByTen(parseFloat(this.x2)))
+    },
+    multiplyByTenY1() {
+      this.y1 = String(this.multiplyByTen(parseFloat(this.y1)))
+    },
+    divideByTenY1() {
+      this.y1 = String(this.divideByTen(parseFloat(this.y1)))
+    },
+    multiplyByTenY2() {
+      this.y2 = String(this.multiplyByTen(parseFloat(this.y2)))
+    },
+    divideByTenY2() {
+      this.y2 = String(this.divideByTen(parseFloat(this.y2)))
+    },
+    multiplyByTen(value: number) {
+      if (value === 0) {
+        return 1
+      }
+      return (value * 10).toPrecision(1)
+    },
+    divideByTen(value: number) {
+      if (value === 0) {
+        return 0.1
+      }
+      return (value * 0.1).toPrecision(1)
+    },
   },
   mounted() {
-    this.x1 = this.axes.x1.value
-    this.x2 = this.axes.x2.value
-    this.y1 = this.axes.y1.value
-    this.y2 = this.axes.y2.value
+    this.x1 = String(this.axes.x1.value)
+    this.x2 = String(this.axes.x2.value)
+    this.y1 = String(this.axes.y1.value)
+    this.y2 = String(this.axes.y2.value)
+    this.xIsLog = this.axes.xIsLog
+    this.yIsLog = this.axes.yIsLog
   },
 })
 </script>
