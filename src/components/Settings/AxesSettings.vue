@@ -4,8 +4,8 @@
     <v-simple-table dense>
       <tbody>
         <tr>
-          <th class="pa-1">X</th>
-          <td class="pa-1">
+          <th class="pa-0">X</th>
+          <td class="pa-1 pl-2">
             <v-text-field
               v-model="x1"
               id="x1-value"
@@ -38,7 +38,7 @@
               </template>
             </v-text-field>
           </td>
-          <td class="pa-1">
+          <td class="pa-1 pl-0">
             <v-text-field
               v-model="x2"
               id="x2-value"
@@ -81,8 +81,8 @@
           </td>
         </tr>
         <tr>
-          <th class="pa-1">Y</th>
-          <td class="pa-1">
+          <th class="pa-0">Y</th>
+          <td class="pa-1 pl-2">
             <v-text-field
               v-model="y1"
               id="y1-value"
@@ -113,7 +113,7 @@
               </template>
             </v-text-field>
           </td>
-          <td class="pa-1">
+          <td class="pa-1 pl-0">
             <v-text-field
               v-model="y2"
               id="y2-value"
