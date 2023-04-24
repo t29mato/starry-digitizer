@@ -32,7 +32,7 @@
                     @click="divideByTenX1"
                     icon
                   >
-                    x0.1
+                    /10
                   </v-btn>
                 </div>
               </template>
@@ -63,7 +63,7 @@
                     @click="divideByTenX2"
                     icon
                   >
-                    x0.1
+                    /10
                   </v-btn>
                 </div>
               </template>
@@ -107,7 +107,7 @@
                     @click="divideByTenY1"
                     icon
                   >
-                    x0.1
+                    /10
                   </v-btn>
                 </div>
               </template>
@@ -138,7 +138,7 @@
                     @click="divideByTenY2"
                     icon
                   >
-                    x0.1
+                    /10
                   </v-btn>
                 </div>
               </template>
