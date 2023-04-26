@@ -9,7 +9,6 @@
             <v-text-field
               v-model="x1"
               id="x1-value"
-              @input="setX1"
               type="number"
               class="ma-0 pa-0"
               hide-details
@@ -42,7 +41,6 @@
             <v-text-field
               v-model="x2"
               id="x2-value"
-              @input="setX2"
               type="number"
               class="ma-0 pa-0"
               hide-details
@@ -73,7 +71,6 @@
             <v-checkbox
               v-model="xIsLog"
               id="x-is-log"
-              @input="setXIsLog"
               dense
               hint="Log"
               persistent-hint
@@ -86,7 +83,6 @@
             <v-text-field
               v-model="y1"
               id="y1-value"
-              @input="setY1"
               type="number"
               class="ma-0 pa-0"
               hide-details
@@ -117,7 +113,6 @@
             <v-text-field
               v-model="y2"
               id="y2-value"
-              @input="setY2"
               type="number"
               class="ma-0 pa-0"
               hide-details
@@ -148,7 +143,6 @@
             <v-checkbox
               v-model="yIsLog"
               id="y-is-log"
-              @input="setYIsLog"
               hint="Log"
               persistent-hint
               dense
@@ -216,18 +210,6 @@ export default Vue.extend({
       'setXIsLog',
       'setYIsLog',
     ]),
-    setX1(value: string) {
-      this.setX1Value(parseFloat(value))
-    },
-    setX2(value: string) {
-      this.setX2Value(parseFloat(value))
-    },
-    setY1(value: string) {
-      this.setY1Value(parseFloat(value))
-    },
-    setY2(value: string) {
-      this.setY2Value(parseFloat(value))
-    },
     multiplyByTenX1() {
       this.x1 = String(this.multiplyByTen(parseFloat(this.x1)))
     },
@@ -272,6 +254,26 @@ export default Vue.extend({
     this.y2 = String(this.axes.y2.value)
     this.xIsLog = this.axes.xIsLog
     this.yIsLog = this.axes.yIsLog
+  },
+  watch: {
+    xIsLog(value: boolean) {
+      this.setXIsLog(value)
+    },
+    yIsLog(value: boolean) {
+      this.setYIsLog(value)
+    },
+    x1(value: string) {
+      this.setX1Value(parseFloat(value))
+    },
+    x2(value: string) {
+      this.setX2Value(parseFloat(value))
+    },
+    y1(value: string) {
+      this.setY1Value(parseFloat(value))
+    },
+    y2(value: string) {
+      this.setY2Value(parseFloat(value))
+    },
   },
 })
 </script>
