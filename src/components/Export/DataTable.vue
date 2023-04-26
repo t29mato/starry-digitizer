@@ -72,7 +72,7 @@ export default Vue.extend({
       return calculator.calculateXYValues(x, y)
     },
     copyData: function () {
-      // @ts-ignore: FIXME: hotInstance is not defined
+      // @ts-ignore: there is possibility that hotInstance is not defined though
       const data = this.$refs.tableRef.hotInstance.getData()
       const values = data.slice(0)
       // @ts-ignore convertToCsv methods is defined apparently
