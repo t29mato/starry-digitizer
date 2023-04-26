@@ -1,7 +1,7 @@
 <template>
   <div>
     <hot-table
-      :data="tabularData"
+      :data="tableData"
       :settings="hotTableSettings"
       :key="key"
       ref="tableRef"
@@ -24,6 +24,8 @@ import 'handsontable/dist/handsontable.full.css'
 import { registerAllModules } from 'handsontable/registry'
 registerAllModules()
 
+const CSV_DELIMITER = ','
+
 export default Vue.extend({
   components: {
     HotTable,
@@ -32,7 +34,7 @@ export default Vue.extend({
     ...datasetMapper.mapGetters(['datasets']),
     ...axesMapper.mapGetters(['axes']),
     ...canvasMapper.mapGetters(['canvas']),
-    tabularData() {
+    tableData() {
       if (this.datasets.activeDataset.plots.length > 0) {
         return this.datasets.activeDataset.plots.map((plot) => {
           // @ts-ignore calculateXY methods is defined apparently
@@ -61,7 +63,6 @@ export default Vue.extend({
       },
     }
   },
-  props: {},
   methods: {
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
@@ -84,12 +85,12 @@ export default Vue.extend({
     },
     convertToCsv(data: string[][]) {
       console.log({ data })
-      const rows = data.map((row) => row.join(','))
+      const rows = data.map((row) => row.join(CSV_DELIMITER))
       return rows.join('\n')
     },
   },
   watch: {
-    tabularData() {
+    tableData() {
       // @ts-ignore key property is defined apparently
       this.key++
     },
