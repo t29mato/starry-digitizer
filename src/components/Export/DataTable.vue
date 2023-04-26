@@ -3,7 +3,7 @@
     <hot-table
       :data="tableData"
       :settings="hotTableSettings"
-      :key="tableData"
+      :key="key"
       ref="tableRef"
       height="35vh"
       class="overflow-y-auto"
@@ -50,6 +50,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      key: 0,
       activeColor: colors.green.lighten5,
       hotTableSettings: {
         licenseKey: 'non-commercial-and-evaluation',
@@ -86,6 +87,16 @@ export default Vue.extend({
       console.log({ data })
       const rows = data.map((row) => row.join(CSV_DELIMITER))
       return rows.join('\n')
+    },
+  },
+  watch: {
+    tableData() {
+      // @ts-ignore key is defined apparently
+      this.key++
+    },
+    axes() {
+      // @ts-ignore key is defined apparently
+      this.key++
     },
   },
 })
