@@ -1,12 +1,11 @@
 <template>
   <div>
-    <v-textarea
-      :value="convertPlotsIntoText"
-      outlined
-      hide-details="true"
-      @change="changeTextArea"
+    <!--    CONFIRM: DataTableコンポーネント作成によりdeprecated-->
+    <hot-table
+      :data="activeCalculatedPlots"
+      :settings="hotTableSettings"
       height="50vh"
-    ></v-textarea>
+    ></hot-table>
     <div class="mt-2">
       <v-btn small @click="copy" :disabled="convertPlotsIntoText.length === 0"
         >Copy to Clipboard</v-btn
@@ -31,8 +30,13 @@ import { Plots, PlotValue } from '@/domains/datasetInterface'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
 import { axesMapper } from '@/store/modules/axes'
 import { canvasMapper } from '@/store/modules/canvas'
+import { HotTable } from '@handsontable/vue'
+import 'handsontable/dist/handsontable.full.css'
 
 export default Vue.extend({
+  components: {
+    HotTable,
+  },
   computed: {
     ...datasetMapper.mapGetters(['datasets']),
     ...axesMapper.mapGetters(['axes']),
@@ -93,6 +97,9 @@ export default Vue.extend({
     return {
       activeColor: colors.green.lighten5,
       textArea: '',
+      hotTableSettings: {
+        licenseKey: 'non-commercial-and-evaluation',
+      },
     }
   },
   props: {

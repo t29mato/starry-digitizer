@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-2">
+  <div>
     <h4>XY Axes</h4>
     <v-simple-table dense>
       <tbody>
@@ -160,6 +160,7 @@
     <v-checkbox
       label="X1 = Y1 coordinates"
       dense
+      hide-details
       v-model="axes.x1IsSameAsY1"
     ></v-checkbox>
     <p class="red--text">{{ errorMessage }}</p>
