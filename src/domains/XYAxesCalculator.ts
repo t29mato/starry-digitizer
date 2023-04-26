@@ -110,7 +110,8 @@ export default class XYAxesCalculator {
   // 88.81 - 88.71 = 0.10
   calculateEffectiveDigits(upper: number, lower: number): number {
     return (
-      this.numDigit(upper) - this.numDigit(upper - lower) + this.effectiveDigits
+      Math.abs(this.numDigit(upper) - this.numDigit(upper - lower)) +
+      this.effectiveDigits
     )
   }
 }
