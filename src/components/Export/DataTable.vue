@@ -35,6 +35,7 @@ export default Vue.extend({
     tabularData() {
       if (this.datasets.activeDataset.plots.length > 0) {
         return this.datasets.activeDataset.plots.map((plot) => {
+          // @ts-ignore calculateXY methods is defined apparently
           const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
           return {
             X: xV,
@@ -47,6 +48,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      key: 0,
       activeColor: colors.green.lighten5,
       hotTableSettings: {
         licenseKey: 'non-commercial-and-evaluation',
@@ -57,7 +59,6 @@ export default Vue.extend({
           { data: 'Y', type: 'numeric' },
         ],
       },
-      key: 0,
     }
   },
   props: {},
@@ -71,21 +72,25 @@ export default Vue.extend({
       return calculator.calculateXYValues(x, y)
     },
     copyData: function () {
-      const data = this.$refs.tableRef.hotInstance?.getData()
+      // @ts-ignore: FIXME: hotInstance is not defined
+      const data = this.$refs.tableRef.hotInstance.getData()
       const values = data.slice(0)
+      // @ts-ignore convertToCsv methods is defined apparently
       const csv = this.convertToCsv(values)
       navigator.clipboard
         .writeText(csv)
         .then(() => console.log('コピーが成功しました。'))
         .catch((err) => console.error('コピーが失敗しました。', err))
     },
-    convertToCsv(data) {
+    convertToCsv(data: string[][]) {
+      console.log({ data })
       const rows = data.map((row) => row.join(','))
       return rows.join('\n')
     },
   },
   watch: {
     tabularData() {
+      // @ts-ignore key property is defined apparently
       this.key++
     },
   },
