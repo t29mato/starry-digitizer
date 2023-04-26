@@ -82,34 +82,36 @@ export default class XYAxesCalculator {
             Math.log10(y1v)
         )
       : ((yPx - y1y) / (y2y - y1y)) * (y2v - y1v) + y1v
+    const xEffectiveDigits = this.calculateEffectiveDigits(
+      this.#axes.x2.value,
+      this.#axes.x1.value
+    )
+    const yEffectiveDigits = this.calculateEffectiveDigits(
+      this.#axes.y2.value,
+      this.#axes.y1.value
+    )
+    const xPrecised = parseFloat(xV.toPrecision(xEffectiveDigits))
+    const yPrecised = parseFloat(yV.toPrecision(yEffectiveDigits))
+    const xExponential = xPrecised.toExponential()
+    const yExponential = yPrecised.toExponential()
     return {
-      xV: parseFloat(
-        xV.toPrecision(
-          this.calculateEffectiveDigits(
-            this.#axes.x2.value,
-            this.#axes.x1.value
-          )
-        )
-      ).toExponential(),
-      yV: parseFloat(
-        yV.toPrecision(
-          this.calculateEffectiveDigits(
-            this.#axes.y2.value,
-            this.#axes.y1.value
-          )
-        )
-      ).toExponential(),
+      xV: xExponential,
+      yV: yExponential,
     }
   }
 
   numDigit(num: number): number {
+    if (num === 0) {
+      return 0
+    }
     return Math.floor(Math.log10(Math.abs(num)))
   }
 
   // 88.81 - 88.71 = 0.10
   calculateEffectiveDigits(upper: number, lower: number): number {
     return (
-      this.numDigit(upper) - this.numDigit(upper - lower) + this.effectiveDigits
+      Math.abs(this.numDigit(upper) - this.numDigit(upper - lower)) +
+      this.effectiveDigits
     )
   }
 }

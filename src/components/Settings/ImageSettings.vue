@@ -1,15 +1,12 @@
 <template>
-  <div>
-    <h4>Image File</h4>
-    <v-file-input
-      accept="image/*"
-      @change="uploadImage"
-      :clearable="false"
-      dense
-      label="choose an image file"
-      class="mt-2"
-    ></v-file-input>
-  </div>
+  <v-file-input
+    accept="image/*"
+    @change="uploadImage"
+    :clearable="false"
+    label="choose an image file"
+    hide-details
+    class="mb-1"
+  ></v-file-input>
 </template>
 
 <script lang="ts">
