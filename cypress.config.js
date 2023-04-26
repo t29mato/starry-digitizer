@@ -9,4 +9,5 @@ module.exports = {
       // implement node event listeners here
     },
   },
+  chromeWebSecurity: false,
 }
