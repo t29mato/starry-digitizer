@@ -103,6 +103,9 @@ export default class XYAxesCalculator {
   }
 
   numDigit(num: number): number {
+    if (num === 0) {
+      return 0
+    }
     return Math.floor(Math.log10(Math.abs(num)))
   }
 
