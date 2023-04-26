@@ -34,8 +34,14 @@
                 class="mt-0 pt-0"
               ></v-text-field>
             </v-col>
-            <v-col cols="2" class="mt-1" :class="`dataset-count-${dataset.id}`">
-              {{ dataset.plots.length }}
+            <v-col
+              cols="2"
+              class="pa-0 d-flex align-items-center"
+              :class="`dataset-count-${dataset.id}`"
+            >
+              <span class="align-self-center">
+                {{ dataset.plots.length }}
+              </span>
             </v-col>
           </v-row>
         </v-list-item-content>
