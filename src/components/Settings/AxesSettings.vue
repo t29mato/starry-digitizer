@@ -157,6 +157,12 @@
       hide-details
       v-model="axes.x1IsSameAsY1"
     ></v-checkbox>
+    <v-checkbox
+      label="Consider graph tilt"
+      dense
+      hide-details
+      v-model="axes.considerGraphTilt"
+    ></v-checkbox>
     <p class="red--text">{{ errorMessage }}</p>
   </div>
 </template>
