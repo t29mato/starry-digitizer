@@ -7,14 +7,19 @@ const buildPresets = [
       targets: {
         node: true,
       },
-      // Example: Always transpile optional chaining/nullish coalescing
-      include: [
-        /(class-properties|private-methods|private-property-in-object)/,
-      ],
     },
   ],
   '@babel/preset-typescript',
 ]
+
+const buildPlugins = [
+  '@babel/plugin-proposal-class-properties',
+  '@babel/plugin-proposal-private-methods',
+  '@babel/plugin-transform-private-property-in-object',
+  '@babel/plugin-proposal-optional-chaining',
+]
+
 module.exports = {
   presets: process.env.NODE_ENV === 'development' ? devPresets : buildPresets,
+  plugins: process.env.NODE_ENV === 'development' ? [] : buildPlugins,
 }
