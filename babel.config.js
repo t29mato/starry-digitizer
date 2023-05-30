@@ -16,6 +16,7 @@ const buildPlugins = [
   '@babel/plugin-proposal-class-properties',
   '@babel/plugin-proposal-private-methods',
   '@babel/plugin-transform-private-property-in-object',
+  '@babel/plugin-proposal-optional-chaining',
 ]
 
 module.exports = {
