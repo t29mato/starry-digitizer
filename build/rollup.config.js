@@ -12,6 +12,7 @@ import ttypescript from 'ttypescript'
 import typescript from 'rollup-plugin-typescript2'
 import minimist from 'minimist'
 import json from '@rollup/plugin-json'
+import postcss from 'rollup-plugin-postcss'
 
 // Get browserslist config and remove ie from es build targets
 const esbrowserslist = fs
@@ -32,7 +33,9 @@ const projectRoot = path.resolve(__dirname, '..')
 const baseConfig = {
   input: 'src/entry.ts',
   plugins: {
+    postcss: postcss(),
     preVue: [
+      postcss(), // add this line to handle CSS files
       alias({
         entries: [
           {
