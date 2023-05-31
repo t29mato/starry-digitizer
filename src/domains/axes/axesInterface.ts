@@ -16,6 +16,7 @@ export interface AxesInterface {
   yIsLog: boolean
   activeAxisName: string
   x1IsSameAsY1: boolean
+  considerGraphTilt: boolean
   isAdjusting: boolean
 
   get hasAtLeastOneAxis(): boolean

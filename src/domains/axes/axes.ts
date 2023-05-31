@@ -11,6 +11,7 @@ export class Axes implements AxesInterface {
   yIsLog = false
   activeAxisName = ''
   x1IsSameAsY1 = true
+  considerGraphTilt = false
   isAdjusting = false
 
   constructor(
