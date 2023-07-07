@@ -121,11 +121,31 @@ export class Axes implements AxesInterface {
     if (!this.nextAxis) {
       throw new Error('The axes already filled.')
     }
+
     this.activeAxisName = this.nextAxis.name
-    this.nextAxis.coord = coord
+
+    //a. X1 = Y1であり、x1を定義する時は同時にy1を定義して終了する
     if (this.activeAxisName === 'x1' && this.x1IsSameAsY1) {
+      this.x1.coord = Object.assign(coord)
       this.y1.coord = Object.assign(coord)
+      return
     }
+
+    //b. Consider Graph Tiltでなく、X1 = Y1であり、x1とy1が定義済みの場合はx2とy2を定義して終了する
+    if (
+      !this.considerGraphTilt &&
+      this.x1IsSameAsY1 &&
+      this.activeAxisName === 'x2'
+    ) {
+      const clickedCoord: Coord = Object.assign(coord)
+
+      this.x2.coord = { xPx: clickedCoord.xPx, yPx: this.x1.coord.yPx }
+      this.y2.coord = { xPx: this.y1.coord.xPx, yPx: clickedCoord.yPx }
+      return
+    }
+
+    //a, bのどちらでもない場合は定義すべき軸のみ定義する
+    this.nextAxis.coord = coord
   }
 
   inactivateAxis() {
