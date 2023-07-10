@@ -1,5 +1,5 @@
 <template>
-  <div v-if="axis.coord">
+  <div v-if="isVisible">
     <div
       :style="{
         position: 'absolute',
@@ -24,6 +24,7 @@
       ></div>
     </div>
     <span
+      v-if="axis.name !== 'x2y2'"
       :style="{
         position: 'absolute',
         top: `${labelTop}px`,
@@ -104,6 +105,17 @@ export default Vue.extend({
         }
       }
       return this.axes.activeAxisName === this.axis.name
+    },
+    isVisible(): boolean {
+      if (!this.axis.coord) {
+        return false
+      }
+
+      if (this.axis.name === 'x2y2' && this.axis.isTemporaryCoord) {
+        return false
+      }
+
+      return true
     },
   },
   methods: {},

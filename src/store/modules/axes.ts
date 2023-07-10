@@ -9,7 +9,8 @@ class state {
     new Axis('x1', 0),
     new Axis('x2', 1),
     new Axis('y1', 0),
-    new Axis('y2', 1)
+    new Axis('y2', 1),
+    new Axis('x2y2', -1)
   )
 }
 
@@ -53,6 +54,9 @@ class actions extends Actions<state, getters> {
   }
   addAxisCoord(coord: Coord) {
     this.state.axes.addAxisCoord(coord)
+  }
+  updateX2Y2Coords(coord: Coord) {
+    this.state.axes.updateX2Y2Coords(coord)
   }
   moveActiveAxis(vector: Vector) {
     this.state.axes.moveActiveAxis(vector)
