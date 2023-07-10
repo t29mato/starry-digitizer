@@ -102,18 +102,35 @@ export class Axes implements AxesInterface {
       throw new Error("active axis's coord is undefined")
     }
     this.isAdjusting = true
+
     switch (vector.direction) {
       case 'up':
         this.activeAxis.coord.yPx -= vector.distancePx
+
+        if (this.activeAxis.name === 'x2y2') {
+          this.y2.coord.yPx -= vector.distancePx
+        }
         break
       case 'right':
         this.activeAxis.coord.xPx += vector.distancePx
+
+        if (this.activeAxis.name === 'x2y2') {
+          this.x2.coord.xPx += vector.distancePx
+        }
         break
       case 'down':
         this.activeAxis.coord.yPx += vector.distancePx
+
+        if (this.activeAxis.name === 'x2y2') {
+          this.y2.coord.yPx += vector.distancePx
+        }
         break
       case 'left':
         this.activeAxis.coord.xPx -= vector.distancePx
+
+        if (this.activeAxis.name === 'x2y2') {
+          this.x2.coord.xPx -= vector.distancePx
+        }
         break
       default:
         throw new Error(`undefined direction: ${vector.direction}`)
@@ -125,18 +142,21 @@ export class Axes implements AxesInterface {
     this.x2.clearCoord()
     this.y1.clearCoord()
     this.y2.clearCoord()
+    this.x2y2.clearCoord()
     this.activeAxisName = ''
   }
 
   clearXAxisCoords() {
     this.x1.clearCoord()
     this.x2.clearCoord()
+    this.x2y2.clearCoord()
     this.activeAxisName = ''
   }
 
   clearYAxisCoords() {
     this.y1.clearCoord()
     this.y2.clearCoord()
+    this.x2y2.clearCoord()
     this.activeAxisName = ''
   }
 
