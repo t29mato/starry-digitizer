@@ -5,7 +5,6 @@ export interface AxisInterface {
   coord: Coord
   value: number
   initialCoord: Coord
-  isTemporaryCoord: boolean
   clearCoord(): void
   get coordIsFilled(): boolean
 }

@@ -101,7 +101,6 @@ export default Vue.extend({
     ]),
     ...axesMapper.mapActions([
       'addAxisCoord',
-      'updateX2Y2Coords',
       'inactivateAxis',
       'moveActiveAxis',
     ]),
@@ -158,15 +157,6 @@ export default Vue.extend({
       // TODO: mouseDragOnCanvasにリネーム？
       this.mouseMoveOnCanvas(coord)
     },
-    mouseMoveWithoutDrag(coord: Coord) {
-      // INFO: x2, y2を同時に定義するための軸の位置更新
-      if (this.axes.nextAxis?.name === 'x2y2') {
-        this.updateX2Y2Coords({
-          xPx: coord.xPx / this.canvas.scale,
-          yPx: coord.yPx / this.canvas.scale,
-        })
-      }
-    },
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
       const target = e.target as HTMLElement
@@ -182,8 +172,6 @@ export default Vue.extend({
       const isClicking = e.buttons === 1
       if (isClicking) {
         this.mouseDrag({ xPx, yPx })
-      } else {
-        this.mouseMoveWithoutDrag({ xPx, yPx })
       }
     },
     mouseDown(e: MouseEvent) {

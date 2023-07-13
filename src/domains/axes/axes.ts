@@ -176,22 +176,14 @@ export class Axes implements AxesInterface {
 
     //INFO: b. x2, y2同時定義モードの場合は両方定義して終了する
     if (this.activeAxisName === 'x2y2') {
-      const clickedCoord: Coord = Object.assign(coord)
-
-      this.x2.coord = { xPx: clickedCoord.xPx, yPx: this.x1.coord.yPx }
-      this.y2.coord = { xPx: this.y1.coord.xPx, yPx: clickedCoord.yPx }
-
-      this.x2y2.isTemporaryCoord = false
+      this.x2y2.coord = Object.assign(coord)
+      this.x2.coord = { xPx: coord.xPx, yPx: this.x1.coord.yPx }
+      this.y2.coord = { xPx: this.y1.coord.xPx, yPx: coord.yPx }
       return
     }
 
     //INFO: a, bのどちらでもない場合は定義すべき軸のみ定義する
     this.nextAxis.coord = coord
-  }
-
-  updateX2Y2Coords(coord: Coord) {
-    this.x2y2.coord = Object.assign(coord)
-    this.x2y2.isTemporaryCoord = true
   }
 
   inactivateAxis() {

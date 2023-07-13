@@ -55,9 +55,6 @@ class actions extends Actions<state, getters> {
   addAxisCoord(coord: Coord) {
     this.state.axes.addAxisCoord(coord)
   }
-  updateX2Y2Coords(coord: Coord) {
-    this.state.axes.updateX2Y2Coords(coord)
-  }
   moveActiveAxis(vector: Vector) {
     this.state.axes.moveActiveAxis(vector)
   }
