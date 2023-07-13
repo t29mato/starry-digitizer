@@ -44,7 +44,7 @@ export default class XYAxesCalculator {
     ]
     let xp = xt
     let yq = yt
-    if (this.#axes.considerGraphTilt) {
+    if (this.#axes.defineMode === '1') {
       const xab = xb - xa
       const yab = yb - ya
       const xcd = xd - xc

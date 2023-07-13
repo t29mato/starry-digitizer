@@ -1,6 +1,6 @@
 <!-- 軸定義の際のガイド -->
 <template>
-  <div v-if="axes.canSetX2Y2AtTheSameTime" class="axes-guide">
+  <div v-if="isActive" class="axes-guide">
     <div
       v-if="isX1Y1LineVisible"
       class="axes-guide_line_x1y1_horizontal"
@@ -41,6 +41,9 @@ export default Vue.extend({
   computed: {
     ...axesMapper.mapGetters(['axes']),
     ...canvasMapper.mapGetters(['canvas']),
+    isActive() {
+      return this.axes.defineMode === '0'
+    },
     isX1Y1LineVisible() {
       return this.axes.x1.coordIsFilled || this.canvas.scaledCursor.xPx !== 0
     },

@@ -1,7 +1,7 @@
 <template>
   <div>
     <h4>XY Axes</h4>
-    <v-simple-table dense>
+    <v-simple-table dense class="mb-5">
       <tbody>
         <tr>
           <th class="pa-0">X</th>
@@ -151,18 +151,14 @@
         </tr>
       </tbody>
     </v-simple-table>
-    <v-checkbox
-      label="X1 = Y1 coordinates"
-      dense
-      hide-details
-      v-model="axes.x1IsSameAsY1"
-    ></v-checkbox>
-    <v-checkbox
-      label="Consider graph tilt"
-      dense
-      hide-details
-      v-model="axes.considerGraphTilt"
-    ></v-checkbox>
+    <div class="mb-5">
+      <h5>Define the axes by the coordinates of:</h5>
+      <v-radio-group row v-model="axes.defineMode">
+        <v-radio label="2 Points" value="0"></v-radio>
+        <v-radio label="4 Points" value="1"></v-radio>
+      </v-radio-group>
+    </div>
+
     <p class="red--text">{{ errorMessage }}</p>
   </div>
 </template>

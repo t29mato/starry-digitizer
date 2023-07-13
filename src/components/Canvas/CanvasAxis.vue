@@ -97,13 +97,6 @@ export default Vue.extend({
       return 0
     },
     isActive(): boolean {
-      if (this.axes.x1IsSameAsY1) {
-        if (this.axes.activeAxisName === 'x1') {
-          if (this.axis.name === 'y1') {
-            return true
-          }
-        }
-      }
       return this.axes.activeAxisName === this.axis.name
     },
   },

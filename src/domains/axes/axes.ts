@@ -11,8 +11,7 @@ export class Axes implements AxesInterface {
   xIsLog = false
   yIsLog = false
   activeAxisName = ''
-  x1IsSameAsY1 = true
-  considerGraphTilt = false
+  defineMode = '0' // INFO: {'0': '2Points', '1': '4Points'}
   isAdjusting = false
 
   constructor(
@@ -55,10 +54,6 @@ export class Axes implements AxesInterface {
     )
   }
 
-  get canSetX2Y2AtTheSameTime(): boolean {
-    return this.x1IsSameAsY1 && !this.considerGraphTilt
-  }
-
   get activeAxis(): AxisInterface | null {
     switch (this.activeAxisName) {
       case 'x1':
@@ -78,7 +73,7 @@ export class Axes implements AxesInterface {
 
   get nextAxis(): AxisInterface | null {
     //INFO: 以下の条件の時はx2,y2を同時に定義するモードに入る
-    if (this.canSetX2Y2AtTheSameTime && this.hasOnlyX1Y1Axes) {
+    if (this.defineMode === '0' && this.hasOnlyX1Y1Axes) {
       return this.x2y2
     }
 
@@ -167,8 +162,8 @@ export class Axes implements AxesInterface {
 
     this.activeAxisName = this.nextAxis.name
 
-    //INFO: a. X1 = Y1であり、x1を定義する時は同時にy1を定義して終了する
-    if (this.activeAxisName === 'x1' && this.x1IsSameAsY1) {
+    //INFO: a. 2点定義モードで、、x1を定義する時は同時にy1を定義して終了する
+    if (this.activeAxisName === 'x1' && this.defineMode === '0') {
       this.x1.coord = Object.assign(coord)
       this.y1.coord = Object.assign(coord)
       return

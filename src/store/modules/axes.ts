@@ -61,9 +61,6 @@ class actions extends Actions<state, getters> {
   inactivateAxis() {
     this.state.axes.inactivateAxis()
   }
-  setX1IsSameAsY1(x1IsSameAsY1: boolean) {
-    this.state.axes.x1IsSameAsY1 = x1IsSameAsY1
-  }
 }
 
 export const axes = new Module({
