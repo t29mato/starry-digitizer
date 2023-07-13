@@ -1,17 +1,25 @@
 <!-- 軸定義の際のガイド -->
 <template>
   <div v-if="axes.canSetX2Y2AtTheSameTime" class="axes-guide">
-    <div class="axes-guide_line_1" :style="line1Style"></div>
-    <div class="axes-guide_line_2" :style="line2Style"></div>
     <div
-      v-if="axes.x1.coordIsFilled"
-      class="axes-guide_line_3"
-      :style="line3Style"
+      v-if="isX1Y1LineVisible"
+      class="axes-guide_line_x1y1_horizontal"
+      :style="X1Y1HorizontalLineStyle"
     ></div>
     <div
-      v-if="axes.x1.coordIsFilled"
-      class="axes-guide_line_4"
-      :style="line4Style"
+      v-if="isX1Y1LineVisible"
+      class="axes-guide_line_x1y1_vertical"
+      :style="X1Y1VerticalLineStyle"
+    ></div>
+    <div
+      v-if="isX2Y2LineVisible"
+      class="axes-guide_line_x2y2_horizontal"
+      :style="X2Y2HorizontalLineStyle"
+    ></div>
+    <div
+      v-if="isX2Y2LineVisible"
+      class="axes-guide_line_x2y2_horizontal"
+      :style="X2Y2VerticalLineStyle"
     ></div>
   </div>
 </template>
@@ -33,7 +41,13 @@ export default Vue.extend({
   computed: {
     ...axesMapper.mapGetters(['axes']),
     ...canvasMapper.mapGetters(['canvas']),
-    line1Style() {
+    isX1Y1LineVisible() {
+      return this.axes.x1.coordIsFilled || this.canvas.scaledCursor.xPx !== 0
+    },
+    isX2Y2LineVisible() {
+      return this.axes.x1.coordIsFilled
+    },
+    X1Y1HorizontalLineStyle() {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
       const styleTopNum = this.axes.x1.coordIsFilled
         ? this.axes.x1.coord.yPx * this.canvas.scale
@@ -46,7 +60,7 @@ export default Vue.extend({
         top: styleTopNum + 'px',
       }
     },
-    line2Style() {
+    X1Y1VerticalLineStyle() {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
       const styleLeftNum = this.axes.x1.coordIsFilled
         ? this.axes.x1.coord.xPx * this.canvas.scale
@@ -60,7 +74,7 @@ export default Vue.extend({
       }
     },
 
-    line3Style() {
+    X2Y2HorizontalLineStyle() {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
       const styleTopNum = this.axes.x2y2.coordIsFilled
         ? this.axes.x2y2.coord.yPx * this.canvas.scale
@@ -73,7 +87,7 @@ export default Vue.extend({
         top: styleTopNum + 'px',
       }
     },
-    line4Style() {
+    X2Y2VerticalLineStyle() {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
       const styleLeftNum = this.axes.x2y2.coordIsFilled
         ? this.axes.x2y2.coord.xPx * this.canvas.scale
