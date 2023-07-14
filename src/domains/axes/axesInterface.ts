@@ -15,7 +15,7 @@ export interface AxesInterface {
   xIsLog: boolean
   yIsLog: boolean
   activeAxisName: string
-  defineMode: string // INFO: {'0': '2Points', '1': '4Points'}
+  pointMode: number // INFO: {0: '2Points', 1: '4Points'}
   isAdjusting: boolean
 
   get hasAtLeastOneAxis(): boolean

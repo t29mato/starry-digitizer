@@ -87,7 +87,7 @@ export default Vue.extend({
       if (this.axes.nextAxis?.name.includes('y')) {
         return this.axes.nextAxis.name
       }
-      if (this.axes.nextAxis?.name === 'x1' && this.axes.defineMode === '0') {
+      if (this.axes.nextAxis?.name === 'x1' && this.axes.pointMode === 0) {
         return 'y1'
       }
 

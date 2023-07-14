@@ -11,7 +11,7 @@ export class Axes implements AxesInterface {
   xIsLog = false
   yIsLog = false
   activeAxisName = ''
-  defineMode = '0' // INFO: {'0': '2Points', '1': '4Points'}
+  pointMode = 0 // INFO: {0: '2Points', 1: '4Points'}
   isAdjusting = false
 
   constructor(
@@ -73,7 +73,7 @@ export class Axes implements AxesInterface {
 
   get nextAxis(): AxisInterface | null {
     //INFO: 以下の条件の時はx2,y2を同時に定義するモードに入る
-    if (this.defineMode === '0' && this.hasOnlyX1Y1Axes) {
+    if (this.pointMode === 0 && this.hasOnlyX1Y1Axes) {
       return this.x2y2
     }
 
@@ -163,7 +163,7 @@ export class Axes implements AxesInterface {
     this.activeAxisName = this.nextAxis.name
 
     //INFO: a. 2点定義モードで、、x1を定義する時は同時にy1を定義して終了する
-    if (this.activeAxisName === 'x1' && this.defineMode === '0') {
+    if (this.activeAxisName === 'x1' && this.pointMode === 0) {
       this.x1.coord = Object.assign(coord)
       this.y1.coord = Object.assign(coord)
       return

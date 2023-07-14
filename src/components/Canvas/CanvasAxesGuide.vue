@@ -42,7 +42,7 @@ export default Vue.extend({
     ...axesMapper.mapGetters(['axes']),
     ...canvasMapper.mapGetters(['canvas']),
     isActive() {
-      return this.axes.defineMode === '0'
+      return this.axes.pointMode === 0
     },
     isX1Y1LineVisible() {
       return this.axes.x1.coordIsFilled || this.canvas.scaledCursor.xPx !== 0
