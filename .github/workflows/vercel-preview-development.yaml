@@ -67,10 +67,11 @@ jobs:
       - name: Notify Slack
         uses: rtCamp/action-slack-notify@v2.1.0
         with:
-          status: ${{ job.status }}
           text: |
             The Vercel preview deployment is complete.
             URL: ${{ steps.deploy.outputs.url }}
             Found deployment url: ${{ env.VERCEL_DEPLOYMENT_URL }}
         env:
           SLACK_WEBHOOK: ${{ secrets.DIGITIZER_DEV_SLACK_WEBHOOK }}
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: "Commit message: ${{ github.event.head_commit.message }}\nVercel preview URL: ${{ env.VERCEL_DEPLOYMENT_URL }}, ${{ steps.deploy.outputs.url }}"
