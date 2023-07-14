@@ -74,4 +74,4 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.DIGITIZER_DEV_SLACK_WEBHOOK }}
           SLACK_COLOR: ${{ job.status }}
-          SLACK_MESSAGE: "Commit message: ${{ github.event.head_commit.message }}\nVercel preview URL: ${{ env.VERCEL_DEPLOYMENT_URL }}, ${{ steps.deploy.outputs.url }}"
+          SLACK_MESSAGE: "Commit message: ${{ github.event.head_commit.message }}\nVercel preview URL: ${{ env }}, ${{ steps.deploy.deploy }}"
