@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 16
           cache: 'yarn'
-      - name: install npm packages
+      - name: Install npm packages
         run: yarn
       - name: Unit test
         run: yarn test
@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: 16
           cache: 'yarn'
-      - name: install npm packages
+      - name: Install npm packages
         run: yarn
       - name: Cypress run
         uses: cypress-io/github-action@v4
@@ -62,4 +62,14 @@ jobs:
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
+        id: deploy
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Notify Slack
+        uses: rtCamp/action-slack-notify@v2.1.0
+        with:
+          status: ${{ job.status }}
+          text: |
+            The Vercel preview deployment is complete.
+            URL: ${{ steps.deploy.outputs.url }}
+        env:
+          SLACK_WEBHOOK: ${{ secrets.DIGITIZER_DEV_SLACK_WEBHOOK }}
