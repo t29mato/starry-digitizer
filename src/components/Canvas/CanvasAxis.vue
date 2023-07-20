@@ -97,6 +97,14 @@ export default Vue.extend({
       return 0
     },
     isActive(): boolean {
+      if (
+        this.axes.pointMode === 0 &&
+        this.axes.activeAxisName === 'x1' &&
+        this.axis.name === 'y1'
+      ) {
+        return true
+      }
+
       return this.axes.activeAxisName === this.axis.name
     },
   },
