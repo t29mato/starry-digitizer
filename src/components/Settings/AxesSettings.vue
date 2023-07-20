@@ -153,10 +153,16 @@
     </v-simple-table>
     <div class="mb-5">
       <h5>Define the axes by the coordinates of:</h5>
-      <v-radio-group row v-model.number="axes.pointMode">
+      <v-radio-group row v-model.number="axes.pointMode" hide-details>
         <v-radio label="2 Points" :value="0"></v-radio>
         <v-radio label="4 Points" :value="1"></v-radio>
       </v-radio-group>
+      <v-checkbox
+        v-if="axes.pointMode === 1"
+        v-model="axes.considerGraphTilt"
+        label="Consider graph tilt"
+        dense
+      ></v-checkbox>
     </div>
 
     <p class="red--text">{{ errorMessage }}</p>

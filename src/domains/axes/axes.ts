@@ -12,6 +12,7 @@ export class Axes implements AxesInterface {
   yIsLog = false
   activeAxisName = ''
   pointMode = 0 // INFO: {0: '2Points', 1: '4Points'}
+  considerGraphTilt = false
   isAdjusting = false
 
   constructor(

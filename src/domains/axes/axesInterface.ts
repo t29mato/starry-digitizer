@@ -16,6 +16,7 @@ export interface AxesInterface {
   yIsLog: boolean
   activeAxisName: string
   pointMode: number // INFO: {0: '2Points', 1: '4Points'}
+  considerGraphTilt: boolean
   isAdjusting: boolean
 
   get hasAtLeastOneAxis(): boolean
