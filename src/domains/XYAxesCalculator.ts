@@ -50,7 +50,7 @@ export default class XYAxesCalculator {
       const xcd = xd - xc
       const ycd = yd - yc
       const r = ((yt - ya) * xcd - (xt - xa) * ycd) / (yab * xcd - xab * ycd)
-      const s = ((yt - ya) * xab - (xt - xa) * yab) / (ycd * xab - xcd * yab)
+      const s = ((yt - yc) * xab - (xt - xc) * yab) / (ycd * xab - xcd * yab)
       xp = xa + r * xab
       yq = yc + s * ycd
     }
