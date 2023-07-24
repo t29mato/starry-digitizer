@@ -76,20 +76,24 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
-$_sidebarWidth: 300px;
+$_sidebarLeftWidth: 240px;
+$_sidebarRightWidth: 300px;
 .wrapper {
   display: flex;
 }
 
 .sidebar {
-  &_left,
+  &_left {
+    width: $_sidebarLeftWidth;
+  }
+
   &_right {
-    width: $_sidebarWidth;
+    width: $_sidebarRightWidth;
   }
 }
 
 .main-area {
   margin: 0 20px;
-  width: calc(100% - #{$_sidebarWidth} * 2);
+  width: calc(100% - (#{$_sidebarLeftWidth} + #{$_sidebarRightWidth}));
 }
 </style>
