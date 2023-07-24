@@ -6,7 +6,7 @@
       'user-drag': 'none',
       outline: 'solid 1px grey',
       overflow: 'auto',
-      'max-height': '87vh',
+      'max-height': '80vh',
     }"
     id="canvasWrapper"
     @click="plot"
