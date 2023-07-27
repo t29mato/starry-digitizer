@@ -1,0 +1,28 @@
+//vuetifyで実現できないスタイルのみ書く。必要最低限で
+
+@import './variables/main.scss';
+
+* {
+  box-sizing: border-box;
+}
+
+//c is the abbreviation of 'customized'
+.c {
+  &__wrapper {
+    display: flex;
+  }
+
+  &__left-sidebar {
+    width: $l_leftSidebarWidth;
+  }
+
+  &__right-sidebar {
+    width: $l_rightSidebarWidth;
+  }
+
+  &__main-area {
+    margin: 0 $l_mainAreaSideMargin;
+    width: calc(100% - (#{$l_leftSidebarWidth} + #{$l_rightSidebarWidth} + (#{$l_mainAreaSideMargin * 2})));
+  }
+}
+

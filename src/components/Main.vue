@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
-    <v-row>
-      <v-col class="pr-0 pt-1 pl-1" style="max-width: 240px">
+    <div class="c__wrapper">
+      <div class="c__left-sidebar">
         <image-settings></image-settings>
         <axes-settings></axes-settings>
         <dataset-manager
@@ -9,21 +9,21 @@
           :exportBtnClick="exportBtnClick"
         ></dataset-manager>
         <data-table />
-      </v-col>
-      <v-col class="pt-1 pl-2 pr-0">
+      </div>
+      <div class="c__main-area">
         <canvas-header></canvas-header>
         <canvas-main :imagePath="initialGraphImagePath"></canvas-main>
         <canvas-footer></canvas-footer>
-      </v-col>
-      <v-col class="pt-1 pr-1" style="max-width: 300px">
+      </div>
+      <div class="c__right-sidebar">
         <!-- TODO: 有効数字を追加する -->
         <magnifier-main></magnifier-main>
         <extractor-settings
           :initialExtractorStrategy="initialExtractorStrategy"
         ></extractor-settings>
         <p class="text-caption text-right">v{{ version }}</p>
-      </v-col>
-    </v-row>
+      </div>
+    </div>
   </v-container>
 </template>
 
