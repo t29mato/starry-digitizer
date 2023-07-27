@@ -33,6 +33,7 @@
       }"
       id="maskCanvas"
     ></canvas>
+    <canvas-axes-guide></canvas-axes-guide>
     <canvas-axes></canvas-axes>
     <canvas-plots></canvas-plots>
     <canvas-cursor></canvas-cursor>
@@ -44,10 +45,10 @@ import Vue from 'vue'
 import { canvasMapper } from '@/store/modules/canvas'
 import { axesMapper } from '@/store/modules/axes'
 import { datasetMapper } from '@/store/modules/dataset'
-import { CanvasAxes, CanvasPlots, CanvasCursor } from '.'
+import { CanvasAxes, CanvasPlots, CanvasCursor, CanvasAxesGuide } from '.'
 import { extractorMapper } from '@/store/modules/extractor'
 import { Vector } from '@/domains/axes/axesInterface'
-
+import { Coord } from '@/domains/datasetInterface'
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 
@@ -56,6 +57,7 @@ export default Vue.extend({
     CanvasAxes,
     CanvasPlots,
     CanvasCursor,
+    CanvasAxesGuide,
   },
   props: {
     imagePath: String,
@@ -150,6 +152,11 @@ export default Vue.extend({
         return
       }
     },
+    mouseDrag(coord: Coord) {
+      // TODO: 呼び出すメソッドはCanvasに移譲したい
+      // TODO: mouseDragOnCanvasにリネーム？
+      this.mouseMoveOnCanvas(coord)
+    },
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
       const target = e.target as HTMLElement
@@ -163,11 +170,9 @@ export default Vue.extend({
       })
       // INFO: 左クリックされていない状態
       const isClicking = e.buttons === 1
-      if (!isClicking) {
-        return
+      if (isClicking) {
+        this.mouseDrag({ xPx, yPx })
       }
-      // TODO: 呼び出すメソッドはCanvasに移譲したい
-      this.mouseMoveOnCanvas({ xPx, yPx })
     },
     mouseDown(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる

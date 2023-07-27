@@ -77,6 +77,7 @@ describe('XYAxesCalculator', () => {
     expect(result.yV).toBe('5.5e+0')
   })
 
+
   // INFO: fix the following issue https://github.com/t29mato/starry-digitizer/issues/17
   it('should calculate XY values correctly without graph tilt from Saito-san case', () => {
     const plot = { id: 1, xPx: 436.3524590163934, yPx: 192.08879781420765 }

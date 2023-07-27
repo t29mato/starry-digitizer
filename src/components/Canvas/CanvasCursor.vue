@@ -72,18 +72,25 @@ export default Vue.extend({
       return ''
     },
     bottomLabel(): string {
+      if (this.axes.nextAxis?.name === 'x2y2') {
+        return "x2'"
+      }
       if (this.axes.nextAxis?.name.includes('x')) {
         return this.axes.nextAxis.name
       }
       return ''
     },
     leftLabel(): string {
+      if (this.axes.nextAxis?.name === 'x2y2') {
+        return "y2'"
+      }
       if (this.axes.nextAxis?.name.includes('y')) {
         return this.axes.nextAxis.name
       }
-      if (this.axes.nextAxis?.name === 'x1' && this.axes.x1IsSameAsY1) {
+      if (this.axes.nextAxis?.name === 'x1' && this.axes.pointMode === 0) {
         return 'y1'
       }
+
       return ''
     },
   },

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="axis.coord">
+  <div v-if="axis.coordIsFilled">
     <div
       :style="{
         position: 'absolute',
@@ -24,6 +24,7 @@
       ></div>
     </div>
     <span
+      v-if="axis.name !== 'x2y2'"
       :style="{
         position: 'absolute',
         top: `${labelTop}px`,
@@ -96,13 +97,14 @@ export default Vue.extend({
       return 0
     },
     isActive(): boolean {
-      if (this.axes.x1IsSameAsY1) {
-        if (this.axes.activeAxisName === 'x1') {
-          if (this.axis.name === 'y1') {
-            return true
-          }
-        }
+      if (
+        this.axes.pointMode === 0 &&
+        this.axes.activeAxisName === 'x1' &&
+        this.axis.name === 'y1'
+      ) {
+        return true
       }
+
       return this.axes.activeAxisName === this.axis.name
     },
   },
