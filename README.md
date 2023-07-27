@@ -73,6 +73,18 @@ yarn lint
 - [TypeScript Deep Dive](https://basarat.gitbook.io/typescript/)
 - [Vue.js official style guide](https://v2.vuejs.org/v2/style-guide/index.html)
 
+## Coding Rules
+### SCSS
+- As a general rule, use the styles built into Vuetify, and write SCSS in /src/styles/* **only when necessary**.
+- All class names must be prefixed with "c" (the abbreviation of "customized") to clarify it's not the styles built into Vuetify.
+- Use BEM(https://en.bem.info/methodology/css/) as the naming convention.
+- For example:
+```html
+<div class="c__main">
+  <h2 class="c__main__title">This is a title</h2>
+</div>
+```
+
 ## Contributing
 1. Fork it (`git clone https://github.com/t29mato/starry-digitizer.git`)
 2. Create your feature branch (`git checkout -b your-new-feature`)
