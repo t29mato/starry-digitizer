@@ -11,9 +11,9 @@
     <!-- <v-btn class="ml-2" small :disabled="!axes.hasXAxis" @click="clearXAxis">
       Clear X Axis</v-btn
     > -->
-    <v-btn class="ml-2" small :disabled="!axes.hasYAxis" @click="clearYAxis">
+    <!-- <v-btn class="ml-2" small :disabled="!axes.hasYAxis" @click="clearYAxis">
       Clear Y Axis</v-btn
-    >
+    > -->
     <v-btn
       small
       class="ml-2"

@@ -8,6 +8,7 @@ export class Axis implements AxisInterface {
     xPx: -999,
     yPx: -999,
   }
+
   constructor(name: string, value: number, coord?: Coord) {
     this.name = name
     this.value = value
