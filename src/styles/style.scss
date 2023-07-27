@@ -1,0 +1,22 @@
+//vuetifyで実現できないスタイルのみ書く。必要最低限で
+
+@import './variables/main.scss';
+
+.wrapper {
+  display: flex;
+}
+
+.sidebar {
+  &_left {
+    width: $_sidebarLeftWidth;
+  }
+
+  &_right {
+    width: $_sidebarRightWidth;
+  }
+}
+
+.main-area {
+  margin: 0 20px;
+  width: calc(100% - (#{$_sidebarLeftWidth} + #{$_sidebarRightWidth}));
+}
