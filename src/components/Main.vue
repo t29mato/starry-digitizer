@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
-    <div class="wrapper">
-      <div class="sidebar_left">
+    <div class="c__wrapper">
+      <div class="c__left-sidebar">
         <image-settings></image-settings>
         <axes-settings></axes-settings>
         <dataset-manager
@@ -10,12 +10,12 @@
         ></dataset-manager>
         <data-table />
       </div>
-      <div class="main-area">
+      <div class="c__main-area">
         <canvas-header></canvas-header>
         <canvas-main :imagePath="initialGraphImagePath"></canvas-main>
         <canvas-footer></canvas-footer>
       </div>
-      <div class="sidebar_right">
+      <div class="c__right-sidebar">
         <!-- TODO: 有効数字を追加する -->
         <magnifier-main></magnifier-main>
         <extractor-settings
