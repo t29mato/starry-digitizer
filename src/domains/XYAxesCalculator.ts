@@ -44,13 +44,13 @@ export default class XYAxesCalculator {
     ]
     let xp = xt
     let yq = yt
-    if (this.#axes.considerGraphTilt) {
+    if (this.#axes.pointMode === 1 && this.#axes.considerGraphTilt) {
       const xab = xb - xa
       const yab = yb - ya
       const xcd = xd - xc
       const ycd = yd - yc
       const r = ((yt - ya) * xcd - (xt - xa) * ycd) / (yab * xcd - xab * ycd)
-      const s = ((yt - ya) * xab - (xt - xa) * yab) / (ycd * xab - xcd * yab)
+      const s = ((yt - yc) * xab - (xt - xc) * yab) / (ycd * xab - xcd * yab)
       xp = xa + r * xab
       yq = yc + s * ycd
     }

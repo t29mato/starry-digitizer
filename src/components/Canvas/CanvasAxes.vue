@@ -4,6 +4,7 @@
     <canvas-axis :axis="axes.x2"></canvas-axis>
     <canvas-axis :axis="axes.y1"></canvas-axis>
     <canvas-axis :axis="axes.y2"></canvas-axis>
+    <canvas-axis :axis="axes.x2y2"></canvas-axis>
   </div>
 </template>
 

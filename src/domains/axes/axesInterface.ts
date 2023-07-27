@@ -15,7 +15,7 @@ export interface AxesInterface {
   xIsLog: boolean
   yIsLog: boolean
   activeAxisName: string
-  x1IsSameAsY1: boolean
+  pointMode: number // INFO: {0: '2Points', 1: '4Points'}
   considerGraphTilt: boolean
   isAdjusting: boolean
 

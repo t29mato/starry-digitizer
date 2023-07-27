@@ -16,6 +16,10 @@
       :axis="axes.y2"
       :isActive="axes.activeAxisName === 'y2'"
     ></magnifier-axis>
+    <magnifier-axis
+      :axis="axes.x2y2"
+      :isActive="axes.activeAxisName === 'x2y2'"
+    ></magnifier-axis>
   </div>
 </template>
 

@@ -9,7 +9,8 @@ class state {
     new Axis('x1', 0),
     new Axis('x2', 1),
     new Axis('y1', 0),
-    new Axis('y2', 1)
+    new Axis('y2', 1),
+    new Axis('x2y2', -1)
   )
 }
 
@@ -59,9 +60,6 @@ class actions extends Actions<state, getters> {
   }
   inactivateAxis() {
     this.state.axes.inactivateAxis()
-  }
-  setX1IsSameAsY1(x1IsSameAsY1: boolean) {
-    this.state.axes.x1IsSameAsY1 = x1IsSameAsY1
   }
 }
 
