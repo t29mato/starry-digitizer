@@ -26,10 +26,10 @@
           background: isActive ? 'red' : 'dodgerblue',
         }"
       >
-        <div v-if="axis.name.includes('x')">
+        <div v-if="axis.name.includes('x') && axis.name !== 'x2y2'">
           <magnifier-axis-label-x :label="axis.name" />
         </div>
-        <div v-if="axis.name.includes('y')">
+        <div v-if="axis.name.includes('y') && axis.name !== 'x2y2'">
           <magnifier-axis-label-y :label="axis.name" />
         </div>
       </div>
