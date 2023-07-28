@@ -21,7 +21,10 @@
         <extractor-settings
           :initialExtractorStrategy="initialExtractorStrategy"
         ></extractor-settings>
-        <p class="text-caption text-right">v{{ version }}</p>
+        <p class="text-caption text-right">
+          <!-- INFO: vバージョン#actionsのビルド番号 -->
+          v{{ version }}#{{ githubRunNumber }}
+        </p>
       </div>
     </div>
   </v-container>
@@ -50,7 +53,6 @@ export default Vue.extend({
     ExtractorSettings,
     ImageSettings,
   },
-  computed: {},
   props: {
     // should be imported by require function
     initialGraphImagePath: {
@@ -70,6 +72,7 @@ export default Vue.extend({
   data() {
     return {
       version,
+      githubRunNumber: process.env.VUE_APP_GITHUB_RUN_NUMBER,
     }
   },
 })

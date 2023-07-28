@@ -22,7 +22,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "lint": "vue-cli-service lint",
-    "ssg-build": "vue-cli-service build",
+    "ssg-build": "cross-env VUE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vue-cli-service build",
     "prebuild": "rimraf ./dist",
     "build": "cross-env NODE_ENV=production rollup --config build/rollup.config.js",
     "build:ssr": "cross-env NODE_ENV=production rollup --config build/rollup.config.js --format cjs",
