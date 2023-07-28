@@ -22,7 +22,7 @@
           :initialExtractorStrategy="initialExtractorStrategy"
         ></extractor-settings>
         <p class="text-caption text-right">v{{ version }}</p>
-        <p v-if="isDev" class="text-caption text-right">
+        <p class="text-caption text-right">
           {{ githubRunNumber }}
         </p>
       </div>
@@ -52,11 +52,6 @@ export default Vue.extend({
     DatasetManager,
     ExtractorSettings,
     ImageSettings,
-  },
-  computed: {
-    isDev() {
-      return process.env.NODE_ENV === 'development'
-    },
   },
   props: {
     // should be imported by require function
