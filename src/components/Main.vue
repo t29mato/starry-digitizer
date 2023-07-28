@@ -23,7 +23,7 @@
         ></extractor-settings>
         <p class="text-caption text-right">v{{ version }}</p>
         <p v-if="isDev" class="text-caption text-right">
-          {{ gitCommitHash }}
+          {{ githubRunNumber }}
         </p>
       </div>
     </div>
@@ -77,7 +77,7 @@ export default Vue.extend({
   data() {
     return {
       version,
-      gitCommitHash: process.env.GIT_COMMIT_HASH,
+      githubRunNumber: process.env.VUE_APP_GITHUB_RUN_NUMBER,
     }
   },
 })
