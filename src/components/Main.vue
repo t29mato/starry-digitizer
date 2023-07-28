@@ -21,9 +21,9 @@
         <extractor-settings
           :initialExtractorStrategy="initialExtractorStrategy"
         ></extractor-settings>
-        <p class="text-caption text-right">v{{ version }}</p>
         <p class="text-caption text-right">
-          {{ githubRunNumber }}
+          <!-- INFO: vバージョン#actionsのビルド番号 -->
+          v{{ version }}#{{ githubRunNumber }}
         </p>
       </div>
     </div>
