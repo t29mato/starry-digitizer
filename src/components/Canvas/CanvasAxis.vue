@@ -81,7 +81,6 @@ export default Vue.extend({
     labelLeft(): number {
       if (this.axis.name.includes('x')) {
         return this.xPx - this.axisCrossCursorPx / 2
-<<<<<<< HEAD
       }
       if (this.axis.name.includes('y')) {
         return this.xPx - this.axisCrossCursorPx * 2
@@ -95,21 +94,6 @@ export default Vue.extend({
       if (this.axis.name.includes('y')) {
         return this.yPx - this.axisCrossCursorPx
       }
-=======
-      }
-      if (this.axis.name.includes('y')) {
-        return this.xPx - this.axisCrossCursorPx * 2
-      }
-      return 0
-    },
-    labelTop(): number {
-      if (this.axis.name.includes('x')) {
-        return this.yPx + this.axisCrossCursorPx / 2
-      }
-      if (this.axis.name.includes('y')) {
-        return this.yPx - this.axisCrossCursorPx
-      }
->>>>>>> origin/main
       return 0
     },
     isActive(): boolean {
