@@ -53,6 +53,7 @@ export default Vue.extend({
     ExtractorSettings,
     ImageSettings,
   },
+  computed: {},
   props: {
     // should be imported by require function
     initialGraphImagePath: {

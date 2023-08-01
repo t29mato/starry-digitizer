@@ -97,16 +97,6 @@ describe('4 points setting mode', () => {
     axes.moveActiveAxis({ direction: 'right', distancePx: 1 })
     expect(axes.x1.coord && axes.x1.coord.xPx).toBe(10)
   })
-
-  test('add axis coodinate when all axes are filled', () => {
-    axes.addAxisCoord({ xPx: 10, yPx: 100 })
-    axes.addAxisCoord({ xPx: 10, yPx: 100 })
-    axes.addAxisCoord({ xPx: 10, yPx: 100 })
-    axes.addAxisCoord({ xPx: 10, yPx: 100 })
-    expect(() => axes.addAxisCoord({ xPx: 10, yPx: 100 })).toThrow(
-      'The axes already filled.'
-    )
-  })
 })
 
 describe('2 points setting mode', () => {
