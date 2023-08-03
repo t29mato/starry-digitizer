@@ -1,26 +1,10 @@
 <!-- 軸定義の際のガイド -->
 <template>
   <div v-if="isActive" class="axes-guide">
-    <div
-      v-if="isX1Y1LineVisible"
-      class="axes-guide_line_x1y1_horizontal"
-      :style="X1Y1HorizontalLineStyle"
-    ></div>
-    <div
-      v-if="isX1Y1LineVisible"
-      class="axes-guide_line_x1y1_vertical"
-      :style="X1Y1VerticalLineStyle"
-    ></div>
-    <div
-      v-if="isX2Y2LineVisible"
-      class="axes-guide_line_x2y2_horizontal"
-      :style="X2Y2HorizontalLineStyle"
-    ></div>
-    <div
-      v-if="isX2Y2LineVisible"
-      class="axes-guide_line_x2y2_horizontal"
-      :style="X2Y2VerticalLineStyle"
-    ></div>
+    <div v-if="isX1Y1LineVisible" :style="X1Y1HorizontalLineStyle"></div>
+    <div v-if="isX1Y1LineVisible" :style="X1Y1VerticalLineStyle"></div>
+    <div v-if="isX2Y2LineVisible" :style="X2Y2HorizontalLineStyle"></div>
+    <div v-if="isX2Y2LineVisible" :style="X2Y2VerticalLineStyle"></div>
   </div>
 </template>
 
