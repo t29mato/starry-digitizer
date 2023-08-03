@@ -36,6 +36,10 @@
     >
       {{ leftLabel }}
     </div>
+    <!-- INFO: Horizontal Guide Line -->
+    <div :style="horizontalGuideLineStyle"></div>
+    <!-- INFO: Vertical Guide Line -->
+    <div :style="verticalGuideLineStyle"></div>
   </div>
 </template>
 
@@ -45,6 +49,13 @@ import { canvasMapper } from '@/store/modules/canvas'
 import { datasetMapper } from '@/store/modules/dataset'
 import { styleMapper } from '@/store/modules/style'
 import Vue from 'vue'
+
+const guideLineBaseStyles = {
+  position: 'absolute',
+  pointerEvents: 'none',
+  opacity: '0.8',
+}
+
 export default Vue.extend({
   props: {},
   computed: {
@@ -92,6 +103,46 @@ export default Vue.extend({
       }
 
       return ''
+    },
+    guideLineColor(): string {
+      if (this.canvas.manualMode === -1) {
+        return '#00ff00'
+      }
+
+      if (this.canvas.manualMode === 0) {
+        return '#ffcc00'
+      }
+
+      return '#00ff00'
+    },
+    horizontalGuideLineStyle(): object {
+      return {
+        ...guideLineBaseStyles,
+        width: `${this.getImageCanvasSize().w}px`,
+        height: '1px',
+        top: `${this.canvas.scaledCursor.yPx}px`,
+        backgroundColor: this.guideLineColor,
+      }
+    },
+    verticalGuideLineStyle(): object {
+      return {
+        ...guideLineBaseStyles,
+        width: '1px',
+        top: 0,
+        height: `${this.getImageCanvasSize().h}px`,
+        left: `${this.canvas.scaledCursor.xPx}px`,
+        backgroundColor: this.guideLineColor,
+      }
+    },
+  },
+  methods: {
+    //INFO: computedではリアクティブにならなかったのでmethodとしている
+    getImageCanvasSize(): { w: number; h: number } {
+      const imageCanvas = document.getElementById('imageCanvas')
+
+      if (!imageCanvas) return { w: 0, h: 0 }
+
+      return { w: imageCanvas.clientWidth, h: imageCanvas.clientHeight }
     },
   },
 })
