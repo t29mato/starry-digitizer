@@ -45,10 +45,10 @@ export default Vue.extend({
       return this.axes.pointMode === 0
     },
     isX1Y1LineVisible() {
-      return this.axes.x1.coordIsFilled || this.canvas.scaledCursor.xPx !== 0
+      return this.axes.x1.coordIsFilled
     },
     isX2Y2LineVisible() {
-      return this.axes.x1.coordIsFilled
+      return this.axes.x2.coordIsFilled
     },
     X1Y1HorizontalLineStyle() {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
