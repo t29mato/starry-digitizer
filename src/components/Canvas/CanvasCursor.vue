@@ -36,10 +36,12 @@
     >
       {{ leftLabel }}
     </div>
-    <!-- INFO: Horizontal Guide Line -->
-    <div :style="horizontalGuideLineStyle"></div>
-    <!-- INFO: Vertical Guide Line -->
-    <div :style="verticalGuideLineStyle"></div>
+    <div v-if="isGuideLinesActive">
+      <!-- INFO: Horizontal Guide Line -->
+      <div :style="horizontalGuideLineStyle"></div>
+      <!-- INFO: Vertical Guide Line -->
+      <div :style="verticalGuideLineStyle"></div>
+    </div>
   </div>
 </template>
 
@@ -103,6 +105,9 @@ export default Vue.extend({
       }
 
       return ''
+    },
+    isGuideLinesActive(): boolean {
+      return this.canvas.manualMode === -1 || this.canvas.manualMode === 0
     },
     guideLineColor(): string {
       if (this.canvas.manualMode === -1) {
