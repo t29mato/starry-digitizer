@@ -36,7 +36,7 @@
     >
       {{ leftLabel }}
     </div>
-    <div v-if="isGuideLinesActive">
+    <div v-if="isCursorGuideLinesActive">
       <!-- INFO: Horizontal Guide Line -->
       <div :style="horizontalGuideLineStyle"></div>
       <!-- INFO: Vertical Guide Line -->
@@ -106,7 +106,7 @@ export default Vue.extend({
 
       return ''
     },
-    isGuideLinesActive(): boolean {
+    isCursorGuideLinesActive(): boolean {
       return this.canvas.manualMode === -1 || this.canvas.manualMode === 0
     },
     guideLineColor(): string {
