@@ -120,7 +120,7 @@ export default Vue.extend({
 
       return '#00ff00'
     },
-    horizontalGuideLineStyle(): object {
+    horizontalGuideLineStyle(): Partial<CSSStyleDeclaration> {
       return {
         ...guideLineBaseStyles,
         width: `${this.getImageCanvasSize().w}px`,
@@ -129,11 +129,11 @@ export default Vue.extend({
         backgroundColor: this.guideLineColor,
       }
     },
-    verticalGuideLineStyle(): object {
+    verticalGuideLineStyle(): Partial<CSSStyleDeclaration> {
       return {
         ...guideLineBaseStyles,
         width: '1px',
-        top: 0,
+        top: '0',
         height: `${this.getImageCanvasSize().h}px`,
         left: `${this.canvas.scaledCursor.xPx}px`,
         backgroundColor: this.guideLineColor,
