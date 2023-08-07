@@ -107,7 +107,11 @@ export default Vue.extend({
       return ''
     },
     isCursorGuideLinesActive(): boolean {
-      return this.canvas.manualMode === -1 || this.canvas.manualMode === 0
+      //INFO: 軸定義又はプロットのAddモードであり、マスク操作中でない場合に補助線を表示
+      return (
+        (this.canvas.manualMode === -1 || this.canvas.manualMode === 0) &&
+        this.canvas.maskMode === -1
+      )
     },
     guideLineColor(): string {
       if (this.canvas.manualMode === -1) {
