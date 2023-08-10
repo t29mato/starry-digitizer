@@ -1,4 +1,26 @@
 <template>
+  <div>{{ text }}</div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      text: 'hello world',
+    }
+  },
+  methods: {
+    // increment(): void {
+    //   this.count++
+    // },
+    // decrement(): void {
+    //   this.count--
+    // },
+  },
+}
+</script>
+
+<!-- <template>
   <v-app>
     <v-main>
       <Main
@@ -34,7 +56,7 @@ import Vue from 'vue'
 import * as Sentry from '@sentry/vue'
 import { Integrations } from '@sentry/tracing'
 
-import Main from './components/Main.vue'
+// import Main from './components/Main.vue'
 import { version } from '../package.json'
 
 if (process.env.NODE_ENV === 'production') {
@@ -97,4 +119,4 @@ export default Vue.extend({
     },
   },
 })
-</script>
+</script> -->
