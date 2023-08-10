@@ -72,7 +72,7 @@ export default Vue.extend({
   data() {
     return {
       version,
-      githubRunNumber: process.env.VUE_APP_GITHUB_RUN_NUMBER,
+      githubRunNumber: process.env.VITE_GITHUB_RUN_NUMBER,
     }
   },
 })
