@@ -1,5 +1,9 @@
 <template>
-  <div>{{ text }}</div>
+  <div>
+    {{ text }}
+
+    <v-btn> Button </v-btn>
+  </div>
 </template>
 
 <script>

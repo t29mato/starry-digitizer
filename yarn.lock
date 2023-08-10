@@ -13847,12 +13847,14 @@ sass@^1.18.0:
     immutable "^4.0.0"
     source-map-js ">=0.6.2 <2.0.0"
 
-sass@~1.32.0:
-  version "1.32.13"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.32.13.tgz#8d29c849e625a415bce71609c7cf95e15f74ed00"
-  integrity sha512-dEgI9nShraqP7cXQH+lEXVf73WOPCse0QlFzSD8k+1TcOxCMwVXfQlr0jtoluZysQOyJGnfr21dLvYKDJq8HkA==
+sass@^1.65.1:
+  version "1.65.1"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.65.1.tgz#8f283b0c26335a88246a448d22e1342ba2ea1432"
+  integrity sha512-9DINwtHmA41SEd36eVPQ9BJKpn7eKDQmUHmpI0y5Zv2Rcorrh0zS+cFrt050hdNbmmCNKTW3hV5mWfuegNRsEA==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
+    immutable "^4.0.0"
+    source-map-js ">=0.6.2 <2.0.0"
 
 sax@~1.2.4:
   version "1.2.4"
@@ -15889,10 +15891,10 @@ vuetify-loader@^1.4.3:
     file-loader "^6.2.0"
     loader-utils "^2.0.0"
 
-vuetify@^2.7.0:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-2.7.0.tgz#a2c999da30072a62a2d577f0aafd996b276cc149"
-  integrity sha512-eDb+lbtB9e+FRbOPIIyXwgwgc2M6gvhHkhSgggzM0hmKh1XM34YStZbM865viH0AfpxGZIOsRcs0S+OtdyOB+Q==
+vuetify@^3.3.12:
+  version "3.3.12"
+  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.3.12.tgz#6c573dcd85d6ffbd9fd252a83ad35092b2f6ee8a"
+  integrity sha512-mH3CF+ALM1sC0Zm91IPq5b+bummrHH/Ek9jwYrQ0+fOAoJWd9nUcOIHODTPY+PODJDbJTwF6b3wVTDwqzUgTgQ==
 
 vuex-smart-module@0.5.0:
   version "0.5.0"
