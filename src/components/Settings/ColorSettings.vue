@@ -10,25 +10,25 @@
             :value="extractor.colorPicker"
             @input="inputColorPicker"
           />
-          <v-icon small>mdi-palette</v-icon>
+          <v-icon size="small">mdi-palette</v-icon>
         </label>
       </v-col>
       <v-col cols="8">
         <v-text-field
-          :value="extractor.colorDistancePct"
-          @input="inputColorDistancePct"
+          :model-value="extractor.colorDistancePct"
+          @update:model-value="inputColorDistancePct"
           label="Color Diff. (%)"
           type="number"
           :error="colorDistancePctErrorMsg.length > 0"
           :error-messages="colorDistancePctErrorMsg"
-          dense
+          density="compact"
         >
         </v-text-field>
       </v-col>
     </v-row>
     <v-color-picker
-      :value="extractor.colorPicker"
-      @input="setColorPicker"
+      :model-value="extractor.colorPicker"
+      @update:model-value="setColorPicker"
       hide-canvas
       hide-inputs
       show-swatches
@@ -39,37 +39,39 @@
 </template>
 
 <script lang="ts">
-import { extractorMapper } from '@/store/modules/extractor'
-import Vue from 'vue'
-export default Vue.extend({
-  data() {
-    return {
-      colorDistancePctErrorMsg: '',
+import { ref } from 'vue'
+import { useExtractorStore } from '@/store/modules/extractor'
+export default {
+  setup() {
+    const { extractor } = useExtractorStore()
+    const colorDistancePctErrorMsg = ref('')
+
+    const inputColorPicker = (value: string) => {
+      const { setColorPicker } = useExtractorStore()
+      setColorPicker(value)
     }
-  },
-  computed: {
-    ...extractorMapper.mapGetters(['extractor']),
-  },
-  props: {},
-  methods: {
-    ...extractorMapper.mapActions(['setColorPicker', 'setColorDistancePct']),
-    inputColorPicker(value: any) {
-      console.log(value)
-      this.setColorPicker(value.target.value)
-    },
-    inputColorDistancePct(inputValue: string) {
+
+    const inputColorDistancePct = (inputValue: string) => {
       const distance = parseInt(inputValue)
-      this.colorDistancePctErrorMsg = ''
+      const { setColorDistancePct } = useExtractorStore()
+      colorDistancePctErrorMsg.value = '' // Use .value to update ref
       if (distance < 1) {
-        this.colorDistancePctErrorMsg =
+        colorDistancePctErrorMsg.value =
           'The Color Difference(%) is supposed to be larger than 1%.'
       }
-      if (100 <= distance) {
-        this.colorDistancePctErrorMsg =
+      if (distance >= 100) {
+        colorDistancePctErrorMsg.value =
           'The Color Difference(%) is supposed to be smaller than 100%'
       }
-      this.setColorDistancePct(distance)
-    },
+      setColorDistancePct(distance)
+    }
+
+    return {
+      extractor,
+      colorDistancePctErrorMsg, // Use ref here
+      inputColorPicker,
+      inputColorDistancePct,
+    }
   },
-})
+}
 </script>

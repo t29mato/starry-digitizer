@@ -24,18 +24,22 @@
 </template>
 
 <script lang="ts">
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
+import { useAxesStore } from '@/store/modules/axes'
+import { useCanvasStore } from '@/store/modules/canvas'
 import MagnifierAxis from '@/components/Magnifier/MagnifierAxis.vue'
-import Vue from 'vue'
-export default Vue.extend({
+
+export default {
+  setup() {
+    const { canvas } = useCanvasStore()
+    const { axes } = useAxesStore()
+    return {
+      canvas,
+      axes,
+    }
+  },
   components: {
     MagnifierAxis,
   },
-  computed: {
-    ...canvasMapper.mapGetters(['canvas']),
-    ...axesMapper.mapGetters(['axes']),
-  },
   props: {},
-})
+}
 </script>

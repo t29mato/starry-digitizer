@@ -1,5 +1,5 @@
 {
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": true
     },
@@ -8,5 +8,10 @@
         "javascript",
         "javascriptreact",
     ],
-    "eslint.workingDirectories": [".storybook/"]
+    "eslint.workingDirectories": [
+        ".storybook/"
+    ],
+    "prettier.configPath": "",
+    "prettier.semi": false,
+    "prettier.singleQuote": true
 }

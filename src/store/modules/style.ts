@@ -1,63 +1,46 @@
-import {
-  Mutations,
-  Actions,
-  Getters,
-  Module,
-  createMapper,
-} from 'vuex-smart-module'
+import { ref, computed } from 'vue'
+import { useStore } from 'vuex'
 
-class state {
-  plotSizePx = 10
-  axisSizePx = 20
-}
-
-class getters extends Getters<state> {
-  get plotSizePx() {
-    return this.state.plotSizePx
-  }
-  get axisSizePx() {
-    return this.state.axisSizePx
-  }
-  get axisHalfSizePx() {
-    return this.state.axisSizePx / 2
-  }
-  get axisCrossBorderPx() {
-    return this.state.axisSizePx * 0.1
-  }
-  get axisCrossBorderHalfPx() {
-    return this.getters.axisCrossBorderPx * 0.5
-  }
-  get axisCrossTopPx() {
-    return (this.state.axisSizePx - this.getters.axisCrossBorderPx) / 2
-  }
-  get axisCrossCursorPx() {
-    return this.state.axisSizePx * 0.7
-  }
-}
-
-class mutations extends Mutations<state> {
-  updatePlotSizePx(newPlotSizePx: number) {
-    this.state.plotSizePx = newPlotSizePx
-  }
-  updateAxisSizePx(newAxisSizePx: number) {
-    this.state.axisSizePx = newAxisSizePx
-  }
-}
-
-class actions extends Actions<state, getters, mutations> {
-  setPlotSizePx(size: number) {
-    this.commit('updatePlotSizePx', size)
-  }
-  setAxisSizePx(size: number) {
-    this.commit('updateAxisSizePx', size)
-  }
-}
-
-export const style = new Module({
-  state,
-  mutations,
-  actions,
-  getters,
+const state = ref({
+  plotSizePx: 10,
+  axisSizePx: 20,
 })
 
-export const styleMapper = createMapper(style)
+const getters: any = {
+  plotSizePx: computed(() => state.value.plotSizePx),
+  axisSizePx: computed(() => state.value.axisSizePx),
+  axisHalfSizePx: computed(() => state.value.axisSizePx / 2),
+  axisCrossBorderPx: computed(() => state.value.axisSizePx * 0.1),
+  axisCrossBorderHalfPx: computed(() => getters.axisCrossBorderPx.value * 0.5),
+  axisCrossTopPx: computed(
+    () => (state.value.axisSizePx - getters.axisCrossBorderPx.value) / 2
+  ),
+  axisCrossCursorPx: computed(() => state.value.axisSizePx * 0.7),
+}
+
+const mutations = {
+  updatePlotSizePx(newPlotSizePx: number) {
+    state.value.plotSizePx = newPlotSizePx
+  },
+  updateAxisSizePx(newAxisSizePx: number) {
+    state.value.axisSizePx = newAxisSizePx
+  },
+}
+
+const actions = {
+  setPlotSizePx({ commit }: any, size: number) {
+    commit('updatePlotSizePx', size)
+  },
+  setAxisSizePx({ commit }: any, size: number) {
+    commit('updateAxisSizePx', size)
+  },
+}
+
+export const useStyleStore = () => {
+  const store = useStore()
+  return {
+    ...getters,
+    ...mutations,
+    ...actions,
+  }
+}

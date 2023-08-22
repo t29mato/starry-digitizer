@@ -1,4 +1,4 @@
-// import Vue from 'vue'
+//
 // import App from './App.vue'
 // import vuetify from './plugins/vuetify'
 
@@ -19,6 +19,7 @@ import 'vuetify/_styles.scss'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify'
 import * as directives from 'vuetify'
+import { useCanvasStore } from './store'
 
 const vuetify = createVuetify({
   components,

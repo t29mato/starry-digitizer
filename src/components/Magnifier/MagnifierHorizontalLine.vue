@@ -12,16 +12,21 @@
 </template>
 
 <script lang="ts">
-import { magnifierMapper } from '@/store/modules/magnifier'
-import Vue from 'vue'
-export default Vue.extend({
+import { computed } from 'vue'
+import { useMagnifierStore } from '@/store/modules/magnifier'
+
+export default {
   props: {},
-  computed: {
-    ...magnifierMapper.mapGetters(['magnifier']),
-    // INFO: 十字線を作成する箱の横幅
-    height(): number {
-      return (this.magnifier.sizePx - this.magnifier.crosshairSizePx) / 2
-    },
+  setup() {
+    const { magnifier } = useMagnifierStore()
+    const height = computed(() => {
+      return (magnifier.value.sizePx - magnifier.value.crosshairSizePx) / 2
+    })
+
+    return {
+      magnifier,
+      height,
+    }
   },
-})
+}
 </script>

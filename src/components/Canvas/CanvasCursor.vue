@@ -5,8 +5,8 @@
       v-if="!(axes.isAdjusting || datasets.activeDataset.plotsAreAdjusting)"
       :style="{
         position: 'absolute',
-        top: `${this.canvas.scaledCursor.yPx - this.axisCrossCursorPx}px`,
-        left: `${this.canvas.scaledCursor.xPx + this.axisCrossCursorPx}px`,
+        top: `${canvas.scaledCursor.yPx - axisCrossCursorPx}px`,
+        left: `${canvas.scaledCursor.xPx + axisCrossCursorPx}px`,
         'pointer-events': 'none',
       }"
     >
@@ -17,8 +17,8 @@
       v-if="!axes.isAdjusting"
       :style="{
         position: 'absolute',
-        top: `${this.canvas.scaledCursor.yPx + this.axisCrossCursorPx / 2}px`,
-        left: `${this.canvas.scaledCursor.xPx - this.axisCrossCursorPx / 2}px`,
+        top: `${canvas.scaledCursor.yPx + axisCrossCursorPx / 2}px`,
+        left: `${canvas.scaledCursor.xPx - axisCrossCursorPx / 2}px`,
         'pointer-events': 'none',
       }"
     >
@@ -29,8 +29,8 @@
       v-if="!axes.isAdjusting"
       :style="{
         position: 'absolute',
-        top: `${this.canvas.scaledCursor.yPx - this.axisCrossCursorPx}px`,
-        left: `${this.canvas.scaledCursor.xPx - this.axisCrossCursorPx * 2}px`,
+        top: `${canvas.scaledCursor.yPx - axisCrossCursorPx}px`,
+        left: `${canvas.scaledCursor.xPx - axisCrossCursorPx * 2}px`,
         'pointer-events': 'none',
       }"
     >
@@ -39,60 +39,63 @@
   </div>
 </template>
 
-<script lang="ts">
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { datasetMapper } from '@/store/modules/dataset'
-import { styleMapper } from '@/store/modules/style'
-import Vue from 'vue'
-export default Vue.extend({
-  props: {},
-  computed: {
-    ...styleMapper.mapGetters(['axisCrossCursorPx', 'axisHalfSizePx']),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...axesMapper.mapGetters(['axes']),
-    ...datasetMapper.mapGetters(['datasets']),
-    rightLabel(): string {
-      switch (this.canvas.maskMode) {
-        case 0:
-          return 'Pen'
-        case 1:
-          return 'Box'
-        case 2:
-          return 'Eraser'
-      }
-      switch (this.canvas.manualMode) {
-        case 0:
-          return 'Add'
-        case 1:
-          return 'Edit'
-        case 2:
-          return 'Delete'
-      }
-      return ''
-    },
-    bottomLabel(): string {
-      if (this.axes.nextAxis?.name === 'x2y2') {
-        return "x2'"
-      }
-      if (this.axes.nextAxis?.name.includes('x')) {
-        return this.axes.nextAxis.name
-      }
-      return ''
-    },
-    leftLabel(): string {
-      if (this.axes.nextAxis?.name === 'x2y2') {
-        return "y2'"
-      }
-      if (this.axes.nextAxis?.name.includes('y')) {
-        return this.axes.nextAxis.name
-      }
-      if (this.axes.nextAxis?.name === 'x1' && this.axes.pointMode === 0) {
-        return 'y1'
-      }
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useAxesStore } from '@/store/modules/axes'
+import { useCanvasStore } from '@/store/modules/canvas'
+import { useDatasetStore } from '@/store/modules/dataset'
+import { useStyleStore } from '@/store/modules/style'
 
-      return ''
-    },
-  },
+const axesStore = useAxesStore()
+const canvasStore = useCanvasStore()
+const datasetStore = useDatasetStore()
+const styleStore = useStyleStore()
+
+const rightLabel = computed(() => {
+  if (canvasStore.maskMode.value === 0) {
+    return 'Pen'
+  } else if (canvasStore.maskMode.value === 1) {
+    return 'Box'
+  } else if (canvasStore.maskMode.value === 2) {
+    return 'Eraser'
+  } else if (canvasStore.canvas.value.manualMode === 0) {
+    return 'Add'
+  } else if (canvasStore.canvas.value.manualMode === 1) {
+    return 'Edit'
+  } else if (canvasStore.canvas.value.manualMode === 2) {
+    return 'Delete'
+  } else {
+    return ''
+  }
 })
+
+const bottomLabel = computed(() => {
+  if (axesStore.axes.value.nextAxis?.name === 'x2y2') {
+    return "x2'"
+  } else if (axesStore.axes.value.nextAxis?.name.includes('x')) {
+    return axesStore.axes.value.nextAxis?.name
+  } else {
+    return ''
+  }
+})
+
+const leftLabel = computed(() => {
+  if (axesStore.axes.value.nextAxis?.name === 'x2y2') {
+    return "y2'"
+  } else if (axesStore.axes.value.nextAxis?.name.includes('y')) {
+    return axesStore.axes.value.nextAxis.name
+  } else if (
+    axesStore.axes.value.nextAxis?.name === 'x1' &&
+    axesStore.axes.value.pointMode === 0
+  ) {
+    return 'y1'
+  } else {
+    return ''
+  }
+})
+
+const axisCrossCursorPx = computed(() => styleStore.axisCrossCursorPx.value)
+const canvas = computed(() => canvasStore.canvas.value)
+const axes = computed(() => axesStore.axes.value)
+const datasets = computed(() => datasetStore.datasets.value)
 </script>

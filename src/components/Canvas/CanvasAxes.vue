@@ -9,18 +9,14 @@
 </template>
 
 <script lang="ts">
-import { axesMapper } from '@/store/modules/axes'
-import CanvasAxis from '@/components/Canvas/CanvasAxis.vue'
+import { useAxesStore } from '@/store/modules/axes'
 
-import Vue from 'vue'
-export default Vue.extend({
-  components: {
-    CanvasAxis,
+export default {
+  setup() {
+    const { axes } = useAxesStore()
+    return {
+      axes,
+    }
   },
-  computed: {
-    ...axesMapper.mapGetters(['axes']),
-  },
-  props: {},
-  methods: {},
-})
+}
 </script>

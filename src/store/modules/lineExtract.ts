@@ -1,30 +1,26 @@
-import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
+import { ref, computed } from 'vue'
+import { useStore } from 'vuex'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
 
-class state {
-  lineExtract = LineExtract.instance
+const lineExtract = ref(LineExtract.instance)
+
+const getters = {
+  lineExtract: computed(() => lineExtract.value),
 }
 
-class getters extends Getters<state> {
-  get lineExtract() {
-    return this.state.lineExtract
-  }
-}
-
-class actions extends Actions<state, getters> {
+const actions = {
   setDyPx(dyPx: number) {
-    LineExtract.instance.dyPx = dyPx
-  }
-
+    lineExtract.value.dyPx = dyPx
+  },
   setDxPx(dxPx: number) {
-    LineExtract.instance.dxPx = dxPx
-  }
+    lineExtract.value.dxPx = dxPx
+  },
 }
 
-export const lineExtract = new Module({
-  state,
-  actions,
-  getters,
-})
-
-export const lineExtractMapper = createMapper(lineExtract)
+export const useLineExtractStore = () => {
+  const store = useStore()
+  return {
+    ...getters,
+    ...actions,
+  }
+}

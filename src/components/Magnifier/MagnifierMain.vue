@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
@@ -45,13 +45,13 @@ import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/components/Magnifier/MagnifierExtractSize.vue'
-import { datasetMapper } from '@/store/modules/dataset'
-import { canvasMapper } from '@/store/modules/canvas'
-import { magnifierMapper } from '@/store/modules/magnifier'
-import { axesMapper } from '@/store/modules/axes'
+import { useDatasetStore } from '@/store/modules/dataset'
+import { useCanvasStore } from '@/store/modules/canvas'
+import { useMagnifierStore } from '@/store/modules/magnifier'
+import { useAxesStore } from '@/store/modules/axes'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
 
-export default Vue.extend({
+export default defineComponent({
   components: {
     MagnifierVerticalLine,
     MagnifierHorizontalLine,
@@ -62,63 +62,53 @@ export default Vue.extend({
     MagnifierSettingsBtn,
     MagnifierExtractSize,
   },
-  data() {
-    return {
-      magnifierSettingError: '',
-      shouldShowSettingsDialog: false,
-    }
-  },
-  computed: {
-    ...datasetMapper.mapGetters(['datasets']),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...magnifierMapper.mapGetters(['magnifier']),
-    ...axesMapper.mapGetters(['axes']),
-    // magnifierHalfSize(): number {
-    //   return this.magnifier.sizePx / 2
-    // },
-    // INFO: 小数点ありのピクセル表示するとユーザーを混乱させるので表示上は切り上げ
-    // canvasCursorCeil(): {
-    //   xPx: number
-    //   yPx: number
-    // } {
-    //   return {
-    //     xPx: Math.ceil(this.canvasCursor.xPx),
-    //     yPx: Math.ceil(this.canvasCursor.yPx),
-    //   }
-    // },
-    xyValue(): {
-      xV: string
-      yV: string
-    } {
-      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxesCalculator(this.axes, {
-        x: this.axes.xIsLog,
-        y: this.axes.yIsLog,
+  setup() {
+    const magnifierSettingError = ref('')
+    const shouldShowSettingsDialog = ref(false)
+
+    const { datasets } = useDatasetStore()
+    const { canvas } = useCanvasStore()
+    const { magnifier } = useMagnifierStore()
+    const { axes } = useAxesStore()
+
+    const xyValue = computed(() => {
+      const calculator = new XYAxesCalculator(axes.value, {
+        x: axes.value.xIsLog,
+        y: axes.value.yIsLog,
       })
       return calculator.calculateXYValues(
-        this.canvas.cursor.xPx,
-        this.canvas.cursor.yPx
+        canvas.value.cursor.xPx,
+        canvas.value.cursor.yPx
       )
-    },
-  },
-  props: {},
+    })
 
-  methods: {
-    ...magnifierMapper.mapActions(['setScale']),
-    toggleSettingsDialog(): void {
-      this.shouldShowSettingsDialog = !this.shouldShowSettingsDialog
-    },
-    setMagnifierScale(value: string): void {
+    const toggleSettingsDialog = () => {
+      shouldShowSettingsDialog.value = !shouldShowSettingsDialog.value
+    }
+
+    const setMagnifierScale = (value: string) => {
       const scale = parseInt(value)
-      this.magnifierSettingError = ''
+      magnifierSettingError.value = ''
       if (scale < 2) {
-        this.magnifierSettingError =
+        magnifierSettingError.value =
           'The Magnifier scale is supposed to be larger than 2 times.'
-        this.setScale(2)
+        magnifier.value.setScale(2)
         return
       }
-      this.setScale(parseInt(value))
-    },
+      magnifier.value.setScale(parseInt(value))
+    }
+
+    return {
+      magnifierSettingError,
+      shouldShowSettingsDialog,
+      datasets,
+      canvas,
+      magnifier,
+      axes,
+      xyValue,
+      toggleSettingsDialog,
+      setMagnifierScale,
+    }
   },
 })
 </script>

@@ -2,8 +2,8 @@
   <v-row class="ma-0">
     <v-col class="pa-0">
       <v-text-field
-        :value="symbolExtractByArea.minDiameterPx"
-        @input="inputMin"
+        :model-value="symbolExtractByArea.minDiameterPx"
+        @update:model-value="inputMin"
         label="Min. Diameter (px)"
         type="number"
         class="ma-0 pl-4"
@@ -11,8 +11,8 @@
     </v-col>
     <v-col class="pa-0">
       <v-text-field
-        :value="symbolExtractByArea.maxDiameterPx"
-        @input="inputMax"
+        :model-value="symbolExtractByArea.maxDiameterPx"
+        @update:model-value="inputMax"
         label="Max. Diameter (px)"
         type="number"
         class="ma-0 pl-4"
@@ -22,24 +22,24 @@
 </template>
 
 <script lang="ts">
-import { symbolExtractByAreaMapper } from '@/store/modules/symbolExtractByArea'
-import Vue from 'vue'
-export default Vue.extend({
-  computed: {
-    ...symbolExtractByAreaMapper.mapGetters(['symbolExtractByArea']),
+import { useSymbolExtractByAreaStore } from '@/store/modules/symbolExtractByArea'
+export default {
+  setup() {
+    const { symbolExtractByArea } = useSymbolExtractByAreaStore()
+    return {
+      symbolExtractByArea,
+    }
   },
   props: {},
   methods: {
-    ...symbolExtractByAreaMapper.mapActions([
-      'setMinDiameterPx',
-      'setMaxDiameterPx',
-    ]),
     inputMin(value: string) {
-      this.setMinDiameterPx(parseInt(value))
+      const { setMinDiameterPx } = useSymbolExtractByAreaStore()
+      setMinDiameterPx(parseInt(value))
     },
     inputMax(value: string) {
-      this.setMaxDiameterPx(parseInt(value))
+      const { setMaxDiameterPx } = useSymbolExtractByAreaStore()
+      setMaxDiameterPx(parseInt(value))
     },
   },
-})
+}
 </script>

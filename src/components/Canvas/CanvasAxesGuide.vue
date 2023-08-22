@@ -24,9 +24,13 @@
   </div>
 </template>
 
-<script lang="ts">
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useAxesStore } from '@/store/modules/axes'
+import { useCanvasStore } from '@/store/modules/canvas'
+
+const axesMapper = useAxesStore()
+const canvasMapper = useCanvasStore()
 
 const axesGuideCommonStyle = {
   position: 'absolute',
@@ -35,76 +39,73 @@ const axesGuideCommonStyle = {
   pointerEvents: 'none',
 }
 
-import Vue from 'vue'
-export default Vue.extend({
-  components: {},
-  computed: {
-    ...axesMapper.mapGetters(['axes']),
-    ...canvasMapper.mapGetters(['canvas']),
-    isActive() {
-      return this.axes.pointMode === 0
-    },
-    isX1Y1LineVisible() {
-      return this.axes.x1.coordIsFilled || this.canvas.scaledCursor.xPx !== 0
-    },
-    isX2Y2LineVisible() {
-      return this.axes.x1.coordIsFilled
-    },
-    X1Y1HorizontalLineStyle() {
-      //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
-      const styleTopNum = this.axes.x1.coordIsFilled
-        ? this.axes.x1.coord.yPx * this.canvas.scale
-        : this.canvas.scaledCursor.yPx
-      return {
-        ...axesGuideCommonStyle,
-        right: 0,
-        left: 0,
-        height: '1px',
-        top: styleTopNum + 'px',
-      }
-    },
-    X1Y1VerticalLineStyle() {
-      //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
-      const styleLeftNum = this.axes.x1.coordIsFilled
-        ? this.axes.x1.coord.xPx * this.canvas.scale
-        : this.canvas.scaledCursor.xPx
-      return {
-        ...axesGuideCommonStyle,
-        width: '1px',
-        top: 0,
-        bottom: 0,
-        left: styleLeftNum + 'px',
-      }
-    },
+const isActive = computed(() => axesMapper.axes.value.pointMode === 0)
+const isX1Y1LineVisible = computed(
+  () =>
+    axesMapper.axes.value.x1.coordIsFilled ||
+    canvasMapper.canvas.value.scaledCursor.xPx !== 0
+)
+const isX2Y2LineVisible = computed(
+  () => axesMapper.axes.value.x2y2.coordIsFilled
+)
 
-    X2Y2HorizontalLineStyle() {
-      //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
-      const styleTopNum = this.axes.x2y2.coordIsFilled
-        ? this.axes.x2y2.coord.yPx * this.canvas.scale
-        : this.canvas.scaledCursor.yPx
-      return {
-        ...axesGuideCommonStyle,
-        right: 0,
-        left: 0,
-        height: '1px',
-        top: styleTopNum + 'px',
-      }
-    },
-    X2Y2VerticalLineStyle() {
-      //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
-      const styleLeftNum = this.axes.x2y2.coordIsFilled
-        ? this.axes.x2y2.coord.xPx * this.canvas.scale
-        : this.canvas.scaledCursor.xPx
-      return {
-        ...axesGuideCommonStyle,
-        width: '1px',
-        top: 0,
-        bottom: 0,
-        left: styleLeftNum + 'px',
-      }
-    },
-  },
-  props: {},
-  methods: {},
+const X1Y1HorizontalLineStyle = computed(() => {
+  const axes = axesMapper.axes.value
+  const canvas = canvasMapper.canvas.value
+  const styleTopNum = axes.x1.coordIsFilled
+    ? axes.x1.coord.yPx * canvas.scale
+    : canvas.scaledCursor.yPx
+  return {
+    ...axesGuideCommonStyle,
+    right: 0,
+    left: 0,
+    height: '1px',
+    top: styleTopNum + 'px',
+  }
+})
+
+const X1Y1VerticalLineStyle = computed(() => {
+  const axes = axesMapper.axes.value
+  const canvas = canvasMapper.canvas.value
+  const styleLeftNum = axes.x1.coordIsFilled
+    ? axes.x1.coord.xPx * canvas.scale
+    : canvas.scaledCursor.xPx
+  return {
+    ...axesGuideCommonStyle,
+    width: '1px',
+    top: 0,
+    bottom: 0,
+    left: styleLeftNum + 'px',
+  }
+})
+
+const X2Y2HorizontalLineStyle = computed(() => {
+  const axes = axesMapper.axes.value
+  const canvas = canvasMapper.canvas.value
+  const styleTopNum = axes.x2y2.coordIsFilled
+    ? axes.x2y2.coord.yPx * canvas.scale
+    : canvas.scaledCursor.yPx
+  return {
+    ...axesGuideCommonStyle,
+    right: 0,
+    left: 0,
+    height: '1px',
+    top: styleTopNum + 'px',
+  }
+})
+
+const X2Y2VerticalLineStyle = computed(() => {
+  const axes = axesMapper.axes.value
+  const canvas = canvasMapper.canvas.value
+  const styleLeftNum = axes.x2y2.coordIsFilled
+    ? axes.x2y2.coord.xPx * canvas.scale
+    : canvas.scaledCursor.xPx
+  return {
+    ...axesGuideCommonStyle,
+    width: '1px',
+    top: 0,
+    bottom: 0,
+    left: styleLeftNum + 'px',
+  }
 })
 </script>

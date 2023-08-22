@@ -1,6 +1,6 @@
 <template>
   <div class="pa-2" :style="{ border: '1px solid grey' }">
-    <v-simple-table height="240" fixed-header dense>
+    <v-table height="240" fixed-header dense>
       <thead>
         <tr>
           <th v-if="isDev">#{{ calculatedPlots.length || 0 }}</th>
@@ -26,11 +26,12 @@
           <td>{{ plot.yV }}</td>
         </tr>
       </tbody>
-    </v-simple-table>
+    </v-table>
   </div>
 </template>
 
 <script lang="ts">
+import { Plot } from '@/domains/datasetInterface'
 import Vue, { PropType } from 'vue'
 import colors from 'vuetify/lib/util/colors'
 export default Vue.extend({
@@ -70,7 +71,7 @@ export default Vue.extend({
       xPx: number
       yPx: number
     }[] {
-      return this.calculatedPlots.map((plot) => {
+      return this.calculatedPlots.map((plot: Plot) => {
         return {
           xPx: Math.ceil(plot.xPx),
           yPx: Math.ceil(plot.yPx),

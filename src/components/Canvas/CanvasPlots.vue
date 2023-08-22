@@ -10,29 +10,13 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import CanvasPlot from '@/components/Canvas/CanvasPlot.vue'
-import Vue from 'vue'
-import { datasetMapper } from '@/store/modules/dataset'
-import { canvasMapper } from '@/store/modules/canvas'
-import { styleMapper } from '@/store/modules/style'
+import { useDatasetStore } from '@/store/modules/dataset'
+import { useCanvasStore } from '@/store/modules/canvas'
+import { useStyleStore } from '@/store/modules/style'
 
-export default Vue.extend({
-  components: {
-    CanvasPlot,
-  },
-  computed: {
-    ...datasetMapper.mapGetters(['datasets']),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...styleMapper.mapGetters(['plotSizePx']),
-    plotHalfSize(): number {
-      return this.plotSizePx / 2
-    },
-  },
-  data() {
-    return {}
-  },
-  props: {},
-  methods: {},
-})
+const { datasets } = useDatasetStore()
+const { canvas } = useCanvasStore()
+const { plotSizePx } = useStyleStore()
 </script>

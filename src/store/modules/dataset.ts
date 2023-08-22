@@ -1,66 +1,69 @@
-import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
 import { Datasets } from '@/domains/datasets'
 import { Dataset } from '@/domains/dataset'
 import { Plots, Coord } from '@/domains/datasetInterface'
 import { Vector } from '@/domains/axes/axesInterface'
+import { ref } from 'vue'
+import { computed } from 'vue'
+import { useStore } from 'vuex'
 
-class state {
-  datasets: Datasets = new Datasets(new Dataset('dataset 1', [], 1))
-}
-
-class getters extends Getters<state> {
-  get datasets() {
-    return this.state.datasets
-  }
-}
-
-class actions extends Actions<state, getters> {
-  addPlot(plot: Coord) {
-    this.state.datasets.activeDataset.addPlot(plot.xPx, plot.yPx)
-  }
-  addDataset() {
-    const nextId = this.state.datasets.nextDatasetId
-    this.state.datasets.addDataset(new Dataset(`dataset ${nextId}`, [], nextId))
-  }
-  popDataset() {
-    this.state.datasets.popDataset()
-  }
-  moveActivePlot(vector: Vector) {
-    this.state.datasets.activeDataset.moveActivePlot(vector)
-  }
-  clearPlot(id: number) {
-    this.state.datasets.activeDataset.clearPlot(id)
-  }
-  clearPlots() {
-    this.state.datasets.activeDataset.clearPlots()
-  }
-  inactivatePlots() {
-    this.state.datasets.activeDataset.inactivatePlots()
-  }
-  clearActivePlots() {
-    this.state.datasets.activeDataset.clearActivePlots()
-  }
-  setPlots(plots: Plots) {
-    this.state.datasets.setPlots(plots)
-  }
-  toggleActivatedPlot(id: number) {
-    this.state.datasets.activeDataset.toggleActivatedPlot(id)
-  }
-  activatePlot(id: number) {
-    this.state.datasets.activeDataset.activatePlot(id)
-  }
-  setActiveDataset(id: number) {
-    this.state.datasets.setActiveDataset(id)
-  }
-  sortPlots() {
-    this.state.datasets.sortPlots()
-  }
-}
-
-export const dataset = new Module({
-  state,
-  actions,
-  getters,
+const state = ref({
+  datasets: new Datasets(new Dataset('dataset 1', [], 1)),
 })
 
-export const datasetMapper = createMapper(dataset)
+const getters = {
+  datasets: computed(() => state.value.datasets),
+  activeDataset: computed(() => state.value.datasets.activeDataset),
+}
+
+const actions = {
+  addPlot(plot: Coord) {
+    state.value.datasets.activeDataset.addPlot(plot.xPx, plot.yPx)
+  },
+  addDataset() {
+    const nextId = state.value.datasets.nextDatasetId
+    state.value.datasets.addDataset(
+      new Dataset(`dataset ${nextId}`, [], nextId)
+    )
+  },
+  popDataset() {
+    state.value.datasets.popDataset()
+  },
+  moveActivePlot(vector: Vector) {
+    state.value.datasets.activeDataset.moveActivePlot(vector)
+  },
+  clearPlot(id: number) {
+    state.value.datasets.activeDataset.clearPlot(id)
+  },
+  clearPlots() {
+    state.value.datasets.activeDataset.clearPlots()
+  },
+  inactivatePlots() {
+    state.value.datasets.activeDataset.inactivatePlots()
+  },
+  clearActivePlots() {
+    state.value.datasets.activeDataset.clearActivePlots()
+  },
+  setPlots(plots: Plots) {
+    state.value.datasets.setPlots(plots)
+  },
+  toggleActivatedPlot(id: number) {
+    state.value.datasets.activeDataset.toggleActivatedPlot(id)
+  },
+  activatePlot(id: number) {
+    state.value.datasets.activeDataset.activatePlot(id)
+  },
+  setActiveDataset(id: number) {
+    state.value.datasets.setActiveDataset(id)
+  },
+  sortPlots() {
+    state.value.datasets.sortPlots()
+  },
+}
+
+export const useDatasetStore = () => {
+  const store = useStore()
+  return {
+    ...getters,
+    ...actions,
+  }
+}

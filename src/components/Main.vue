@@ -31,17 +31,15 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { ref } from 'vue'
 import { MagnifierMain } from '@/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
 import { AxesSettings, ExtractorSettings, ImageSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
-import { version } from '../../package.json'
-import store from '@/store'
+import { version as appVersion } from '../../package.json' // Renamed version to appVersion
 import DataTable from '@/components/Export/DataTable.vue'
 
-export default Vue.extend({
-  store,
+export default {
   components: {
     DataTable,
     MagnifierMain,
@@ -54,7 +52,6 @@ export default Vue.extend({
     ImageSettings,
   },
   props: {
-    // should be imported by require function
     initialGraphImagePath: {
       type: String,
       required: true,
@@ -69,11 +66,14 @@ export default Vue.extend({
       required: false,
     },
   },
-  data() {
+  setup() {
+    const version = ref(appVersion) // Changed version to appVersion
+    const githubRunNumber = ref(process.env.VUE_APP_GITHUB_RUN_NUMBER)
+
     return {
       version,
-      githubRunNumber: process.env.VUE_APP_GITHUB_RUN_NUMBER,
+      githubRunNumber,
     }
   },
-})
+}
 </script>

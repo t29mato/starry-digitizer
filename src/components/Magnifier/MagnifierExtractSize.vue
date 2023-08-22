@@ -35,24 +35,36 @@
 </template>
 
 <script lang="ts">
-import { extractorMapper } from '@/store/modules/extractor'
-import { lineExtractMapper } from '@/store/modules/lineExtract'
-import { magnifierMapper } from '@/store/modules/magnifier'
-import { symbolExtractByAreaMapper } from '@/store/modules/symbolExtractByArea'
-import Vue from 'vue'
-export default Vue.extend({
+import { computed } from 'vue'
+import { useExtractorStore } from '@/store/modules/extractor'
+import { useLineExtractStore } from '@/store/modules/lineExtract'
+import { useMagnifierStore } from '@/store/modules/magnifier'
+import { useSymbolExtractByAreaStore } from '@/store/modules/symbolExtractByArea'
+
+export default {
   props: {},
-  computed: {
-    ...magnifierMapper.mapGetters(['magnifier']),
-    ...lineExtractMapper.mapGetters(['lineExtract']),
-    ...extractorMapper.mapGetters(['extractor']),
-    ...symbolExtractByAreaMapper.mapGetters(['symbolExtractByArea']),
-    symbolMinDiameter(): number {
-      return this.symbolExtractByArea.minDiameterPx * this.magnifier.scale
-    },
-    symbolMaxDiameter(): number {
-      return this.symbolExtractByArea.maxDiameterPx * this.magnifier.scale
-    },
+  setup() {
+    const { magnifier } = useMagnifierStore()
+    const { lineExtract } = useLineExtractStore()
+    const { extractor } = useExtractorStore()
+    const { symbolExtractByArea } = useSymbolExtractByAreaStore()
+
+    const symbolMinDiameter = computed(() => {
+      return symbolExtractByArea.value.minDiameterPx * magnifier.value.scale
+    })
+
+    const symbolMaxDiameter = computed(() => {
+      return symbolExtractByArea.value.maxDiameterPx * magnifier.value.scale
+    })
+
+    return {
+      magnifier,
+      lineExtract,
+      extractor,
+      symbolExtractByArea,
+      symbolMinDiameter,
+      symbolMaxDiameter,
+    }
   },
-})
+}
 </script>

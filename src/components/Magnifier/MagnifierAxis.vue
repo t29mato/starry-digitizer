@@ -39,42 +39,55 @@
 
 <script lang="ts">
 import { AxisInterface } from '@/domains/axes/axisInterface'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { magnifierMapper } from '@/store/modules/magnifier'
-import { styleMapper } from '@/store/modules/style'
+import { useAxesStore } from '@/store/modules/axes'
+import { useCanvasStore } from '@/store/modules/canvas'
+import { useMagnifierStore } from '@/store/modules/magnifier'
+import { useStyleStore } from '@/store/modules/style'
 import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
-import Vue from 'vue'
-export default Vue.extend({
+import { computed } from 'vue'
+export default {
   components: {
     MagnifierAxisLabelX,
     MagnifierAxisLabelY,
   },
-  data() {
-    return {}
-  },
-  computed: {
-    ...canvasMapper.mapGetters(['canvas']),
-    ...axesMapper.mapGetters(['axes']),
-    ...styleMapper.mapGetters([
-      'axisSizePx',
-      'axisHalfSizePx',
-      'axisCrossBorderHalfPx',
-      'axisCrossBorderPx',
-      'axisCrossTopPx',
-      'axisCrossCursorPx',
-    ]),
-    ...magnifierMapper.mapGetters(['magnifier']),
-    xPx(): number {
-      return this.axis.coord.xPx
-    },
-    yPx(): number {
-      return this.axis.coord.yPx
-    },
-    magnifierHalfSizePx(): number {
-      return this.magnifier.sizePx / 2
-    },
+  // @ts-ignore
+  setup(props: any) {
+    const {
+      axisSizePx,
+      axisHalfSizePx,
+      axisCrossBorderHalfPx,
+      axisCrossBorderPx,
+      axisCrossTopPx,
+      axisCrossCursorPx,
+    } = useStyleStore()
+    const { canvas } = useCanvasStore()
+    const { axes } = useAxesStore()
+    const { magnifier } = useMagnifierStore()
+    const xPx = computed(() => {
+      return props.axis.coord.xPx
+    })
+    const yPx = computed(() => {
+      return props.axis.coord.yPx
+    })
+    const magnifierHalfSizePx = computed(() => {
+      return magnifier.value.sizePx / 2
+    })
+
+    return {
+      canvas,
+      axes,
+      magnifier,
+      axisSizePx,
+      axisHalfSizePx,
+      axisCrossBorderHalfPx,
+      axisCrossBorderPx,
+      axisCrossTopPx,
+      axisCrossCursorPx,
+      xPx,
+      yPx,
+      magnifierHalfSizePx,
+    }
   },
   props: {
     axis: {
@@ -87,5 +100,5 @@ export default Vue.extend({
     },
   },
   methods: {},
-})
+}
 </script>

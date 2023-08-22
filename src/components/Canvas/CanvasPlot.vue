@@ -17,30 +17,55 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { datasetMapper } from '@/store/modules/dataset'
-import { canvasMapper } from '@/store/modules/canvas'
+import { useDatasetStore } from '@/store/modules/dataset'
+import { useCanvasStore } from '@/store/modules/canvas'
 import { Plot } from '@/domains/datasetInterface'
+import { computed } from 'vue'
 
-export default Vue.extend({
-  computed: {
-    ...canvasMapper.mapGetters(['canvas']),
-    plotHalfSize(): number {
-      return this.plotSizePx / 2
-    },
-    xPx(): number {
-      return this.plot.xPx
-    },
-    yPx(): number {
-      return this.plot.yPx
-    },
-    cursor(): string | undefined {
-      const mode = this.canvas.manualMode
+export default {
+  setup(props: { plot: Plot; plotSizePx: number; isActive?: boolean }) {
+    const { canvas } = useCanvasStore()
+    const { toggleActivatedPlot, activatePlot, clearPlot } = useDatasetStore()
+
+    const plotHalfSize = computed(() => props.plotSizePx / 2)
+    const xPx = computed(() => props.plot.xPx)
+    const yPx = computed(() => props.plot.yPx)
+
+    const cursor = computed(() => {
+      const mode = canvas.value.manualMode
       if (mode === 1 || mode === 2) {
         return 'pointer'
       }
       return undefined
-    },
+    })
+
+    const click = (event: PointerEvent) => {
+      switch (canvas.value.manualMode) {
+        // INFO: CanvasMain Component -> plot method
+        case 0:
+          return
+        case 1:
+          if (event.ctrlKey || event.metaKey) {
+            toggleActivatedPlot(props.plot.id)
+            return
+          }
+          activatePlot(props.plot.id)
+          return
+        case 2:
+          clearPlot(props.plot.id)
+          return
+        default:
+          break
+      }
+    }
+
+    return {
+      plotHalfSize,
+      xPx,
+      yPx,
+      cursor,
+      click,
+    }
   },
   props: {
     plot: {
@@ -55,31 +80,5 @@ export default Vue.extend({
       type: Boolean,
     },
   },
-  methods: {
-    ...datasetMapper.mapActions([
-      'toggleActivatedPlot',
-      'activatePlot',
-      'clearPlot',
-    ]),
-    click(event: PointerEvent) {
-      switch (this.canvas.manualMode) {
-        // INFO: CanvasMain Component -> plot method
-        case 0:
-          return
-        case 1:
-          if (event.ctrlKey || event.metaKey) {
-            this.toggleActivatedPlot(this.plot.id)
-            return
-          }
-          this.activatePlot(this.plot.id)
-          return
-        case 2:
-          this.clearPlot(this.plot.id)
-          return
-        default:
-          break
-      }
-    },
-  },
-})
+}
 </script>

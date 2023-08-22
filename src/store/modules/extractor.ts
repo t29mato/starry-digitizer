@@ -1,39 +1,34 @@
-import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
+import { ref, computed } from 'vue'
+import { useStore } from 'vuex'
 import { Extractor } from '@/domains/extractor'
 import ExtractStrategyInterface from '@/domains/extractStrategies/extractStrategyInterface'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
 
-class state {
-  extractor = new Extractor(LineExtract.instance)
+const extractor = ref(new Extractor(LineExtract.instance))
+
+const getters = {
+  extractor: computed(() => extractor.value),
 }
 
-class getters extends Getters<state> {
-  get extractor() {
-    return this.state.extractor
-  }
-}
-
-class actions extends Actions<state, getters> {
+const actions = {
   setColorDistancePct(colorDistancePct: number) {
-    this.state.extractor.colorDistancePct = colorDistancePct
-  }
+    extractor.value.colorDistancePct = colorDistancePct
+  },
   setStrategy(strategy: ExtractStrategyInterface) {
-    this.state.extractor.strategy = strategy
-  }
-
+    extractor.value.strategy = strategy
+  },
   setColorPicker(color: string) {
-    this.state.extractor.colorPicker = color
-  }
-
+    extractor.value.colorPicker = color
+  },
   setSwatches(colorSwatches: string[]) {
-    this.state.extractor.updateSwatches(colorSwatches)
-  }
+    extractor.value.updateSwatches(colorSwatches)
+  },
 }
 
-export const extractor = new Module({
-  state,
-  actions,
-  getters,
-})
-
-export const extractorMapper = createMapper(extractor)
+export const useExtractorStore = () => {
+  const store = useStore()
+  return {
+    ...getters,
+    ...actions,
+  }
+}

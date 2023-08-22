@@ -3,8 +3,8 @@
     <!--  TODO: pxはappendixで追加する -->
     <v-col class="pa-0">
       <v-text-field
-        :value="lineExtract.dxPx"
-        @input="inputDxDyPx"
+        :model-value="lineExtract.dxPx"
+        @update:model-value="inputDxDyPx"
         label="ΔX (px)"
         type="number"
         class="ma-0 pl-4"
@@ -13,8 +13,8 @@
     </v-col>
     <v-col class="pa-0">
       <v-text-field
-        :value="lineExtract.dyPx"
-        @input="inputDxDyPx"
+        :model-value="lineExtract.dyPx"
+        @update:model-value="inputDxDyPx"
         label="ΔY (px)"
         type="number"
         class="ma-0 pl-4"
@@ -25,19 +25,23 @@
 </template>
 
 <script lang="ts">
-import { lineExtractMapper } from '@/store/modules/lineExtract'
-import Vue from 'vue'
-export default Vue.extend({
-  computed: {
-    ...lineExtractMapper.mapGetters(['lineExtract']),
+import { useLineExtractStore } from '@/store/modules/lineExtract'
+
+export default {
+  setup() {
+    const { lineExtract } = useLineExtractStore()
+    return {
+      lineExtract,
+    }
   },
+  computed: {},
   props: {},
   methods: {
-    ...lineExtractMapper.mapActions(['setDyPx', 'setDxPx']),
     inputDxDyPx(value: string) {
-      this.setDxPx(parseInt(value))
-      this.setDyPx(parseInt(value))
+      const { setDxPx, setDyPx } = useLineExtractStore()
+      setDxPx(parseInt(value))
+      setDyPx(parseInt(value))
     },
   },
-})
+}
 </script>

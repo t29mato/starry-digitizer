@@ -1,26 +1,23 @@
-import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
+import { ref, computed } from 'vue'
+import { useStore } from 'vuex'
 import { Magnifier } from '@/domains/magnifier'
 
-class state {
-  magnifier = new Magnifier()
+const magnifier = ref(new Magnifier())
+
+const getters = {
+  magnifier: computed(() => magnifier.value),
 }
 
-class getters extends Getters<state> {
-  get magnifier(): Magnifier {
-    return this.state.magnifier
+const actions = {
+  setScale(scale: number) {
+    magnifier.value.setScale(scale)
+  },
+}
+
+export const useMagnifierStore = () => {
+  const store = useStore()
+  return {
+    ...getters,
+    ...actions,
   }
 }
-
-class actions extends Actions<state, getters> {
-  setScale(scale: number): void {
-    this.state.magnifier.setScale(scale)
-  }
-}
-
-export const magnifier = new Module({
-  state,
-  actions,
-  getters,
-})
-
-export const magnifierMapper = createMapper(magnifier)

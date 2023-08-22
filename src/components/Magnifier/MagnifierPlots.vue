@@ -21,29 +21,13 @@
 </template>
 
 <script lang="ts">
-import { canvasMapper } from '@/store/modules/canvas'
-import { styleMapper } from '@/store/modules/style'
-import { magnifierMapper } from '@/store/modules/magnifier'
-import Vue from 'vue'
+import { computed, defineComponent } from 'vue'
+import { useCanvasStore } from '@/store/modules/canvas'
+import { useStyleStore } from '@/store/modules/style'
+import { useMagnifierStore } from '@/store/modules/magnifier'
 import { Coord } from '@/domains/datasetInterface'
-export default Vue.extend({
-  computed: {
-    ...magnifierMapper.mapGetters(['magnifier']),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...styleMapper.mapGetters(['plotSizePx']),
-    plotHalfSize(): number {
-      return this.plotSizePx / 2
-    },
-    magnifierHalfSize(): number {
-      return this.magnifierSize / 2
-    },
-    xPx(): number {
-      return this.plot.xPx
-    },
-    yPx(): number {
-      return this.plot.yPx
-    },
-  },
+
+export default defineComponent({
   props: {
     plot: {
       type: Object as () => Coord,
@@ -56,6 +40,36 @@ export default Vue.extend({
     isActive: {
       type: Boolean,
     },
+  },
+  setup(props) {
+    const { magnifier } = useMagnifierStore()
+    const { canvas } = useCanvasStore()
+    const { plotSizePx } = useStyleStore()
+
+    const plotHalfSize = computed(() => {
+      return plotSizePx.value / 2
+    })
+
+    const magnifierHalfSize = computed(() => {
+      return props.magnifierSize / 2
+    })
+
+    const xPx = computed(() => {
+      return props.plot.xPx
+    })
+
+    const yPx = computed(() => {
+      return props.plot.yPx
+    })
+
+    return {
+      magnifier,
+      canvas,
+      plotHalfSize,
+      magnifierHalfSize,
+      xPx,
+      yPx,
+    }
   },
 })
 </script>

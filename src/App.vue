@@ -2,24 +2,25 @@
   <div>
     {{ text }}
 
-    <v-btn> Button </v-btn>
+    <v-main>
+      <Main
+        :initialGraphImagePath="require('@/assets/sample_graph_curve.png')"
+      />
+    </v-main>
   </div>
 </template>
 
 <script>
+import Main from './components/Main.vue'
+
 export default {
   data() {
     return {
       text: 'hello world',
     }
   },
-  methods: {
-    // increment(): void {
-    //   this.count++
-    // },
-    // decrement(): void {
-    //   this.count--
-    // },
+  components: {
+    Main: Main,
   },
 }
 </script>
@@ -56,11 +57,10 @@ export default {
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+
 import * as Sentry from '@sentry/vue'
 import { Integrations } from '@sentry/tracing'
 
-// import Main from './components/Main.vue'
 import { version } from '../package.json'
 
 if (process.env.NODE_ENV === 'production') {

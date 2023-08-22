@@ -1,13 +1,18 @@
 <template>
   <div>
     <h5>Selection Area</h5>
-    <v-btn-toggle :value="canvas.maskMode" @change="change" dense class="pl-2">
-      <v-btn small color="primary"> Pen </v-btn>
-      <v-btn small color="primary"> Box </v-btn>
-      <v-btn small color="primary"> Eraser </v-btn>
+    <v-btn-toggle
+      :model-value="maskMode"
+      @update:model-value="change"
+      density="compact"
+      class="pl-2"
+    >
+      <v-btn size="small" color="primary"> Pen </v-btn>
+      <v-btn size="small" color="primary"> Box </v-btn>
+      <v-btn size="small" color="primary"> Eraser </v-btn>
     </v-btn-toggle>
     <v-btn
-      small
+      size="small"
       class="ml-1"
       :disabled="!canvas.isDrawnMask"
       @click="clearMask"
@@ -16,7 +21,7 @@
     </v-btn>
     <v-text-field
       v-if="canvas.maskMode === 0"
-      :value="canvas.penToolSizePx"
+      :model-value="canvas.penToolSizePx"
       @change="setPenToolSizePx"
       type="number"
       hide-details
@@ -24,7 +29,7 @@
     ></v-text-field>
     <v-text-field
       v-if="canvas.maskMode === 2"
-      :value="canvas.eraserSizePx"
+      :model-value="canvas.eraserSizePx"
       @change="setEraserSizePx"
       type="number"
       hide-details
@@ -34,33 +39,37 @@
 </template>
 
 <script lang="ts">
-import { canvasMapper } from '@/store/modules/canvas'
-import Vue from 'vue'
-export default Vue.extend({
-  computed: {
-    ...canvasMapper.mapGetters(['canvas']),
+import { useCanvasStore } from '@/store/modules/canvas'
+
+export default {
+  setup() {
+    const {
+      canvas,
+      maskMode,
+      setPenToolSizePx,
+      setEraserSizePx,
+      setMaskMode,
+      clearMask,
+    } = useCanvasStore()
+
+    return {
+      canvas,
+      maskMode,
+      setPenToolSizePx,
+      setEraserSizePx,
+      setMaskMode,
+      clearMask,
+    }
   },
-  props: {},
   methods: {
-    ...canvasMapper.mapActions([
-      'setPenToolSizePx',
-      'setMaskMode',
-      'setEraserSizePx',
-    ]),
     change(value: any) {
+      const { setMaskMode } = useCanvasStore()
       if (value === undefined) {
-        this.setMaskMode(-1)
+        setMaskMode(-1)
         return
       }
-      this.setMaskMode(value)
-    },
-    clearMask() {
-      this.canvas.clearMask()
-      // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
-      if (this.canvas.maskMode === 2) {
-        this.canvas.maskMode = -1
-      }
+      setMaskMode(value)
     },
   },
-})
+}
 </script>
