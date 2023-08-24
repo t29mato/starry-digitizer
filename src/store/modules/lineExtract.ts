@@ -1,30 +1,35 @@
-import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
+import { Module } from 'vuex'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
 
-class state {
-  lineExtract = LineExtract.instance
+interface State {
+  lineExtract: LineExtract
 }
 
-class getters extends Getters<state> {
-  get lineExtract() {
-    return this.state.lineExtract
-  }
+const state: State = {
+  lineExtract: LineExtract.instance,
 }
 
-class actions extends Actions<state, getters> {
-  setDyPx(dyPx: number) {
-    LineExtract.instance.dyPx = dyPx
-  }
-
-  setDxPx(dxPx: number) {
-    LineExtract.instance.dxPx = dxPx
-  }
+const getters = {
+  lineExtract: (state: State) => state.lineExtract,
 }
 
-export const lineExtract = new Module({
+const mutations = {
+  // Mutations if any
+}
+
+const actions = {
+  setDyPx({ state }: { state: State }, dyPx: number) {
+    state.lineExtract.dyPx = dyPx
+  },
+
+  setDxPx({ state }: { state: State }, dxPx: number) {
+    state.lineExtract.dxPx = dxPx
+  },
+}
+
+export const lineExtract: Module<State, any> = {
   state,
-  actions,
   getters,
-})
-
-export const lineExtractMapper = createMapper(lineExtract)
+  mutations,
+  actions,
+}

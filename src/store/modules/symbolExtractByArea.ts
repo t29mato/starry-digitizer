@@ -1,35 +1,34 @@
-import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
+import { Module } from 'vuex'
 import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
 
-class state {
-  symbolExtractByArea = SymbolExtractByArea.instance
+interface State {
+  symbolExtractByArea: SymbolExtractByArea
 }
 
-class getters extends Getters<state> {
-  get symbolExtractByArea() {
-    return this.state.symbolExtractByArea
-  }
+const state: State = {
+  symbolExtractByArea: SymbolExtractByArea.instance,
 }
 
-class actions extends Actions<state, getters> {
-  // md
-  constructor() {
-    super()
-    // this.md = md.instance
-  }
-  setMinDiameterPx(minDiameterPx: number) {
-    SymbolExtractByArea.instance.minDiameterPx = minDiameterPx
-  }
-
-  setMaxDiameterPx(maxDiameterPx: number) {
-    SymbolExtractByArea.instance.maxDiameterPx = maxDiameterPx
-  }
+const getters = {
+  symbolExtractByArea: (state: State) => state.symbolExtractByArea,
 }
 
-export const symbolExtractByArea = new Module({
+const mutations = {
+  // Mutations if any
+}
+
+const actions = {
+  setMinDiameterPx({ state }: { state: State }, minDiameterPx: number) {
+    state.symbolExtractByArea.minDiameterPx = minDiameterPx
+  },
+  setMaxDiameterPx({ state }: { state: State }, maxDiameterPx: number) {
+    state.symbolExtractByArea.maxDiameterPx = maxDiameterPx
+  },
+}
+
+export const symbolExtractByArea: Module<State, any> = {
   state,
-  actions,
   getters,
-})
-
-export const symbolExtractByAreaMapper = createMapper(symbolExtractByArea)
+  mutations,
+  actions,
+}

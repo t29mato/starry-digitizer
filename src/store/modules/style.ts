@@ -1,63 +1,47 @@
-import {
-  Mutations,
-  Actions,
-  Getters,
-  Module,
-  createMapper,
-} from 'vuex-smart-module'
+import { Module } from 'vuex'
 
-class state {
-  plotSizePx = 10
-  axisSizePx = 20
+interface State {
+  plotSizePx: number
+  axisSizePx: number
 }
 
-class getters extends Getters<state> {
-  get plotSizePx() {
-    return this.state.plotSizePx
-  }
-  get axisSizePx() {
-    return this.state.axisSizePx
-  }
-  get axisHalfSizePx() {
-    return this.state.axisSizePx / 2
-  }
-  get axisCrossBorderPx() {
-    return this.state.axisSizePx * 0.1
-  }
-  get axisCrossBorderHalfPx() {
-    return this.getters.axisCrossBorderPx * 0.5
-  }
-  get axisCrossTopPx() {
-    return (this.state.axisSizePx - this.getters.axisCrossBorderPx) / 2
-  }
-  get axisCrossCursorPx() {
-    return this.state.axisSizePx * 0.7
-  }
+const state: State = {
+  plotSizePx: 10,
+  axisSizePx: 20,
 }
 
-class mutations extends Mutations<state> {
-  updatePlotSizePx(newPlotSizePx: number) {
-    this.state.plotSizePx = newPlotSizePx
-  }
-  updateAxisSizePx(newAxisSizePx: number) {
-    this.state.axisSizePx = newAxisSizePx
-  }
+const getters = {
+  plotSizePx: (state: State) => state.plotSizePx,
+  axisSizePx: (state: State) => state.axisSizePx,
+  axisHalfSizePx: (state: State) => state.axisSizePx / 2,
+  axisCrossBorderPx: (state: State) => state.axisSizePx * 0.1,
+  axisCrossBorderHalfPx: (getters: any) => getters.axisCrossBorderPx * 0.5,
+  axisCrossTopPx: (state: State, getters: any) =>
+    (state.axisSizePx - getters.axisCrossBorderPx) / 2,
+  axisCrossCursorPx: (state: State) => state.axisSizePx * 0.7,
 }
 
-class actions extends Actions<state, getters, mutations> {
-  setPlotSizePx(size: number) {
-    this.commit('updatePlotSizePx', size)
-  }
-  setAxisSizePx(size: number) {
-    this.commit('updateAxisSizePx', size)
-  }
+const mutations = {
+  updatePlotSizePx(state: State, newPlotSizePx: number) {
+    state.plotSizePx = newPlotSizePx
+  },
+  updateAxisSizePx(state: State, newAxisSizePx: number) {
+    state.axisSizePx = newAxisSizePx
+  },
 }
 
-export const style = new Module({
+const actions = {
+  setPlotSizePx({ commit }: any, size: number) {
+    commit('updatePlotSizePx', size)
+  },
+  setAxisSizePx({ commit }: any, size: number) {
+    commit('updateAxisSizePx', size)
+  },
+}
+
+export const style: Module<State, any> = {
   state,
+  getters,
   mutations,
   actions,
-  getters,
-})
-
-export const styleMapper = createMapper(style)
+}

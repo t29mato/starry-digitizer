@@ -4,7 +4,6 @@ import { canvas } from './modules/canvas'
 import { dataset } from './modules/dataset'
 import { magnifier } from './modules/magnifier'
 import { axes } from './modules/axes'
-import { createStore, Module } from 'vuex-smart-module'
 import { symbolExtractByArea } from './modules/symbolExtractByArea'
 import { lineExtract } from './modules/lineExtract'
 import { extractor } from './modules/extractor'
@@ -12,7 +11,7 @@ import { style } from './modules/style'
 
 Vue.use(Vuex)
 
-const module = new Module({
+const store = new Vuex.Store({
   modules: {
     canvas,
     dataset,
@@ -23,7 +22,7 @@ const module = new Module({
     extractor,
     style,
   },
+  // その他の設定
 })
 
-const store = createStore(module)
 export default store

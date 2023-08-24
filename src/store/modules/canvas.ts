@@ -1,74 +1,81 @@
-import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
+import { Module } from 'vuex'
 import { Canvas } from '@/domains/canvas'
 import { Coord } from '@/domains/datasetInterface'
 
-class state {
-  canvas: Canvas = new Canvas()
+interface State {
+  canvas: Canvas
 }
 
-class getters extends Getters<state> {
-  get canvas() {
-    return this.state.canvas
-  }
+const state: State = {
+  canvas: new Canvas(),
 }
 
-class actions extends Actions<state, getters> {
-  scaleUp() {
-    this.state.canvas.scaleUp()
-  }
-
-  scaleDown() {
-    this.state.canvas.scaleDown()
-  }
-
-  resizeCanvasToOriginal() {
-    this.state.canvas.drawOriginalSizeImage()
-  }
-
-  drawFitSizeImage() {
-    this.state.canvas.drawFitSizeImage()
-  }
-
-  mouseMoveForPen(config: { xPx: number; yPx: number; penSize: number }) {
-    this.state.canvas.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
-  }
-
-  setCanvasCursor(coord: Coord) {
-    this.state.canvas.cursor = coord
-  }
-
-  setPenToolSizePx(size: number) {
-    this.state.canvas.penToolSizePx = size
-  }
-
-  setMaskMode(mode: number) {
-    this.state.canvas.maskMode = mode
-    this.state.canvas.manualMode = -1
-  }
-
-  setManualMode(mode: number) {
-    // TODO: この処理はDomainに持たせるべき？
-    this.state.canvas.manualMode = mode
-    this.state.canvas.maskMode = -1
-  }
-
-  setEraserSizePx(size: number) {
-    this.state.canvas.eraserSizePx = size
-  }
-
-  setUploadImageUrl(url: string) {
-    this.state.canvas.uploadImageUrl = url
-  }
-
-  mouseMoveOnCanvas(coord: Coord) {
-    this.state.canvas.mouseMove(coord.xPx, coord.yPx)
-  }
+const getters = {
+  canvas: (state: State) => state.canvas,
 }
 
-export const canvas = new Module({
+const mutations = {
+  // Mutations if any
+}
+
+const actions = {
+  scaleUp({ state }: { state: State }) {
+    state.canvas.scaleUp()
+  },
+
+  scaleDown({ state }: { state: State }) {
+    state.canvas.scaleDown()
+  },
+
+  resizeCanvasToOriginal({ state }: { state: State }) {
+    state.canvas.drawOriginalSizeImage()
+  },
+
+  drawFitSizeImage({ state }: { state: State }) {
+    state.canvas.drawFitSizeImage()
+  },
+
+  mouseMoveForPen(
+    { state }: { state: State },
+    config: { xPx: number; yPx: number; penSize: number }
+  ) {
+    state.canvas.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
+  },
+
+  setCanvasCursor({ state }: { state: State }, coord: Coord) {
+    state.canvas.cursor = coord
+  },
+
+  setPenToolSizePx({ state }: { state: State }, size: number) {
+    state.canvas.penToolSizePx = size
+  },
+
+  setMaskMode({ state }: { state: State }, mode: number) {
+    state.canvas.maskMode = mode
+    state.canvas.manualMode = -1
+  },
+
+  setManualMode({ state }: { state: State }, mode: number) {
+    state.canvas.manualMode = mode
+    state.canvas.maskMode = -1
+  },
+
+  setEraserSizePx({ state }: { state: State }, size: number) {
+    state.canvas.eraserSizePx = size
+  },
+
+  setUploadImageUrl({ state }: { state: State }, url: string) {
+    state.canvas.uploadImageUrl = url
+  },
+
+  mouseMoveOnCanvas({ state }: { state: State }, coord: Coord) {
+    state.canvas.mouseMove(coord.xPx, coord.yPx)
+  },
+}
+
+export const canvas: Module<State, any> = {
   state,
-  actions,
   getters,
-})
-
-export const canvasMapper = createMapper(canvas)
+  mutations,
+  actions,
+}
