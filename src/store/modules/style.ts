@@ -15,7 +15,8 @@ const getters = {
   axisSizePx: (state: State) => state.axisSizePx,
   axisHalfSizePx: (state: State) => state.axisSizePx / 2,
   axisCrossBorderPx: (state: State) => state.axisSizePx * 0.1,
-  axisCrossBorderHalfPx: (getters: any) => getters.axisCrossBorderPx * 0.5,
+  axisCrossBorderHalfPx: (state: State, getters: any) =>
+    getters.axisCrossBorderPx * 0.5,
   axisCrossTopPx: (state: State, getters: any) =>
     (state.axisSizePx - getters.axisCrossBorderPx) / 2,
   axisCrossCursorPx: (state: State) => state.axisSizePx * 0.7,
