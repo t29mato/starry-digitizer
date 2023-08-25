@@ -18,13 +18,13 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { datasetMapper } from '@/store/modules/dataset'
-import { canvasMapper } from '@/store/modules/canvas'
+import { mapGetters, mapActions } from 'vuex'
+
 import { Plot } from '@/domains/datasetInterface'
 
 export default Vue.extend({
   computed: {
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -56,7 +56,7 @@ export default Vue.extend({
     },
   },
   methods: {
-    ...datasetMapper.mapActions([
+    ...mapActions('dataset', [
       'toggleActivatedPlot',
       'activatePlot',
       'clearPlot',

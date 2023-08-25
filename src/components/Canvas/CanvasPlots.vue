@@ -13,18 +13,16 @@
 <script lang="ts">
 import CanvasPlot from '@/components/Canvas/CanvasPlot.vue'
 import Vue from 'vue'
-import { datasetMapper } from '@/store/modules/dataset'
-import { canvasMapper } from '@/store/modules/canvas'
-import { styleMapper } from '@/store/modules/style'
+import { mapGetters } from 'vuex'
 
 export default Vue.extend({
   components: {
     CanvasPlot,
   },
   computed: {
-    ...datasetMapper.mapGetters(['datasets']),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...styleMapper.mapGetters(['plotSizePx']),
+    ...mapGetters('dataset', { dataset: 'dataset' }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
+    ...mapGetters('style', { plotSizePx: 'plotSizePx' }),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },

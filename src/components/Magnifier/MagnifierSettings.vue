@@ -28,14 +28,15 @@
 </template>
 
 <script lang="ts">
-import { magnifierMapper } from '@/store/modules/magnifier'
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
+
 export default Vue.extend({
   data() {
     return {}
   },
   computed: {
-    ...magnifierMapper.mapGetters(['magnifier']),
+    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
   },
   props: {
     shouldShowSettingsDialog: {

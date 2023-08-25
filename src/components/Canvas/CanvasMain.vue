@@ -42,13 +42,11 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { canvasMapper } from '@/store/modules/canvas'
-import { axesMapper } from '@/store/modules/axes'
-import { datasetMapper } from '@/store/modules/dataset'
+import { mapGetters, mapActions } from 'vuex'
+
 import { CanvasAxes, CanvasPlots, CanvasCursor, CanvasAxesGuide } from '.'
-import { extractorMapper } from '@/store/modules/extractor'
 import { Vector } from '@/domains/axes/axesInterface'
-import { Coord } from '@/domains/datasetInterface'
+import { Coord, Plot } from '@/domains/datasetInterface'
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 
@@ -66,9 +64,9 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyDownHandler)
   },
   computed: {
-    ...canvasMapper.mapGetters(['canvas']),
-    ...axesMapper.mapGetters(['axes']),
-    ...datasetMapper.mapGetters(['datasets']),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
+    ...mapGetters('axes', { axes: 'axes' }),
+    ...mapGetters('dataset', { dataset: 'dataset' }),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
@@ -86,25 +84,21 @@ export default Vue.extend({
     }
   },
   methods: {
-    ...datasetMapper.mapActions([
+    ...mapActions('dataset', [
       'addPlot',
       'moveActivePlot',
       'clearActivePlots',
       'inactivatePlots',
     ]),
-    ...canvasMapper.mapActions([
+    ...mapActions('canvas', [
       'mouseMoveOnCanvas',
       'setCanvasCursor',
       'drawFitSizeImage',
       'setUploadImageUrl',
       'setManualMode',
     ]),
-    ...axesMapper.mapActions([
-      'addAxisCoord',
-      'inactivateAxis',
-      'moveActiveAxis',
-    ]),
-    ...extractorMapper.mapActions(['setSwatches']),
+    ...mapActions('axes', ['addAxisCoord', 'inactivateAxis', 'moveActiveAxis']),
+    ...mapActions('extractor', ['setSwatches']),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき
@@ -243,7 +237,7 @@ export default Vue.extend({
       if (this.datasets.activeDataset.plotsAreActive) {
         this.moveActivePlot(vector)
         this.setCanvasCursor(
-          this.datasets.activeDataset.plots.filter((plot) =>
+          this.datasets.activeDataset.plots.filter((plot: Plot) =>
             this.datasets.activeDataset.activePlotIds.includes(plot.id)
           )[0]
         )

@@ -34,13 +34,13 @@
 </template>
 
 <script lang="ts">
-import { canvasMapper } from '@/store/modules/canvas'
-import { magnifierMapper } from '@/store/modules/magnifier'
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
+
 export default Vue.extend({
   computed: {
-    ...magnifierMapper.mapGetters(['magnifier']),
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
     halfSize(): number {
       return this.magnifier.sizePx / 2
     },

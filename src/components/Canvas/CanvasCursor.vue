@@ -52,7 +52,7 @@ export default Vue.extend({
     }),
     ...mapGetters('canvas', { canvas: 'canvas' }),
     ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('datasets', { datasets: 'datasets' }),
+    ...mapGetters('dataset', { dataset: 'dataset' }),
     rightLabel(): string {
       switch (this.canvas.maskMode) {
         case 0:

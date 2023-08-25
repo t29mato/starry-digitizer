@@ -24,9 +24,8 @@
 </template>
 
 <script lang="ts">
-import { mapGetters } from 'vuex'
-
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
 
 const axesGuideCommonStyle = {
   position: 'absolute',

@@ -41,16 +41,16 @@ export default Vue.extend({
   props: {},
   computed: {
     ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('datasets', { datasets: 'datasets' }),
+    ...mapGetters('dataset', { dataset: 'dataset' }),
   },
   methods: {
-    ...datasetMapper.mapActions(['clearPlots', 'clearActivePlots']),
+    ...mapActions('dataset', ['clearPlots', 'clearActivePlots']),
     ...mapActions('axes', [
       'clearAxesCoords',
       'clearXAxisCoords',
       'clearYAxisCoords',
     ]),
-    ...canvasMapper.mapActions(['setManualMode']),
+    ...mapActions('canvas', ['setManualMode']),
     clearAxes() {
       this.clearAxesCoords()
       this.setManualMode(-1)

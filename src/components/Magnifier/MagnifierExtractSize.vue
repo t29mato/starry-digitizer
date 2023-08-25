@@ -35,18 +35,18 @@
 </template>
 
 <script lang="ts">
-import { extractorMapper } from '@/store/modules/extractor'
-import { lineExtractMapper } from '@/store/modules/lineExtract'
-import { magnifierMapper } from '@/store/modules/magnifier'
-import { symbolExtractByAreaMapper } from '@/store/modules/symbolExtractByArea'
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
+
 export default Vue.extend({
   props: {},
   computed: {
-    ...magnifierMapper.mapGetters(['magnifier']),
-    ...lineExtractMapper.mapGetters(['lineExtract']),
-    ...extractorMapper.mapGetters(['extractor']),
-    ...symbolExtractByAreaMapper.mapGetters(['symbolExtractByArea']),
+    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
+    ...mapGetters('lineExtract', { lineExtract: 'lineExtract' }),
+    ...mapGetters('extractor', { extractor: 'extractor' }),
+    ...mapGetters('symbolExtractByArea', {
+      symbolExtractByArea: 'symbolExtractByArea',
+    }),
     symbolMinDiameter(): number {
       return this.symbolExtractByArea.minDiameterPx * this.magnifier.scale
     },

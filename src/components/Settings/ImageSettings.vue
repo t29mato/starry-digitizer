@@ -11,14 +11,11 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { datasetMapper } from '@/store/modules/dataset'
-import { extractorMapper } from '@/store/modules/extractor'
+import { mapGetters, mapActions } from 'vuex'
 
 export default Vue.extend({
   computed: {
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
   },
   data() {
     return {}
@@ -32,10 +29,10 @@ export default Vue.extend({
 
   props: {},
   methods: {
-    ...canvasMapper.mapActions(['drawFitSizeImage', 'setUploadImageUrl']),
-    ...axesMapper.mapActions(['clearAxesCoords']),
-    ...datasetMapper.mapActions(['clearPlots']),
-    ...extractorMapper.mapActions(['setSwatches']),
+    ...mapActions('canvas', ['drawFitSizeImage', 'setUploadImageUrl']),
+    ...mapActions('axes', ['clearAxesCoords']),
+    ...mapActions('dataset', ['clearPlots']),
+    ...mapActions('extractor', ['setSwatches']),
     async uploadImage(file: File) {
       try {
         const fr = await this.readFile(file)

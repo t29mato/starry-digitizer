@@ -39,8 +39,9 @@
 </template>
 
 <script lang="ts">
-import { extractorMapper } from '@/store/modules/extractor'
 import Vue from 'vue'
+import { mapGetters, mapActions } from 'vuex'
+
 export default Vue.extend({
   data() {
     return {
@@ -48,11 +49,11 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...extractorMapper.mapGetters(['extractor']),
+    ...mapGetters('extractor', { extractor: 'extractor' }),
   },
   props: {},
   methods: {
-    ...extractorMapper.mapActions(['setColorPicker', 'setColorDistancePct']),
+    ...mapActions('extractor', ['setColorPicker', 'setColorDistancePct']),
     inputColorPicker(value: any) {
       console.log(value)
       this.setColorPicker(value.target.value)

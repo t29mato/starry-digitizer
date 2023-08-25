@@ -15,18 +15,18 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { canvasMapper } from '@/store/modules/canvas'
+import { mapGetters, mapActions } from 'vuex'
 
 export default Vue.extend({
   props: {},
   computed: {
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
     showCanvasScale(): string {
       return Math.trunc(this.canvas.scale * 100) + '%'
     },
   },
   methods: {
-    ...canvasMapper.mapActions([
+    ...mapActions('canvas', [
       'scaleUp',
       'scaleDown',
       'resizeCanvasToOriginal',
