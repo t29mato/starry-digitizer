@@ -20,7 +20,7 @@ export default Vue.extend({
     CanvasPlot,
   },
   computed: {
-    ...mapGetters('dataset', { dataset: 'dataset' }),
+    ...mapGetters('datasets', { datasets: 'datasets' }),
     ...mapGetters('canvas', { canvas: 'canvas' }),
     ...mapGetters('style', { plotSizePx: 'plotSizePx' }),
     plotHalfSize(): number {

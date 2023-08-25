@@ -66,7 +66,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapGetters('dataset', { dataset: 'dataset' }),
+    ...mapGetters('datasets', { datasets: 'datasets' }),
     ...mapGetters('canvas', { canvas: 'canvas' }),
   },
   props: {

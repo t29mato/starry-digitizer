@@ -31,7 +31,7 @@ export default Vue.extend({
     HotTable,
   },
   computed: {
-    ...mapGetters('dataset', { dataset: 'dataset' }),
+    ...mapGetters('datasets', { datasets: 'datasets' }),
     ...mapGetters('axes', { axes: 'axes' }),
     ...mapGetters('canvas', { canvas: 'canvas' }),
     tableData() {

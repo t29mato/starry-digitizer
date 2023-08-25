@@ -66,7 +66,7 @@ export default Vue.extend({
   computed: {
     ...mapGetters('canvas', { canvas: 'canvas' }),
     ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('dataset', { dataset: 'dataset' }),
+    ...mapGetters('datasets', { datasets: 'datasets' }),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))

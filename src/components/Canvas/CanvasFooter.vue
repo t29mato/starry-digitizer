@@ -41,7 +41,7 @@ export default Vue.extend({
   props: {},
   computed: {
     ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('dataset', { dataset: 'dataset' }),
+    ...mapGetters('datasets', { datasets: 'datasets' }),
   },
   methods: {
     ...mapActions('dataset', ['clearPlots', 'clearActivePlots']),
