@@ -35,19 +35,17 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { datasetMapper } from '@/store/modules/dataset'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
+import { mapGetters, mapActions } from 'vuex'
 
 export default Vue.extend({
   props: {},
   computed: {
-    ...axesMapper.mapGetters(['axes']),
-    ...datasetMapper.mapGetters(['datasets']),
+    ...mapGetters('axes', { axes: 'axes' }),
+    ...mapGetters('datasets', { datasets: 'datasets' }),
   },
   methods: {
     ...datasetMapper.mapActions(['clearPlots', 'clearActivePlots']),
-    ...axesMapper.mapActions([
+    ...mapActions('axes', [
       'clearAxesCoords',
       'clearXAxisCoords',
       'clearYAxisCoords',

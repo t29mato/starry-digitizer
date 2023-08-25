@@ -38,8 +38,8 @@ const axesGuideCommonStyle = {
 export default Vue.extend({
   components: {},
   computed: {
-    ...mapGetters('axes', ['axes']),
-    ...mapGetters('canvas', ['canvas']),
+    ...mapGetters('axes', { axes: 'axes' }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
     isActive() {
       return this.axes.pointMode === 0
     },
