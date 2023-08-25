@@ -63,7 +63,7 @@ const actions = {
   },
 }
 
-export const dataset: Module<State, any> = {
+export const datasets: Module<State, any> = {
   namespaced: true,
   state,
   getters,
