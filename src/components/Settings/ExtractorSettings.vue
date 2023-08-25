@@ -78,7 +78,7 @@ export default Vue.extend({
   methods: {
     ...mapActions('extractor', ['setStrategy']),
     ...mapActions('axes', ['inactivateAxis']),
-    ...mapActions('dataset', [
+    ...mapActions('datasets', [
       'clearPlots',
       'setPlots',
       'sortPlots',

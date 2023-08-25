@@ -31,7 +31,7 @@ export default Vue.extend({
   methods: {
     ...mapActions('canvas', ['drawFitSizeImage', 'setUploadImageUrl']),
     ...mapActions('axes', ['clearAxesCoords']),
-    ...mapActions('dataset', ['clearPlots']),
+    ...mapActions('datasets', ['clearPlots']),
     ...mapActions('extractor', ['setSwatches']),
     async uploadImage(file: File) {
       try {

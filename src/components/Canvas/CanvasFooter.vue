@@ -44,7 +44,7 @@ export default Vue.extend({
     ...mapGetters('datasets', { datasets: 'datasets' }),
   },
   methods: {
-    ...mapActions('dataset', ['clearPlots', 'clearActivePlots']),
+    ...mapActions('datasets', ['clearPlots', 'clearActivePlots']),
     ...mapActions('axes', [
       'clearAxesCoords',
       'clearXAxisCoords',

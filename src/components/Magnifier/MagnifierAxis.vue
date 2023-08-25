@@ -55,7 +55,7 @@ export default Vue.extend({
   computed: {
     ...mapGetters('axes', { axes: 'axes' }),
     ...mapGetters('canvas', { canvas: 'canvas' }),
-    ...mapGetters({
+    ...mapGetters('style', {
       axisSizePx: 'axisSizePx',
       axisHalfSizePx: 'axisHalfSizePx',
       axisCrossBorderHalfPx: 'axisCrossBorderHalfPx',

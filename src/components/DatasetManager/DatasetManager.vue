@@ -80,7 +80,7 @@ export default Vue.extend({
     },
   },
   methods: {
-    ...mapActions('dataset', ['addDataset', 'setActiveDataset', 'popDataset']),
+    ...mapActions('datasets', ['addDataset', 'setActiveDataset', 'popDataset']),
     activateDataset(id: number) {
       this.setActiveDataset(id)
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。

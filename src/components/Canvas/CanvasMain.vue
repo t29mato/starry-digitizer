@@ -84,7 +84,7 @@ export default Vue.extend({
     }
   },
   methods: {
-    ...mapActions('dataset', [
+    ...mapActions('datasets', [
       'addPlot',
       'moveActivePlot',
       'clearActivePlots',

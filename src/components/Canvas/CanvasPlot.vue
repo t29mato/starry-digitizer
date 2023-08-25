@@ -56,7 +56,7 @@ export default Vue.extend({
     },
   },
   methods: {
-    ...mapActions('dataset', [
+    ...mapActions('datasets', [
       'toggleActivatedPlot',
       'activatePlot',
       'clearPlot',
