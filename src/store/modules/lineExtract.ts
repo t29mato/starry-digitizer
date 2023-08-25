@@ -28,6 +28,7 @@ const actions = {
 }
 
 export const lineExtract: Module<State, any> = {
+  namespaced: true,
   state,
   getters,
   mutations,

@@ -24,6 +24,7 @@ const actions = {
 }
 
 export const magnifier: Module<State, any> = {
+  namespaced: true,
   state,
   getters,
   mutations,

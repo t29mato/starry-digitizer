@@ -40,6 +40,7 @@ const actions = {
 }
 
 export const style: Module<State, any> = {
+  namespaced: true,
   state,
   getters,
   mutations,

@@ -64,6 +64,7 @@ const actions = {
 }
 
 export const dataset: Module<State, any> = {
+  namespaced: true,
   state,
   getters,
   mutations,

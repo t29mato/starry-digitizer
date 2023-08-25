@@ -35,6 +35,7 @@ const actions = {
 }
 
 export const extractor: Module<State, any> = {
+  namespaced: true,
   state,
   getters,
   mutations,

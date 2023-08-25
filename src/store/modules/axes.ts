@@ -66,6 +66,7 @@ const actions = {
 }
 
 export const axes: Module<State, any> = {
+  namespaced: true,
   state,
   getters,
   mutations,

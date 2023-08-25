@@ -27,6 +27,7 @@ const actions = {
 }
 
 export const symbolExtractByArea: Module<State, any> = {
+  namespaced: true,
   state,
   getters,
   mutations,

@@ -74,6 +74,7 @@ const actions = {
 }
 
 export const canvas: Module<State, any> = {
+  namespaced: true,
   state,
   getters,
   mutations,
