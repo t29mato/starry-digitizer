@@ -22,7 +22,6 @@ const store = new Vuex.Store({
     extractor,
     style,
   },
-  // その他の設定
 })
 
 export default store
