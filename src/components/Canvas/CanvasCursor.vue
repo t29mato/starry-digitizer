@@ -36,12 +36,24 @@
     >
       {{ leftLabel }}
     </div>
+    <div v-if="isCursorGuideLinesActive">
+      <!-- INFO: Horizontal Guide Line -->
+      <div :style="horizontalGuideLineStyle"></div>
+      <!-- INFO: Vertical Guide Line -->
+      <div :style="verticalGuideLineStyle"></div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
+
+const guideLineBaseStyles = {
+  position: 'absolute',
+  pointerEvents: 'none',
+  opacity: '0.8',
+}
 
 export default Vue.extend({
   props: {},
@@ -93,6 +105,64 @@ export default Vue.extend({
       }
 
       return ''
+    },
+    isCursorGuideLinesActive(): boolean {
+      //INFO: 軸定義後でプロットのいずれのモードでもないときは表示しない
+      if (this.canvas.manualMode === -1 && this.axes.y2.coordIsFilled) {
+        return false
+      }
+
+      // //INFO: マスク操作中の場合は表示しない
+      if (this.canvas.maskMode !== -1) {
+        return false
+      }
+
+      //INFO: EDIT, DELETEモードの場合は表示しない
+      if (this.canvas.manualMode !== -1 && this.canvas.manualMode !== 0) {
+        return false
+      }
+
+      return true
+    },
+    guideLineColor(): string {
+      if (this.canvas.manualMode === -1) {
+        return '#00ff00'
+      }
+
+      if (this.canvas.manualMode === 0) {
+        return '#ffcc00'
+      }
+
+      return '#00ff00'
+    },
+    horizontalGuideLineStyle(): Partial<CSSStyleDeclaration> {
+      return {
+        ...guideLineBaseStyles,
+        width: `${this.getImageCanvasSize().w}px`,
+        height: '1px',
+        top: `${this.canvas.scaledCursor.yPx}px`,
+        backgroundColor: this.guideLineColor,
+      }
+    },
+    verticalGuideLineStyle(): Partial<CSSStyleDeclaration> {
+      return {
+        ...guideLineBaseStyles,
+        width: '1px',
+        top: '0',
+        height: `${this.getImageCanvasSize().h}px`,
+        left: `${this.canvas.scaledCursor.xPx}px`,
+        backgroundColor: this.guideLineColor,
+      }
+    },
+  },
+  methods: {
+    //INFO: computedではリアクティブにならなかったのでmethodとしている
+    getImageCanvasSize(): { w: number; h: number } {
+      const imageCanvas = document.getElementById('imageCanvas')
+
+      if (!imageCanvas) return { w: 0, h: 0 }
+
+      return { w: imageCanvas.clientWidth, h: imageCanvas.clientHeight }
     },
   },
 })
