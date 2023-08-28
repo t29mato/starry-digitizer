@@ -1,39 +1,43 @@
-import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
+import { Module } from 'vuex'
 import { Extractor } from '@/domains/extractor'
 import ExtractStrategyInterface from '@/domains/extractStrategies/extractStrategyInterface'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
 
-class state {
-  extractor = new Extractor(LineExtract.instance)
+interface State {
+  extractor: Extractor
 }
 
-class getters extends Getters<state> {
-  get extractor() {
-    return this.state.extractor
-  }
+const state: State = {
+  extractor: new Extractor(LineExtract.instance),
 }
 
-class actions extends Actions<state, getters> {
-  setColorDistancePct(colorDistancePct: number) {
-    this.state.extractor.colorDistancePct = colorDistancePct
-  }
-  setStrategy(strategy: ExtractStrategyInterface) {
-    this.state.extractor.strategy = strategy
-  }
-
-  setColorPicker(color: string) {
-    this.state.extractor.colorPicker = color
-  }
-
-  setSwatches(colorSwatches: string[]) {
-    this.state.extractor.updateSwatches(colorSwatches)
-  }
+const getters = {
+  extractor: (state: State) => state.extractor,
 }
 
-export const extractor = new Module({
+const mutations = {
+  // Mutations if any
+}
+
+const actions = {
+  setColorDistancePct({ state }: { state: State }, colorDistancePct: number) {
+    state.extractor.colorDistancePct = colorDistancePct
+  },
+  setStrategy({ state }: { state: State }, strategy: ExtractStrategyInterface) {
+    state.extractor.strategy = strategy
+  },
+  setColorPicker({ state }: { state: State }, color: string) {
+    state.extractor.colorPicker = color
+  },
+  setSwatches({ state }: { state: State }, colorSwatches: string[]) {
+    state.extractor.updateSwatches(colorSwatches)
+  },
+}
+
+export const extractor: Module<State, any> = {
+  namespaced: true,
   state,
-  actions,
   getters,
-})
-
-export const extractorMapper = createMapper(extractor)
+  mutations,
+  actions,
+}

@@ -53,8 +53,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { datasetMapper } from '@/store/modules/dataset'
-import { canvasMapper } from '@/store/modules/canvas'
+import { mapGetters, mapActions } from 'vuex'
 
 export default Vue.extend({
   components: {},
@@ -67,8 +66,8 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...datasetMapper.mapGetters(['datasets']),
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapGetters('datasets', { datasets: 'datasets' }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
   },
   props: {
     exportBtnText: {
@@ -81,11 +80,7 @@ export default Vue.extend({
     },
   },
   methods: {
-    ...datasetMapper.mapActions([
-      'addDataset',
-      'setActiveDataset',
-      'popDataset',
-    ]),
+    ...mapActions('datasets', ['addDataset', 'setActiveDataset', 'popDataset']),
     activateDataset(id: number) {
       this.setActiveDataset(id)
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。

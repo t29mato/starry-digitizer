@@ -1,26 +1,32 @@
-import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
+import { Module } from 'vuex'
 import { Magnifier } from '@/domains/magnifier'
 
-class state {
-  magnifier = new Magnifier()
+interface State {
+  magnifier: Magnifier
 }
 
-class getters extends Getters<state> {
-  get magnifier(): Magnifier {
-    return this.state.magnifier
-  }
+const state: State = {
+  magnifier: new Magnifier(),
 }
 
-class actions extends Actions<state, getters> {
-  setScale(scale: number): void {
-    this.state.magnifier.setScale(scale)
-  }
+const getters = {
+  magnifier: (state: State) => state.magnifier,
 }
 
-export const magnifier = new Module({
+const mutations = {
+  // Mutations if any
+}
+
+const actions = {
+  setScale({ state }: { state: State }, scale: number): void {
+    state.magnifier.setScale(scale)
+  },
+}
+
+export const magnifier: Module<State, any> = {
+  namespaced: true,
   state,
-  actions,
   getters,
-})
-
-export const magnifierMapper = createMapper(magnifier)
+  mutations,
+  actions,
+}

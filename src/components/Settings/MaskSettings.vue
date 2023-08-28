@@ -34,15 +34,16 @@
 </template>
 
 <script lang="ts">
-import { canvasMapper } from '@/store/modules/canvas'
 import Vue from 'vue'
+import { mapGetters, mapActions } from 'vuex'
+
 export default Vue.extend({
   computed: {
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
   },
   props: {},
   methods: {
-    ...canvasMapper.mapActions([
+    ...mapActions('canvas', [
       'setPenToolSizePx',
       'setMaskMode',
       'setEraserSizePx',

@@ -21,16 +21,15 @@
 </template>
 
 <script lang="ts">
-import { canvasMapper } from '@/store/modules/canvas'
-import { styleMapper } from '@/store/modules/style'
-import { magnifierMapper } from '@/store/modules/magnifier'
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
+
 import { Coord } from '@/domains/datasetInterface'
 export default Vue.extend({
   computed: {
-    ...magnifierMapper.mapGetters(['magnifier']),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...styleMapper.mapGetters(['plotSizePx']),
+    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
+    ...mapGetters('style', { plotSizePx: 'plotSizePx' }),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },

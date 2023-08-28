@@ -39,9 +39,9 @@
 
 <script lang="ts">
 import { AxisInterface } from '@/domains/axes/axisInterface'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { styleMapper } from '@/store/modules/style'
+
+import { mapGetters } from 'vuex'
+
 import Vue from 'vue'
 export default Vue.extend({
   props: {
@@ -56,16 +56,16 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...styleMapper.mapGetters([
-      'axisSizePx',
-      'axisHalfSizePx',
-      'axisCrossBorderHalfPx',
-      'axisCrossBorderPx',
-      'axisCrossTopPx',
-      'axisCrossCursorPx',
-    ]),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...axesMapper.mapGetters(['axes']),
+    ...mapGetters('style', {
+      axisSizePx: 'axisSizePx',
+      axisHalfSizePx: 'axisHalfSizePx',
+      axisCrossBorderHalfPx: 'axisCrossBorderHalfPx',
+      axisCrossBorderPx: 'axisCrossBorderPx',
+      axisCrossTopPx: 'axisCrossTopPx',
+      axisCrossCursorPx: 'axisCrossCursorPx',
+    }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
+    ...mapGetters('axes', { axes: 'axes' }),
     xPx(): number {
       if (this.axis.coord) {
         return this.axis.coord.xPx * this.canvas.scale

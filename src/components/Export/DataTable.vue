@@ -14,14 +14,14 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
+
 import colors from 'vuetify/lib/util/colors'
-import { datasetMapper } from '@/store/modules/dataset'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
 import { HotTable } from '@handsontable/vue'
 import 'handsontable/dist/handsontable.full.css'
 import { registerAllModules } from 'handsontable/registry'
+import { Plot } from '@/domains/datasetInterface'
 registerAllModules()
 
 const CSV_DELIMITER = ','
@@ -31,12 +31,12 @@ export default Vue.extend({
     HotTable,
   },
   computed: {
-    ...datasetMapper.mapGetters(['datasets']),
-    ...axesMapper.mapGetters(['axes']),
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapGetters('datasets', { datasets: 'datasets' }),
+    ...mapGetters('axes', { axes: 'axes' }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
     tableData() {
       if (this.datasets.activeDataset.plots.length > 0) {
-        return this.datasets.activeDataset.plots.map((plot) => {
+        return this.datasets.activeDataset.plots.map((plot: Plot) => {
           // @ts-ignore calculateXY methods is defined apparently
           const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
           return {

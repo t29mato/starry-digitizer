@@ -39,13 +39,11 @@
 
 <script lang="ts">
 import { AxisInterface } from '@/domains/axes/axisInterface'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { magnifierMapper } from '@/store/modules/magnifier'
-import { styleMapper } from '@/store/modules/style'
 import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
+
 export default Vue.extend({
   components: {
     MagnifierAxisLabelX,
@@ -55,17 +53,17 @@ export default Vue.extend({
     return {}
   },
   computed: {
-    ...canvasMapper.mapGetters(['canvas']),
-    ...axesMapper.mapGetters(['axes']),
-    ...styleMapper.mapGetters([
-      'axisSizePx',
-      'axisHalfSizePx',
-      'axisCrossBorderHalfPx',
-      'axisCrossBorderPx',
-      'axisCrossTopPx',
-      'axisCrossCursorPx',
-    ]),
-    ...magnifierMapper.mapGetters(['magnifier']),
+    ...mapGetters('axes', { axes: 'axes' }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
+    ...mapGetters('style', {
+      axisSizePx: 'axisSizePx',
+      axisHalfSizePx: 'axisHalfSizePx',
+      axisCrossBorderHalfPx: 'axisCrossBorderHalfPx',
+      axisCrossBorderPx: 'axisCrossBorderPx',
+      axisCrossTopPx: 'axisCrossTopPx',
+      axisCrossCursorPx: 'axisCrossCursorPx',
+    }),
+    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
     xPx(): number {
       return this.axis.coord.xPx
     },

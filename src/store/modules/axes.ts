@@ -1,72 +1,74 @@
-import { Actions, Getters, Module, createMapper } from 'vuex-smart-module'
+import { Module } from 'vuex'
 import { Axes } from '@/domains/axes/axes'
 import { Coord } from '@/domains/datasetInterface'
 import { Axis } from '@/domains/axes/axis'
 import { Vector } from '@/domains/axes/axesInterface'
 
-class state {
-  axes = new Axes(
+interface State {
+  axes: Axes
+}
+
+const state: State = {
+  axes: new Axes(
     new Axis('x1', 0),
     new Axis('x2', 1),
     new Axis('y1', 0),
     new Axis('y2', 1),
     new Axis('x2y2', -1)
-  )
+  ),
 }
 
-class getters extends Getters<state> {
-  get axes() {
-    return this.state.axes
-  }
+const getters = {
+  axes: (state: State) => state.axes,
 }
 
-class actions extends Actions<state, getters> {
-  constructor() {
-    super()
-  }
-
-  setX1Value(value: number) {
-    this.state.axes.x1.value = value
-  }
-  setX2Value(value: number) {
-    this.state.axes.x2.value = value
-  }
-  setY1Value(value: number) {
-    this.state.axes.y1.value = value
-  }
-  setY2Value(value: number) {
-    this.state.axes.y2.value = value
-  }
-  setXIsLog(value: boolean) {
-    this.state.axes.xIsLog = value
-  }
-  setYIsLog(value: boolean) {
-    this.state.axes.yIsLog = value
-  }
-  clearAxesCoords() {
-    this.state.axes.clearAxesCoords()
-  }
-  clearXAxisCoords() {
-    this.state.axes.clearXAxisCoords()
-  }
-  clearYAxisCoords() {
-    this.state.axes.clearYAxisCoords()
-  }
-  addAxisCoord(coord: Coord) {
-    this.state.axes.addAxisCoord(coord)
-  }
-  moveActiveAxis(vector: Vector) {
-    this.state.axes.moveActiveAxis(vector)
-  }
-  inactivateAxis() {
-    this.state.axes.inactivateAxis()
-  }
+const mutations = {
+  // Mutations if any
 }
 
-export const axes = new Module({
+const actions = {
+  setX1Value({ state }: { state: State }, value: number) {
+    state.axes.x1.value = value
+  },
+  setX2Value({ state }: { state: State }, value: number) {
+    state.axes.x2.value = value
+  },
+  setY1Value({ state }: { state: State }, value: number) {
+    state.axes.y1.value = value
+  },
+  setY2Value({ state }: { state: State }, value: number) {
+    state.axes.y2.value = value
+  },
+  setXIsLog({ state }: { state: State }, value: boolean) {
+    state.axes.xIsLog = value
+  },
+  setYIsLog({ state }: { state: State }, value: boolean) {
+    state.axes.yIsLog = value
+  },
+  clearAxesCoords({ state }: { state: State }) {
+    state.axes.clearAxesCoords()
+  },
+  clearXAxisCoords({ state }: { state: State }) {
+    state.axes.clearXAxisCoords()
+  },
+  clearYAxisCoords({ state }: { state: State }) {
+    state.axes.clearYAxisCoords()
+  },
+  addAxisCoord({ state }: { state: State }, coord: Coord) {
+    state.axes.addAxisCoord(coord)
+  },
+  moveActiveAxis({ state }: { state: State }, vector: Vector) {
+    state.axes.moveActiveAxis(vector)
+  },
+  inactivateAxis({ state }: { state: State }) {
+    state.axes.inactivateAxis()
+  },
+}
+
+export const axes: Module<State, any> = {
+  namespaced: true,
   state,
-  actions,
   getters,
-})
-
-export const axesMapper = createMapper(axes)
+  mutations,
+  actions,
+}

@@ -37,6 +37,8 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { mapGetters, mapActions } from 'vuex'
+
 import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
@@ -45,10 +47,6 @@ import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/components/Magnifier/MagnifierExtractSize.vue'
-import { datasetMapper } from '@/store/modules/dataset'
-import { canvasMapper } from '@/store/modules/canvas'
-import { magnifierMapper } from '@/store/modules/magnifier'
-import { axesMapper } from '@/store/modules/axes'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
 
 export default Vue.extend({
@@ -69,10 +67,10 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...datasetMapper.mapGetters(['datasets']),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...magnifierMapper.mapGetters(['magnifier']),
-    ...axesMapper.mapGetters(['axes']),
+    ...mapGetters('datasets', { datasets: 'datasets' }),
+    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
+    ...mapGetters('axes', { axes: 'axes' }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
     // magnifierHalfSize(): number {
     //   return this.magnifier.sizePx / 2
     // },
@@ -104,7 +102,7 @@ export default Vue.extend({
   props: {},
 
   methods: {
-    ...magnifierMapper.mapActions(['setScale']),
+    ...mapActions('magnifier', ['setScale']),
     toggleSettingsDialog(): void {
       this.shouldShowSettingsDialog = !this.shouldShowSettingsDialog
     },

@@ -33,18 +33,16 @@
 </template>
 
 <script lang="ts">
+import Vue from 'vue'
+import { mapGetters, mapActions } from 'vuex'
+
 import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
 import MaskSettings from './MaskSettings.vue'
 import ColorSettings from './ColorSettings.vue'
-import { extractorMapper } from '@/store/modules/extractor'
-import Vue from 'vue'
 import { ExtractStrategy } from '@/domains/extractor'
 import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { datasetMapper } from '@/store/modules/dataset'
 
 export default Vue.extend({
   components: {
@@ -59,8 +57,8 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...extractorMapper.mapGetters(['extractor']),
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapGetters('extractor', { extractor: 'extractor' }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
   },
   props: {
     initialExtractorStrategy: {
@@ -78,15 +76,15 @@ export default Vue.extend({
     }
   },
   methods: {
-    ...extractorMapper.mapActions(['setStrategy']),
-    ...axesMapper.mapActions(['inactivateAxis']),
-    ...datasetMapper.mapActions([
+    ...mapActions('extractor', ['setStrategy']),
+    ...mapActions('axes', ['inactivateAxis']),
+    ...mapActions('datasets', [
       'clearPlots',
       'setPlots',
       'sortPlots',
       'inactivatePlots',
     ]),
-    ...canvasMapper.mapActions(['setManualMode']),
+    ...mapActions('canvas', ['setManualMode']),
     changeManualMode(value: any) {
       this.inactivatePlots()
       if (value === undefined) {

@@ -171,11 +171,11 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { axesMapper } from '@/store/modules/axes'
+import { mapGetters, mapActions } from 'vuex'
 
 export default Vue.extend({
   computed: {
-    ...axesMapper.mapGetters(['axes']),
+    ...mapGetters('axes', { axes: 'axes' }),
     errorMessage(): string {
       if (this.axes.xIsLog) {
         if (this.x1 === '0' || this.x2 === '0') {
@@ -210,7 +210,7 @@ export default Vue.extend({
   },
   props: {},
   methods: {
-    ...axesMapper.mapActions([
+    ...mapActions('axes', [
       'setX1Value',
       'setX2Value',
       'setY1Value',

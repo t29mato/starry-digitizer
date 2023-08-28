@@ -25,15 +25,16 @@
 </template>
 
 <script lang="ts">
-import { lineExtractMapper } from '@/store/modules/lineExtract'
 import Vue from 'vue'
+import { mapGetters, mapActions } from 'vuex'
+
 export default Vue.extend({
   computed: {
-    ...lineExtractMapper.mapGetters(['lineExtract']),
+    ...mapGetters('lineExtract', { lineExtract: 'lineExtract' }),
   },
   props: {},
   methods: {
-    ...lineExtractMapper.mapActions(['setDyPx', 'setDxPx']),
+    ...mapActions('lineExtract', ['setDyPx', 'setDxPx']),
     inputDxDyPx(value: string) {
       this.setDxPx(parseInt(value))
       this.setDyPx(parseInt(value))

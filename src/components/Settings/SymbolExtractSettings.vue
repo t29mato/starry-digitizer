@@ -22,15 +22,18 @@
 </template>
 
 <script lang="ts">
-import { symbolExtractByAreaMapper } from '@/store/modules/symbolExtractByArea'
 import Vue from 'vue'
+import { mapGetters, mapActions } from 'vuex'
+
 export default Vue.extend({
   computed: {
-    ...symbolExtractByAreaMapper.mapGetters(['symbolExtractByArea']),
+    ...mapGetters('symbolExtractByArea', {
+      symbolExtractByArea: 'symbolExtractByArea',
+    }),
   },
   props: {},
   methods: {
-    ...symbolExtractByAreaMapper.mapActions([
+    ...mapActions('symbolExtractByArea', [
       'setMinDiameterPx',
       'setMaxDiameterPx',
     ]),

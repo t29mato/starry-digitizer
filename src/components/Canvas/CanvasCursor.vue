@@ -40,18 +40,19 @@
 </template>
 
 <script lang="ts">
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { datasetMapper } from '@/store/modules/dataset'
-import { styleMapper } from '@/store/modules/style'
 import Vue from 'vue'
+import { mapGetters } from 'vuex'
+
 export default Vue.extend({
   props: {},
   computed: {
-    ...styleMapper.mapGetters(['axisCrossCursorPx', 'axisHalfSizePx']),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...axesMapper.mapGetters(['axes']),
-    ...datasetMapper.mapGetters(['datasets']),
+    ...mapGetters('style', {
+      axisCrossCursorPx: 'axisCrossCursorPx',
+      axisHalfSizePx: 'axisHalfSizePx',
+    }),
+    ...mapGetters('canvas', { canvas: 'canvas' }),
+    ...mapGetters('axes', { axes: 'axes' }),
+    ...mapGetters('datasets', { datasets: 'datasets' }),
     rightLabel(): string {
       switch (this.canvas.maskMode) {
         case 0:
