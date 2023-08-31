@@ -1,10 +1,10 @@
 <template>
   <v-app>
-    <v-main>
+    <!-- <v-main>
       <Main
         :initialGraphImagePath="require('@/assets/sample_graph_curve.png')"
       />
-    </v-main>
+    </v-main> -->
     <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
         <v-btn
@@ -30,12 +30,13 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
 // import * as Sentry from '@sentry/vue'
 // import { Integrations } from '@sentry/tracing'
 
-import Main from './components/Main.vue'
+// import Main from '@/components/Main.vue'
 import { version } from '../package.json'
+
+import { defineComponent } from "vue";
 
 //TODO: 後で戻す対応
 // if (process.env.NODE_ENV === 'production') {
@@ -52,29 +53,29 @@ import { version } from '../package.json'
 //   })
 // }
 
-Vue.config.errorHandler = (err) => {
-  alert(err)
-  console.error(err)
-  Sentry.captureException(err)
-}
+// Vue.config.errorHandler = (err) => {
+//   alert(err)
+//   console.error(err)
+//   Sentry.captureException(err)
+// }
 
-window.addEventListener('error', (event) => {
-  alert(event.error)
-  console.error(event)
-  Sentry.captureException(event)
-})
+// window.addEventListener('error', (event) => {
+//   alert(event.error)
+//   console.error(event)
+//   Sentry.captureException(event)
+// })
 
-window.addEventListener('unhandledrejection', (event) => {
-  alert(event.reason)
-  console.error(event)
-  Sentry.captureException(event)
-})
+// window.addEventListener('unhandledrejection', (event) => {
+//   alert(event.reason)
+//   console.error(event)
+//   Sentry.captureException(event)
+// })
 
-export default Vue.extend({
+export default defineComponent({
   name: 'App',
 
   components: {
-    Main,
+    // Main,
   },
 
   data: () => ({
