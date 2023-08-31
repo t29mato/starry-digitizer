@@ -10,8 +10,7 @@ interface State {
 export const useExtractorStore = defineStore('extractor', {
   state: (): State => ({
     extractor: new Extractor(LineExtract.instance),
-  })
-  ,
+  }),
   getters: {
     extractor: (state: State) => state.extractor,
   },
@@ -19,7 +18,10 @@ export const useExtractorStore = defineStore('extractor', {
     setColorDistancePct({ state }: { state: State }, colorDistancePct: number) {
       state.extractor.colorDistancePct = colorDistancePct
     },
-    setStrategy({ state }: { state: State }, strategy: ExtractStrategyInterface) {
+    setStrategy(
+      { state }: { state: State },
+      strategy: ExtractStrategyInterface,
+    ) {
       state.extractor.strategy = strategy
     },
     setColorPicker({ state }: { state: State }, color: string) {

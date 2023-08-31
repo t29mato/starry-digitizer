@@ -5,7 +5,6 @@ interface State {
   lineExtract: LineExtract
 }
 
-
 export const useLineExtractStore = defineStore('lineExtract', {
   state: (): State => ({
     lineExtract: LineExtract.instance,
@@ -13,7 +12,7 @@ export const useLineExtractStore = defineStore('lineExtract', {
   getters: {
     lineExtract: (state: State) => state.lineExtract,
   },
-  actions:{
+  actions: {
     setDyPx({ state }: { state: State }, dyPx: number) {
       state.lineExtract.dyPx = dyPx
     },
