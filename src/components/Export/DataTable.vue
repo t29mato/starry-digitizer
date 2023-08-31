@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue";
 import { mapGetters } from 'vuex'
 
 import colors from 'vuetify/lib/util/colors'
@@ -26,7 +26,7 @@ registerAllModules()
 
 const CSV_DELIMITER = ','
 
-export default Vue.extend({
+export default defineComponent({
   components: {
     HotTable,
   },

@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue";
 import { MagnifierMain } from '@/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
 import { AxesSettings, ExtractorSettings, ImageSettings } from './Settings'
@@ -40,7 +40,7 @@ import { version } from '../../package.json'
 import store from '@/store'
 import DataTable from '@/components/Export/DataTable.vue'
 
-export default Vue.extend({
+export default defineComponent({
   store,
   components: {
     DataTable,

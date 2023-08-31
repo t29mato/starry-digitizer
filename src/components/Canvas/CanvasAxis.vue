@@ -42,8 +42,8 @@ import { AxisInterface } from '@/domains/axes/axisInterface'
 
 import { mapGetters } from 'vuex'
 
-import Vue from 'vue'
-export default Vue.extend({
+import { defineComponent } from "vue";
+export default defineComponent({
   props: {
     axis: {
       type: Object as () => AxisInterface,

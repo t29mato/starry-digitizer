@@ -41,7 +41,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue";
 import { mapGetters, mapActions } from 'vuex'
 
 import { CanvasAxes, CanvasPlots, CanvasCursor, CanvasAxesGuide } from '.'
@@ -50,7 +50,7 @@ import { Coord, Plot } from '@/domains/datasetInterface'
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 
-export default Vue.extend({
+export default defineComponent({
   components: {
     CanvasAxes,
     CanvasPlots,

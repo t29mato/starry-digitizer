@@ -8,7 +8,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue";
 import { mapGetters } from 'vuex'
 
 const axesGuideCommonStyle = {
@@ -18,7 +18,7 @@ const axesGuideCommonStyle = {
   pointerEvents: 'none',
 }
 
-export default Vue.extend({
+export default defineComponent({
   components: {},
   methods: {
     //INFO: computedではリアクティブにならなかったのでmethodとしている

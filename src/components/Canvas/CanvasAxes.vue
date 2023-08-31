@@ -12,8 +12,8 @@
 import { mapGetters } from 'vuex'
 import CanvasAxis from '@/components/Canvas/CanvasAxis.vue'
 
-import Vue from 'vue'
-export default Vue.extend({
+import { defineComponent } from "vue";
+export default defineComponent({
   components: {
     CanvasAxis,
   },

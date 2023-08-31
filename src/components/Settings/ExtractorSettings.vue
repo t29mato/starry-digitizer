@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue";
 import { mapGetters, mapActions } from 'vuex'
 
 import SymbolExtractSettings from './SymbolExtractSettings.vue'
@@ -44,7 +44,7 @@ import { ExtractStrategy } from '@/domains/extractor'
 import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
 
-export default Vue.extend({
+export default defineComponent({
   components: {
     SymbolExtractSettings,
     LineExtractSettings,

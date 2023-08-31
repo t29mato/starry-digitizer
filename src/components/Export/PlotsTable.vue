@@ -33,7 +33,7 @@
 <script lang="ts">
 import Vue, { PropType } from 'vue'
 import colors from 'vuetify/lib/util/colors'
-export default Vue.extend({
+export default defineComponent({
   data() {
     return {
       activeColor: colors.green.lighten5,

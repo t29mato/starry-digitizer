@@ -46,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue";
 import { mapGetters } from 'vuex'
 
 const guideLineBaseStyles = {
@@ -55,7 +55,7 @@ const guideLineBaseStyles = {
   opacity: '0.8',
 }
 
-export default Vue.extend({
+export default defineComponent({
   props: {},
   computed: {
     ...mapGetters('style', {

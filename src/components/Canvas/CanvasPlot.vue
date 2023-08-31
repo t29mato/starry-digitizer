@@ -17,12 +17,12 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue";
 import { mapGetters, mapActions } from 'vuex'
 
 import { Plot } from '@/domains/datasetInterface'
 
-export default Vue.extend({
+export default defineComponent({
   computed: {
     ...mapGetters('canvas', { canvas: 'canvas' }),
     plotHalfSize(): number {

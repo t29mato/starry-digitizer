@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from "vue";
 import { mapGetters, mapActions } from 'vuex'
 
 import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
@@ -49,7 +49,7 @@ import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/components/Magnifier/MagnifierExtractSize.vue'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
 
-export default Vue.extend({
+export default defineComponent({
   components: {
     MagnifierVerticalLine,
     MagnifierHorizontalLine,

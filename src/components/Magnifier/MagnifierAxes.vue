@@ -25,9 +25,9 @@
 
 <script lang="ts">
 import MagnifierAxis from '@/components/Magnifier/MagnifierAxis.vue'
-import Vue from 'vue'
+import { defineComponent } from "vue";
 import { mapGetters } from 'vuex'
-export default Vue.extend({
+export default defineComponent({
   components: {
     MagnifierAxis,
   },

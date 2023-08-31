@@ -12,10 +12,10 @@
 
 <script lang="ts">
 import CanvasPlot from '@/components/Canvas/CanvasPlot.vue'
-import Vue from 'vue'
+import { defineComponent } from "vue";
 import { mapGetters } from 'vuex'
 
-export default Vue.extend({
+export default defineComponent({
   components: {
     CanvasPlot,
   },
