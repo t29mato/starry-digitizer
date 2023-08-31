@@ -9,8 +9,8 @@ interface State {
 export const useCanvasStore = defineStore('canvas', {
   state: (): State => ({
     canvas: new Canvas(),
-  }),
-  getters:{
+  })
+  getters: {
     canvas: (state: State) => state.canvas,
   },
   actions: {
