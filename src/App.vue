@@ -11,7 +11,7 @@
           v-for="link in links"
           :key="link.url"
           color="white"
-          text
+          text=""
           rounded
           class="my-2"
           :href="link.url"
@@ -36,7 +36,7 @@
 // import Main from '@/components/Main.vue'
 import { version } from '../package.json'
 
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue'
 
 //TODO: 後で戻す対応
 // if (process.env.NODE_ENV === 'production') {

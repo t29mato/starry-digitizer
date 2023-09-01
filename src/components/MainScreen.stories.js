@@ -1,9 +1,9 @@
-import Main from './Main.vue'
+import MainScreen from './MainScreen.vue'
 
 // More on default export: https://storybook.js.org/docs/vue/writing-stories/introduction#default-export
 export default {
   title: 'Components/Main',
-  component: Main,
+  component: MainScreen,
   // More on argTypes: https://storybook.js.org/docs/vue/api/argtypes
   argTypes: {
     hideCSVText: {
@@ -14,7 +14,7 @@ export default {
 
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
-  components: { Main },
+  components: { MainScreen },
   template: '<plot-digitizer />',
 })
 
