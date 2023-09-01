@@ -5,8 +5,8 @@
       v-if="!(axes.isAdjusting || datasets.activeDataset.plotsAreAdjusting)"
       :style="{
         position: 'absolute',
-        top: `${this.canvas.scaledCursor.yPx - this.axisCrossCursorPx}px`,
-        left: `${this.canvas.scaledCursor.xPx + this.axisCrossCursorPx}px`,
+        top: `${canvas.scaledCursor.yPx - axisCrossCursorPx}px`,
+        left: `${canvas.scaledCursor.xPx + axisCrossCursorPx}px`,
         'pointer-events': 'none',
       }"
     >
@@ -17,8 +17,8 @@
       v-if="!axes.isAdjusting"
       :style="{
         position: 'absolute',
-        top: `${this.canvas.scaledCursor.yPx + this.axisCrossCursorPx / 2}px`,
-        left: `${this.canvas.scaledCursor.xPx - this.axisCrossCursorPx / 2}px`,
+        top: `${canvas.scaledCursor.yPx + axisCrossCursorPx / 2}px`,
+        left: `${canvas.scaledCursor.xPx - axisCrossCursorPx / 2}px`,
         'pointer-events': 'none',
       }"
     >
@@ -29,8 +29,8 @@
       v-if="!axes.isAdjusting"
       :style="{
         position: 'absolute',
-        top: `${this.canvas.scaledCursor.yPx - this.axisCrossCursorPx}px`,
-        left: `${this.canvas.scaledCursor.xPx - this.axisCrossCursorPx * 2}px`,
+        top: `${canvas.scaledCursor.yPx - axisCrossCursorPx}px`,
+        left: `${canvas.scaledCursor.xPx - axisCrossCursorPx * 2}px`,
         'pointer-events': 'none',
       }"
     >
@@ -52,11 +52,7 @@ import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
 import { useDatasetsStore } from '@/store/datasets'
-
-const axesStore = useAxesStore()
-const canvasStore = useCanvasStore()
-const styleStore = useStyleStore()
-const datasetsStore = useDatasetsStore()
+import { mapState } from 'pinia'
 
 const guideLineBaseStyles = {
   position: 'absolute',
@@ -67,11 +63,10 @@ const guideLineBaseStyles = {
 export default defineComponent({
   props: {},
   computed: {
-    axisCrossCursorPx: () => styleStore.axisCrossCursorPx,
-    axisHalfSizePx: () => styleStore.axisHalfSizePx,
-    canvas: () => canvasStore.canvas,
-    axes: () => axesStore.axes,
-    datasets: () => datasetsStore.datasets,
+    ...mapState(useStyleStore, ['axisCrossCursorPx', 'axisHalfSizePx']),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useDatasetsStore, ['datasets']),
     rightLabel(): string {
       switch (this.canvas.maskMode) {
         case 0:

@@ -17,20 +17,16 @@ import { defineComponent } from 'vue'
 import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
 import { useDatasetsStore } from '@/store/datasets'
-
-const canvasStore = useCanvasStore()
-const styleStore = useStyleStore()
-const datasetsStore = useDatasetsStore()
+import { mapState } from 'pinia'
 
 export default defineComponent({
   components: {
     CanvasPlot,
   },
   computed: {
-    datasets: () => datasetsStore.datasets,
-
-    canvas: () => canvasStore.canvas,
-    plotSizePx: () => styleStore.plotSizePx,
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useStyleStore, ['plotSizePx']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },

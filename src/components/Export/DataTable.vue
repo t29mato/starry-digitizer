@@ -25,10 +25,7 @@ import { Plot } from '@/domains/datasetInterface'
 import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
-
-const axesStore = useAxesStore()
-const canvasStore = useCanvasStore()
-const datasetsStore = useDatasetsStore()
+import { mapState } from 'pinia'
 
 registerAllModules()
 
@@ -39,9 +36,9 @@ export default defineComponent({
     HotTable,
   },
   computed: {
-    datasets: () => datasetsStore.datasets,
-    axes: () => axesStore.axes,
-    canvas: () => canvasStore.canvas,
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
     tableData() {
       if (this.datasets.activeDataset.plots.length > 0) {
         return this.datasets.activeDataset.plots.map((plot: Plot) => {

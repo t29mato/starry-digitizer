@@ -20,9 +20,7 @@
         top: 0,
         left: 0,
         opacity: 0.5,
-        transform: `scale(${
-          this.magnifier.scale / this.canvas.scale
-        }) translate(-${
+        transform: `scale(${magnifier.scale / canvas.scale}) translate(-${
           (canvas.cursor.xPx - halfSize / magnifier.scale) * canvas.scale
         }px, -${
           (canvas.cursor.yPx - halfSize / magnifier.scale) * canvas.scale
@@ -38,14 +36,12 @@ import { defineComponent } from 'vue'
 
 import { useCanvasStore } from '@/store/canvas'
 import { useMagnifierStore } from '@/store/magnifier'
-
-const canvasStore = useCanvasStore()
-const magnifierStore = useMagnifierStore()
+import { mapState } from 'pinia'
 
 export default defineComponent({
   computed: {
-    magnifier: () => magnifierStore.magnifier,
-    canvas: () => canvasStore.canvas,
+    ...mapState(useMagnifierStore, ['magnifier']),
+    ...mapState(useCanvasStore, ['canvas']),
     halfSize(): number {
       return this.magnifier.sizePx / 2
     },

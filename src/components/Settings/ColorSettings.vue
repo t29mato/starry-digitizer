@@ -42,8 +42,7 @@
 import { defineComponent } from 'vue'
 
 import { useExtractorStore } from '@/store/extractor'
-
-const extractorStore = useExtractorStore()
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   data() {
@@ -52,11 +51,11 @@ export default defineComponent({
     }
   },
   computed: {
-    extractor: () => extractorStore.extractor,
+    ...mapState(useExtractorStore, ['extractor']),
   },
   props: {},
   methods: {
-    ...mapActions('extractor', ['setColorPicker', 'setColorDistancePct']),
+    ...mapActions(useExtractorStore, ['setColorPicker', 'setColorDistancePct']),
     inputColorPicker(value: any) {
       console.log(value)
       this.setColorPicker(value.target.value)

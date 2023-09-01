@@ -4,7 +4,7 @@ import { Coord } from '@/domains/datasetInterface'
 import { Axis } from '@/domains/axes/axis'
 import { Vector } from '@/domains/axes/axesInterface'
 
-interface State {
+export interface State {
   axes: Axes
 }
 
@@ -18,45 +18,48 @@ export const useAxesStore = defineStore('axes', {
       new Axis('x2y2', -1),
     ),
   }),
-  getters: {
-    axes: (state: State) => state.axes,
-  },
+  //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？
+  // getters: {
+  //   axes() {
+  //     return this.axes
+  //   },
+  // },
   actions: {
-    setX1Value(state: State, value: number) {
-      state.axes.x1.value = value
+    setX1Value(value: number) {
+      this.axes.x1.value = value
     },
-    setX2Value(state: State, value: number) {
-      state.axes.x2.value = value
+    setX2Value(value: number) {
+      this.axes.x2.value = value
     },
-    setY1Value(state: State, value: number) {
-      state.axes.y1.value = value
+    setY1Value(value: number) {
+      this.axes.y1.value = value
     },
-    setY2Value(state: State, value: number) {
-      state.axes.y2.value = value
+    setY2Value(value: number) {
+      this.axes.y2.value = value
     },
-    setXIsLog(state: State, value: boolean) {
-      state.axes.xIsLog = value
+    setXIsLog(value: boolean) {
+      this.axes.xIsLog = value
     },
-    setYIsLog(state: State, value: boolean) {
-      state.axes.yIsLog = value
+    setYIsLog(value: boolean) {
+      this.axes.yIsLog = value
     },
-    clearAxesCoords(state: State) {
-      state.axes.clearAxesCoords()
+    clearAxesCoords() {
+      this.axes.clearAxesCoords()
     },
-    clearXAxisCoords(state: State) {
-      state.axes.clearXAxisCoords()
+    clearXAxisCoords() {
+      this.axes.clearXAxisCoords()
     },
-    clearYAxisCoords(state: State) {
-      state.axes.clearYAxisCoords()
+    clearYAxisCoords() {
+      this.axes.clearYAxisCoords()
     },
-    addAxisCoord(state: State, coord: Coord) {
-      state.axes.addAxisCoord(coord)
+    addAxisCoord(coord: Coord) {
+      this.axes.addAxisCoord(coord)
     },
-    moveActiveAxis(state: State, vector: Vector) {
-      state.axes.moveActiveAxis(vector)
+    moveActiveAxis(vector: Vector) {
+      this.axes.moveActiveAxis(vector)
     },
-    inactivateAxis(state: State) {
-      state.axes.inactivateAxis()
+    inactivateAxis() {
+      this.axes.inactivateAxis()
     },
   },
 })

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { Canvas } from '@/domains/canvas'
 import { Coord } from '@/domains/datasetInterface'
 
-interface State {
+export interface State {
   canvas: Canvas
 }
 
@@ -11,60 +11,60 @@ export const useCanvasStore = defineStore('canvas', {
     canvas: new Canvas(),
   }),
   getters: {
-    canvas: (state: State) => state.canvas,
+    //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？
+    // canvas() {
+    //   return this.canvas
+    // },
   },
   actions: {
-    scaleUp(state: State) {
-      state.canvas.scaleUp()
+    scaleUp() {
+      this.canvas.scaleUp()
     },
 
-    scaleDown(state: State) {
-      state.canvas.scaleDown()
+    scaleDown() {
+      this.canvas.scaleDown()
     },
 
-    resizeCanvasToOriginal(state: State) {
-      state.canvas.drawOriginalSizeImage()
+    resizeCanvasToOriginal() {
+      this.canvas.drawOriginalSizeImage()
     },
 
-    drawFitSizeImage(state: State) {
-      state.canvas.drawFitSizeImage()
+    drawFitSizeImage() {
+      this.canvas.drawFitSizeImage()
     },
 
-    mouseMoveForPen(
-      state: State,
-      config: { xPx: number; yPx: number; penSize: number },
-    ) {
-      state.canvas.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
+    mouseMoveForPen(config: { xPx: number; yPx: number; penSize: number }) {
+      this.canvas.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
     },
 
-    setCanvasCursor(state: State, coord: Coord) {
-      state.canvas.cursor = coord
+    setCanvasCursor(coord: Coord) {
+      this.canvas.cursor = coord
     },
 
-    setPenToolSizePx(state: State, size: number) {
-      state.canvas.penToolSizePx = size
+    setPenToolSizePx(size: number) {
+      this.canvas.penToolSizePx = size
     },
 
-    setMaskMode(state: State, mode: number) {
-      state.canvas.maskMode = mode
-      state.canvas.manualMode = -1
+    setMaskMode(mode: number) {
+      this.canvas.maskMode = mode
+      this.canvas.manualMode = -1
     },
 
-    setManualMode(state: State, mode: number) {
-      state.canvas.manualMode = mode
-      state.canvas.maskMode = -1
+    setManualMode(mode: number) {
+      this.canvas.manualMode = mode
+      this.canvas.maskMode = -1
     },
 
-    setEraserSizePx(state: State, size: number) {
-      state.canvas.eraserSizePx = size
+    setEraserSizePx(size: number) {
+      this.canvas.eraserSizePx = size
     },
 
-    setUploadImageUrl(state: State, url: string) {
-      state.canvas.uploadImageUrl = url
+    setUploadImageUrl(url: string) {
+      this.canvas.uploadImageUrl = url
     },
 
-    mouseMoveOnCanvas(state: State, coord: Coord) {
-      state.canvas.mouseMove(coord.xPx, coord.yPx)
+    mouseMoveOnCanvas(coord: Coord) {
+      this.canvas.mouseMove(coord.xPx, coord.yPx)
     },
   },
 })

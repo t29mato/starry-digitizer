@@ -10,18 +10,18 @@
 
 <script lang="ts">
 import CanvasAxis from '@/components/Canvas/CanvasAxis.vue'
+
 import { useAxesStore } from '@/store/axes'
+import { mapState } from 'pinia'
 
 import { defineComponent } from 'vue'
-
-const axesStore = useAxesStore()
 
 export default defineComponent({
   components: {
     CanvasAxis,
   },
   computed: {
-    axes: () => axesStore.axes,
+    ...mapState(useAxesStore, ['axes']),
   },
   props: {},
   methods: {},

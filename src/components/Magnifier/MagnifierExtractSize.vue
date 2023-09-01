@@ -41,19 +41,15 @@ import { useMagnifierStore } from '@/store/magnifier'
 import { useLineExtractStore } from '@/store/lineExtract'
 import { useExtractorStore } from '@/store/extractor'
 import { useSymbolExtractByAreaStore } from '@/store/symbolExtractByArea'
-
-const magnifierStore = useMagnifierStore()
-const lineExtractStore = useLineExtractStore()
-const extractorStore = useExtractorStore()
-const symbolExtractByAreaStore = useSymbolExtractByAreaStore()
+import { mapState } from 'pinia'
 
 export default defineComponent({
   props: {},
   computed: {
-    magnifier: () => magnifierStore.magnifier,
-    lineExtract: () => lineExtractStore.lineExtract,
-    extractor: () => extractorStore.extractor,
-    symbolExtractByArea: () => symbolExtractByAreaStore.symbolExtractByArea,
+    ...mapState(useMagnifierStore, ['magnifier']),
+    ...mapState(useLineExtractStore, ['lineExtract']),
+    ...mapState(useExtractorStore, ['extractor']),
+    ...mapState(useSymbolExtractByAreaStore, ['symbolExtractByArea']),
     symbolMinDiameter(): number {
       return this.symbolExtractByArea.minDiameterPx * this.magnifier.scale
     },

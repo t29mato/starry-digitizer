@@ -38,24 +38,27 @@ import { defineComponent } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
+import { useCanvasStore } from '@/store/canvas'
+import { mapState, mapActions } from 'pinia'
 
-const axesStore = useAxesStore()
-const datasetsStore = useDatasetsStore()
+//
+// const datasetsStore = useDatasetsStore()
+//
 
 export default defineComponent({
   props: {},
   computed: {
-    axes: () => axesStore.axes,
-    datasets: () => datasetsStore.datasets,
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useDatasetsStore, ['datasets']),
   },
   methods: {
-    ...mapActions('datasets', ['clearPlots', 'clearActivePlots']),
-    ...mapActions('axes', [
+    ...mapActions(useDatasetsStore, ['clearPlots', 'clearActivePlots']),
+    ...mapActions(useAxesStore, [
       'clearAxesCoords',
       'clearXAxisCoords',
       'clearYAxisCoords',
     ]),
-    ...mapActions('canvas', ['setManualMode']),
+    ...mapActions(useCanvasStore, ['setManualMode']),
     clearAxes() {
       this.clearAxesCoords()
       this.setManualMode(-1)
@@ -65,7 +68,7 @@ export default defineComponent({
       this.setManualMode(-1)
     },
     clearYAxis() {
-      this.clearYAxisCoords()
+      this.clearAxesCoords()
       this.setManualMode(-1)
     },
   },

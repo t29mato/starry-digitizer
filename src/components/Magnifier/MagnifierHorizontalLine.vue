@@ -15,13 +15,12 @@
 import { defineComponent } from 'vue'
 
 import { useMagnifierStore } from '@/store/magnifier'
-
-const magnifierStore = useMagnifierStore()
+import { mapState } from 'pinia'
 
 export default defineComponent({
   props: {},
   computed: {
-    magnifier: () => magnifierStore.magnifier,
+    ...mapState(useMagnifierStore, ['magnifier']),
     // INFO: 十字線を作成する箱の横幅
     height(): number {
       return (this.magnifier.sizePx - this.magnifier.crosshairSizePx) / 2

@@ -28,16 +28,13 @@ import { Coord } from '@/domains/datasetInterface'
 import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
 import { useMagnifierStore } from '@/store/magnifier'
-
-const canvasStore = useCanvasStore()
-const styleStore = useStyleStore()
-const magnifierStore = useMagnifierStore()
+import { mapState } from 'pinia'
 
 export default defineComponent({
   computed: {
-    magnifier: () => magnifierStore.magnifier,
-    canvas: () => canvasStore.canvas,
-    plotSizePx: () => styleStore.plotSizePx,
+    ...mapState(useMagnifierStore, ['magnifier']),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useStyleStore, ['plotSizePx']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },

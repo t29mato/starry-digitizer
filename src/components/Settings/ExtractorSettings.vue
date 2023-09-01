@@ -45,9 +45,9 @@ import LineExtract from '@/domains/extractStrategies/lineExtract'
 
 import { useCanvasStore } from '@/store/canvas'
 import { useExtractorStore } from '@/store/extractor'
-
-const canvasStore = useCanvasStore()
-const extractorStore = useExtractorStore()
+import { useDatasetsStore } from '@/store/datasets'
+import { useAxesStore } from '@/store/axes'
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   components: {
@@ -62,8 +62,8 @@ export default defineComponent({
     }
   },
   computed: {
-    extractor: () => extractorStore.extractor,
-    canvas: () => canvasStore.canvas,
+    ...mapState(useExtractorStore, ['extractor']),
+    ...mapState(useCanvasStore, ['canvas']),
   },
   props: {
     initialExtractorStrategy: {
@@ -81,15 +81,15 @@ export default defineComponent({
     }
   },
   methods: {
-    ...mapActions('extractor', ['setStrategy']),
-    ...mapActions('axes', ['inactivateAxis']),
-    ...mapActions('datasets', [
+    ...mapActions(useExtractorStore, ['setStrategy']),
+    ...mapActions(useAxesStore, ['inactivateAxis']),
+    ...mapActions(useDatasetsStore, [
       'clearPlots',
       'setPlots',
       'sortPlots',
       'inactivatePlots',
     ]),
-    ...mapActions('canvas', ['setManualMode']),
+    ...mapActions(useCanvasStore, ['setManualMode']),
     changeManualMode(value: any) {
       this.inactivatePlots()
       if (value === undefined) {

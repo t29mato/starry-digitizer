@@ -13,12 +13,14 @@
 import { defineComponent } from 'vue'
 
 import { useCanvasStore } from '@/store/canvas'
-
-const canvasStore = useCanvasStore()
+import { useAxesStore } from '@/store/axes'
+import { useDatasetsStore } from '@/store/datasets'
+import { useExtractorStore } from '@/store/extractor'
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   computed: {
-    canvas: () => canvasStore.canvas,
+    ...mapState(useCanvasStore, ['canvas']),
   },
   data() {
     return {}
@@ -32,10 +34,10 @@ export default defineComponent({
 
   props: {},
   methods: {
-    ...mapActions('canvas', ['drawFitSizeImage', 'setUploadImageUrl']),
-    ...mapActions('axes', ['clearAxesCoords']),
-    ...mapActions('datasets', ['clearPlots']),
-    ...mapActions('extractor', ['setSwatches']),
+    ...mapActions(useCanvasStore, ['drawFitSizeImage', 'setUploadImageUrl']),
+    ...mapActions(useAxesStore, ['clearAxesCoords']),
+    ...mapActions(useDatasetsStore, ['clearPlots']),
+    ...mapActions(useExtractorStore, ['setSwatches']),
     async uploadImage(file: File) {
       try {
         const fr = await this.readFile(file)

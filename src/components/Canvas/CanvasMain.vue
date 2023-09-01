@@ -49,10 +49,8 @@ import { Coord, Plot } from '@/domains/datasetInterface'
 import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
-
-const axesStore = useAxesStore()
-const canvasStore = useCanvasStore()
-const datasetsStore = useDatasetsStore()
+import { mapState, mapActions } from 'pinia'
+import { useExtractorStore } from '@/store/extractor'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -71,9 +69,9 @@ export default defineComponent({
     document.removeEventListener('keydown', this.keyDownHandler)
   },
   computed: {
-    canvas: () => canvasStore.canvas,
-    axes: () => axesStore.axes,
-    datasets: () => datasetsStore.datasets,
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useDatasetsStore, ['datasets']),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
@@ -91,21 +89,25 @@ export default defineComponent({
     }
   },
   methods: {
-    ...mapActions('datasets', [
+    ...mapActions(useDatasetsStore, [
       'addPlot',
       'moveActivePlot',
       'clearActivePlots',
       'inactivatePlots',
     ]),
-    ...mapActions('canvas', [
+    ...mapActions(useCanvasStore, [
       'mouseMoveOnCanvas',
       'setCanvasCursor',
       'drawFitSizeImage',
       'setUploadImageUrl',
       'setManualMode',
     ]),
-    ...mapActions('axes', ['addAxisCoord', 'inactivateAxis', 'moveActiveAxis']),
-    ...mapActions('extractor', ['setSwatches']),
+    ...mapActions(useAxesStore, [
+      'addAxisCoord',
+      'inactivateAxis',
+      'moveActiveAxis',
+    ]),
+    ...mapActions(useExtractorStore, ['setSwatches']),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき

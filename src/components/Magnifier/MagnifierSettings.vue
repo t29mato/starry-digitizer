@@ -31,15 +31,14 @@
 import { defineComponent } from 'vue'
 
 import { useMagnifierStore } from '@/store/magnifier'
-
-const magnifierStore = useMagnifierStore()
+import { mapState } from 'pinia'
 
 export default defineComponent({
   data() {
     return {}
   },
   computed: {
-    magnifier: () => magnifierStore.magnifier,
+    ...mapState(useMagnifierStore, ['magnifier']),
   },
   props: {
     shouldShowSettingsDialog: {

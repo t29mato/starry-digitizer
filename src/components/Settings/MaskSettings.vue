@@ -37,16 +37,15 @@
 import { defineComponent } from 'vue'
 
 import { useCanvasStore } from '@/store/canvas'
-
-const canvasStore = useCanvasStore()
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   computed: {
-    canvas: () => canvasStore.canvas,
+    ...mapState(useCanvasStore, ['canvas']),
   },
   props: {},
   methods: {
-    ...mapActions('canvas', [
+    ...mapActions(useCanvasStore, [
       'setPenToolSizePx',
       'setMaskMode',
       'setEraserSizePx',

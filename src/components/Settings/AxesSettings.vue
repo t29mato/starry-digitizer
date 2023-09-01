@@ -173,12 +173,11 @@
 import { defineComponent } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
-
-const axesStore = useAxesStore()
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   computed: {
-    axes: () => axesStore.axes,
+    ...mapState(useAxesStore, ['axes']),
     errorMessage(): string {
       if (this.axes.xIsLog) {
         if (this.x1 === '0' || this.x2 === '0') {
@@ -213,7 +212,7 @@ export default defineComponent({
   },
   props: {},
   methods: {
-    ...mapActions('axes', [
+    ...mapActions(useAxesStore, [
       'setX1Value',
       'setX2Value',
       'setY1Value',

@@ -25,16 +25,15 @@
 import { defineComponent } from 'vue'
 
 import { useSymbolExtractByAreaStore } from '@/store/symbolExtractByArea'
-
-const symbolExtractByAreaStore = useSymbolExtractByAreaStore()
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   computed: {
-    symbolExtractByArea: () => symbolExtractByAreaStore.symbolExtractByArea,
+    ...mapState(useSymbolExtractByAreaStore, ['symbolExtractByArea']),
   },
   props: {},
   methods: {
-    ...mapActions('symbolExtractByArea', [
+    ...mapActions(useSymbolExtractByAreaStore, [
       'setMinDiameterPx',
       'setMaxDiameterPx',
     ]),

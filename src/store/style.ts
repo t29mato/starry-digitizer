@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-interface State {
+export interface State {
   plotSizePx: number
   axisSizePx: number
 }
@@ -11,32 +11,43 @@ export const useStyleStore = defineStore('style', {
     axisSizePx: 20,
   }),
   getters: {
-    plotSizePx: (state: State) => state.plotSizePx,
-    axisSizePx: (state: State) => state.axisSizePx,
-    axisHalfSizePx: (state: State) => state.axisSizePx / 2,
-    axisCrossBorderPx: (state: State): number => state.axisSizePx * 0.1,
+    //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？
+    // plotSizePx(): number {
+    //   return this.plotSizePx
+    // },
+    // axisSizePx(): number {
+    //   return this.axisSizePx
+    // },
+    axisHalfSizePx(): number {
+      return this.axisSizePx / 2
+    },
+    axisCrossBorderPx(): number {
+      return this.axisSizePx * 0.1
+    },
     axisCrossBorderHalfPx(): number {
       return this.axisCrossBorderPx * 0.5
     },
-    axisCrossTopPx(state: State): number {
-      return (state.axisSizePx - this.axisCrossBorderPx) / 2
+    axisCrossTopPx(): number {
+      return (this.axisSizePx - this.axisCrossBorderPx) / 2
     },
-    axisCrossCursorPx: (state: State) => state.axisSizePx * 0.7,
+    axisCrossCursorPx(): number {
+      return this.axisSizePx * 0.7
+    },
   },
   actions: {
-    setPlotSizePx({ commit }: any, size: number) {
-      commit('updatePlotSizePx', size)
-    },
-    setAxisSizePx({ commit }: any, size: number) {
-      commit('updateAxisSizePx', size)
+    //moved from mutations
+    updatePlotSizePx(newPlotSizePx: number) {
+      this.plotSizePx = newPlotSizePx
     },
     //moved from mutations
-    updatePlotSizePx(state: State, newPlotSizePx: number) {
-      state.plotSizePx = newPlotSizePx
+    updateAxisSizePx(newAxisSizePx: number) {
+      this.axisSizePx = newAxisSizePx
     },
-    //moved from mutations
-    updateAxisSizePx(state: State, newAxisSizePx: number) {
-      state.axisSizePx = newAxisSizePx
+    setPlotSizePx(size: number) {
+      this.updatePlotSizePx(size)
+    },
+    setAxisSizePx(size: number) {
+      this.updateAxisSizePx(size)
     },
   },
 })

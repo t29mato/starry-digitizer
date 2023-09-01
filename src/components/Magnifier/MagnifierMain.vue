@@ -52,11 +52,7 @@ import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { useMagnifierStore } from '@/store/magnifier'
-
-const axesStore = useAxesStore()
-const canvasStore = useCanvasStore()
-const datasetsStore = useDatasetsStore()
-const magnifierStore = useMagnifierStore()
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   components: {
@@ -76,10 +72,10 @@ export default defineComponent({
     }
   },
   computed: {
-    datasets: () => datasetsStore.datasets,
-    magnifier: () => magnifierStore.magnifier,
-    axes: () => axesStore.axes,
-    canvas: () => canvasStore.canvas,
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useMagnifierStore, ['magnifier']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
     // magnifierHalfSize(): number {
     //   return this.magnifier.sizePx / 2
     // },
@@ -111,7 +107,7 @@ export default defineComponent({
   props: {},
 
   methods: {
-    ...mapActions('magnifier', ['setScale']),
+    ...mapActions(useMagnifierStore, ['setScale']),
     toggleSettingsDialog(): void {
       this.shouldShowSettingsDialog = !this.shouldShowSettingsDialog
     },

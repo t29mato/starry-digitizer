@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
 
-interface State {
+export interface State {
   symbolExtractByArea: SymbolExtractByArea
 }
 
@@ -10,14 +10,17 @@ export const useSymbolExtractByAreaStore = defineStore('axes', {
     symbolExtractByArea: SymbolExtractByArea.instance,
   }),
   getters: {
-    symbolExtractByArea: (state: State) => state.symbolExtractByArea,
+    //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？
+    // symbolExtractByArea() {
+    //   return this.symbolExtractByArea
+    // },
   },
   actions: {
-    setMinDiameterPx(state: State, minDiameterPx: number) {
-      state.symbolExtractByArea.minDiameterPx = minDiameterPx
+    setMinDiameterPx(minDiameterPx: number) {
+      this.symbolExtractByArea.minDiameterPx = minDiameterPx
     },
-    setMaxDiameterPx(state: State, maxDiameterPx: number) {
-      state.symbolExtractByArea.maxDiameterPx = maxDiameterPx
+    setMaxDiameterPx(maxDiameterPx: number) {
+      this.symbolExtractByArea.maxDiameterPx = maxDiameterPx
     },
   },
 })

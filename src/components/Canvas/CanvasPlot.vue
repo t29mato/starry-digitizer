@@ -22,12 +22,12 @@ import { defineComponent } from 'vue'
 import { Plot } from '@/domains/datasetInterface'
 
 import { useCanvasStore } from '@/store/canvas'
-
-const canvasStore = useCanvasStore()
+import { useDatasetsStore } from '@/store/datasets'
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   computed: {
-    canvas: () => canvasStore.canvas,
+    ...mapState(useCanvasStore, ['canvas']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -59,12 +59,12 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions('datasets', [
+    ...mapActions(useDatasetsStore, [
       'toggleActivatedPlot',
       'activatePlot',
       'clearPlot',
     ]),
-    click(event: PointerEvent) {
+    click(event: MouseEvent) {
       switch (this.canvas.manualMode) {
         // INFO: CanvasMain Component -> plot method
         case 0:

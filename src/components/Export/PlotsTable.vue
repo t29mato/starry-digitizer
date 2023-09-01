@@ -31,6 +31,7 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue'
 import { PropType } from 'vue'
 import colors from 'vuetify/lib/util/colors'
 export default defineComponent({

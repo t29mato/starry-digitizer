@@ -17,19 +17,18 @@
 import { defineComponent } from 'vue'
 
 import { useCanvasStore } from '@/store/canvas'
-
-const canvasStore = useCanvasStore()
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   props: {},
   computed: {
-    canvas: () => canvasStore.canvas,
+    ...mapState(useCanvasStore, ['canvas']),
     showCanvasScale(): string {
       return Math.trunc(this.canvas.scale * 100) + '%'
     },
   },
   methods: {
-    ...mapActions('canvas', [
+    ...mapActions(useCanvasStore, [
       'scaleUp',
       'scaleDown',
       'resizeCanvasToOriginal',

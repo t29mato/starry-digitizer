@@ -29,17 +29,15 @@ import { defineComponent } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
-
-const axesStore = useAxesStore()
-const canvasStore = useCanvasStore()
+import { mapState } from 'pinia'
 
 export default defineComponent({
   components: {
     MagnifierAxis,
   },
   computed: {
-    axes: () => axesStore.axes,
-    canvas: () => canvasStore.canvas,
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
   },
   props: {},
 })

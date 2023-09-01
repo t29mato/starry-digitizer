@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { Magnifier } from '@/domains/magnifier'
 
-interface State {
+export interface State {
   magnifier: Magnifier
 }
 
@@ -10,11 +10,14 @@ export const useMagnifierStore = defineStore('magnifier', {
     magnifier: new Magnifier(),
   }),
   getters: {
-    magnifier: (state: State) => state.magnifier,
+    //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？
+    // magnifier() {
+    //   return this.magnifier
+    // },
   },
   actions: {
-    setScale(state: State, scale: number): void {
-      state.magnifier.setScale(scale)
+    setScale(scale: number): void {
+      this.magnifier.setScale(scale)
     },
   },
 })

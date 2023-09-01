@@ -3,7 +3,7 @@ import { Extractor } from '@/domains/extractor'
 import ExtractStrategyInterface from '@/domains/extractStrategies/extractStrategyInterface'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
 
-interface State {
+export interface State {
   extractor: Extractor
 }
 
@@ -12,20 +12,23 @@ export const useExtractorStore = defineStore('extractor', {
     extractor: new Extractor(LineExtract.instance),
   }),
   getters: {
-    extractor: (state: State) => state.extractor,
+    //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？
+    // extractor() {
+    //   return this.extractor
+    // },
   },
   actions: {
-    setColorDistancePct(state: State, colorDistancePct: number) {
-      state.extractor.colorDistancePct = colorDistancePct
+    setColorDistancePct(colorDistancePct: number) {
+      this.extractor.colorDistancePct = colorDistancePct
     },
-    setStrategy(state: State, strategy: ExtractStrategyInterface) {
-      state.extractor.strategy = strategy
+    setStrategy(strategy: ExtractStrategyInterface) {
+      this.extractor.strategy = strategy
     },
-    setColorPicker(state: State, color: string) {
-      state.extractor.colorPicker = color
+    setColorPicker(color: string) {
+      this.extractor.colorPicker = color
     },
-    setSwatches(state: State, colorSwatches: string[]) {
-      state.extractor.updateSwatches(colorSwatches)
+    setSwatches(colorSwatches: string[]) {
+      this.extractor.updateSwatches(colorSwatches)
     },
   },
 })

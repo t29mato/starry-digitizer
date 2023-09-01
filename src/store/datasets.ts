@@ -4,7 +4,7 @@ import { Dataset } from '@/domains/dataset'
 import { Plots, Coord } from '@/domains/datasetInterface'
 import { Vector } from '@/domains/axes/axesInterface'
 
-interface State {
+export interface State {
   datasets: Datasets
 }
 
@@ -13,48 +13,51 @@ export const useDatasetsStore = defineStore('datasets', {
     datasets: new Datasets(new Dataset('dataset 1', [], 1)),
   }),
   getters: {
-    datasets: (state: State) => state.datasets,
+    //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？
+    // datasets() {
+    //   return this.datasets
+    // },
   },
   actions: {
-    addPlot(state: State, plot: Coord) {
-      state.datasets.activeDataset.addPlot(plot.xPx, plot.yPx)
+    addPlot(plot: Coord) {
+      this.datasets.activeDataset.addPlot(plot.xPx, plot.yPx)
     },
-    addDataset(state: State) {
-      const nextId = state.datasets.nextDatasetId
-      state.datasets.addDataset(new Dataset(`dataset ${nextId}`, [], nextId))
+    addDataset() {
+      const nextId = this.datasets.nextDatasetId
+      this.datasets.addDataset(new Dataset(`dataset ${nextId}`, [], nextId))
     },
-    popDataset(state: State) {
-      state.datasets.popDataset()
+    popDataset() {
+      this.datasets.popDataset()
     },
-    moveActivePlot(state: State, vector: Vector) {
-      state.datasets.activeDataset.moveActivePlot(vector)
+    moveActivePlot(vector: Vector) {
+      this.datasets.activeDataset.moveActivePlot(vector)
     },
-    clearPlot(state: State, id: number) {
-      state.datasets.activeDataset.clearPlot(id)
+    clearPlot(id: number) {
+      this.datasets.activeDataset.clearPlot(id)
     },
-    clearPlots(state: State) {
-      state.datasets.activeDataset.clearPlots()
+    clearPlots() {
+      this.datasets.activeDataset.clearPlots()
     },
-    inactivatePlots(state: State) {
-      state.datasets.activeDataset.inactivatePlots()
+    inactivatePlots() {
+      this.datasets.activeDataset.inactivatePlots()
     },
-    clearActivePlots(state: State) {
-      state.datasets.activeDataset.clearActivePlots()
+    clearActivePlots() {
+      this.datasets.activeDataset.clearActivePlots()
     },
-    setPlots(state: State, plots: Plots) {
-      state.datasets.setPlots(plots)
+    setPlots(plots: Plots) {
+      this.datasets.setPlots(plots)
     },
-    toggleActivatedPlot(state: State, id: number) {
-      state.datasets.activeDataset.toggleActivatedPlot(id)
+    toggleActivatedPlot(id: number) {
+      this.datasets.activeDataset.toggleActivatedPlot(id)
     },
-    activatePlot(state: State, id: number) {
-      state.datasets.activeDataset.activatePlot(id)
+    activatePlot(id: number) {
+      this.datasets.activeDataset.activatePlot(id)
     },
-    setActiveDataset(state: State, id: number) {
-      state.datasets.setActiveDataset(id)
+    setActiveDataset(id: number) {
+      this.datasets.setActiveDataset(id)
     },
-    sortPlots(state: State) {
-      state.datasets.sortPlots()
+    sortPlots() {
+      this.datasets.sortPlots()
     },
   },
 })

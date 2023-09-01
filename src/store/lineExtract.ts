@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
 
-interface State {
+export interface State {
   lineExtract: LineExtract
 }
 
@@ -10,14 +10,17 @@ export const useLineExtractStore = defineStore('lineExtract', {
     lineExtract: LineExtract.instance,
   }),
   getters: {
-    lineExtract: (state: State) => state.lineExtract,
+    //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？
+    // lineExtract() {
+    //   return this.lineExtract
+    // },
   },
   actions: {
-    setDyPx(state: State, dyPx: number) {
-      state.lineExtract.dyPx = dyPx
+    setDyPx(dyPx: number) {
+      this.lineExtract.dyPx = dyPx
     },
-    setDxPx(state: State, dxPx: number) {
-      state.lineExtract.dxPx = dxPx
+    setDxPx(dxPx: number) {
+      this.lineExtract.dxPx = dxPx
     },
   },
 })

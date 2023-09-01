@@ -12,9 +12,7 @@ import { defineComponent } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
-
-const axesStore = useAxesStore()
-const canvasStore = useCanvasStore()
+import { mapState } from 'pinia'
 
 const axesGuideCommonStyle = {
   position: 'absolute',
@@ -36,8 +34,8 @@ export default defineComponent({
     },
   },
   computed: {
-    axes: () => axesStore.axes,
-    canvas: () => canvasStore.canvas,
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
     isActive(): boolean {
       return this.axes.pointMode === 0
     },

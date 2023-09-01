@@ -28,16 +28,15 @@
 import { defineComponent } from 'vue'
 
 import { useLineExtractStore } from '@/store/lineExtract'
-
-const lineExtractStore = useLineExtractStore()
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   computed: {
-    lineExtract: () => lineExtractStore.lineExtract,
+    ...mapState(useLineExtractStore, ['lineExtract']),
   },
   props: {},
   methods: {
-    ...mapActions('lineExtract', ['setDyPx', 'setDxPx']),
+    ...mapActions(useLineExtractStore, ['setDyPx', 'setDxPx']),
     inputDxDyPx(value: string) {
       this.setDxPx(parseInt(value))
       this.setDyPx(parseInt(value))

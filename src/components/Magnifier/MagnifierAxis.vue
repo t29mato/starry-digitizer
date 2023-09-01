@@ -47,11 +47,7 @@ import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
 import { useMagnifierStore } from '@/store/magnifier'
-
-const axesStore = useAxesStore()
-const canvasStore = useCanvasStore()
-const styleStore = useStyleStore()
-const magnifierStore = useMagnifierStore()
+import { mapState } from 'pinia'
 
 export default defineComponent({
   components: {
@@ -62,15 +58,17 @@ export default defineComponent({
     return {}
   },
   computed: {
-    axes: () => axesStore.axes,
-    canvas: () => canvasStore.canvas,
-    axisSizePx: () => styleStore.axisSizePx,
-    axisHalfSizePx: () => styleStore.axisHalfSizePx,
-    axisCrossBorderHalfPx: () => styleStore.axisCrossBorderHalfPx,
-    axisCrossBorderPx: () => styleStore.axisCrossBorderPx,
-    axisCrossTopPx: () => styleStore.axisCrossTopPx,
-    axisCrossCursorPx: () => styleStore.axisCrossCursorPx,
-    magnifier: () => magnifierStore.magnifier,
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useStyleStore, [
+      'axisSizePx',
+      'axisHalfSizePx',
+      'axisCrossBorderHalfPx',
+      'axisCrossBorderPx',
+      'axisCrossTopPx',
+      'axisCrossCursorPx',
+    ]),
+    ...mapState(useMagnifierStore, ['magnifier']),
     xPx(): number {
       return this.axis.coord.xPx
     },

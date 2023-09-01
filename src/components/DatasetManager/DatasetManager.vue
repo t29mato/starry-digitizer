@@ -8,7 +8,7 @@
       <v-btn
         x-small
         @click="popDataset"
-        :disabled="this.datasets.datasets.length === 1"
+        :disabled="datasets.datasets.length === 1"
         class="ml-2"
         ><v-icon>mdi-minus</v-icon></v-btn
       >
@@ -56,9 +56,7 @@ import { defineComponent } from 'vue'
 
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
-
-const canvasStore = useCanvasStore()
-const datasetsStore = useDatasetsStore()
+import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   components: {},
@@ -71,8 +69,8 @@ export default defineComponent({
     }
   },
   computed: {
-    datasets: () => datasetsStore.datasets,
-    canvas: () => canvasStore.canvas,
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useCanvasStore, ['canvas']),
   },
   props: {
     exportBtnText: {
@@ -85,7 +83,11 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions('datasets', ['addDataset', 'setActiveDataset', 'popDataset']),
+    ...mapActions(useDatasetsStore, [
+      'addDataset',
+      'setActiveDataset',
+      'popDataset',
+    ]),
     activateDataset(id: number) {
       this.setActiveDataset(id)
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
