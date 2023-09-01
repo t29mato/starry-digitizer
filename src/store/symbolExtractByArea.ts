@@ -13,10 +13,10 @@ export const useSymbolExtractByAreaStore = defineStore('axes', {
     symbolExtractByArea: (state: State) => state.symbolExtractByArea,
   },
   actions: {
-    setMinDiameterPx({ state }: { state: State }, minDiameterPx: number) {
+    setMinDiameterPx(state: State, minDiameterPx: number) {
       state.symbolExtractByArea.minDiameterPx = minDiameterPx
     },
-    setMaxDiameterPx({ state }: { state: State }, maxDiameterPx: number) {
+    setMaxDiameterPx(state: State, maxDiameterPx: number) {
       state.symbolExtractByArea.maxDiameterPx = maxDiameterPx
     },
   },

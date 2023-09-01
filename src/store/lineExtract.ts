@@ -13,10 +13,10 @@ export const useLineExtractStore = defineStore('lineExtract', {
     lineExtract: (state: State) => state.lineExtract,
   },
   actions: {
-    setDyPx({ state }: { state: State }, dyPx: number) {
+    setDyPx(state: State, dyPx: number) {
       state.lineExtract.dyPx = dyPx
     },
-    setDxPx({ state }: { state: State }, dxPx: number) {
+    setDxPx(state: State, dxPx: number) {
       state.lineExtract.dxPx = dxPx
     },
   },

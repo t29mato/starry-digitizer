@@ -13,7 +13,7 @@ export const useMagnifierStore = defineStore('magnifier', {
     magnifier: (state: State) => state.magnifier,
   },
   actions: {
-    setScale({ state }: { state: State }, scale: number): void {
+    setScale(state: State, scale: number): void {
       state.magnifier.setScale(scale)
     },
   },

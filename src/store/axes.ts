@@ -22,40 +22,40 @@ export const useAxesStore = defineStore('axes', {
     axes: (state: State) => state.axes,
   },
   actions: {
-    setX1Value({ state }: { state: State }, value: number) {
+    setX1Value(state: State, value: number) {
       state.axes.x1.value = value
     },
-    setX2Value({ state }: { state: State }, value: number) {
+    setX2Value(state: State, value: number) {
       state.axes.x2.value = value
     },
-    setY1Value({ state }: { state: State }, value: number) {
+    setY1Value(state: State, value: number) {
       state.axes.y1.value = value
     },
-    setY2Value({ state }: { state: State }, value: number) {
+    setY2Value(state: State, value: number) {
       state.axes.y2.value = value
     },
-    setXIsLog({ state }: { state: State }, value: boolean) {
+    setXIsLog(state: State, value: boolean) {
       state.axes.xIsLog = value
     },
-    setYIsLog({ state }: { state: State }, value: boolean) {
+    setYIsLog(state: State, value: boolean) {
       state.axes.yIsLog = value
     },
-    clearAxesCoords({ state }: { state: State }) {
+    clearAxesCoords(state: State) {
       state.axes.clearAxesCoords()
     },
-    clearXAxisCoords({ state }: { state: State }) {
+    clearXAxisCoords(state: State) {
       state.axes.clearXAxisCoords()
     },
-    clearYAxisCoords({ state }: { state: State }) {
+    clearYAxisCoords(state: State) {
       state.axes.clearYAxisCoords()
     },
-    addAxisCoord({ state }: { state: State }, coord: Coord) {
+    addAxisCoord(state: State, coord: Coord) {
       state.axes.addAxisCoord(coord)
     },
-    moveActiveAxis({ state }: { state: State }, vector: Vector) {
+    moveActiveAxis(state: State, vector: Vector) {
       state.axes.moveActiveAxis(vector)
     },
-    inactivateAxis({ state }: { state: State }) {
+    inactivateAxis(state: State) {
       state.axes.inactivateAxis()
     },
   },

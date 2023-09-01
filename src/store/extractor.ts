@@ -15,19 +15,16 @@ export const useExtractorStore = defineStore('extractor', {
     extractor: (state: State) => state.extractor,
   },
   actions: {
-    setColorDistancePct({ state }: { state: State }, colorDistancePct: number) {
+    setColorDistancePct(state: State, colorDistancePct: number) {
       state.extractor.colorDistancePct = colorDistancePct
     },
-    setStrategy(
-      { state }: { state: State },
-      strategy: ExtractStrategyInterface,
-    ) {
+    setStrategy(state: State, strategy: ExtractStrategyInterface) {
       state.extractor.strategy = strategy
     },
-    setColorPicker({ state }: { state: State }, color: string) {
+    setColorPicker(state: State, color: string) {
       state.extractor.colorPicker = color
     },
-    setSwatches({ state }: { state: State }, colorSwatches: string[]) {
+    setSwatches(state: State, colorSwatches: string[]) {
       state.extractor.updateSwatches(colorSwatches)
     },
   },

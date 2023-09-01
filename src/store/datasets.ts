@@ -16,44 +16,44 @@ export const useDatasetsStore = defineStore('datasets', {
     datasets: (state: State) => state.datasets,
   },
   actions: {
-    addPlot({ state }: { state: State }, plot: Coord) {
+    addPlot(state: State, plot: Coord) {
       state.datasets.activeDataset.addPlot(plot.xPx, plot.yPx)
     },
-    addDataset({ state }: { state: State }) {
+    addDataset(state: State) {
       const nextId = state.datasets.nextDatasetId
       state.datasets.addDataset(new Dataset(`dataset ${nextId}`, [], nextId))
     },
-    popDataset({ state }: { state: State }) {
+    popDataset(state: State) {
       state.datasets.popDataset()
     },
-    moveActivePlot({ state }: { state: State }, vector: Vector) {
+    moveActivePlot(state: State, vector: Vector) {
       state.datasets.activeDataset.moveActivePlot(vector)
     },
-    clearPlot({ state }: { state: State }, id: number) {
+    clearPlot(state: State, id: number) {
       state.datasets.activeDataset.clearPlot(id)
     },
-    clearPlots({ state }: { state: State }) {
+    clearPlots(state: State) {
       state.datasets.activeDataset.clearPlots()
     },
-    inactivatePlots({ state }: { state: State }) {
+    inactivatePlots(state: State) {
       state.datasets.activeDataset.inactivatePlots()
     },
-    clearActivePlots({ state }: { state: State }) {
+    clearActivePlots(state: State) {
       state.datasets.activeDataset.clearActivePlots()
     },
-    setPlots({ state }: { state: State }, plots: Plots) {
+    setPlots(state: State, plots: Plots) {
       state.datasets.setPlots(plots)
     },
-    toggleActivatedPlot({ state }: { state: State }, id: number) {
+    toggleActivatedPlot(state: State, id: number) {
       state.datasets.activeDataset.toggleActivatedPlot(id)
     },
-    activatePlot({ state }: { state: State }, id: number) {
+    activatePlot(state: State, id: number) {
       state.datasets.activeDataset.activatePlot(id)
     },
-    setActiveDataset({ state }: { state: State }, id: number) {
+    setActiveDataset(state: State, id: number) {
       state.datasets.setActiveDataset(id)
     },
-    sortPlots({ state }: { state: State }) {
+    sortPlots(state: State) {
       state.datasets.sortPlots()
     },
   },
