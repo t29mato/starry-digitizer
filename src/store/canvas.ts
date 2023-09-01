@@ -9,7 +9,7 @@ interface State {
 export const useCanvasStore = defineStore('canvas', {
   state: (): State => ({
     canvas: new Canvas(),
-  })
+  }),
   getters: {
     canvas: (state: State) => state.canvas,
   },
@@ -32,7 +32,7 @@ export const useCanvasStore = defineStore('canvas', {
 
     mouseMoveForPen(
       { state }: { state: State },
-      config: { xPx: number; yPx: number; penSize: number }
+      config: { xPx: number; yPx: number; penSize: number },
     ) {
       state.canvas.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
     },

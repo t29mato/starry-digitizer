@@ -5,8 +5,8 @@ interface State {
   symbolExtractByArea: SymbolExtractByArea
 }
 
-export const useSymbolExtractByAreaStore= defineStore('axes', {
-  state :(): State => ({
+export const useSymbolExtractByAreaStore = defineStore('axes', {
+  state: (): State => ({
     symbolExtractByArea: SymbolExtractByArea.instance,
   }),
   getters: {

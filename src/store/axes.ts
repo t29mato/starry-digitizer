@@ -15,7 +15,7 @@ export const useAxesStore = defineStore('axes', {
       new Axis('x2', 1),
       new Axis('y1', 0),
       new Axis('y2', 1),
-      new Axis('x2y2', -1)
+      new Axis('x2y2', -1),
     ),
   }),
   getters: {
@@ -58,7 +58,5 @@ export const useAxesStore = defineStore('axes', {
     inactivateAxis({ state }: { state: State }) {
       state.axes.inactivateAxis()
     },
-  }
-  ,
+  },
 })
-

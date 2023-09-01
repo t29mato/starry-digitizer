@@ -10,7 +10,7 @@ export const useStyleStore = defineStore('style', {
     plotSizePx: 10,
     axisSizePx: 20,
   }),
-  getters:  {
+  getters: {
     plotSizePx: (state: State) => state.plotSizePx,
     axisSizePx: (state: State) => state.axisSizePx,
     axisHalfSizePx: (state: State) => state.axisSizePx / 2,
