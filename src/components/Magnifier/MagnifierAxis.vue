@@ -41,8 +41,17 @@
 import { AxisInterface } from '@/domains/axes/axisInterface'
 import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue'
 
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useStyleStore } from '@/store/style'
+import { useMagnifierStore } from '@/store/magnifier'
+
+const axesStore = useAxesStore()
+const canvasStore = useCanvasStore()
+const styleStore = useStyleStore()
+const magnifierStore = useMagnifierStore()
 
 export default defineComponent({
   components: {
@@ -53,17 +62,15 @@ export default defineComponent({
     return {}
   },
   computed: {
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
-    ...mapGetters('style', {
-      axisSizePx: 'axisSizePx',
-      axisHalfSizePx: 'axisHalfSizePx',
-      axisCrossBorderHalfPx: 'axisCrossBorderHalfPx',
-      axisCrossBorderPx: 'axisCrossBorderPx',
-      axisCrossTopPx: 'axisCrossTopPx',
-      axisCrossCursorPx: 'axisCrossCursorPx',
-    }),
-    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
+    axes: () => axesStore.axes,
+    canvas: () => canvasStore.canvas,
+    axisSizePx: () => styleStore.axisSizePx,
+    axisHalfSizePx: () => styleStore.axisHalfSizePx,
+    axisCrossBorderHalfPx: () => styleStore.axisCrossBorderHalfPx,
+    axisCrossBorderPx: () => styleStore.axisCrossBorderPx,
+    axisCrossTopPx: () => styleStore.axisCrossTopPx,
+    axisCrossCursorPx: () => styleStore.axisCrossCursorPx,
+    magnifier: () => magnifierStore.magnifier,
     xPx(): number {
       return this.axis.coord.xPx
     },

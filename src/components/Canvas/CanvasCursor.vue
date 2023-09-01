@@ -46,8 +46,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue'
 
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useStyleStore } from '@/store/style'
+import { useDatasetsStore } from '@/store/datasets'
+
+const axesStore = useAxesStore()
+const canvasStore = useCanvasStore()
+const styleStore = useStyleStore()
+const datasetsStore = useDatasetsStore()
 
 const guideLineBaseStyles = {
   position: 'absolute',
@@ -58,13 +67,11 @@ const guideLineBaseStyles = {
 export default defineComponent({
   props: {},
   computed: {
-    ...mapGetters('style', {
-      axisCrossCursorPx: 'axisCrossCursorPx',
-      axisHalfSizePx: 'axisHalfSizePx',
-    }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('datasets', { datasets: 'datasets' }),
+    axisCrossCursorPx: () => styleStore.axisCrossCursorPx,
+    axisHalfSizePx: () => styleStore.axisHalfSizePx,
+    canvas: () => canvasStore.canvas,
+    axes: () => axesStore.axes,
+    datasets: () => datasetsStore.datasets,
     rightLabel(): string {
       switch (this.canvas.maskMode) {
         case 0:

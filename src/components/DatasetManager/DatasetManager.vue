@@ -52,8 +52,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
+
+import { useCanvasStore } from '@/store/canvas'
+import { useDatasetsStore } from '@/store/datasets'
+
+const canvasStore = useCanvasStore()
+const datasetsStore = useDatasetsStore()
 
 export default defineComponent({
   components: {},
@@ -66,8 +71,8 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters('datasets', { datasets: 'datasets' }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
+    datasets: () => datasetsStore.datasets,
+    canvas: () => canvasStore.canvas,
   },
   props: {
     exportBtnText: {

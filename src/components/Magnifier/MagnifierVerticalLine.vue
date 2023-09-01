@@ -12,13 +12,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue'
 
+import { useMagnifierStore } from '@/store/magnifier'
+
+const magnifierStore = useMagnifierStore()
 
 export default defineComponent({
   props: {},
   computed: {
-    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
+    magnifier: () => magnifierStore.magnifier,
     // INFO: 十字線を作成する箱の横幅
     width(): number {
       return (this.magnifier.sizePx - this.magnifier.crosshairSizePx) / 2

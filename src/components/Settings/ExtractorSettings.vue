@@ -33,8 +33,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
 
 import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
@@ -43,6 +42,12 @@ import ColorSettings from './ColorSettings.vue'
 import { ExtractStrategy } from '@/domains/extractor'
 import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
+
+import { useCanvasStore } from '@/store/canvas'
+import { useExtractorStore } from '@/store/extractor'
+
+const canvasStore = useCanvasStore()
+const extractorStore = useExtractorStore()
 
 export default defineComponent({
   components: {
@@ -57,8 +62,8 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters('extractor', { extractor: 'extractor' }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
+    extractor: () => extractorStore.extractor,
+    canvas: () => canvasStore.canvas,
   },
   props: {
     initialExtractorStrategy: {

@@ -13,8 +13,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-
+import { defineComponent } from 'vue'
 
 import colors from 'vuetify/lib/util/colors'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
@@ -22,6 +21,15 @@ import { HotTable } from '@handsontable/vue'
 import 'handsontable/dist/handsontable.full.css'
 import { registerAllModules } from 'handsontable/registry'
 import { Plot } from '@/domains/datasetInterface'
+
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useDatasetsStore } from '@/store/datasets'
+
+const axesStore = useAxesStore()
+const canvasStore = useCanvasStore()
+const datasetsStore = useDatasetsStore()
+
 registerAllModules()
 
 const CSV_DELIMITER = ','
@@ -31,9 +39,9 @@ export default defineComponent({
     HotTable,
   },
   computed: {
-    ...mapGetters('datasets', { datasets: 'datasets' }),
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
+    datasets: () => datasetsStore.datasets,
+    axes: () => axesStore.axes,
+    canvas: () => canvasStore.canvas,
     tableData() {
       if (this.datasets.activeDataset.plots.length > 0) {
         return this.datasets.activeDataset.plots.map((plot: Plot) => {

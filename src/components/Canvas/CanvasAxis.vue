@@ -39,10 +39,16 @@
 
 <script lang="ts">
 import { AxisInterface } from '@/domains/axes/axisInterface'
+import { defineComponent } from 'vue'
 
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useStyleStore } from '@/store/style'
 
+const axesStore = useAxesStore()
+const canvasStore = useCanvasStore()
+const styleStore = useStyleStore()
 
-import { defineComponent } from "vue";
 export default defineComponent({
   props: {
     axis: {
@@ -56,16 +62,14 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters('style', {
-      axisSizePx: 'axisSizePx',
-      axisHalfSizePx: 'axisHalfSizePx',
-      axisCrossBorderHalfPx: 'axisCrossBorderHalfPx',
-      axisCrossBorderPx: 'axisCrossBorderPx',
-      axisCrossTopPx: 'axisCrossTopPx',
-      axisCrossCursorPx: 'axisCrossCursorPx',
-    }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
-    ...mapGetters('axes', { axes: 'axes' }),
+    axisSizePx: () => styleStore.axisSizePx,
+    axisHalfSizePx: () => styleStore.axisHalfSizePx,
+    axisCrossBorderHalfPx: () => styleStore.axisCrossBorderHalfPx,
+    axisCrossBorderPx: () => styleStore.axisCrossBorderPx,
+    axisCrossTopPx: () => styleStore.axisCrossTopPx,
+    axisCrossCursorPx: () => styleStore.axisCrossCursorPx,
+    canvas: () => canvasStore.canvas,
+    axes: () => axesStore.axes,
     xPx(): number {
       if (this.axis.coord) {
         return this.axis.coord.xPx * this.canvas.scale

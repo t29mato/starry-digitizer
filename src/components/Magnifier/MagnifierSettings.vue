@@ -28,15 +28,18 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue'
 
+import { useMagnifierStore } from '@/store/magnifier'
+
+const magnifierStore = useMagnifierStore()
 
 export default defineComponent({
   data() {
     return {}
   },
   computed: {
-    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
+    magnifier: () => magnifierStore.magnifier,
   },
   props: {
     shouldShowSettingsDialog: {

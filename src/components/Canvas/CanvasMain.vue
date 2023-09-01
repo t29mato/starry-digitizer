@@ -41,12 +41,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapActions } from 'vuex'
-
+import { defineComponent } from 'vue'
 import { CanvasAxes, CanvasPlots, CanvasCursor, CanvasAxesGuide } from '.'
 import { Vector } from '@/domains/axes/axesInterface'
 import { Coord, Plot } from '@/domains/datasetInterface'
+
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useDatasetsStore } from '@/store/datasets'
+
+const axesStore = useAxesStore()
+const canvasStore = useCanvasStore()
+const datasetsStore = useDatasetsStore()
+
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 
@@ -64,9 +71,9 @@ export default defineComponent({
     document.removeEventListener('keydown', this.keyDownHandler)
   },
   computed: {
-    ...mapGetters('canvas', { canvas: 'canvas' }),
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('datasets', { datasets: 'datasets' }),
+    canvas: () => canvasStore.canvas,
+    axes: () => axesStore.axes,
+    datasets: () => datasetsStore.datasets,
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
@@ -238,8 +245,8 @@ export default defineComponent({
         this.moveActivePlot(vector)
         this.setCanvasCursor(
           this.datasets.activeDataset.plots.filter((plot: Plot) =>
-            this.datasets.activeDataset.activePlotIds.includes(plot.id)
-          )[0]
+            this.datasets.activeDataset.activePlotIds.includes(plot.id),
+          )[0],
         )
       }
     },

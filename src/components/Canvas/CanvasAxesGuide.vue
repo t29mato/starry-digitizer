@@ -8,8 +8,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue'
 
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+
+const axesStore = useAxesStore()
+const canvasStore = useCanvasStore()
 
 const axesGuideCommonStyle = {
   position: 'absolute',
@@ -31,8 +36,8 @@ export default defineComponent({
     },
   },
   computed: {
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
+    axes: () => axesStore.axes,
+    canvas: () => canvasStore.canvas,
     isActive(): boolean {
       return this.axes.pointMode === 0
     },

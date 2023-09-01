@@ -22,14 +22,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
+
+import { useSymbolExtractByAreaStore } from '@/store/symbolExtractByArea'
+
+const symbolExtractByAreaStore = useSymbolExtractByAreaStore()
 
 export default defineComponent({
   computed: {
-    ...mapGetters('symbolExtractByArea', {
-      symbolExtractByArea: 'symbolExtractByArea',
-    }),
+    symbolExtractByArea: () => symbolExtractByAreaStore.symbolExtractByArea,
   },
   props: {},
   methods: {

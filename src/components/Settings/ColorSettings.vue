@@ -39,8 +39,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
+
+import { useExtractorStore } from '@/store/extractor'
+
+const extractorStore = useExtractorStore()
 
 export default defineComponent({
   data() {
@@ -49,7 +52,7 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapGetters('extractor', { extractor: 'extractor' }),
+    extractor: () => extractorStore.extractor,
   },
   props: {},
   methods: {

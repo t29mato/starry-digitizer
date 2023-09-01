@@ -170,12 +170,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
+
+import { useAxesStore } from '@/store/axes'
+
+const axesStore = useAxesStore()
 
 export default defineComponent({
   computed: {
-    ...mapGetters('axes', { axes: 'axes' }),
+    axes: () => axesStore.axes,
     errorMessage(): string {
       if (this.axes.xIsLog) {
         if (this.x1 === '0' || this.x2 === '0') {

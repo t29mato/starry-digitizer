@@ -35,18 +35,25 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue'
 
+import { useMagnifierStore } from '@/store/magnifier'
+import { useLineExtractStore } from '@/store/lineExtract'
+import { useExtractorStore } from '@/store/extractor'
+import { useSymbolExtractByAreaStore } from '@/store/symbolExtractByArea'
+
+const magnifierStore = useMagnifierStore()
+const lineExtractStore = useLineExtractStore()
+const extractorStore = useExtractorStore()
+const symbolExtractByAreaStore = useSymbolExtractByAreaStore()
 
 export default defineComponent({
   props: {},
   computed: {
-    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
-    ...mapGetters('lineExtract', { lineExtract: 'lineExtract' }),
-    ...mapGetters('extractor', { extractor: 'extractor' }),
-    ...mapGetters('symbolExtractByArea', {
-      symbolExtractByArea: 'symbolExtractByArea',
-    }),
+    magnifier: () => magnifierStore.magnifier,
+    lineExtract: () => lineExtractStore.lineExtract,
+    extractor: () => extractorStore.extractor,
+    symbolExtractByArea: () => symbolExtractByAreaStore.symbolExtractByArea,
     symbolMinDiameter(): number {
       return this.symbolExtractByArea.minDiameterPx * this.magnifier.scale
     },

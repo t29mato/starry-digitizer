@@ -10,14 +10,18 @@
 
 <script lang="ts">
 import CanvasAxis from '@/components/Canvas/CanvasAxis.vue'
+import { useAxesStore } from '@/store/axes'
 
 import { defineComponent } from 'vue'
+
+const axesStore = useAxesStore()
+
 export default defineComponent({
   components: {
     CanvasAxis,
   },
   computed: {
-    ...mapGetters('axes', { axes: 'axes' }),
+    axes: () => axesStore.axes,
   },
   props: {},
   methods: {},

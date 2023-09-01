@@ -21,15 +21,23 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-
+import { defineComponent } from 'vue'
 
 import { Coord } from '@/domains/datasetInterface'
+
+import { useCanvasStore } from '@/store/canvas'
+import { useStyleStore } from '@/store/style'
+import { useMagnifierStore } from '@/store/magnifier'
+
+const canvasStore = useCanvasStore()
+const styleStore = useStyleStore()
+const magnifierStore = useMagnifierStore()
+
 export default defineComponent({
   computed: {
-    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
-    ...mapGetters('style', { plotSizePx: 'plotSizePx' }),
+    magnifier: () => magnifierStore.magnifier,
+    canvas: () => canvasStore.canvas,
+    plotSizePx: () => styleStore.plotSizePx,
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },

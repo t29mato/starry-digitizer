@@ -25,12 +25,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
+
+import { useLineExtractStore } from '@/store/lineExtract'
+
+const lineExtractStore = useLineExtractStore()
 
 export default defineComponent({
   computed: {
-    ...mapGetters('lineExtract', { lineExtract: 'lineExtract' }),
+    lineExtract: () => lineExtractStore.lineExtract,
   },
   props: {},
   methods: {

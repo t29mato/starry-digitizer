@@ -34,14 +34,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
+
+import { useAxesStore } from '@/store/axes'
+import { useDatasetsStore } from '@/store/datasets'
+
+const axesStore = useAxesStore()
+const datasetsStore = useDatasetsStore()
 
 export default defineComponent({
   props: {},
   computed: {
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('datasets', { datasets: 'datasets' }),
+    axes: () => axesStore.axes,
+    datasets: () => datasetsStore.datasets,
   },
   methods: {
     ...mapActions('datasets', ['clearPlots', 'clearActivePlots']),

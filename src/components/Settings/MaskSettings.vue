@@ -34,12 +34,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
+
+import { useCanvasStore } from '@/store/canvas'
+
+const canvasStore = useCanvasStore()
 
 export default defineComponent({
   computed: {
-    ...mapGetters('canvas', { canvas: 'canvas' }),
+    canvas: () => canvasStore.canvas,
   },
   props: {},
   methods: {
