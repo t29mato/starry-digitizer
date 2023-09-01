@@ -14,7 +14,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapGetters } from 'vuex'
+
 
 import colors from 'vuetify/lib/util/colors'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'

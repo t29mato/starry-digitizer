@@ -42,7 +42,7 @@ import { AxisInterface } from '@/domains/axes/axisInterface'
 import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
 import { defineComponent } from "vue";
-import { mapGetters } from 'vuex'
+
 
 export default defineComponent({
   components: {

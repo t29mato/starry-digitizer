@@ -40,7 +40,7 @@
 <script lang="ts">
 import { AxisInterface } from '@/domains/axes/axisInterface'
 
-import { mapGetters } from 'vuex'
+
 
 import { defineComponent } from "vue";
 export default defineComponent({

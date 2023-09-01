@@ -22,7 +22,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapGetters } from 'vuex'
+
 
 import { Coord } from '@/domains/datasetInterface'
 export default defineComponent({

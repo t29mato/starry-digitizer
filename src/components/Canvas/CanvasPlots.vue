@@ -13,7 +13,7 @@
 <script lang="ts">
 import CanvasPlot from '@/components/Canvas/CanvasPlot.vue'
 import { defineComponent } from "vue";
-import { mapGetters } from 'vuex'
+
 
 export default defineComponent({
   components: {

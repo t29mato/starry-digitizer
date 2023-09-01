@@ -9,10 +9,9 @@
 </template>
 
 <script lang="ts">
-import { mapGetters } from 'vuex'
 import CanvasAxis from '@/components/Canvas/CanvasAxis.vue'
 
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue'
 export default defineComponent({
   components: {
     CanvasAxis,
