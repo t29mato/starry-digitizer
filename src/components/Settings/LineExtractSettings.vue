@@ -3,11 +3,12 @@
     <!--  TODO: pxはappendixで追加する -->
     <v-col class="pa-0">
       <v-text-field
+        prepend-icon="mdi-map-marker"
         :model-value="lineExtract.dxPx"
         @update:model-value="inputDxDyPx"
         label="ΔX (px)"
         type="number"
-        class="ma-0 pl-4"
+        class="ma-0"
         id="line-extract-dx"
         density="compact"
       ></v-text-field>
@@ -18,7 +19,7 @@
         @update:model-value="inputDxDyPx"
         label="ΔY (px)"
         type="number"
-        class="ma-0 pl-4"
+        class="ma-0"
         id="line-extract-dy"
         density="compact"
       ></v-text-field>

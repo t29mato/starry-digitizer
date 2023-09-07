@@ -5,7 +5,7 @@
       :model-value="canvas.manualMode"
       @update:model-value="changeManualMode"
       density="compact"
-      class="pl-2"
+      class="mb-4"
     >
       <v-btn size="small" color="primary"> Add (A) </v-btn>
       <v-btn size="small" color="primary"> Edit (E) </v-btn>

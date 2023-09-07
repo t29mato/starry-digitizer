@@ -5,7 +5,6 @@
       :model-value="canvas.maskMode"
       @update:model-value="change"
       density="compact"
-      class="pl-2"
     >
       <v-btn size="small" color="primary"> Pen </v-btn>
       <v-btn size="small" color="primary"> Box </v-btn>

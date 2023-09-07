@@ -31,7 +31,7 @@
 import { defineComponent } from 'vue'
 import MainScreen from '@/components/MainScreen.vue'
 
-import initialImagePath from './assets/sample_graph_curve.png'
+import initialImagePath from '@/assets/sample_graph_curve.png'
 
 import { version } from '../package.json'
 

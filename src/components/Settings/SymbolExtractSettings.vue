@@ -6,7 +6,7 @@
         @update:model-value="inputMin"
         label="Min. Diameter (px)"
         type="number"
-        class="ma-0 pl-4"
+        class="ma-0"
         density="compact"
       ></v-text-field>
     </v-col>
@@ -16,7 +16,7 @@
         @update:model-value="inputMax"
         label="Max. Diameter (px)"
         type="number"
-        class="ma-0 pl-4"
+        class="ma-0"
         density="compact"
       ></v-text-field>
     </v-col>

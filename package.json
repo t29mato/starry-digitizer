@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@handsontable/vue3": "^13.1.0",
+    "@mdi/font": "^7.2.96",
     "colorthief": "^2.4.0",
     "handsontable": "^13.1.0",
     "pinia": "^2.1.6",
