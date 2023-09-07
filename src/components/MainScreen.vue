@@ -53,10 +53,10 @@ export default defineComponent({
   },
   props: {
     // should be imported by require function
-    // initialGraphImagePath: {
-    //   type: String,
-    //   required: true,
-    // },
+    initialGraphImagePath: {
+      type: String,
+      required: true,
+    },
     initialExtractorStrategy: {
       type: String,
       required: false,

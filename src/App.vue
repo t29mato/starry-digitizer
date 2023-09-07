@@ -4,7 +4,7 @@
       <!-- <main-screen
         :initialGraphImagePath="require('@/assets/sample_graph_curve.png')"
       /> -->
-      <main-screen />
+      <main-screen :initialGraphImagePath="initialImagePath" />
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
@@ -38,6 +38,8 @@ import { version } from '../package.json'
 
 import { defineComponent } from 'vue'
 import MainScreen from '@/components/MainScreen.vue'
+
+import initialImagePath from './assets/sample_graph_curve.png'
 
 //TODO: 後で戻す対応
 // if (process.env.NODE_ENV === 'production') {
@@ -92,6 +94,7 @@ export default defineComponent({
         url: 'https://starrydigitizer.readthedocs.io/',
       },
     ],
+    initialImagePath,
     // isProd: process.env.NODE_ENV === 'production',
     isProd: false,
   }),
