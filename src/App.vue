@@ -12,7 +12,7 @@
           v-for="link in links"
           :key="link.url"
           color="white"
-          text=""
+          variant="text"
           rounded
           class="my-2"
           :href="link.url"
@@ -21,7 +21,7 @@
         >
           {{ link.text }}
         </v-btn>
-        <v-col class="text-center white--text" cols="12">
+        <v-col class="text-center text-white" cols="12">
           {{ new Date().getFullYear() }} — <strong>StarryDigitizer</strong
           ><span class="ml-2 mt-1">{{ version }}</span>
         </v-col>
@@ -95,8 +95,7 @@ export default defineComponent({
       },
     ],
     initialImagePath,
-    // isProd: process.env.NODE_ENV === 'production',
-    isProd: false,
+    isProd: process.env.NODE_ENV === 'production',
   }),
   methods: {
     importPlots(plots: any) {
