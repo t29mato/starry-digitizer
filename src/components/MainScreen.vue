@@ -53,10 +53,10 @@ export default defineComponent({
   },
   props: {
     // should be imported by require function
-    initialGraphImagePath: {
-      type: String,
-      required: true,
-    },
+    // initialGraphImagePath: {
+    //   type: String,
+    //   required: true,
+    // },
     initialExtractorStrategy: {
       type: String,
       required: false,
@@ -70,7 +70,8 @@ export default defineComponent({
   data() {
     return {
       version,
-      githubRunNumber: process.env.VUE_APP_GITHUB_RUN_NUMBER,
+      // githubRunNumber: process.env.VUE_APP_GITHUB_RUN_NUMBER,
+      githubRunNumber: 0,
     }
   },
 })

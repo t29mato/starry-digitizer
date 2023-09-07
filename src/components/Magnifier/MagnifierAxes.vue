@@ -39,6 +39,5 @@ export default defineComponent({
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useCanvasStore, ['canvas']),
   },
-  props: {},
 })
 </script>

@@ -58,23 +58,23 @@ export default class XYAxesCalculator {
       ? Math.pow(
           10,
           ((xp - xa) / (xb - xa)) * (Math.log10(b) - Math.log10(a)) +
-            Math.log10(a)
+            Math.log10(a),
         )
       : ((xp - xa) / (xb - xa)) * (b - a) + a
     const yV = this.#isLog.y
       ? Math.pow(
           10,
           ((yq - yc) / (yd - yc)) * (Math.log10(d) - Math.log10(c)) +
-            Math.log10(c)
+            Math.log10(c),
         )
       : ((yq - yc) / (yd - yc)) * (d - c) + c
     const xEffectiveDigits = this.calculateEffectiveDigits(
       this.#axes.x2.value,
-      this.#axes.x1.value
+      this.#axes.x1.value,
     )
     const yEffectiveDigits = this.calculateEffectiveDigits(
       this.#axes.y2.value,
-      this.#axes.y1.value
+      this.#axes.y1.value,
     )
     const xPrecised = parseFloat(xV.toPrecision(xEffectiveDigits))
     const yPrecised = parseFloat(yV.toPrecision(yEffectiveDigits))

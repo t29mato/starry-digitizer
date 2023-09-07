@@ -25,7 +25,8 @@
       small
       class="ml-2"
       :disabled="
-        datasets.activeDataset.plots.length === 0 || !datasets.plotsAreActive
+        datasets.activeDataset.plots.length === 0 ||
+        !datasets.activeDataset.nextPlotId
       "
       @click="clearActivePlots"
       >Clear Active Point</v-btn
@@ -41,12 +42,7 @@ import { useDatasetsStore } from '@/store/datasets'
 import { useCanvasStore } from '@/store/canvas'
 import { mapState, mapActions } from 'pinia'
 
-//
-// const datasetsStore = useDatasetsStore()
-//
-
 export default defineComponent({
-  props: {},
   computed: {
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),

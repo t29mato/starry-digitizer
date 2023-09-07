@@ -119,7 +119,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.maskCanvas.element.width,
-      this.maskCanvas.element.height
+      this.maskCanvas.element.height,
     )
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
@@ -135,7 +135,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.maskCanvas.element.width,
-      this.maskCanvas.element.height
+      this.maskCanvas.element.height,
     )
     this.#rectangle.endY = yPx - this.#rectangle.startY
     this.#rectangle.endX = xPx - this.#rectangle.startX
@@ -143,7 +143,7 @@ export class Canvas implements CanvasInterface {
       this.#rectangle.startX,
       this.#rectangle.startY,
       this.#rectangle.endX,
-      this.#rectangle.endY
+      this.#rectangle.endY,
     )
   }
 
@@ -153,7 +153,7 @@ export class Canvas implements CanvasInterface {
       this.#rectangle.startX,
       this.#rectangle.startY,
       this.#rectangle.endX,
-      this.#rectangle.endY
+      this.#rectangle.endY,
     )
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
     this.isDrawnMask = true
@@ -162,7 +162,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.maskCanvas.element.width,
-      this.maskCanvas.element.height
+      this.maskCanvas.element.height,
     )
   }
 
@@ -185,7 +185,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.originalWidth,
-      this.originalHeight
+      this.originalHeight,
     )
     return ctx.getImageData(0, 0, this.originalWidth, this.originalHeight).data
   }
@@ -200,7 +200,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.originalWidth,
-      this.originalHeight
+      this.originalHeight,
     )
     return ctx.getImageData(0, 0, this.originalWidth, this.originalHeight).data
   }
@@ -231,13 +231,13 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.maskCanvas.element.width,
-      this.maskCanvas.element.height
+      this.maskCanvas.element.height,
     )
     this.magnifierMaskCanvas.context.clearRect(
       0,
       0,
       this.maskCanvas.element.width,
-      this.maskCanvas.element.height
+      this.maskCanvas.element.height,
     )
     this.isDrawnMask = false
   }
@@ -310,7 +310,7 @@ export class Canvas implements CanvasInterface {
   resize(width: number, height: number) {
     const tempMaskCanvas = document.createElement('canvas')
     const tempMaskCanvasCtx = tempMaskCanvas.getContext(
-      '2d'
+      '2d',
     ) as CanvasRenderingContext2D
     tempMaskCanvas.width = this.maskCanvas.element.width
     tempMaskCanvas.height = this.maskCanvas.element.height
@@ -330,7 +330,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       width,
-      height
+      height,
     )
   }
 }

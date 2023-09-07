@@ -46,6 +46,5 @@ export default defineComponent({
       return this.magnifier.sizePx / 2
     },
   },
-  props: {},
 })
 </script>

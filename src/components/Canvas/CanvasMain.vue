@@ -1,14 +1,7 @@
 <template>
   <div
-    :style="{
-      position: 'relative',
-      cursor: 'crosshair',
-      'user-drag': 'none',
-      outline: 'solid 1px grey',
-      overflow: 'auto',
-      'max-height': '80vh',
-    }"
     id="canvasWrapper"
+    class="c__canvas-wrapper"
     @click="plot"
     @mousemove="mouseMove"
     @mousedown="mouseDown"
@@ -269,3 +262,16 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.c {
+  &__canvas-wrapper {
+    position: 'relative';
+    cursor: 'crosshair';
+    -webkit-user-drag: 'none';
+    outline: 'solid 1px grey';
+    overflow: 'auto';
+    max-height: '80vh';
+  }
+}
+</style>

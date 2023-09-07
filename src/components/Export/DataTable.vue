@@ -17,7 +17,7 @@ import { defineComponent } from 'vue'
 
 import colors from 'vuetify/lib/util/colors'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
-import { HotTable } from '@handsontable/vue'
+import { HotTable } from '@handsontable/vue3'
 import 'handsontable/dist/handsontable.full.css'
 import { registerAllModules } from 'handsontable/registry'
 import { Plot } from '@/domains/datasetInterface'

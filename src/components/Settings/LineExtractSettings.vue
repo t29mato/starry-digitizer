@@ -34,7 +34,7 @@ export default defineComponent({
   computed: {
     ...mapState(useLineExtractStore, ['lineExtract']),
   },
-  props: {},
+
   methods: {
     ...mapActions(useLineExtractStore, ['setDyPx', 'setDxPx']),
     inputDxDyPx(value: string) {

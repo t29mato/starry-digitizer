@@ -20,7 +20,6 @@ import { useCanvasStore } from '@/store/canvas'
 import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
-  props: {},
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
     showCanvasScale(): string {

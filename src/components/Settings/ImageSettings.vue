@@ -31,8 +31,6 @@ export default defineComponent({
   beforeDestroy() {
     document.removeEventListener('paste', this.pasteHandler)
   },
-
-  props: {},
   methods: {
     ...mapActions(useCanvasStore, ['drawFitSizeImage', 'setUploadImageUrl']),
     ...mapActions(useAxesStore, ['clearAxesCoords']),

@@ -43,7 +43,7 @@ export default defineComponent({
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
   },
-  props: {},
+
   methods: {
     ...mapActions(useCanvasStore, [
       'setPenToolSizePx',

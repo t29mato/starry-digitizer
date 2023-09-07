@@ -31,7 +31,7 @@ export default defineComponent({
   computed: {
     ...mapState(useSymbolExtractByAreaStore, ['symbolExtractByArea']),
   },
-  props: {},
+
   methods: {
     ...mapActions(useSymbolExtractByAreaStore, [
       'setMinDiameterPx',

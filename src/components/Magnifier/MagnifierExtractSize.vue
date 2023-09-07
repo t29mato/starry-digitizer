@@ -44,7 +44,6 @@ import { useSymbolExtractByAreaStore } from '@/store/symbolExtractByArea'
 import { mapState } from 'pinia'
 
 export default defineComponent({
-  props: {},
   computed: {
     ...mapState(useMagnifierStore, ['magnifier']),
     ...mapState(useLineExtractStore, ['lineExtract']),

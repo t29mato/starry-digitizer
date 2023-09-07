@@ -18,7 +18,6 @@ import { useMagnifierStore } from '@/store/magnifier'
 import { mapState } from 'pinia'
 
 export default defineComponent({
-  props: {},
   computed: {
     ...mapState(useMagnifierStore, ['magnifier']),
     // INFO: 十字線を作成する箱の横幅

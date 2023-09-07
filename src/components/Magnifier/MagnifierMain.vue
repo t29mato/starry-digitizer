@@ -104,8 +104,6 @@ export default defineComponent({
       )
     },
   },
-  props: {},
-
   methods: {
     ...mapActions(useMagnifierStore, ['setScale']),
     toggleSettingsDialog(): void {

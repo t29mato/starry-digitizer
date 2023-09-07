@@ -210,7 +210,7 @@ export default defineComponent({
       yIsLog: false,
     }
   },
-  props: {},
+
   methods: {
     ...mapActions(useAxesStore, [
       'setX1Value',

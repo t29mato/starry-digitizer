@@ -53,7 +53,7 @@ export default defineComponent({
   computed: {
     ...mapState(useExtractorStore, ['extractor']),
   },
-  props: {},
+
   methods: {
     ...mapActions(useExtractorStore, ['setColorPicker', 'setColorDistancePct']),
     inputColorPicker(value: any) {

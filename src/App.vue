@@ -1,10 +1,11 @@
 <template>
   <v-app>
-    <!-- <v-main>
-      <Main
+    <v-main>
+      <!-- <main-screen
         :initialGraphImagePath="require('@/assets/sample_graph_curve.png')"
-      />
-    </v-main> -->
+      /> -->
+      <main-screen />
+    </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
         <v-btn
@@ -33,10 +34,10 @@
 // import * as Sentry from '@sentry/vue'
 // import { Integrations } from '@sentry/tracing'
 
-// import Main from '@/components/Main.vue'
 import { version } from '../package.json'
 
 import { defineComponent } from 'vue'
+import MainScreen from '@/components/MainScreen.vue'
 
 //TODO: 後で戻す対応
 // if (process.env.NODE_ENV === 'production') {
@@ -75,7 +76,7 @@ export default defineComponent({
   name: 'App',
 
   components: {
-    // Main,
+    MainScreen,
   },
 
   data: () => ({
@@ -91,7 +92,8 @@ export default defineComponent({
         url: 'https://starrydigitizer.readthedocs.io/',
       },
     ],
-    isProd: process.env.NODE_ENV === 'production',
+    // isProd: process.env.NODE_ENV === 'production',
+    isProd: false,
   }),
   methods: {
     importPlots(plots: any) {

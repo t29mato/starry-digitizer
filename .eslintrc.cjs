@@ -14,6 +14,7 @@ module.exports = {
   ],
   plugins: [
     'prettier',
+    '@typescript-eslint',
     // "jest"
   ],
   parserOptions: {
@@ -27,5 +28,7 @@ module.exports = {
         semi: false,
       },
     ],
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': ['error'],
   },
 }

@@ -20,7 +20,7 @@ export class Axes implements AxesInterface {
     x2: AxisInterface,
     y1: AxisInterface,
     y2: AxisInterface,
-    x2y2: AxisInterface
+    x2y2: AxisInterface,
   ) {
     this.x1 = x1
     this.x2 = x2

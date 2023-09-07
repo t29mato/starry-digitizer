@@ -47,6 +47,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { CSSProperties } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
@@ -54,14 +55,13 @@ import { useStyleStore } from '@/store/style'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
 
-const guideLineBaseStyles = {
+const guideLineBaseStyles: CSSProperties = {
   position: 'absolute',
   pointerEvents: 'none',
   opacity: '0.8',
 }
 
 export default defineComponent({
-  props: {},
   computed: {
     ...mapState(useStyleStore, ['axisCrossCursorPx', 'axisHalfSizePx']),
     ...mapState(useCanvasStore, ['canvas']),
@@ -137,7 +137,7 @@ export default defineComponent({
 
       return '#00ff00'
     },
-    horizontalGuideLineStyle(): Partial<CSSStyleDeclaration> {
+    horizontalGuideLineStyle(): CSSProperties {
       return {
         ...guideLineBaseStyles,
         width: `${this.getImageCanvasSize().w}px`,
@@ -146,7 +146,7 @@ export default defineComponent({
         backgroundColor: this.guideLineColor,
       }
     },
-    verticalGuideLineStyle(): Partial<CSSStyleDeclaration> {
+    verticalGuideLineStyle(): CSSProperties {
       return {
         ...guideLineBaseStyles,
         width: '1px',

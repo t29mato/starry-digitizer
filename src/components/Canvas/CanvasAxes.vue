@@ -23,7 +23,7 @@ export default defineComponent({
   computed: {
     ...mapState(useAxesStore, ['axes']),
   },
-  props: {},
+
   methods: {},
 })
 </script>

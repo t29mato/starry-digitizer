@@ -9,11 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@handsontable/vue3": "^13.1.0",
+    "colorthief": "^2.4.0",
+    "handsontable": "^13.1.0",
     "pinia": "^2.1.6",
     "vue": "^3.3.4",
     "vuetify": "^3.3.13"
   },
   "devDependencies": {
+    "@types/node": "^20.5.9",
+    "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
     "@vitejs/plugin-vue": "^4.2.3",
     "eslint": "^8.48.0",

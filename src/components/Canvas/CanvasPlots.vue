@@ -34,7 +34,7 @@ export default defineComponent({
   data() {
     return {}
   },
-  props: {},
+
   methods: {},
 })
 </script>
