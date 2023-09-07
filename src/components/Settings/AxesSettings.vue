@@ -151,7 +151,7 @@
     </v-table>
     <div class="mb-5">
       <h5>Define the axes by the coordinates of:</h5>
-      <v-radio-group row v-model.number="axes.pointMode" hide-details>
+      <v-radio-group row v-model.number="axes.pointMode">
         <v-radio label="2 Points" :value="0"></v-radio>
         <v-radio label="4 Points" :value="1"></v-radio>
       </v-radio-group>
