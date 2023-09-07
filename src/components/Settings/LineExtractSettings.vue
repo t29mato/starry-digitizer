@@ -3,7 +3,6 @@
     <!--  TODO: pxはappendixで追加する -->
     <v-col class="pa-0">
       <v-text-field
-        prepend-icon="mdi-map-marker"
         :model-value="lineExtract.dxPx"
         @update:model-value="inputDxDyPx"
         label="ΔX (px)"
