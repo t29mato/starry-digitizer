@@ -1,9 +1,6 @@
 <template>
   <v-app>
     <v-main>
-      <!-- <main-screen
-        :initialGraphImagePath="require('@/assets/sample_graph_curve.png')"
-      /> -->
       <main-screen :initialGraphImagePath="initialImagePath" />
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
