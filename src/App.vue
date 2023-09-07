@@ -31,48 +31,12 @@
 </template>
 
 <script lang="ts">
-// import * as Sentry from '@sentry/vue'
-// import { Integrations } from '@sentry/tracing'
-
-import { version } from '../package.json'
-
 import { defineComponent } from 'vue'
 import MainScreen from '@/components/MainScreen.vue'
 
 import initialImagePath from './assets/sample_graph_curve.png'
 
-//TODO: 後で戻す対応
-// if (process.env.NODE_ENV === 'production') {
-//   Sentry.init({
-//     Vue,
-//     dsn: process.env.VUE_APP_SENTRY_DSN,
-//     release: `starry-digitizer@${version}`,
-//     integrations: [
-//       new Integrations.BrowserTracing({
-//         tracingOrigins: ['vpd.vercel.app', /^\//],
-//       }),
-//     ],
-//     tracesSampleRate: 1.0,
-//   })
-// }
-
-// Vue.config.errorHandler = (err) => {
-//   alert(err)
-//   console.error(err)
-//   Sentry.captureException(err)
-// }
-
-// window.addEventListener('error', (event) => {
-//   alert(event.error)
-//   console.error(event)
-//   Sentry.captureException(event)
-// })
-
-// window.addEventListener('unhandledrejection', (event) => {
-//   alert(event.reason)
-//   console.error(event)
-//   Sentry.captureException(event)
-// })
+import { version } from '../package.json'
 
 export default defineComponent({
   name: 'App',
