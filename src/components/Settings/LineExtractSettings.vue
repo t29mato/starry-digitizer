@@ -3,8 +3,8 @@
     <!--  TODO: pxはappendixで追加する -->
     <v-col class="pa-0">
       <v-text-field
-        :value="lineExtract.dxPx"
-        @input="inputDxDyPx"
+        :model-value="lineExtract.dxPx"
+        @update:model-value="inputDxDyPx"
         label="ΔX (px)"
         type="number"
         class="ma-0 pl-4"
@@ -13,8 +13,8 @@
     </v-col>
     <v-col class="pa-0">
       <v-text-field
-        :value="lineExtract.dyPx"
-        @input="inputDxDyPx"
+        :model-value="lineExtract.dyPx"
+        @update:model-value="inputDxDyPx"
         label="ΔY (px)"
         type="number"
         class="ma-0 pl-4"

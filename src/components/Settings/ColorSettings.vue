@@ -10,25 +10,25 @@
             :value="extractor.colorPicker"
             @input="inputColorPicker"
           />
-          <v-icon small>mdi-palette</v-icon>
+          <v-icon size="small">mdi-palette</v-icon>
         </label>
       </v-col>
       <v-col cols="8">
         <v-text-field
-          :value="extractor.colorDistancePct"
-          @input="inputColorDistancePct"
+          :model-value="extractor.colorDistancePct"
+          @update:model-value="inputColorDistancePct"
           label="Color Diff. (%)"
           type="number"
           :error="colorDistancePctErrorMsg.length > 0"
           :error-messages="colorDistancePctErrorMsg"
-          dense
+          density="compact"
         >
         </v-text-field>
       </v-col>
     </v-row>
     <v-color-picker
-      :value="extractor.colorPicker"
-      @input="setColorPicker"
+      :model-value="extractor.colorPicker"
+      @update:model-value="setColorPicker"
       hide-canvas
       hide-inputs
       show-swatches
@@ -69,7 +69,7 @@ export default defineComponent({
       }
       if (100 <= distance) {
         this.colorDistancePctErrorMsg =
-          'The Color Difference(%) is supposed to be smaller than 100%'
+          'The Color Difference(%) is supposed to be size="small"er than 100%'
       }
       this.setColorDistancePct(distance)
     },

@@ -76,3 +76,34 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss" scopde>
+$l_leftSidebarWidth: 240px;
+$l_rightSidebarWidth: 300px;
+$l_mainAreaSideMargin: 20px;
+
+.c {
+  &__wrapper {
+    display: flex;
+  }
+
+  &__left-sidebar {
+    width: $l_leftSidebarWidth;
+  }
+
+  &__right-sidebar {
+    width: $l_rightSidebarWidth;
+  }
+
+  &__main-area {
+    margin: 0 $l_mainAreaSideMargin;
+    width: calc(
+      100% -
+        (
+          #{$l_leftSidebarWidth} + #{$l_rightSidebarWidth} +
+            (#{$l_mainAreaSideMargin * 2})
+        )
+    );
+  }
+}
+</style>

@@ -9,6 +9,7 @@ module.exports = {
     // "@vue/typescript",
     'prettier',
     'plugin:prettier/recommended',
+    'plugin:vuetify/base',
     // "plugin:jest/recommended",
     // "plugin:jest/style"
   ],

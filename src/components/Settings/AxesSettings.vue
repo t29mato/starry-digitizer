@@ -1,7 +1,7 @@
 <template>
   <div>
     <h4>XY Axes</h4>
-    <v-simple-table dense class="mb-5">
+    <v-table dense class="mb-5">
       <tbody>
         <tr>
           <th class="pa-0">X</th>
@@ -18,7 +18,7 @@
                 <div class="d-flex flex-column">
                   <v-btn
                     class="pa-0"
-                    x-small
+                    size="x-small"
                     @click="multiplyByTenX1"
                     id="multiply-by-ten-x1"
                     icon
@@ -27,7 +27,7 @@
                   <v-btn
                     class="pa-0"
                     id="divide-by-ten-x1"
-                    x-small
+                    size="x-small"
                     @click="divideByTenX1"
                     icon
                   >
@@ -50,14 +50,14 @@
                 <div class="d-flex flex-column">
                   <v-btn
                     id="multiply-by-ten-x2"
-                    x-small
+                    size="x-small"
                     @click="multiplyByTenX2"
                     icon
                     >x10
                   </v-btn>
                   <v-btn
                     id="divide-by-ten-x2"
-                    x-small
+                    size="x-small"
                     @click="divideByTenX2"
                     icon
                   >
@@ -71,7 +71,6 @@
             <v-checkbox
               v-model="xIsLog"
               id="x-is-log"
-              dense
               hint="Log"
               persistent-hint
             ></v-checkbox>
@@ -92,14 +91,14 @@
                 <div class="d-flex flex-column">
                   <v-btn
                     id="multiply-by-ten-y1"
-                    x-small
+                    size="x-small"
                     @click="multiplyByTenY1"
                     icon
                     >x10
                   </v-btn>
                   <v-btn
                     id="divide-by-ten-y1"
-                    x-small
+                    size="x-small"
                     @click="divideByTenY1"
                     icon
                   >
@@ -122,14 +121,14 @@
                 <div class="d-flex flex-column">
                   <v-btn
                     id="multiply-by-ten-y2"
-                    x-small
+                    size="x-small"
                     @click="multiplyByTenY2"
                     icon
                     >x10
                   </v-btn>
                   <v-btn
                     id="divide-by-ten-y2"
-                    x-small
+                    size="x-small"
                     @click="divideByTenY2"
                     icon
                   >
@@ -145,12 +144,11 @@
               id="y-is-log"
               hint="Log"
               persistent-hint
-              dense
             ></v-checkbox>
           </td>
         </tr>
       </tbody>
-    </v-simple-table>
+    </v-table>
     <div class="mb-5">
       <h5>Define the axes by the coordinates of:</h5>
       <v-radio-group row v-model.number="axes.pointMode" hide-details>
@@ -161,11 +159,10 @@
         v-if="axes.pointMode === 1"
         v-model="axes.considerGraphTilt"
         label="Consider graph tilt"
-        dense
       ></v-checkbox>
     </div>
 
-    <p class="red--text">{{ errorMessage }}</p>
+    <p class="text-red">{{ errorMessage }}</p>
   </div>
 </template>
 

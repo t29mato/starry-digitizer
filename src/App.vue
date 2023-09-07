@@ -17,7 +17,7 @@
           class="my-2"
           :href="link.url"
           target="_blank"
-          small
+          size="small"
         >
           {{ link.text }}
         </v-btn>

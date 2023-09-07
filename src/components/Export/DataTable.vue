@@ -8,7 +8,7 @@
       height="35vh"
       class="overflow-y-auto"
     ></hot-table>
-    <v-btn class="mt-1" @click="copyData" small>Copy to Clipboard</v-btn>
+    <v-btn class="mt-1" @click="copyData" size="small">Copy to Clipboard</v-btn>
   </div>
 </template>
 

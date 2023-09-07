@@ -2,7 +2,7 @@
   <div class="mt-2">
     <v-btn
       class="ml-2"
-      small
+      size="small"
       :disabled="!axes.hasAtLeastOneAxis"
       @click="clearAxes"
     >
@@ -15,14 +15,14 @@
       Clear Y Axis</v-btn
     > -->
     <v-btn
-      small
+      size="small"
       class="ml-2"
       :disabled="datasets.activeDataset.plots.length === 0"
       @click="clearPlots"
       >Clear Points</v-btn
     >
     <v-btn
-      small
+      size="small"
       class="ml-2"
       :disabled="
         datasets.activeDataset.plots.length === 0 ||

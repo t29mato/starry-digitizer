@@ -2,19 +2,19 @@
   <div>
     <h4>Manual Extraction</h4>
     <v-btn-toggle
-      :value="canvas.manualMode"
-      @change="changeManualMode"
-      dense
+      :model-value="canvas.manualMode"
+      @update:model-value="changeManualMode"
+      density="compact"
       class="pl-2"
     >
-      <v-btn small color="primary"> Add (A) </v-btn>
-      <v-btn small color="primary"> Edit (E) </v-btn>
-      <v-btn small color="primary"> Delete (D) </v-btn>
+      <v-btn size="small" color="primary"> Add (A) </v-btn>
+      <v-btn size="small" color="primary"> Edit (E) </v-btn>
+      <v-btn size="small" color="primary"> Delete (D) </v-btn>
     </v-btn-toggle>
     <h4>Automatic Extraction</h4>
     <v-select
-      @input="setExtractStrategy"
-      :value="extractor.strategy.name"
+      @update:model-value="setExtractStrategy"
+      :model-value="extractor.strategy.name"
       :items="extractor.strategies"
       label="Select Algorithm"
     ></v-select>
@@ -26,7 +26,11 @@
     </div>
     <mask-settings></mask-settings>
     <color-settings></color-settings>
-    <v-btn :loading="isExtracting" @click="extractPlots" color="primary" small
+    <v-btn
+      :loading="isExtracting"
+      @click="extractPlots"
+      color="primary"
+      size="small"
       >Run</v-btn
     >
   </div>
