@@ -73,7 +73,7 @@ export default defineComponent({
       return
     }
     try {
-      await this.canvas.initialize(this.imagePath)
+      await this.canvas.initializeImageElement()
       this.drawFitSizeImage()
       this.setUploadImageUrl(this.imagePath)
       this.setSwatches(this.canvas.colorSwatches)
@@ -266,12 +266,12 @@ export default defineComponent({
 <style lang="scss" scoped>
 .c {
   &__canvas-wrapper {
-    position: 'relative';
-    cursor: 'crosshair';
-    -webkit-user-drag: 'none';
-    outline: 'solid 1px grey';
-    overflow: 'auto';
-    max-height: '80vh';
+    position: relative;
+    cursor: crosshair;
+    -webkit-user-drag: none;
+    outline: solid 1px gray;
+    overflow: auto;
+    max-height: 80vh;
   }
 }
 </style>
