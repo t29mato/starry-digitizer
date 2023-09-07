@@ -1,7 +1,7 @@
 <template>
   <div>
     <h4>XY Axes</h4>
-    <v-table dense class="mb-5">
+    <v-table density="compact" class="mb-5">
       <tbody>
         <tr>
           <th class="pa-0">X</th>
@@ -13,6 +13,7 @@
               class="ma-0 pa-0"
               hide-details
               label="x1"
+              density="compact"
             >
               <template v-slot:append v-if="xIsLog">
                 <div class="d-flex flex-column">
@@ -45,6 +46,7 @@
               class="ma-0 pa-0"
               hide-details
               label="x2"
+              density="compact"
             >
               <template v-slot:append v-if="xIsLog">
                 <div class="d-flex flex-column">
@@ -73,6 +75,7 @@
               id="x-is-log"
               hint="Log"
               persistent-hint
+              density="compact"
             ></v-checkbox>
           </td>
         </tr>
@@ -86,6 +89,7 @@
               class="ma-0 pa-0"
               hide-details
               label="y1"
+              density="compact"
             >
               <template v-slot:append v-if="yIsLog">
                 <div class="d-flex flex-column">
@@ -116,6 +120,7 @@
               class="ma-0 pa-0"
               hide-details
               label="y2"
+              density="compact"
             >
               <template v-slot:append v-if="yIsLog">
                 <div class="d-flex flex-column">
@@ -144,6 +149,7 @@
               id="y-is-log"
               hint="Log"
               persistent-hint
+              density="compact"
             ></v-checkbox>
           </td>
         </tr>
@@ -159,6 +165,7 @@
         v-if="axes.pointMode === 1"
         v-model="axes.considerGraphTilt"
         label="Consider graph tilt"
+        density="compact"
       ></v-checkbox>
     </div>
 

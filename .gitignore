@@ -20,3 +20,4 @@ dist-ssr
 *.sln
 *.sw?
 
+.env

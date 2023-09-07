@@ -26,6 +26,7 @@
       type="number"
       hide-details
       label="Pen Size"
+      density="compact"
     ></v-text-field>
     <v-text-field
       v-if="canvas.maskMode === 2"
@@ -34,6 +35,7 @@
       type="number"
       hide-details
       label="Eraser Size (px)"
+      density="compact"
     ></v-text-field>
   </div>
 </template>

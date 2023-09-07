@@ -7,6 +7,7 @@
         label="Min. Diameter (px)"
         type="number"
         class="ma-0 pl-4"
+        density="compact"
       ></v-text-field>
     </v-col>
     <v-col class="pa-0">
@@ -16,6 +17,7 @@
         label="Max. Diameter (px)"
         type="number"
         class="ma-0 pl-4"
+        density="compact"
       ></v-text-field>
     </v-col>
   </v-row>

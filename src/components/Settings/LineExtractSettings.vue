@@ -9,6 +9,7 @@
         type="number"
         class="ma-0 pl-4"
         id="line-extract-dx"
+        density="compact"
       ></v-text-field>
     </v-col>
     <v-col class="pa-0">
@@ -19,6 +20,7 @@
         type="number"
         class="ma-0 pl-4"
         id="line-extract-dy"
+        density="compact"
       ></v-text-field>
     </v-col>
   </v-row>
