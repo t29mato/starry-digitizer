@@ -9,7 +9,7 @@ describe('template spec', () => {
     cy.get('#canvasWrapper')
       .trigger('mousedown', 300, 100)
       //TODO: force: true is a work around
-      .trigger('mousemove', 300, 300, { force: true })
+      .trigger('mousemove', 300, 300)
       .trigger('mouseup')
     cy.contains('Run').click()
   })
