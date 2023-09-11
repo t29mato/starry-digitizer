@@ -8,7 +8,8 @@ describe('template spec', () => {
     cy.contains('Pen').click()
     cy.get('#canvasWrapper')
       .trigger('mousedown', 300, 100)
-      .trigger('mousemove', 300, 300)
+      //TODO: force: true is a work around
+      .trigger('mousemove', 300, 300, { force: true })
       .trigger('mouseup')
     cy.contains('Run').click()
   })
