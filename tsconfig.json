@@ -27,6 +27,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
+    "inlineSourceMap": false,
     "baseUrl": ".",
     "types": [
       "webpack-env",
@@ -48,7 +49,14 @@
       "ES2020", "DOM", "DOM.Iterable"
     ]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "cypress/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "cypress/**/*.ts"],
   "exclude": [
     "node_modules"
   ],
