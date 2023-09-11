@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mb-5">
     <div
       :style="{
         overflow: 'hidden',

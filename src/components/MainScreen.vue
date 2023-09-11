@@ -78,7 +78,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scopde>
-$l_leftSidebarWidth: 240px;
+$l_leftSidebarWidth: 260px;
 $l_rightSidebarWidth: 300px;
 $l_mainAreaSideMargin: 20px;
 

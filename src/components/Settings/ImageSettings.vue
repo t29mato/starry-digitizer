@@ -5,7 +5,7 @@
     :clearable="false"
     label="choose an image file"
     hide-details
-    class="mb-1"
+    class="mb-5"
   ></v-file-input>
 </template>
 

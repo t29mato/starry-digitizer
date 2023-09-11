@@ -61,19 +61,19 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.config.errorHandler = (err) => {
-  alert(err)
+  // alert(err)
   console.error(err)
   Sentry.captureException(err)
 }
 
 window.addEventListener('error', (event) => {
-  alert(event.error)
+  // alert(event.error)
   console.error(event)
   Sentry.captureException(event)
 })
 
 window.addEventListener('unhandledrejection', (event) => {
-  alert(event.reason)
+  // alert(event.reason)
   console.error(event)
   Sentry.captureException(event)
 })

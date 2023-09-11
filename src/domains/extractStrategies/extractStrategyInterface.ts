@@ -10,6 +10,6 @@ export default interface ExtractStrategyInterface {
     maskColors: Uint8ClampedArray,
     isDrawnMask: boolean,
     targetColor: [number, number, number],
-    colorMatchThreshold: number
+    colorMatchThreshold: number,
   ): Plot[]
 }

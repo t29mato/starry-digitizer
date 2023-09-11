@@ -1,17 +1,19 @@
 <template>
   <div>
-    <h4>Manual Extraction</h4>
+    <h4 class="mb-2">Manual Extraction</h4>
     <v-btn-toggle
       :model-value="canvas.manualMode"
       @update:model-value="changeManualMode"
       density="compact"
       class="mb-4"
+      divided
+      variant="outlined"
     >
       <v-btn size="small" color="primary"> Add (A) </v-btn>
       <v-btn size="small" color="primary"> Edit (E) </v-btn>
       <v-btn size="small" color="primary"> Delete (D) </v-btn>
     </v-btn-toggle>
-    <h4>Automatic Extraction</h4>
+    <h4 class="mb-2">Automatic Extraction</h4>
     <v-select
       @update:model-value="setExtractStrategy"
       :model-value="extractor.strategy.name"

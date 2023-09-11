@@ -1,10 +1,13 @@
 <template>
-  <div>
-    <h5>Selection Area</h5>
+  <div class="mt-3 mb-5">
+    <h5 class="mb-2">Selection Area</h5>
     <v-btn-toggle
       :model-value="canvas.maskMode"
       @update:model-value="change"
       density="compact"
+      class="mb-2"
+      divided
+      variant="outlined"
     >
       <v-btn size="small" color="primary"> Pen </v-btn>
       <v-btn size="small" color="primary"> Box </v-btn>

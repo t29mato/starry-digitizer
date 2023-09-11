@@ -20,7 +20,6 @@
       variant="outlined"
     >
       <v-list-item
-        height="20vh"
         v-for="dataset in datasets.datasets"
         :key="dataset.id"
         class="pl-2"
