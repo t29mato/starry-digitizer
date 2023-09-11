@@ -10,14 +10,10 @@ module.exports = {
     'prettier',
     'plugin:prettier/recommended',
     'plugin:vuetify/base',
-    // "plugin:jest/recommended",
-    // "plugin:jest/style"
+    'plugin:jest/recommended',
+    'plugin:jest/style',
   ],
-  plugins: [
-    'prettier',
-    '@typescript-eslint',
-    // "jest"
-  ],
+  plugins: ['prettier', '@typescript-eslint', 'jest'],
   parserOptions: {
     parser: '@typescript-eslint/parser',
   },
