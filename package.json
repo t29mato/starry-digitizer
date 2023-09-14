@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "ssg-build": "vue-tsc && vite build",
     "preview": "vite preview",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
