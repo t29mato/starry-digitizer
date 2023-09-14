@@ -30,7 +30,7 @@
     "inlineSourceMap": false,
     "baseUrl": ".",
     "types": [
-      "webpack-env",
+      // "webpack-env",
       "jest",
       "cypress",
       "node",
