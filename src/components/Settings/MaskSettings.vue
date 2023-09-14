@@ -24,7 +24,7 @@
     <v-text-field
       v-if="canvas.maskMode === 0"
       :model-value="canvas.penToolSizePx"
-      @change="setPenToolSizePx"
+      @change="onChangePenToolSizePx"
       type="number"
       hide-details
       label="Pen Size"
@@ -33,7 +33,7 @@
     <v-text-field
       v-if="canvas.maskMode === 2"
       :model-value="canvas.eraserSizePx"
-      @change="setEraserSizePx"
+      @change="onChangeEraserSizePx"
       type="number"
       hide-details
       label="Eraser Size (px)"
@@ -59,6 +59,12 @@ export default defineComponent({
       'setMaskMode',
       'setEraserSizePx',
     ]),
+    onChangePenToolSizePx(event: Event) {
+      this.setPenToolSizePx(Number((<HTMLInputElement>event.target).value))
+    },
+    onChangeEraserSizePx(event: Event) {
+      this.setEraserSizePx(Number((<HTMLInputElement>event.target).value))
+    },
     change(value: any) {
       if (value === undefined) {
         this.setMaskMode(-1)
