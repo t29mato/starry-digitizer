@@ -11,12 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          # cache: 'bun'
+        uses: actions/checkout@v3
+- name: Setup Bun
+        uses: oven-sh/setup-bun@v1
       - name: Install npm packages
         run: bun install
       - name: Unit test
@@ -25,12 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          # cache: 'bun'
+        uses: actions/checkout@v3
+- name: Setup Bun
+        uses: oven-sh/setup-bun@v1
       - name: Install npm packages
         run: bun install
       - name: Cypress run
@@ -49,12 +43,9 @@ jobs:
     if: success()
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          # cache: 'bun'
+        uses: actions/checkout@v3
+- name: Setup Bun
+        uses: oven-sh/setup-bun@v1
       - name: Install Vercel CLI
         run: bun install --global vercel@latest
       - name: Pull Vercel Environment Information
