@@ -4,5 +4,5 @@ import LineExtract from './extractStrategies/lineExtract'
 const extract = new LineExtract()
 
 test('DO write extractor test', () => {
-  const extractor = new Extractor(extract)
+  new Extractor(extract)
 })

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "ssg-build": "vite build",
+    "ssg-build": "cross-env VITE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vite build",
     "preview": "vite preview",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
@@ -33,6 +33,7 @@
     "@vue/test-utils": "^2.4.1",
     "@vue/vue3-jest": "^29.2.6",
     "babel-jest": "^29.6.4",
+    "crossenv": "^0.0.2-security",
     "cypress": "^13.1.0",
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
