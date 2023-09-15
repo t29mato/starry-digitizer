@@ -55,15 +55,15 @@ export default class LineExtract
         }
       }
     }
-
-    let count = 0
+    // TODO: never usedのため一旦コメントアウトしている
+    // let count = 0
     // INFO: 線グラフは左から右なので横から探す
     for (let w = 0; w < width; w++) {
       for (let h = 0; h < height; h++) {
         if (visitedArea[h][w]) {
           continue
         }
-        const [r1, g1, b1, _] = imageColors.slice(
+        const [r1, g1, b1] = imageColors.slice(
           (h * width + w) * 4,
           (h * width + w + 1) * 4,
         )
@@ -106,7 +106,7 @@ export default class LineExtract
                 if (visitedArea[nh][nw]) {
                   continue
                 }
-                count++
+                // count++
                 const [r, g, b] = imageColors.slice(
                   (nh * width + nw) * 4,
                   (nh * width + nw + 1) * 4,

@@ -56,13 +56,14 @@ export default class SymbolExtractByArea
       }
     }
 
-    let count = 0
+    // TODO: never usedのため一旦コメントアウトしている
+    // let count = 0
     for (let h = 0; h < height; h++) {
       for (let w = 0; w < width; w++) {
         if (visitedArea[h][w]) {
           continue
         }
-        const [r1, g1, b1, a1] = imageColors.slice(
+        const [r1, g1, b1] = imageColors.slice(
           (h * width + w) * 4,
           (h * width + w + 1) * 4,
         )
@@ -99,7 +100,7 @@ export default class SymbolExtractByArea
                 if (visitedArea[nh][nw]) {
                   continue
                 }
-                count++
+                // count++
                 const [r, g, b] = imageColors.slice(
                   (nh * width + nw) * 4,
                   (nh * width + nw + 1) * 4,
