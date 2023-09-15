@@ -31,17 +31,15 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from 'vue'
 import { MagnifierMain } from '@/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
 import { AxesSettings, ExtractorSettings, ImageSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { version } from '../../package.json'
-import store from '@/store'
 import DataTable from '@/components/Export/DataTable.vue'
 
-export default Vue.extend({
-  store,
+export default defineComponent({
   components: {
     DataTable,
     MagnifierMain,
@@ -72,8 +70,39 @@ export default Vue.extend({
   data() {
     return {
       version,
-      githubRunNumber: process.env.VUE_APP_GITHUB_RUN_NUMBER,
+      githubRunNumber: import.meta.env.VITE_APP_GITHUB_RUN_NUMBER,
     }
   },
 })
 </script>
+
+<style lang="scss" scopde>
+$l_leftSidebarWidth: 260px;
+$l_rightSidebarWidth: 300px;
+$l_mainAreaSideMargin: 20px;
+
+.c {
+  &__wrapper {
+    display: flex;
+  }
+
+  &__left-sidebar {
+    width: $l_leftSidebarWidth;
+  }
+
+  &__right-sidebar {
+    width: $l_rightSidebarWidth;
+  }
+
+  &__main-area {
+    margin: 0 $l_mainAreaSideMargin;
+    width: calc(
+      100% -
+        (
+          #{$l_leftSidebarWidth} + #{$l_rightSidebarWidth} +
+            (#{$l_mainAreaSideMargin * 2})
+        )
+    );
+  }
+}
+</style>

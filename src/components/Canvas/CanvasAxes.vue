@@ -9,18 +9,21 @@
 </template>
 
 <script lang="ts">
-import { mapGetters } from 'vuex'
 import CanvasAxis from '@/components/Canvas/CanvasAxis.vue'
 
-import Vue from 'vue'
-export default Vue.extend({
+import { useAxesStore } from '@/store/axes'
+import { mapState } from 'pinia'
+
+import { defineComponent } from 'vue'
+
+export default defineComponent({
   components: {
     CanvasAxis,
   },
   computed: {
-    ...mapGetters('axes', { axes: 'axes' }),
+    ...mapState(useAxesStore, ['axes']),
   },
-  props: {},
+
   methods: {},
 })
 </script>

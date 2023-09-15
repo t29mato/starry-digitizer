@@ -25,16 +25,19 @@
 
 <script lang="ts">
 import MagnifierAxis from '@/components/Magnifier/MagnifierAxis.vue'
-import Vue from 'vue'
-import { mapGetters } from 'vuex'
-export default Vue.extend({
+import { defineComponent } from 'vue'
+
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { mapState } from 'pinia'
+
+export default defineComponent({
   components: {
     MagnifierAxis,
   },
   computed: {
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
   },
-  props: {},
 })
 </script>

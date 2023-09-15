@@ -1,52 +1,58 @@
 <template>
-  <div
-    v-if="extractor.strategy.name === 'Line Extract'"
-    :style="{
-      position: 'absolute',
-      left: `${(magnifier.sizePx - lineExtract.dxPx * magnifier.scale) / 2}px`,
-      top: `${(magnifier.sizePx - lineExtract.dxPx * magnifier.scale) / 2}px`,
-      width: `${lineExtract.dxPx * magnifier.scale}px`,
-      height: `${lineExtract.dxPx * magnifier.scale}px`,
-      border: '1px dotted grey',
-    }"
-  />
-  <div v-else-if="extractor.strategy.name === 'Symbol Extract'">
+  <div>
     <div
+      v-if="extractor.strategy.name === 'Line Extract'"
       :style="{
         position: 'absolute',
-        left: `${(magnifier.sizePx - symbolMinDiameter) / 2}px`,
-        top: `${(magnifier.sizePx - symbolMinDiameter) / 2}px`,
-        width: `${symbolMinDiameter}px`,
-        height: `${symbolMinDiameter}px`,
+        left: `${
+          (magnifier.sizePx - lineExtract.dxPx * magnifier.scale) / 2
+        }px`,
+        top: `${(magnifier.sizePx - lineExtract.dxPx * magnifier.scale) / 2}px`,
+        width: `${lineExtract.dxPx * magnifier.scale}px`,
+        height: `${lineExtract.dxPx * magnifier.scale}px`,
         border: '1px dotted grey',
       }"
-    />
-    <div
-      :style="{
-        position: 'absolute',
-        left: `${(magnifier.sizePx - symbolMaxDiameter) / 2}px`,
-        top: `${(magnifier.sizePx - symbolMaxDiameter) / 2}px`,
-        width: `${symbolMaxDiameter}px`,
-        height: `${symbolMaxDiameter}px`,
-        border: '1px dotted grey',
-      }"
-    />
+    ></div>
+    <div v-if="extractor.strategy.name === 'Symbol Extract'">
+      <div
+        :style="{
+          position: 'absolute',
+          left: `${(magnifier.sizePx - symbolMinDiameter) / 2}px`,
+          top: `${(magnifier.sizePx - symbolMinDiameter) / 2}px`,
+          width: `${symbolMinDiameter}px`,
+          height: `${symbolMinDiameter}px`,
+          border: '1px dotted grey',
+        }"
+      ></div>
+      <div
+        :style="{
+          position: 'absolute',
+          left: `${(magnifier.sizePx - symbolMaxDiameter) / 2}px`,
+          top: `${(magnifier.sizePx - symbolMaxDiameter) / 2}px`,
+          width: `${symbolMaxDiameter}px`,
+          height: `${symbolMaxDiameter}px`,
+          border: '1px dotted grey',
+        }"
+      ></div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { mapGetters } from 'vuex'
+import { defineComponent } from 'vue'
 
-export default Vue.extend({
-  props: {},
+import { useMagnifierStore } from '@/store/magnifier'
+import { useLineExtractStore } from '@/store/lineExtract'
+import { useExtractorStore } from '@/store/extractor'
+import { useSymbolExtractByAreaStore } from '@/store/symbolExtractByArea'
+import { mapState } from 'pinia'
+
+export default defineComponent({
   computed: {
-    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
-    ...mapGetters('lineExtract', { lineExtract: 'lineExtract' }),
-    ...mapGetters('extractor', { extractor: 'extractor' }),
-    ...mapGetters('symbolExtractByArea', {
-      symbolExtractByArea: 'symbolExtractByArea',
-    }),
+    ...mapState(useMagnifierStore, ['magnifier']),
+    ...mapState(useLineExtractStore, ['lineExtract']),
+    ...mapState(useExtractorStore, ['extractor']),
+    ...mapState(useSymbolExtractByAreaStore, ['symbolExtractByArea']),
     symbolMinDiameter(): number {
       return this.symbolExtractByArea.minDiameterPx * this.magnifier.scale
     },

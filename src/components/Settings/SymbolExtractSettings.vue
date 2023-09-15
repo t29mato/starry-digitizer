@@ -2,38 +2,40 @@
   <v-row class="ma-0">
     <v-col class="pa-0">
       <v-text-field
-        :value="symbolExtractByArea.minDiameterPx"
-        @input="inputMin"
+        :model-value="symbolExtractByArea.minDiameterPx"
+        @update:model-value="inputMin"
         label="Min. Diameter (px)"
         type="number"
-        class="ma-0 pl-4"
+        class="ma-0"
+        density="compact"
       ></v-text-field>
     </v-col>
     <v-col class="pa-0">
       <v-text-field
-        :value="symbolExtractByArea.maxDiameterPx"
-        @input="inputMax"
+        :model-value="symbolExtractByArea.maxDiameterPx"
+        @update:model-value="inputMax"
         label="Max. Diameter (px)"
         type="number"
-        class="ma-0 pl-4"
+        class="ma-0"
+        density="compact"
       ></v-text-field>
     </v-col>
   </v-row>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
 
-export default Vue.extend({
+import { useSymbolExtractByAreaStore } from '@/store/symbolExtractByArea'
+import { mapState, mapActions } from 'pinia'
+
+export default defineComponent({
   computed: {
-    ...mapGetters('symbolExtractByArea', {
-      symbolExtractByArea: 'symbolExtractByArea',
-    }),
+    ...mapState(useSymbolExtractByAreaStore, ['symbolExtractByArea']),
   },
-  props: {},
+
   methods: {
-    ...mapActions('symbolExtractByArea', [
+    ...mapActions(useSymbolExtractByAreaStore, [
       'setMinDiameterPx',
       'setMaxDiameterPx',
     ]),

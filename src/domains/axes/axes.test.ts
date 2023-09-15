@@ -1,3 +1,4 @@
+import { expect } from '@jest/globals'
 import { Axes } from './axes'
 import { Axis } from './axis'
 import { AxisInterface } from './axisInterface'
@@ -85,7 +86,7 @@ describe('4 points setting mode', () => {
 
   test('move active axis', () => {
     expect(() =>
-      axes.moveActiveAxis({ direction: 'up', distancePx: 1 })
+      axes.moveActiveAxis({ direction: 'up', distancePx: 1 }),
     ).toThrow("active axis's coord is undefined")
     axes.addAxisCoord({ xPx: 10, yPx: 100 })
     axes.moveActiveAxis({ direction: 'up', distancePx: 1 })
@@ -104,7 +105,7 @@ describe('4 points setting mode', () => {
     axes.addAxisCoord({ xPx: 10, yPx: 100 })
     axes.addAxisCoord({ xPx: 10, yPx: 100 })
     expect(() => axes.addAxisCoord({ xPx: 10, yPx: 100 })).toThrow(
-      'The axes already filled.'
+      'The axes already filled.',
     )
   })
 })

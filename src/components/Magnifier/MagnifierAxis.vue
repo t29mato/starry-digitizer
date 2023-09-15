@@ -41,10 +41,15 @@
 import { AxisInterface } from '@/domains/axes/axisInterface'
 import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
-import Vue from 'vue'
-import { mapGetters } from 'vuex'
+import { defineComponent } from 'vue'
 
-export default Vue.extend({
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useStyleStore } from '@/store/style'
+import { useMagnifierStore } from '@/store/magnifier'
+import { mapState } from 'pinia'
+
+export default defineComponent({
   components: {
     MagnifierAxisLabelX,
     MagnifierAxisLabelY,
@@ -53,17 +58,17 @@ export default Vue.extend({
     return {}
   },
   computed: {
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
-    ...mapGetters('style', {
-      axisSizePx: 'axisSizePx',
-      axisHalfSizePx: 'axisHalfSizePx',
-      axisCrossBorderHalfPx: 'axisCrossBorderHalfPx',
-      axisCrossBorderPx: 'axisCrossBorderPx',
-      axisCrossTopPx: 'axisCrossTopPx',
-      axisCrossCursorPx: 'axisCrossCursorPx',
-    }),
-    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useStyleStore, [
+      'axisSizePx',
+      'axisHalfSizePx',
+      'axisCrossBorderHalfPx',
+      'axisCrossBorderPx',
+      'axisCrossTopPx',
+      'axisCrossCursorPx',
+    ]),
+    ...mapState(useMagnifierStore, ['magnifier']),
     xPx(): number {
       return this.axis.coord.xPx
     },

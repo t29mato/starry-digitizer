@@ -6,7 +6,7 @@ const colorThief = new ColorThief()
 
 export class Canvas implements CanvasInterface {
   isDrawnMask = false
-  #imageElement?: HTMLImageElement
+  imageElement: HTMLImageElement
   scale = 1
   cursor: Coord = { xPx: 0, yPx: 0 }
   #rectangle = {
@@ -21,25 +21,26 @@ export class Canvas implements CanvasInterface {
   eraserSizePx = 30
   uploadImageUrl = ''
 
-  async initialize(graphImagePath: string) {
-    this.#imageElement = await this.loadImage(graphImagePath)
+  constructor() {
+    this.imageElement = new Image()
   }
 
-  #getDivElementById(id: string): HTMLDivElement {
+  async initializeImageElement() {
+    return new Promise((resolve, reject) => {
+      this.imageElement.onload = resolve
+      this.imageElement.onerror = (error) => {
+        reject(error)
+      }
+      this.imageElement.src = '/sample_graph_curve.png'
+    })
+  }
+
+  getDivElementById(id: string): HTMLDivElement {
     const element = document.getElementById(id)
     if (element instanceof HTMLDivElement) {
       return element as HTMLDivElement
     }
     throw new Error(`element ID ${id} is not instance of a HTMLDivElement`)
-  }
-
-  loadImage(src: string): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-      const img = new Image()
-      img.onload = () => resolve(img)
-      img.onerror = (error) => reject(error)
-      img.src = src
-    })
   }
 
   get scaledCursor(): Coord {
@@ -119,7 +120,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.maskCanvas.element.width,
-      this.maskCanvas.element.height
+      this.maskCanvas.element.height,
     )
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
@@ -135,7 +136,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.maskCanvas.element.width,
-      this.maskCanvas.element.height
+      this.maskCanvas.element.height,
     )
     this.#rectangle.endY = yPx - this.#rectangle.startY
     this.#rectangle.endX = xPx - this.#rectangle.startX
@@ -143,7 +144,7 @@ export class Canvas implements CanvasInterface {
       this.#rectangle.startX,
       this.#rectangle.startY,
       this.#rectangle.endX,
-      this.#rectangle.endY
+      this.#rectangle.endY,
     )
   }
 
@@ -153,7 +154,7 @@ export class Canvas implements CanvasInterface {
       this.#rectangle.startX,
       this.#rectangle.startY,
       this.#rectangle.endX,
-      this.#rectangle.endY
+      this.#rectangle.endY,
     )
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
     this.isDrawnMask = true
@@ -162,7 +163,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.maskCanvas.element.width,
-      this.maskCanvas.element.height
+      this.maskCanvas.element.height,
     )
   }
 
@@ -185,7 +186,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.originalWidth,
-      this.originalHeight
+      this.originalHeight,
     )
     return ctx.getImageData(0, 0, this.originalWidth, this.originalHeight).data
   }
@@ -200,16 +201,16 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.originalWidth,
-      this.originalHeight
+      this.originalHeight,
     )
     return ctx.getImageData(0, 0, this.originalWidth, this.originalHeight).data
   }
 
   get colorSwatches() {
-    if (!this.#imageElement) {
-      throw new Error('#imageElement is undefined.')
+    if (!this.imageElement) {
+      throw new Error('imageElement is undefined.')
     }
-    return colorThief.getPalette(this.#imageElement).map((color) => {
+    return colorThief.getPalette(this.imageElement).map((color) => {
       // INFO: rgbからhexへの切り替え
       return color.reduce((prev, cur) => {
         // INFO: HEXは各色16進数2桁なので
@@ -222,7 +223,7 @@ export class Canvas implements CanvasInterface {
   }
 
   changeImage(imageElement: HTMLImageElement) {
-    this.#imageElement = imageElement
+    this.imageElement = imageElement
     this.drawFitSizeImage()
   }
 
@@ -231,13 +232,13 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       this.maskCanvas.element.width,
-      this.maskCanvas.element.height
+      this.maskCanvas.element.height,
     )
     this.magnifierMaskCanvas.context.clearRect(
       0,
       0,
       this.maskCanvas.element.width,
-      this.maskCanvas.element.height
+      this.maskCanvas.element.height,
     )
     this.isDrawnMask = false
   }
@@ -251,14 +252,7 @@ export class Canvas implements CanvasInterface {
   }
 
   get canvasWrapper() {
-    return this.#getDivElementById('canvasWrapper')
-  }
-
-  get imageElement() {
-    if (!this.#imageElement) {
-      throw new Error('#imageElement is undefined.')
-    }
-    return this.#imageElement
+    return this.getDivElementById('canvasWrapper')
   }
 
   get imageCanvas() {
@@ -310,7 +304,7 @@ export class Canvas implements CanvasInterface {
   resize(width: number, height: number) {
     const tempMaskCanvas = document.createElement('canvas')
     const tempMaskCanvasCtx = tempMaskCanvas.getContext(
-      '2d'
+      '2d',
     ) as CanvasRenderingContext2D
     tempMaskCanvas.width = this.maskCanvas.element.width
     tempMaskCanvas.height = this.maskCanvas.element.height
@@ -330,7 +324,7 @@ export class Canvas implements CanvasInterface {
       0,
       0,
       width,
-      height
+      height,
     )
   }
 }

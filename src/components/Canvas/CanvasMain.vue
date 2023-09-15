@@ -1,14 +1,7 @@
 <template>
   <div
-    :style="{
-      position: 'relative',
-      cursor: 'crosshair',
-      'user-drag': 'none',
-      outline: 'solid 1px grey',
-      overflow: 'auto',
-      'max-height': '80vh',
-    }"
     id="canvasWrapper"
+    class="c__canvas-wrapper"
     @click="plot"
     @mousemove="mouseMove"
     @mousedown="mouseDown"
@@ -41,16 +34,21 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { mapGetters, mapActions } from 'vuex'
-
+import { defineComponent } from 'vue'
 import { CanvasAxes, CanvasPlots, CanvasCursor, CanvasAxesGuide } from '.'
 import { Vector } from '@/domains/axes/axesInterface'
 import { Coord, Plot } from '@/domains/datasetInterface'
+
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useDatasetsStore } from '@/store/datasets'
+import { mapState, mapActions } from 'pinia'
+import { useExtractorStore } from '@/store/extractor'
+
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 
-export default Vue.extend({
+export default defineComponent({
   components: {
     CanvasAxes,
     CanvasPlots,
@@ -64,9 +62,9 @@ export default Vue.extend({
     document.removeEventListener('keydown', this.keyDownHandler)
   },
   computed: {
-    ...mapGetters('canvas', { canvas: 'canvas' }),
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('datasets', { datasets: 'datasets' }),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useDatasetsStore, ['datasets']),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
@@ -75,7 +73,7 @@ export default Vue.extend({
       return
     }
     try {
-      await this.canvas.initialize(this.imagePath)
+      await this.canvas.initializeImageElement()
       this.drawFitSizeImage()
       this.setUploadImageUrl(this.imagePath)
       this.setSwatches(this.canvas.colorSwatches)
@@ -84,21 +82,25 @@ export default Vue.extend({
     }
   },
   methods: {
-    ...mapActions('datasets', [
+    ...mapActions(useDatasetsStore, [
       'addPlot',
       'moveActivePlot',
       'clearActivePlots',
       'inactivatePlots',
     ]),
-    ...mapActions('canvas', [
+    ...mapActions(useCanvasStore, [
       'mouseMoveOnCanvas',
       'setCanvasCursor',
       'drawFitSizeImage',
       'setUploadImageUrl',
       'setManualMode',
     ]),
-    ...mapActions('axes', ['addAxisCoord', 'inactivateAxis', 'moveActiveAxis']),
-    ...mapActions('extractor', ['setSwatches']),
+    ...mapActions(useAxesStore, [
+      'addAxisCoord',
+      'inactivateAxis',
+      'moveActiveAxis',
+    ]),
+    ...mapActions(useExtractorStore, ['setSwatches']),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき
@@ -238,8 +240,8 @@ export default Vue.extend({
         this.moveActivePlot(vector)
         this.setCanvasCursor(
           this.datasets.activeDataset.plots.filter((plot: Plot) =>
-            this.datasets.activeDataset.activePlotIds.includes(plot.id)
-          )[0]
+            this.datasets.activeDataset.activePlotIds.includes(plot.id),
+          )[0],
         )
       }
     },
@@ -260,3 +262,16 @@ export default Vue.extend({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.c {
+  &__canvas-wrapper {
+    position: relative;
+    cursor: crosshair;
+    -webkit-user-drag: none;
+    outline: solid 1px gray;
+    overflow: auto;
+    max-height: 80vh;
+  }
+}
+</style>

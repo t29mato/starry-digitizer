@@ -1,24 +1,40 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve",
+
+    /* Linting */
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* 以下Vue2バージョンからの移植 */
     "declaration": true,
     "declarationDir": "dist/types",
-    "jsx": "preserve",
     "importHelpers": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
     "allowJs": true,
-    "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
+    "inlineSourceMap": false,
     "baseUrl": ".",
     "types": [
-      "webpack-env",
+      // "webpack-env",
       "jest",
       "cypress",
+      "node",
+      "vuetify"
     ],
     "paths": {
       "@/*": [
@@ -29,18 +45,20 @@
       "esnext",
       "dom",
       "dom.iterable",
-      "scripthost"
+      "scripthost",
+      "ES2020", "DOM", "DOM.Iterable"
     ]
   },
   "include": [
     "src/**/*.ts",
+    "src/**/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "cypress/**/*.ts",
-  ],
+    "cypress/**/*.ts"],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

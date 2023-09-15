@@ -17,14 +17,17 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
 
 import { Plot } from '@/domains/datasetInterface'
 
-export default Vue.extend({
+import { useCanvasStore } from '@/store/canvas'
+import { useDatasetsStore } from '@/store/datasets'
+import { mapState, mapActions } from 'pinia'
+
+export default defineComponent({
   computed: {
-    ...mapGetters('canvas', { canvas: 'canvas' }),
+    ...mapState(useCanvasStore, ['canvas']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -56,12 +59,12 @@ export default Vue.extend({
     },
   },
   methods: {
-    ...mapActions('datasets', [
+    ...mapActions(useDatasetsStore, [
       'toggleActivatedPlot',
       'activatePlot',
       'clearPlot',
     ]),
-    click(event: PointerEvent) {
+    click(event: MouseEvent) {
       switch (this.canvas.manualMode) {
         // INFO: CanvasMain Component -> plot method
         case 0:

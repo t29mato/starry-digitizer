@@ -5,17 +5,22 @@
     :clearable="false"
     label="choose an image file"
     hide-details
-    class="mb-1"
+    class="mb-5"
   ></v-file-input>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
 
-export default Vue.extend({
+import { useCanvasStore } from '@/store/canvas'
+import { useAxesStore } from '@/store/axes'
+import { useDatasetsStore } from '@/store/datasets'
+import { useExtractorStore } from '@/store/extractor'
+import { mapState, mapActions } from 'pinia'
+
+export default defineComponent({
   computed: {
-    ...mapGetters('canvas', { canvas: 'canvas' }),
+    ...mapState(useCanvasStore, ['canvas']),
   },
   data() {
     return {}
@@ -26,13 +31,11 @@ export default Vue.extend({
   beforeDestroy() {
     document.removeEventListener('paste', this.pasteHandler)
   },
-
-  props: {},
   methods: {
-    ...mapActions('canvas', ['drawFitSizeImage', 'setUploadImageUrl']),
-    ...mapActions('axes', ['clearAxesCoords']),
-    ...mapActions('datasets', ['clearPlots']),
-    ...mapActions('extractor', ['setSwatches']),
+    ...mapActions(useCanvasStore, ['drawFitSizeImage', 'setUploadImageUrl']),
+    ...mapActions(useAxesStore, ['clearAxesCoords']),
+    ...mapActions(useDatasetsStore, ['clearPlots']),
+    ...mapActions(useExtractorStore, ['setSwatches']),
     async uploadImage(file: File) {
       try {
         const fr = await this.readFile(file)

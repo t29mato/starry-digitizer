@@ -5,8 +5,8 @@
       v-if="!(axes.isAdjusting || datasets.activeDataset.plotsAreAdjusting)"
       :style="{
         position: 'absolute',
-        top: `${this.canvas.scaledCursor.yPx - this.axisCrossCursorPx}px`,
-        left: `${this.canvas.scaledCursor.xPx + this.axisCrossCursorPx}px`,
+        top: `${canvas.scaledCursor.yPx - axisCrossCursorPx}px`,
+        left: `${canvas.scaledCursor.xPx + axisCrossCursorPx}px`,
         'pointer-events': 'none',
       }"
     >
@@ -17,8 +17,8 @@
       v-if="!axes.isAdjusting"
       :style="{
         position: 'absolute',
-        top: `${this.canvas.scaledCursor.yPx + this.axisCrossCursorPx / 2}px`,
-        left: `${this.canvas.scaledCursor.xPx - this.axisCrossCursorPx / 2}px`,
+        top: `${canvas.scaledCursor.yPx + axisCrossCursorPx / 2}px`,
+        left: `${canvas.scaledCursor.xPx - axisCrossCursorPx / 2}px`,
         'pointer-events': 'none',
       }"
     >
@@ -29,8 +29,8 @@
       v-if="!axes.isAdjusting"
       :style="{
         position: 'absolute',
-        top: `${this.canvas.scaledCursor.yPx - this.axisCrossCursorPx}px`,
-        left: `${this.canvas.scaledCursor.xPx - this.axisCrossCursorPx * 2}px`,
+        top: `${canvas.scaledCursor.yPx - axisCrossCursorPx}px`,
+        left: `${canvas.scaledCursor.xPx - axisCrossCursorPx * 2}px`,
         'pointer-events': 'none',
       }"
     >
@@ -46,25 +46,27 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { mapGetters } from 'vuex'
+import { defineComponent } from 'vue'
+import { CSSProperties } from 'vue'
 
-const guideLineBaseStyles = {
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useStyleStore } from '@/store/style'
+import { useDatasetsStore } from '@/store/datasets'
+import { mapState } from 'pinia'
+
+const guideLineBaseStyles: CSSProperties = {
   position: 'absolute',
   pointerEvents: 'none',
   opacity: '0.8',
 }
 
-export default Vue.extend({
-  props: {},
+export default defineComponent({
   computed: {
-    ...mapGetters('style', {
-      axisCrossCursorPx: 'axisCrossCursorPx',
-      axisHalfSizePx: 'axisHalfSizePx',
-    }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('datasets', { datasets: 'datasets' }),
+    ...mapState(useStyleStore, ['axisCrossCursorPx', 'axisHalfSizePx']),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useDatasetsStore, ['datasets']),
     rightLabel(): string {
       switch (this.canvas.maskMode) {
         case 0:
@@ -135,7 +137,7 @@ export default Vue.extend({
 
       return '#00ff00'
     },
-    horizontalGuideLineStyle(): Partial<CSSStyleDeclaration> {
+    horizontalGuideLineStyle(): CSSProperties {
       return {
         ...guideLineBaseStyles,
         width: `${this.getImageCanvasSize().w}px`,
@@ -144,7 +146,7 @@ export default Vue.extend({
         backgroundColor: this.guideLineColor,
       }
     },
-    verticalGuideLineStyle(): Partial<CSSStyleDeclaration> {
+    verticalGuideLineStyle(): CSSProperties {
       return {
         ...guideLineBaseStyles,
         width: '1px',

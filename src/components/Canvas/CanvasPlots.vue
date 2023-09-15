@@ -12,17 +12,21 @@
 
 <script lang="ts">
 import CanvasPlot from '@/components/Canvas/CanvasPlot.vue'
-import Vue from 'vue'
-import { mapGetters } from 'vuex'
+import { defineComponent } from 'vue'
 
-export default Vue.extend({
+import { useCanvasStore } from '@/store/canvas'
+import { useStyleStore } from '@/store/style'
+import { useDatasetsStore } from '@/store/datasets'
+import { mapState } from 'pinia'
+
+export default defineComponent({
   components: {
     CanvasPlot,
   },
   computed: {
-    ...mapGetters('datasets', { datasets: 'datasets' }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
-    ...mapGetters('style', { plotSizePx: 'plotSizePx' }),
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useStyleStore, ['plotSizePx']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -30,7 +34,7 @@ export default Vue.extend({
   data() {
     return {}
   },
-  props: {},
+
   methods: {},
 })
 </script>

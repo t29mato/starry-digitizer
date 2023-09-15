@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mb-5">
     <div
       :style="{
         overflow: 'hidden',
@@ -36,8 +36,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
 
 import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
@@ -49,7 +48,13 @@ import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/components/Magnifier/MagnifierExtractSize.vue'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
 
-export default Vue.extend({
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useDatasetsStore } from '@/store/datasets'
+import { useMagnifierStore } from '@/store/magnifier'
+import { mapState, mapActions } from 'pinia'
+
+export default defineComponent({
   components: {
     MagnifierVerticalLine,
     MagnifierHorizontalLine,
@@ -67,10 +72,10 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapGetters('datasets', { datasets: 'datasets' }),
-    ...mapGetters('magnifier', { magnifier: 'magnifier' }),
-    ...mapGetters('axes', { axes: 'axes' }),
-    ...mapGetters('canvas', { canvas: 'canvas' }),
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useMagnifierStore, ['magnifier']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
     // magnifierHalfSize(): number {
     //   return this.magnifier.sizePx / 2
     // },
@@ -95,14 +100,12 @@ export default Vue.extend({
       })
       return calculator.calculateXYValues(
         this.canvas.cursor.xPx,
-        this.canvas.cursor.yPx
+        this.canvas.cursor.yPx,
       )
     },
   },
-  props: {},
-
   methods: {
-    ...mapActions('magnifier', ['setScale']),
+    ...mapActions(useMagnifierStore, ['setScale']),
     toggleSettingsDialog(): void {
       this.shouldShowSettingsDialog = !this.shouldShowSettingsDialog
     },

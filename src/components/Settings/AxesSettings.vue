@@ -1,159 +1,163 @@
 <template>
   <div>
     <h4>XY Axes</h4>
-    <v-simple-table dense class="mb-5">
+    <table class="c__axes-settings__table">
       <tbody>
         <tr>
-          <th class="pa-0">X</th>
-          <td class="pa-1 pl-2">
+          <td class="pl-0 pr-1">X</td>
+          <td class="pl-0 pr-1">
             <v-text-field
               v-model="x1"
               id="x1-value"
               type="number"
-              class="ma-0 pa-0"
               hide-details
               label="x1"
+              density="compact"
             >
-              <template v-slot:append v-if="xIsLog">
-                <div class="d-flex flex-column">
-                  <v-btn
-                    class="pa-0"
-                    x-small
-                    @click="multiplyByTenX1"
-                    id="multiply-by-ten-x1"
-                    icon
-                    >x10
-                  </v-btn>
-                  <v-btn
-                    class="pa-0"
-                    id="divide-by-ten-x1"
-                    x-small
-                    @click="divideByTenX1"
-                    icon
-                  >
-                    /10
-                  </v-btn>
-                </div>
-              </template>
+              <div class="c__axes-settings__log-adjuster" v-if="xIsLog">
+                <button
+                  size="x-small"
+                  @click="multiplyByTenX1"
+                  id="multiply-by-ten-x1"
+                  icon
+                >
+                  x10
+                </button>
+                <button
+                  id="divide-by-ten-x1"
+                  size="x-small"
+                  @click="divideByTenX1"
+                  icon
+                >
+                  /10
+                </button>
+              </div>
             </v-text-field>
           </td>
-          <td class="pa-1 pl-0">
+          <td class="pl-0 pr-1">
             <v-text-field
               v-model="x2"
               id="x2-value"
               type="number"
-              class="ma-0 pa-0"
               hide-details
               label="x2"
+              density="compact"
             >
-              <template v-slot:append v-if="xIsLog">
-                <div class="d-flex flex-column">
-                  <v-btn
-                    id="multiply-by-ten-x2"
-                    x-small
-                    @click="multiplyByTenX2"
-                    icon
-                    >x10
-                  </v-btn>
-                  <v-btn
-                    id="divide-by-ten-x2"
-                    x-small
-                    @click="divideByTenX2"
-                    icon
-                  >
-                    /10
-                  </v-btn>
-                </div>
-              </template>
+              <div class="c__axes-settings__log-adjuster" v-if="xIsLog">
+                <button
+                  id="multiply-by-ten-x2"
+                  size="x-small"
+                  @click="multiplyByTenX2"
+                  icon
+                >
+                  x10
+                </button>
+                <button
+                  id="divide-by-ten-x2"
+                  size="x-small"
+                  @click="divideByTenX2"
+                  icon
+                >
+                  /10
+                </button>
+              </div>
             </v-text-field>
           </td>
-          <td class="pa-0">
+          <td>
             <v-checkbox
+              color="primary"
               v-model="xIsLog"
               id="x-is-log"
-              dense
-              hint="Log"
-              persistent-hint
+              hide-details
+              density="compact"
             ></v-checkbox>
+            <span class="c__axes-settings__hint">Log</span>
           </td>
         </tr>
         <tr>
-          <th class="pa-0">Y</th>
-          <td class="pa-1 pl-2">
+          <td class="pl-0 pr-1">Y</td>
+          <td class="pl-0 pr-1">
             <v-text-field
               v-model="y1"
               id="y1-value"
               type="number"
-              class="ma-0 pa-0"
               hide-details
               label="y1"
+              density="compact"
             >
-              <template v-slot:append v-if="yIsLog">
-                <div class="d-flex flex-column">
-                  <v-btn
-                    id="multiply-by-ten-y1"
-                    x-small
-                    @click="multiplyByTenY1"
-                    icon
-                    >x10
-                  </v-btn>
-                  <v-btn
-                    id="divide-by-ten-y1"
-                    x-small
-                    @click="divideByTenY1"
-                    icon
-                  >
-                    /10
-                  </v-btn>
-                </div>
-              </template>
+              <div class="c__axes-settings__log-adjuster" v-if="yIsLog">
+                <button
+                  id="multiply-by-ten-y1"
+                  size="x-small"
+                  @click="multiplyByTenY1"
+                  icon
+                >
+                  x10
+                </button>
+                <button
+                  id="divide-by-ten-y1"
+                  size="x-small"
+                  @click="divideByTenY1"
+                  icon
+                >
+                  /10
+                </button>
+              </div>
             </v-text-field>
           </td>
-          <td class="pa-1 pl-0">
+          <td class="pl-0 pr-1">
             <v-text-field
               v-model="y2"
               id="y2-value"
               type="number"
-              class="ma-0 pa-0"
               hide-details
               label="y2"
+              density="compact"
             >
-              <template v-slot:append v-if="yIsLog">
-                <div class="d-flex flex-column">
-                  <v-btn
-                    id="multiply-by-ten-y2"
-                    x-small
-                    @click="multiplyByTenY2"
-                    icon
-                    >x10
-                  </v-btn>
-                  <v-btn
-                    id="divide-by-ten-y2"
-                    x-small
-                    @click="divideByTenY2"
-                    icon
-                  >
-                    /10
-                  </v-btn>
-                </div>
-              </template>
+              <div class="c__axes-settings__log-adjuster" v-if="yIsLog">
+                <button
+                  id="multiply-by-ten-y2"
+                  size="x-small"
+                  @click="multiplyByTenY2"
+                  icon
+                >
+                  x10
+                </button>
+                <button
+                  id="divide-by-ten-y2"
+                  size="x-small"
+                  @click="divideByTenY2"
+                  icon
+                >
+                  /10
+                </button>
+              </div>
             </v-text-field>
           </td>
-          <td class="pa-0">
+          <td>
             <v-checkbox
+              color="primary"
               v-model="yIsLog"
               id="y-is-log"
-              hint="Log"
-              persistent-hint
-              dense
+              density="compact"
+              hide-details
             ></v-checkbox>
+            <span class="c__axes-settings__hint">Log</span>
           </td>
         </tr>
       </tbody>
-    </v-simple-table>
+    </table>
     <div class="mb-5">
-      <h5>Define the axes by the coordinates of:</h5>
-      <v-radio-group row v-model.number="axes.pointMode" hide-details>
+      <h5 class="c__axes-settings__point-mode__label">
+        Define the axes by the coordinates of:
+      </h5>
+      <v-radio-group
+        row
+        v-model.number="axes.pointMode"
+        inline
+        color="primary"
+        hide-details
+      >
         <v-radio label="2 Points" :value="0"></v-radio>
         <v-radio label="4 Points" :value="1"></v-radio>
       </v-radio-group>
@@ -161,21 +165,24 @@
         v-if="axes.pointMode === 1"
         v-model="axes.considerGraphTilt"
         label="Consider graph tilt"
-        dense
+        density="compact"
+        color="primary"
       ></v-checkbox>
     </div>
 
-    <p class="red--text">{{ errorMessage }}</p>
+    <p class="text-red">{{ errorMessage }}</p>
   </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
 
-export default Vue.extend({
+import { useAxesStore } from '@/store/axes'
+import { mapState, mapActions } from 'pinia'
+
+export default defineComponent({
   computed: {
-    ...mapGetters('axes', { axes: 'axes' }),
+    ...mapState(useAxesStore, ['axes']),
     errorMessage(): string {
       if (this.axes.xIsLog) {
         if (this.x1 === '0' || this.x2 === '0') {
@@ -208,9 +215,9 @@ export default Vue.extend({
       yIsLog: false,
     }
   },
-  props: {},
+
   methods: {
-    ...mapActions('axes', [
+    ...mapActions(useAxesStore, [
       'setX1Value',
       'setX2Value',
       'setY1Value',
@@ -285,3 +292,42 @@ export default Vue.extend({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.c {
+  &__axes-settings {
+    &__table {
+      margin-bottom: 20px;
+    }
+
+    &__hint {
+      display: block;
+      font-size: 0.75rem;
+      transform: translateY(-8px);
+    }
+
+    &__log-adjuster {
+      position: absolute;
+      right: 2px;
+      top: 4px;
+      display: flex;
+      gap: 4px;
+      & > button {
+        display: block;
+        font-size: 0.5rem;
+        padding: 0 4px;
+        background-color: #444444;
+        color: white;
+        border-radius: 2px;
+        box-shadow: 2px;
+      }
+    }
+
+    &__point-mode {
+      &__label {
+        font-size: 0.75rem;
+      }
+    }
+  }
+}
+</style>

@@ -1,6 +1,6 @@
 <template>
-  <div class="mt-3">
-    <h5>Extracted Color</h5>
+  <div class="mt-3 mb-5">
+    <h5 class="mb-2">Extracted Color</h5>
     <!-- TODO: 抽出色設定もColorSettingsComponentに入れる -->
     <v-row class="mt-1">
       <v-col cols="4">
@@ -10,25 +10,25 @@
             :value="extractor.colorPicker"
             @input="inputColorPicker"
           />
-          <v-icon small>mdi-palette</v-icon>
+          <v-icon size="small">mdi-palette</v-icon>
         </label>
       </v-col>
       <v-col cols="8">
         <v-text-field
-          :value="extractor.colorDistancePct"
-          @input="inputColorDistancePct"
+          :model-value="extractor.colorDistancePct"
+          @update:model-value="inputColorDistancePct"
           label="Color Diff. (%)"
           type="number"
           :error="colorDistancePctErrorMsg.length > 0"
           :error-messages="colorDistancePctErrorMsg"
-          dense
+          density="compact"
         >
         </v-text-field>
       </v-col>
     </v-row>
     <v-color-picker
-      :value="extractor.colorPicker"
-      @input="setColorPicker"
+      :model-value="extractor.colorPicker"
+      @update:model-value="setColorPicker"
       hide-canvas
       hide-inputs
       show-swatches
@@ -39,21 +39,23 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { mapGetters, mapActions } from 'vuex'
+import { defineComponent } from 'vue'
 
-export default Vue.extend({
+import { useExtractorStore } from '@/store/extractor'
+import { mapState, mapActions } from 'pinia'
+
+export default defineComponent({
   data() {
     return {
       colorDistancePctErrorMsg: '',
     }
   },
   computed: {
-    ...mapGetters('extractor', { extractor: 'extractor' }),
+    ...mapState(useExtractorStore, ['extractor']),
   },
-  props: {},
+
   methods: {
-    ...mapActions('extractor', ['setColorPicker', 'setColorDistancePct']),
+    ...mapActions(useExtractorStore, ['setColorPicker', 'setColorDistancePct']),
     inputColorPicker(value: any) {
       console.log(value)
       this.setColorPicker(value.target.value)
@@ -67,7 +69,7 @@ export default Vue.extend({
       }
       if (100 <= distance) {
         this.colorDistancePctErrorMsg =
-          'The Color Difference(%) is supposed to be smaller than 100%'
+          'The Color Difference(%) is supposed to be size="small"er than 100%'
       }
       this.setColorDistancePct(distance)
     },
