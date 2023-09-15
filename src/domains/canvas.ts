@@ -9,7 +9,7 @@ export class Canvas implements CanvasInterface {
   imageElement: HTMLImageElement
   scale = 1
   cursor: Coord = { xPx: 0, yPx: 0 }
-  #rectangle = {
+  rectangle = {
     startX: 0,
     startY: 0,
     endX: 0,
@@ -126,8 +126,8 @@ export class Canvas implements CanvasInterface {
   }
 
   mouseDownForBox(xPx: number, yPx: number) {
-    this.#rectangle.startY = yPx
-    this.#rectangle.startX = xPx
+    this.rectangle.startY = yPx
+    this.rectangle.startX = xPx
   }
 
   mouseMoveForBox(xPx: number, yPx: number) {
@@ -138,23 +138,23 @@ export class Canvas implements CanvasInterface {
       this.maskCanvas.element.width,
       this.maskCanvas.element.height,
     )
-    this.#rectangle.endY = yPx - this.#rectangle.startY
-    this.#rectangle.endX = xPx - this.#rectangle.startX
+    this.rectangle.endY = yPx - this.rectangle.startY
+    this.rectangle.endX = xPx - this.rectangle.startX
     this.tempMaskCanvas.context.strokeRect(
-      this.#rectangle.startX,
-      this.#rectangle.startY,
-      this.#rectangle.endX,
-      this.#rectangle.endY,
+      this.rectangle.startX,
+      this.rectangle.startY,
+      this.rectangle.endX,
+      this.rectangle.endY,
     )
   }
 
   mouseUpForBox() {
     this.maskCanvas.context.fillStyle = '#ffff00ff' // INFO: yellow
     this.maskCanvas.context.fillRect(
-      this.#rectangle.startX,
-      this.#rectangle.startY,
-      this.#rectangle.endX,
-      this.#rectangle.endY,
+      this.rectangle.startX,
+      this.rectangle.startY,
+      this.rectangle.endX,
+      this.rectangle.endY,
     )
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
     this.isDrawnMask = true
@@ -168,7 +168,7 @@ export class Canvas implements CanvasInterface {
   }
 
   clearRectangle() {
-    this.#rectangle = {
+    this.rectangle = {
       startX: 0,
       startY: 0,
       endX: 0,
