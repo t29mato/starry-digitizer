@@ -5,7 +5,7 @@ export interface State {
   symbolExtractByArea: SymbolExtractByArea
 }
 
-export const useSymbolExtractByAreaStore = defineStore('axes', {
+export const useSymbolExtractByAreaStore = defineStore('symbolExtractByArea', {
   state: (): State => ({
     symbolExtractByArea: SymbolExtractByArea.instance,
   }),

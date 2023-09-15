@@ -12,7 +12,7 @@
                 :model-value="magnifier.scale"
                 type="number"
                 label="Magnifier (times)"
-                @update:model-value="setMagnifierScale"
+                @change="onChangeMagnifierScale"
                 :error="magnifierSettingError.length > 0"
                 :error-messages="magnifierSettingError"
               ></v-text-field>
@@ -58,6 +58,10 @@ export default defineComponent({
       required: true,
     },
   },
-  methods: {},
+  methods: {
+    onChangeMagnifierScale(event: Event) {
+      this.setMagnifierScale(Number((<HTMLInputElement>event.target).value))
+    },
+  },
 })
 </script>

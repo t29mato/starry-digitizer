@@ -28,11 +28,11 @@ export default class LineExtract
     maskColors: Uint8ClampedArray,
     isDrawnMask: boolean,
     targetColor: [number, number, number],
-    colorMatchThreshold: number
+    colorMatchThreshold: number,
   ) {
     const plots = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
-      Array(width).fill(false)
+      Array(width).fill(false),
     )
     if (isDrawnMask) {
       for (let h = 0; h < height; h++) {
@@ -47,7 +47,7 @@ export default class LineExtract
           // }
           const [r2, g2, b2, a2] = maskColors.slice(
             (h * width + w) * 4,
-            (h * width + w + 1) * 4
+            (h * width + w + 1) * 4,
           )
           if (!this.isOnMask(r2, g2, b2, a2)) {
             visitedArea[h][w] = true
@@ -65,12 +65,12 @@ export default class LineExtract
         }
         const [r1, g1, b1, _] = imageColors.slice(
           (h * width + w) * 4,
-          (h * width + w + 1) * 4
+          (h * width + w + 1) * 4,
         )
         const isMatch = this.matchColor(
           [r1, g1, b1],
           targetColor,
-          colorMatchThreshold
+          colorMatchThreshold,
         )
         visitedArea[h][w] = true
         if (isMatch) {
@@ -109,7 +109,7 @@ export default class LineExtract
                 count++
                 const [r, g, b] = imageColors.slice(
                   (nh * width + nw) * 4,
-                  (nh * width + nw + 1) * 4
+                  (nh * width + nw + 1) * 4,
                 )
                 if (
                   this.matchColor([r, g, b], targetColor, colorMatchThreshold)
