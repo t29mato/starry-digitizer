@@ -2,11 +2,12 @@ import { CanvasInterface } from './canvasInterface'
 import { Plots } from './datasetInterface'
 import ExtractStrategyInterface from './extractStrategies/extractStrategyInterface'
 
-export type ExtractStrategy = 'Symbol Extract' | 'Line Extract'
+//TODO 間藤さんに確認
+// export type ExtractStrategy = 'Symbol Extract' | 'Line Extract'
 
 export class Extractor {
   strategy: ExtractStrategyInterface
-  strategies: ExtractStrategy[] = ['Symbol Extract', 'Line Extract']
+  strategies: String[] = ['Symbol Extract', 'Line Extract']
   colorPicker = '#000000ff'
   colors = [] as { R: number; G: number; B: number }[][]
   colorDistancePct = 5
@@ -24,7 +25,7 @@ export class Extractor {
       canvas.originalSizeMaskCanvasColors,
       canvas.isDrawnMask,
       [this.targetColor.R, this.targetColor.G, this.targetColor.B],
-      this.colorDistancePct
+      this.colorDistancePct,
     )
   }
 

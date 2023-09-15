@@ -45,7 +45,7 @@ import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
 import MaskSettings from './MaskSettings.vue'
 import ColorSettings from './ColorSettings.vue'
-import { ExtractStrategy } from '@/domains/extractor'
+// import { ExtractStrategy } from '@/domains/extractor'
 import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
 
@@ -104,7 +104,7 @@ export default defineComponent({
       }
       this.setManualMode(value)
     },
-    setExtractStrategy(strategy: ExtractStrategy) {
+    setExtractStrategy(strategy: any) {
       switch (strategy) {
         case 'Symbol Extract':
           this.setStrategy(SymbolExtractByArea.instance)
