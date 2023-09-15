@@ -16,11 +16,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'yarn'
+          cache: 'bun'
       - name: Install npm packages
-        run: yarn
+        run: bun
       - name: Unit test
-        run: yarn test
+        run: bun test
   E2E-Test:
     runs-on: ubuntu-latest
     steps:
@@ -30,13 +30,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'yarn'
+          cache: 'bun'
       - name: Install npm packages
-        run: yarn
+        run: bun
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
-          start: yarn serve
+          start: bun serve
           wait-on: 'http://localhost:8080'
           record: true
           parallel: true
@@ -54,7 +54,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'yarn'
+          cache: 'bun'
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
