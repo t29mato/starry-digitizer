@@ -1,4 +1,4 @@
-import { expect } from '@jest/globals'
+import { expect, test, describe, beforeEach } from '@jest/globals'
 import { Axes } from './axes'
 import { Axis } from './axis'
 import { AxisInterface } from './axisInterface'

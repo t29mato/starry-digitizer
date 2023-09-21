@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable jest/valid-title */
+import { expect, test } from '@jest/globals'
 import SymbolExtractByArea from './symbolExtractByArea'
 
 const extractor = SymbolExtractByArea.instance

@@ -1,6 +1,8 @@
+import LineExtract from './lineExtract'
+import { expect, test } from '@jest/globals'
+
 /* eslint-disable jest/valid-title */
 /* eslint-disable prettier/prettier */
-import LineExtract from './lineExtract'
 
 const extractor = LineExtract.instance
 extractor.dxPx = 1
