@@ -28,10 +28,11 @@ jobs:
       - name: Install npm packages
         run: bun install
       - name: Cypress run
-        uses: cypress-io/github-action@v4
+        uses: cypress-io/github-action@v6
         with:
           start: bun dev
           wait-on: 'http://127.0.0.1:8080'
+          browser: chrome
           record: true
           parallel: true
         env:
