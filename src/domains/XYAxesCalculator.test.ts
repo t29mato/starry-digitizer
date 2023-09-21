@@ -1,4 +1,4 @@
-import { expect } from '@jest/globals'
+import { expect, describe, beforeEach } from '@jest/globals'
 import XYAxesCalculator from './XYAxesCalculator'
 import { AxesInterface } from './axes/axesInterface'
 import { Axis } from './axes/axis'
