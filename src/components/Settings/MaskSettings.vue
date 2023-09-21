@@ -7,7 +7,7 @@
       density="compact"
       class="mb-2"
       divided
-      variant="outlined"
+      :border="true"
     >
       <v-btn size="small" color="primary"> Pen </v-btn>
       <v-btn size="small" color="primary"> Box </v-btn>

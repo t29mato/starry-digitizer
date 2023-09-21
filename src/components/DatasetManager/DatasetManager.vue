@@ -16,8 +16,8 @@
     <v-list
       density="compact"
       height="20vh"
-      class="overflow-y-auto mb-1 mt-1 pa-0"
-      variant="outlined"
+      class="overflow-y-auto mb-5 mt-1 pa-0"
+      style="outline: solid 1px gray"
     >
       <v-list-item
         v-for="dataset in datasets.datasets"

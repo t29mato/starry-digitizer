@@ -34,6 +34,7 @@
       show-swatches
       hide-sliders
       :swatches="extractor.swatches"
+      :elevation="0"
     ></v-color-picker>
   </div>
 </template>
