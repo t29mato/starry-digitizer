@@ -7,7 +7,7 @@
       density="compact"
       class="mb-4"
       divided
-      variant="outlined"
+      :border="true"
     >
       <v-btn size="small" color="primary"> Add (A) </v-btn>
       <v-btn size="small" color="primary"> Edit (E) </v-btn>
