@@ -11,32 +11,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
+        uses: actions/checkout@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
       - name: Install npm packages
-        run: yarn
+        run: bun
       - name: Unit test
-        run: yarn test
+        run: bun test
   E2E-Test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
+        uses: actions/checkout@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
       - name: Install npm packages
-        run: yarn
+        run: bun
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
-          start: yarn dev
+          start: bun dev
           wait-on: 'http://localhost:8080'
           record: true
           parallel: true
@@ -49,14 +43,11 @@ jobs:
     if: success()
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
+        uses: actions/checkout@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: bun install --global vercel@latest
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts
