@@ -4,11 +4,12 @@
     @click="toggleSettingsDialog"
     :style="{
       position: 'absolute',
-      top: '0px',
-      left: '173px',
+      top: '-4px',
+      right: '-4px',
       'z-index': 100,
     }"
     icon
+    elevation="0"
     ><v-icon size="small">mdi-cog</v-icon></v-btn
   >
 </template>
