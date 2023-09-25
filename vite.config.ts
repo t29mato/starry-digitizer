@@ -14,6 +14,7 @@ export default defineConfig({
     port: 8080,
   },
   build: {
+    outDir: 'lib-dist',
     lib: {
       // 複数のエントリーポイントのディクショナリや配列にもできます
       entry: resolve(__dirname, 'lib/main.ts'),
