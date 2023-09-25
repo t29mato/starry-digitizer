@@ -4,7 +4,7 @@
   "version": "0.16.1",
   "type": "module",
   "files": ["dist"],
-  "main": "./dist/my-lib.umd.cjs",
+  "main": "./dist/my-lib.cjs",
   "module": "./dist/my-lib.js",
   "exports": {
     ".": {
