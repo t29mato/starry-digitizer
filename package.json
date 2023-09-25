@@ -9,6 +9,9 @@
     ".": {
       "import": "./lib-dist/index.js",
       "require": "./lib-dist/index.umd.cjs"
+    },
+    "./styles": {
+      "import": "./lib-dist/style.css"
     }
   },
   "scripts": {
