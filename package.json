@@ -1,15 +1,14 @@
 {
   "name": "starry-digitizer",
-  "private": true,
   "version": "0.16.1",
   "type": "module",
   "files": ["dist"],
-  "main": "./dist/my-lib.cjs",
-  "module": "./dist/my-lib.js",
+  "main": "./dist/index.umd.cjs",
+  "module": "./dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/my-lib.js",
-      "require": "./dist/my-lib.umd.cjs"
+      "import": "./dist/index.js",
+      "require": "./dist/index.umd.cjs"
     }
   },
   "scripts": {

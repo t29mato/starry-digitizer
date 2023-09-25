@@ -17,9 +17,9 @@ export default defineConfig({
     lib: {
       // 複数のエントリーポイントのディクショナリや配列にもできます
       entry: resolve(__dirname, 'lib/main.ts'),
-      name: 'MyLib',
+      name: 'starry-digitizer',
       // 適切な拡張子が追加されます
-      fileName: 'my-lib',
+      fileName: 'index',
     },
     rollupOptions: {
       // ライブラリにバンドルされるべきではない依存関係を
