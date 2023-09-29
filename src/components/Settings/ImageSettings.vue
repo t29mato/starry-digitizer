@@ -36,15 +36,31 @@ export default defineComponent({
     ...mapActions(useAxesStore, ['clearAxesCoords']),
     ...mapActions(useDatasetsStore, ['clearPlots']),
     ...mapActions(useExtractorStore, ['setSwatches']),
-    async uploadImage(file: File) {
+    async uploadImage(event: Event) {
       try {
+        const eventTarget = event.target as HTMLInputElement
+
+        if (!eventTarget) {
+          throw 'Unexpected Error: event target does not exist'
+        }
+
+        if (!eventTarget.files) {
+          throw 'Unexpected Error: file was not uploaded'
+        }
+
+        const file = eventTarget.files[0]
+
+        if (!this.isValidFileType(file.type)) {
+          alert('Please upload jpg / png image file.')
+          return
+        }
+
         const fr = await this.readFile(file)
         if (typeof fr.result !== 'string') {
           throw new Error('file is not string type')
         }
-        // TODO: Canvasを利用する
-        const image = await this.loadImage(fr.result)
-        this.canvas.changeImage(image)
+
+        await this.canvas.initializeImageElement(fr.result)
         this.drawFitSizeImage()
         this.setSwatches(this.canvas.colorSwatches)
         this.setUploadImageUrl(fr.result)
@@ -54,12 +70,15 @@ export default defineComponent({
         //
       }
     },
+    isValidFileType(fileType: String) {
+      return fileType === 'image/jpeg' || fileType === 'image/png'
+    },
     readFile(file: File): Promise<FileReader> {
       return new Promise((resolve, reject) => {
         const fr = new FileReader()
-        fr.readAsDataURL(file)
         fr.addEventListener('load', () => resolve(fr))
         fr.addEventListener('error', (error) => reject(error))
+        fr.readAsDataURL(file)
       })
     },
     loadImage(src: string): Promise<HTMLImageElement> {
