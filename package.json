@@ -2,22 +2,22 @@
   "name": "starry-digitizer",
   "version": "0.16.1",
   "type": "module",
-  "files": ["lib-dist"],
-  "main": "./lib-dist/index.umd.cjs",
-  "module": "./lib-dist/index.js",
+  "files": ["library-build/dist"],
+  "main": "./library-build/dist/index.umd.cjs",
+  "module": "./library-build/dist/index.js",
   "exports": {
     ".": {
-      "import": "./lib-dist/index.js",
-      "require": "./lib-dist/index.umd.cjs"
+      "import": "./library-build/dist/index.js",
+      "require": "./library-build/dist/index.umd.cjs"
     },
     "./styles": {
-      "import": "./lib-dist/style.css"
+      "import": "./library-build/dist/style.css"
     }
   },
   "scripts": {
     "dev": "vite",
     "ssg-build": "cross-env VITE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vite build",
-    "lib-build": "vite build",
+    "lib-build": "vite build -c 'vite.library.config.js'",
     "preview": "vite preview",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
