@@ -25,13 +25,13 @@ export class Canvas implements CanvasInterface {
     this.imageElement = new Image()
   }
 
-  async initializeImageElement() {
+  async initializeImageElement(imagePath: string) {
     return new Promise((resolve, reject) => {
       this.imageElement.onload = resolve
       this.imageElement.onerror = (error) => {
         reject(error)
       }
-      this.imageElement.src = '/sample_graph_curve.png'
+      this.imageElement.src = imagePath
     })
   }
 

@@ -73,7 +73,7 @@ export default defineComponent({
       return
     }
     try {
-      await this.canvas.initializeImageElement()
+      await this.canvas.initializeImageElement(this.imagePath)
       this.drawFitSizeImage()
       this.setUploadImageUrl(this.imagePath)
       this.setSwatches(this.canvas.colorSwatches)
