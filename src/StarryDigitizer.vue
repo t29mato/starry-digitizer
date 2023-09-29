@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-main>
-      <main-screen :initialGraphImagePath="'/sample_graph_curve.png'" />
+      <main-screen :initialGraphImagePath="initialGraphImagePath" />
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
@@ -38,6 +38,14 @@ export default defineComponent({
 
   components: {
     MainScreen,
+  },
+
+  //passed from external application (when built as a library)
+  props: {
+    initialGraphImagePath: {
+      type: String,
+      default: '/sample_graph_curve.png',
+    },
   },
 
   data: () => ({
