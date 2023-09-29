@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import App from './App.vue'
+import StarryDigitizer from './StarryDigitizer.vue'
 
 //Sentry
 import { version } from '../package.json'
@@ -43,7 +43,7 @@ const vuetify = createVuetify({
   },
 })
 
-const app = createApp(App).use(pinia).use(vuetify)
+const app = createApp(StarryDigitizer).use(pinia).use(vuetify)
 app.mount('#app')
 
 if (process.env.NODE_ENV === 'production') {

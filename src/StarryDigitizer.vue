@@ -34,7 +34,7 @@ import MainScreen from '@/components/MainScreen.vue'
 import { version } from '../package.json'
 
 export default defineComponent({
-  name: 'App',
+  name: 'StarryDigitizer',
 
   components: {
     MainScreen,
