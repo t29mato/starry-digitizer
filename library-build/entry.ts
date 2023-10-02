@@ -1,3 +1,3 @@
-import StarryDigitizer from '../src/StarryDigitizer.vue'
+import StarryDigitizer from '../src/components/StarryDigitizer.vue'
 
 export { StarryDigitizer }

@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-main>
-      <main-screen :initialGraphImagePath="'/sample_graph_curve.png'" />
+      <starry-digitizer :initialGraphImagePath="'/sample_graph_curve.png'" />
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
@@ -29,15 +29,15 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import MainScreen from '@/components/MainScreen.vue'
+import StarryDigitizer from '@/components/StarryDigitizer.vue'
 
 import { version } from '../package.json'
 
 export default defineComponent({
-  name: 'StarryDigitizer',
+  name: 'App',
 
   components: {
-    MainScreen,
+    StarryDigitizer,
   },
 
   data: () => ({
