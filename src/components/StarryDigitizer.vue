@@ -9,6 +9,7 @@
           :exportBtnClick="exportBtnClick"
         ></dataset-manager>
         <data-table />
+        <export-all-data />
       </div>
       <div class="c__main-area">
         <canvas-header></canvas-header>
@@ -38,6 +39,7 @@ import { AxesSettings, ExtractorSettings, ImageSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { version } from '../../package.json'
 import DataTable from '@/components/Export/DataTable.vue'
+import ExportAllData from './Export/ExportAllData.vue'
 
 export default defineComponent({
   components: {
@@ -50,6 +52,7 @@ export default defineComponent({
     DatasetManager,
     ExtractorSettings,
     ImageSettings,
+    ExportAllData,
   },
   props: {
     // should be imported by require function

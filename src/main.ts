@@ -5,7 +5,7 @@ import App from './App.vue'
 import { version } from '../package.json'
 import * as Sentry from '@sentry/vue'
 import { Integrations } from '@sentry/tracing'
-
+//日本語の入力が正しく動くとこんなかんじですよねぇ
 // Vuetify
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
