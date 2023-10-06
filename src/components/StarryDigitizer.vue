@@ -39,7 +39,7 @@ import { AxesSettings, ExtractorSettings, ImageSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { version } from '../../package.json'
 import DataTable from '@/components/Export/DataTable.vue'
-import ExportAllData from './Export/ExportAllData.vue'
+import ExportAllData from '@/components/Export/ExportAllData.vue'
 
 export default defineComponent({
   components: {
