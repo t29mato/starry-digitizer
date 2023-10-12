@@ -8,35 +8,40 @@
       height="35vh"
       class="overflow-y-auto"
     ></hot-table>
-    <v-btn class="mt-1" @click="copyData" small>Copy to Clipboard</v-btn>
+    <v-btn class="mt-1" @click="copyData" size="small">Copy to Clipboard</v-btn>
   </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from 'vue'
+
 import colors from 'vuetify/lib/util/colors'
-import { datasetMapper } from '@/store/modules/dataset'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { HotTable } from '@handsontable/vue'
+import { HotTable } from '@handsontable/vue3'
 import 'handsontable/dist/handsontable.full.css'
 import { registerAllModules } from 'handsontable/registry'
+import { Plot } from '@/domains/datasetInterface'
+
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useDatasetsStore } from '@/store/datasets'
+import { mapState } from 'pinia'
+
 registerAllModules()
 
 const CSV_DELIMITER = ','
 
-export default Vue.extend({
+export default defineComponent({
   components: {
     HotTable,
   },
   computed: {
-    ...datasetMapper.mapGetters(['datasets']),
-    ...axesMapper.mapGetters(['axes']),
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
     tableData() {
       if (this.datasets.activeDataset.plots.length > 0) {
-        return this.datasets.activeDataset.plots.map((plot) => {
+        return this.datasets.activeDataset.plots.map((plot: Plot) => {
           // @ts-ignore calculateXY methods is defined apparently
           const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
           return {

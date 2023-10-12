@@ -2,7 +2,7 @@
   <div class="mt-2">
     <v-btn
       class="ml-2"
-      small
+      size="small"
       :disabled="!axes.hasAtLeastOneAxis"
       @click="clearAxes"
     >
@@ -15,17 +15,18 @@
       Clear Y Axis</v-btn
     > -->
     <v-btn
-      small
+      size="small"
       class="ml-2"
       :disabled="datasets.activeDataset.plots.length === 0"
       @click="clearPlots"
       >Clear Points</v-btn
     >
     <v-btn
-      small
+      size="small"
       class="ml-2"
       :disabled="
-        datasets.activeDataset.plots.length === 0 || !datasets.plotsAreActive
+        datasets.activeDataset.plots.length === 0 ||
+        !datasets.activeDataset.nextPlotId
       "
       @click="clearActivePlots"
       >Clear Active Point</v-btn
@@ -34,25 +35,26 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { datasetMapper } from '@/store/modules/dataset'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
+import { defineComponent } from 'vue'
 
-export default Vue.extend({
-  props: {},
+import { useAxesStore } from '@/store/axes'
+import { useDatasetsStore } from '@/store/datasets'
+import { useCanvasStore } from '@/store/canvas'
+import { mapState, mapActions } from 'pinia'
+
+export default defineComponent({
   computed: {
-    ...axesMapper.mapGetters(['axes']),
-    ...datasetMapper.mapGetters(['datasets']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useDatasetsStore, ['datasets']),
   },
   methods: {
-    ...datasetMapper.mapActions(['clearPlots', 'clearActivePlots']),
-    ...axesMapper.mapActions([
+    ...mapActions(useDatasetsStore, ['clearPlots', 'clearActivePlots']),
+    ...mapActions(useAxesStore, [
       'clearAxesCoords',
       'clearXAxisCoords',
       'clearYAxisCoords',
     ]),
-    ...canvasMapper.mapActions(['setManualMode']),
+    ...mapActions(useCanvasStore, ['setManualMode']),
     clearAxes() {
       this.clearAxesCoords()
       this.setManualMode(-1)
@@ -62,7 +64,7 @@ export default Vue.extend({
       this.setManualMode(-1)
     },
     clearYAxis() {
-      this.clearYAxisCoords()
+      this.clearAxesCoords()
       this.setManualMode(-1)
     },
   },

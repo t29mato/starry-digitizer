@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mb-5">
     <div
       :style="{
         overflow: 'hidden',
@@ -36,7 +36,8 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { defineComponent } from 'vue'
+
 import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
@@ -45,13 +46,15 @@ import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/components/Magnifier/MagnifierExtractSize.vue'
-import { datasetMapper } from '@/store/modules/dataset'
-import { canvasMapper } from '@/store/modules/canvas'
-import { magnifierMapper } from '@/store/modules/magnifier'
-import { axesMapper } from '@/store/modules/axes'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
 
-export default Vue.extend({
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useDatasetsStore } from '@/store/datasets'
+import { useMagnifierStore } from '@/store/magnifier'
+import { mapState, mapActions } from 'pinia'
+
+export default defineComponent({
   components: {
     MagnifierVerticalLine,
     MagnifierHorizontalLine,
@@ -69,10 +72,10 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...datasetMapper.mapGetters(['datasets']),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...magnifierMapper.mapGetters(['magnifier']),
-    ...axesMapper.mapGetters(['axes']),
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useMagnifierStore, ['magnifier']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
     // magnifierHalfSize(): number {
     //   return this.magnifier.sizePx / 2
     // },
@@ -97,14 +100,12 @@ export default Vue.extend({
       })
       return calculator.calculateXYValues(
         this.canvas.cursor.xPx,
-        this.canvas.cursor.yPx
+        this.canvas.cursor.yPx,
       )
     },
   },
-  props: {},
-
   methods: {
-    ...magnifierMapper.mapActions(['setScale']),
+    ...mapActions(useMagnifierStore, ['setScale']),
     toggleSettingsDialog(): void {
       this.shouldShowSettingsDialog = !this.shouldShowSettingsDialog
     },

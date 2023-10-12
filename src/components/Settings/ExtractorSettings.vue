@@ -1,20 +1,22 @@
 <template>
   <div>
-    <h4>Manual Extraction</h4>
+    <h4 class="mb-2">Manual Extraction</h4>
     <v-btn-toggle
-      :value="canvas.manualMode"
-      @change="changeManualMode"
-      dense
-      class="pl-2"
+      :model-value="canvas.manualMode"
+      @update:model-value="changeManualMode"
+      density="compact"
+      class="mb-4"
+      divided
+      :border="true"
     >
-      <v-btn small color="primary"> Add (A) </v-btn>
-      <v-btn small color="primary"> Edit (E) </v-btn>
-      <v-btn small color="primary"> Delete (D) </v-btn>
+      <v-btn size="small" color="primary"> Add (A) </v-btn>
+      <v-btn size="small" color="primary"> Edit (E) </v-btn>
+      <v-btn size="small" color="primary"> Delete (D) </v-btn>
     </v-btn-toggle>
-    <h4>Automatic Extraction</h4>
+    <h4 class="mb-2">Automatic Extraction</h4>
     <v-select
-      @input="setExtractStrategy"
-      :value="extractor.strategy.name"
+      @update:model-value="setExtractStrategy"
+      :model-value="extractor.strategy.name"
       :items="extractor.strategies"
       label="Select Algorithm"
     ></v-select>
@@ -26,27 +28,34 @@
     </div>
     <mask-settings></mask-settings>
     <color-settings></color-settings>
-    <v-btn :loading="isExtracting" @click="extractPlots" color="primary" small
+    <v-btn
+      :loading="isExtracting"
+      @click="extractPlots"
+      color="primary"
+      size="small"
       >Run</v-btn
     >
   </div>
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue'
+
 import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
 import MaskSettings from './MaskSettings.vue'
 import ColorSettings from './ColorSettings.vue'
-import { extractorMapper } from '@/store/modules/extractor'
-import Vue from 'vue'
-import { ExtractStrategy } from '@/domains/extractor'
+// import { ExtractStrategy } from '@/domains/extractor'
 import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/domains/extractStrategies/lineExtract'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { datasetMapper } from '@/store/modules/dataset'
 
-export default Vue.extend({
+import { useCanvasStore } from '@/store/canvas'
+import { useExtractorStore } from '@/store/extractor'
+import { useDatasetsStore } from '@/store/datasets'
+import { useAxesStore } from '@/store/axes'
+import { mapState, mapActions } from 'pinia'
+
+export default defineComponent({
   components: {
     SymbolExtractSettings,
     LineExtractSettings,
@@ -59,8 +68,8 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...extractorMapper.mapGetters(['extractor']),
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapState(useExtractorStore, ['extractor']),
+    ...mapState(useCanvasStore, ['canvas']),
   },
   props: {
     initialExtractorStrategy: {
@@ -78,15 +87,15 @@ export default Vue.extend({
     }
   },
   methods: {
-    ...extractorMapper.mapActions(['setStrategy']),
-    ...axesMapper.mapActions(['inactivateAxis']),
-    ...datasetMapper.mapActions([
+    ...mapActions(useExtractorStore, ['setStrategy']),
+    ...mapActions(useAxesStore, ['inactivateAxis']),
+    ...mapActions(useDatasetsStore, [
       'clearPlots',
       'setPlots',
       'sortPlots',
       'inactivatePlots',
     ]),
-    ...canvasMapper.mapActions(['setManualMode']),
+    ...mapActions(useCanvasStore, ['setManualMode']),
     changeManualMode(value: any) {
       this.inactivatePlots()
       if (value === undefined) {
@@ -95,7 +104,7 @@ export default Vue.extend({
       }
       this.setManualMode(value)
     },
-    setExtractStrategy(strategy: ExtractStrategy) {
+    setExtractStrategy(strategy: any) {
       switch (strategy) {
         case 'Symbol Extract':
           this.setStrategy(SymbolExtractByArea.instance)

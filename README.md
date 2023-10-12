@@ -1,96 +1,19 @@
-StarryDigitizer is a Vue.js-based tool for extracting numeric data from plot images, supporting XY data.
+# Vue 3 + TypeScript + Vite
 
-## App
-https://starrydigitizer.vercel.app/
+This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
 
-## Install
+## Recommended IDE Setup
 
-- yarn install: `yarn add starry-digitizer`
-- npm install: `npm install starry-digitizer`
+- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
 
-Or if you want to use it directly in the browser add
-``` js
-<script src="https://unpkg.com/starry-digitizer/dist/starry-digitizer.min.js"></script>
-```
+## Type Support For `.vue` Imports in TS
 
-## How to use
-You need to import the component and then add to the components.
+TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
 
-### Vue.js (ver3)
-It works in progress. 👷‍♂️👷‍♂️👷‍♂️
+If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
 
-### Vue.js (ver2)
-
-#### 1. Install Vuetify.
-https://vuetifyjs.com/ja/getting-started/installation/
-
-#### 2. Install starry-digitizer
-```
-$ yarn add starry-digitizer
-or
-$ npm install starry-digitizer
-```
-
-#### 3. Set up the component.
-
-``` vue
-<template>
-  <v-app>
-    <starry-digitizer />
-  </v-app>
-</template>
-
-<script>
-import StarryDigitizer from 'starry-digitizer'
-
-export default {
-  name: 'App',
-  components: {
-    StarryDigitizer
-  }
-}
-</script>
-```
-<v-app> component make the
-
-## Build Setup
-
-``` sh
-# install dependencies
-yarn install
-
-# serve with hot relad at localhost:8080
-yarn  serve
-
-# build for production with minification
-yarn  build
-
-# lint
-yarn lint
-```
-
-## StyleGuide
-- [TypeScript Deep Dive](https://basarat.gitbook.io/typescript/)
-- [Vue.js official style guide](https://v2.vuejs.org/v2/style-guide/index.html)
-
-## Coding Rules
-### SCSS
-- As a general rule, use the styles built into Vuetify, and write SCSS in /src/styles/* **only when necessary**.
-- All class names must be prefixed with "c" (the abbreviation of "customized") to clarify it's not the styles built into Vuetify.
-- Use BEM(https://en.bem.info/methodology/css/) as the naming convention.
-- For example:
-```html
-<div class="c__main">
-  <h2 class="c__main__title">This is a title</h2>
-</div>
-```
-
-## Contributing
-1. Fork it (`git clone https://github.com/t29mato/starry-digitizer.git`)
-2. Create your feature branch (`git checkout -b your-new-feature`)
-3. Commit your changes (`git commit -am 'feat: add some feature'`)
-4. Push to the branch (`git push origin your-new-feature`)
-5. Create a new Pull Request
-
-## License
-This software is distributed under [MIT license](https://raw.githubusercontent.com/t29mato/starry-digitizer/main/LICENSE.txt)
+1. Disable the built-in TypeScript Extension
+   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
+   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
+2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+ 

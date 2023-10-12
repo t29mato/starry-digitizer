@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :value="shouldShowSettingsDialog" max-width="300px">
+  <v-dialog :model-value="shouldShowSettingsDialog" max-width="300px">
     <v-card>
       <v-card-title>
         <span class="text-h5">Magnifier Settings</span>
@@ -9,10 +9,10 @@
           <v-row>
             <v-col>
               <v-text-field
-                :value="magnifier.scale"
+                :model-value="magnifier.scale"
                 type="number"
                 label="Magnifier (times)"
-                @input="setMagnifierScale"
+                @change="onChangeMagnifierScale"
                 :error="magnifierSettingError.length > 0"
                 :error-messages="magnifierSettingError"
               ></v-text-field>
@@ -28,14 +28,17 @@
 </template>
 
 <script lang="ts">
-import { magnifierMapper } from '@/store/modules/magnifier'
-import Vue from 'vue'
-export default Vue.extend({
+import { defineComponent } from 'vue'
+
+import { useMagnifierStore } from '@/store/magnifier'
+import { mapState } from 'pinia'
+
+export default defineComponent({
   data() {
     return {}
   },
   computed: {
-    ...magnifierMapper.mapGetters(['magnifier']),
+    ...mapState(useMagnifierStore, ['magnifier']),
   },
   props: {
     shouldShowSettingsDialog: {
@@ -55,6 +58,10 @@ export default Vue.extend({
       required: true,
     },
   },
-  methods: {},
+  methods: {
+    onChangeMagnifierScale(event: Event) {
+      this.setMagnifierScale(Number((<HTMLInputElement>event.target).value))
+    },
+  },
 })
 </script>

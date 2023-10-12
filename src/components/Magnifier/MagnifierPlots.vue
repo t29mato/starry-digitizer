@@ -21,16 +21,20 @@
 </template>
 
 <script lang="ts">
-import { canvasMapper } from '@/store/modules/canvas'
-import { styleMapper } from '@/store/modules/style'
-import { magnifierMapper } from '@/store/modules/magnifier'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
+
 import { Coord } from '@/domains/datasetInterface'
-export default Vue.extend({
+
+import { useCanvasStore } from '@/store/canvas'
+import { useStyleStore } from '@/store/style'
+import { useMagnifierStore } from '@/store/magnifier'
+import { mapState } from 'pinia'
+
+export default defineComponent({
   computed: {
-    ...magnifierMapper.mapGetters(['magnifier']),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...styleMapper.mapGetters(['plotSizePx']),
+    ...mapState(useMagnifierStore, ['magnifier']),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useStyleStore, ['plotSizePx']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },

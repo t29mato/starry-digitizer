@@ -24,18 +24,20 @@
 </template>
 
 <script lang="ts">
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
 import MagnifierAxis from '@/components/Magnifier/MagnifierAxis.vue'
-import Vue from 'vue'
-export default Vue.extend({
+import { defineComponent } from 'vue'
+
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { mapState } from 'pinia'
+
+export default defineComponent({
   components: {
     MagnifierAxis,
   },
   computed: {
-    ...canvasMapper.mapGetters(['canvas']),
-    ...axesMapper.mapGetters(['axes']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
   },
-  props: {},
 })
 </script>

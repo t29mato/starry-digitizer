@@ -1,21 +1,22 @@
 <template>
   <v-btn
-    small
+    size="small"
     @click="toggleSettingsDialog"
     :style="{
       position: 'absolute',
-      top: '0px',
-      left: '173px',
+      top: '-4px',
+      right: '-4px',
       'z-index': 100,
     }"
     icon
-    ><v-icon small>mdi-cog</v-icon></v-btn
+    elevation="0"
+    ><v-icon size="small">mdi-cog</v-icon></v-btn
   >
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-export default Vue.extend({
+import { defineComponent } from 'vue'
+export default defineComponent({
   computed: {},
   props: {
     toggleSettingsDialog: {

@@ -2,7 +2,7 @@ export abstract class ExtractParent {
   matchColor(
     rgb1: [number, number, number],
     rgb2: [number, number, number],
-    matchRatio: number
+    matchRatio: number,
   ) {
     const diffRatio =
       (rgb1.reduce((prev, _, i) => {

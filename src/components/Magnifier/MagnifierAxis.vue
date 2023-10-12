@@ -39,14 +39,17 @@
 
 <script lang="ts">
 import { AxisInterface } from '@/domains/axes/axisInterface'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { magnifierMapper } from '@/store/modules/magnifier'
-import { styleMapper } from '@/store/modules/style'
 import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
-import Vue from 'vue'
-export default Vue.extend({
+import { defineComponent } from 'vue'
+
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useStyleStore } from '@/store/style'
+import { useMagnifierStore } from '@/store/magnifier'
+import { mapState } from 'pinia'
+
+export default defineComponent({
   components: {
     MagnifierAxisLabelX,
     MagnifierAxisLabelY,
@@ -55,9 +58,9 @@ export default Vue.extend({
     return {}
   },
   computed: {
-    ...canvasMapper.mapGetters(['canvas']),
-    ...axesMapper.mapGetters(['axes']),
-    ...styleMapper.mapGetters([
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useStyleStore, [
       'axisSizePx',
       'axisHalfSizePx',
       'axisCrossBorderHalfPx',
@@ -65,7 +68,7 @@ export default Vue.extend({
       'axisCrossTopPx',
       'axisCrossCursorPx',
     ]),
-    ...magnifierMapper.mapGetters(['magnifier']),
+    ...mapState(useMagnifierStore, ['magnifier']),
     xPx(): number {
       return this.axis.coord.xPx
     },

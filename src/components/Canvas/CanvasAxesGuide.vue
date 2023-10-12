@@ -1,4 +1,3 @@
-<!-- 軸定義の際のガイド -->
 <template>
   <div v-if="isActive" class="axes-guide">
     <div v-if="isX1Y1LineVisible" :style="X1Y1HorizontalLineStyle"></div>
@@ -9,33 +8,45 @@
 </template>
 
 <script lang="ts">
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import Vue from 'vue'
+import { defineComponent } from 'vue'
+import { CSSProperties } from 'vue'
 
-const axesGuideCommonStyle = {
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { mapState } from 'pinia'
+
+const axesGuideCommonStyle: CSSProperties = {
   position: 'absolute',
   backgroundColor: '#00ff00',
   opacity: '0.8',
-  pointerEvents: 'none',
+  'pointer-events': 'none',
 }
 
-export default Vue.extend({
+export default defineComponent({
   components: {},
+  methods: {
+    //INFO: computedではリアクティブにならなかったのでmethodとしている
+    getImageCanvasSize(): { w: number; h: number } {
+      const imageCanvas = document.getElementById('imageCanvas')
+
+      if (!imageCanvas) return { w: 0, h: 0 }
+
+      return { w: imageCanvas.clientWidth, h: imageCanvas.clientHeight }
+    },
+  },
   computed: {
-    ...axesMapper.mapGetters(['axes']),
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
     isActive(): boolean {
       return this.axes.pointMode === 0
     },
     isX1Y1LineVisible(): boolean {
-      return this.axes.x1.coordIsFilled
+      return this.axes.x1.coordIsFilled || this.canvas.scaledCursor.xPx !== 0
     },
     isX2Y2LineVisible(): boolean {
-      return this.axes.x2.coordIsFilled
+      return this.axes.x2y2.coordIsFilled
     },
-    X1Y1HorizontalLineStyle(): Partial<CSSStyleDeclaration> {
-      //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
+    X1Y1HorizontalLineStyle() {
       const styleTopNum = this.axes.x1.coordIsFilled
         ? this.axes.x1.coord.yPx * this.canvas.scale
         : this.canvas.scaledCursor.yPx
@@ -48,7 +59,7 @@ export default Vue.extend({
         top: styleTopNum + 'px',
       }
     },
-    X1Y1VerticalLineStyle(): Partial<CSSStyleDeclaration> {
+    X1Y1VerticalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
       const styleLeftNum = this.axes.x1.coordIsFilled
         ? this.axes.x1.coord.xPx * this.canvas.scale
@@ -63,7 +74,7 @@ export default Vue.extend({
       }
     },
 
-    X2Y2HorizontalLineStyle(): Partial<CSSStyleDeclaration> {
+    X2Y2HorizontalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
       const styleTopNum = this.axes.x2y2.coordIsFilled
         ? this.axes.x2y2.coord.yPx * this.canvas.scale
@@ -77,7 +88,7 @@ export default Vue.extend({
         top: styleTopNum + 'px',
       }
     },
-    X2Y2VerticalLineStyle(): Partial<CSSStyleDeclaration> {
+    X2Y2VerticalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
       const styleLeftNum = this.axes.x2y2.coordIsFilled
         ? this.axes.x2y2.coord.xPx * this.canvas.scale
@@ -90,16 +101,6 @@ export default Vue.extend({
         bottom: '0',
         left: styleLeftNum + 'px',
       }
-    },
-  },
-  methods: {
-    //INFO: computedではリアクティブにならなかったのでmethodとしている
-    getImageCanvasSize(): { w: number; h: number } {
-      const imageCanvas = document.getElementById('imageCanvas')
-
-      if (!imageCanvas) return { w: 0, h: 0 }
-
-      return { w: imageCanvas.clientWidth, h: imageCanvas.clientHeight }
     },
   },
 })

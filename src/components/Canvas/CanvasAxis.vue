@@ -39,11 +39,14 @@
 
 <script lang="ts">
 import { AxisInterface } from '@/domains/axes/axisInterface'
-import { axesMapper } from '@/store/modules/axes'
-import { canvasMapper } from '@/store/modules/canvas'
-import { styleMapper } from '@/store/modules/style'
-import Vue from 'vue'
-export default Vue.extend({
+import { defineComponent } from 'vue'
+
+import { useAxesStore } from '@/store/axes'
+import { useCanvasStore } from '@/store/canvas'
+import { useStyleStore } from '@/store/style'
+import { mapState } from 'pinia'
+
+export default defineComponent({
   props: {
     axis: {
       type: Object as () => AxisInterface,
@@ -56,7 +59,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...styleMapper.mapGetters([
+    ...mapState(useStyleStore, [
       'axisSizePx',
       'axisHalfSizePx',
       'axisCrossBorderHalfPx',
@@ -64,8 +67,8 @@ export default Vue.extend({
       'axisCrossTopPx',
       'axisCrossCursorPx',
     ]),
-    ...canvasMapper.mapGetters(['canvas']),
-    ...axesMapper.mapGetters(['axes']),
+    ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useAxesStore, ['axes']),
     xPx(): number {
       if (this.axis.coord) {
         return this.axis.coord.xPx * this.canvas.scale

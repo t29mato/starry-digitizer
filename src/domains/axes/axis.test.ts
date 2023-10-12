@@ -1,3 +1,4 @@
+import { expect } from '@jest/globals'
 import { Axis } from './axis'
 
 test('clear coordinates', () => {

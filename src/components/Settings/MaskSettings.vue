@@ -1,13 +1,20 @@
 <template>
-  <div>
-    <h5>Selection Area</h5>
-    <v-btn-toggle :value="canvas.maskMode" @change="change" dense class="pl-2">
-      <v-btn small color="primary"> Pen </v-btn>
-      <v-btn small color="primary"> Box </v-btn>
-      <v-btn small color="primary"> Eraser </v-btn>
+  <div class="mt-3 mb-5">
+    <h5 class="mb-2">Selection Area</h5>
+    <v-btn-toggle
+      :model-value="canvas.maskMode"
+      @update:model-value="change"
+      density="compact"
+      class="mb-2"
+      divided
+      :border="true"
+    >
+      <v-btn size="small" color="primary"> Pen </v-btn>
+      <v-btn size="small" color="primary"> Box </v-btn>
+      <v-btn size="small" color="primary"> Eraser </v-btn>
     </v-btn-toggle>
     <v-btn
-      small
+      size="small"
       class="ml-1"
       :disabled="!canvas.isDrawnMask"
       @click="clearMask"
@@ -16,37 +23,48 @@
     </v-btn>
     <v-text-field
       v-if="canvas.maskMode === 0"
-      :value="canvas.penToolSizePx"
-      @change="setPenToolSizePx"
+      :model-value="canvas.penToolSizePx"
+      @change="onChangePenToolSizePx"
       type="number"
       hide-details
       label="Pen Size"
+      density="compact"
     ></v-text-field>
     <v-text-field
       v-if="canvas.maskMode === 2"
-      :value="canvas.eraserSizePx"
-      @change="setEraserSizePx"
+      :model-value="canvas.eraserSizePx"
+      @change="onChangeEraserSizePx"
       type="number"
       hide-details
       label="Eraser Size (px)"
+      density="compact"
     ></v-text-field>
   </div>
 </template>
 
 <script lang="ts">
-import { canvasMapper } from '@/store/modules/canvas'
-import Vue from 'vue'
-export default Vue.extend({
+import { defineComponent } from 'vue'
+
+import { useCanvasStore } from '@/store/canvas'
+import { mapState, mapActions } from 'pinia'
+
+export default defineComponent({
   computed: {
-    ...canvasMapper.mapGetters(['canvas']),
+    ...mapState(useCanvasStore, ['canvas']),
   },
-  props: {},
+
   methods: {
-    ...canvasMapper.mapActions([
+    ...mapActions(useCanvasStore, [
       'setPenToolSizePx',
       'setMaskMode',
       'setEraserSizePx',
     ]),
+    onChangePenToolSizePx(event: Event) {
+      this.setPenToolSizePx(Number((<HTMLInputElement>event.target).value))
+    },
+    onChangeEraserSizePx(event: Event) {
+      this.setEraserSizePx(Number((<HTMLInputElement>event.target).value))
+    },
     change(value: any) {
       if (value === undefined) {
         this.setMaskMode(-1)

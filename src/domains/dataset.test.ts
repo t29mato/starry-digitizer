@@ -1,3 +1,4 @@
+import { expect } from '@jest/globals'
 import { Dataset } from './dataset'
 
 test('sort in ascending order on X axis', () => {
