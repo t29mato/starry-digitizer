@@ -26,30 +26,18 @@ export default defineComponent({
     return {}
   },
   mounted() {
-    document.addEventListener('paste', this.pasteHandler.bind(this))
+    document.addEventListener('paste', this.onImagePasted.bind(this))
   },
   beforeDestroy() {
-    document.removeEventListener('paste', this.pasteHandler)
+    document.removeEventListener('paste', this.onImagePasted)
   },
   methods: {
     ...mapActions(useCanvasStore, ['drawFitSizeImage', 'setUploadImageUrl']),
     ...mapActions(useAxesStore, ['clearAxesCoords']),
     ...mapActions(useDatasetsStore, ['clearPlots']),
     ...mapActions(useExtractorStore, ['setSwatches']),
-    async uploadImage(event: Event) {
+    async updateImage(file: File) {
       try {
-        const eventTarget = event.target as HTMLInputElement
-
-        if (!eventTarget) {
-          throw 'Unexpected Error: event target does not exist'
-        }
-
-        if (!eventTarget.files) {
-          throw 'Unexpected Error: file was not uploaded'
-        }
-
-        const file = eventTarget.files[0]
-
         if (!this.isValidFileType(file.type)) {
           alert('Please upload jpg / png image file.')
           return
@@ -66,30 +54,26 @@ export default defineComponent({
         this.setUploadImageUrl(fr.result)
         this.clearAxesCoords()
         this.clearPlots()
-      } finally {
-        //
+      } catch (e) {
+        console.error('failed to update image', { cause: e })
       }
     },
-    isValidFileType(fileType: String) {
-      return fileType === 'image/jpeg' || fileType === 'image/png'
+    onImageUploaded(event: Event) {
+      const eventTarget = event.target as HTMLInputElement
+
+      if (!eventTarget) {
+        throw 'Unexpected Error: event target does not exist'
+      }
+
+      if (!eventTarget.files) {
+        throw 'Unexpected Error: file was not uploaded'
+      }
+
+      const file = eventTarget.files[0]
+
+      this.updateImage(file)
     },
-    readFile(file: File): Promise<FileReader> {
-      return new Promise((resolve, reject) => {
-        const fr = new FileReader()
-        fr.addEventListener('load', () => resolve(fr))
-        fr.addEventListener('error', (error) => reject(error))
-        fr.readAsDataURL(file)
-      })
-    },
-    loadImage(src: string): Promise<HTMLImageElement> {
-      return new Promise((resolve, reject) => {
-        const img = new Image()
-        img.onload = () => resolve(img)
-        img.onerror = (error) => reject(error)
-        img.src = src
-      })
-    },
-    pasteHandler(event: ClipboardEvent) {
+    onImagePasted(event: ClipboardEvent) {
       // INFO: 入力フィールドにカーソルが当たってる場合はスルー
       const targetName = (event.target as Element).nodeName
       if (targetName === 'INPUT' || targetName === 'TEXTAREA') {
@@ -109,7 +93,26 @@ export default defineComponent({
       if (!imageFile) {
         return
       }
-      this.uploadImage(imageFile)
+      this.updateImage(imageFile)
+    },
+    isValidFileType(fileType: String) {
+      return fileType === 'image/jpeg' || fileType === 'image/png'
+    },
+    readFile(file: File): Promise<FileReader> {
+      return new Promise((resolve, reject) => {
+        const fr = new FileReader()
+        fr.addEventListener('load', () => resolve(fr))
+        fr.addEventListener('error', (error) => reject(error))
+        fr.readAsDataURL(file)
+      })
+    },
+    loadImage(src: string): Promise<HTMLImageElement> {
+      return new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(img)
+        img.onerror = (error) => reject(error)
+        img.src = src
+      })
     },
   },
 })
