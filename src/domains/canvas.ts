@@ -71,8 +71,11 @@ export class Canvas implements CanvasInterface {
   }
 
   mouseDrag(xPx: number, yPx: number) {
-    this.rectangle.endX = xPx - this.rectangle.startX
-    this.rectangle.endY = yPx - this.rectangle.startY
+    // this.rectangle.endX = xPx - this.rectangle.startX
+    // this.rectangle.endY = yPx - this.rectangle.startY
+
+    this.rectangle.endX = xPx
+    this.rectangle.endY = yPx
 
     switch (this.maskMode) {
       case 0: // INFO: pen mask

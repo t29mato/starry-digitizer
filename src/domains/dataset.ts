@@ -45,11 +45,16 @@ export class Dataset implements DatasetInterface {
     return biggestId + 1
   }
 
-  activatePlot(id: number) {
+  switchActivatedPlot(id: number) {
     this.activePlotIds.length = 0
     this.activePlotIds.push(id)
   }
 
+  addActivatedPlot(id: number) {
+    this.activePlotIds.push(id)
+  }
+
+  //INFO クリックされたplotがactiveな場合はinactiveにし、そうでない場合はactive状態に追加する
   toggleActivatedPlot(toggledId: number) {
     if (this.activePlotIds.includes(toggledId)) {
       const activePlotIds = this.activePlotIds.filter((id) => {
@@ -59,7 +64,8 @@ export class Dataset implements DatasetInterface {
       this.activePlotIds.push(...activePlotIds)
       return
     }
-    this.activePlotIds.push(toggledId)
+
+    this.addActivatedPlot(toggledId)
   }
 
   clearPlot(id: number) {
@@ -114,6 +120,18 @@ export class Dataset implements DatasetInterface {
           .map((plot) => (plot.xPx -= vector.distancePx))
         break
     }
+  }
+
+  activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
+    this.inactivatePlots()
+
+    const plotsToActivate = this.plotsInRectangleArea(
+      topLeftCoord,
+      bottomRightCoord,
+    )
+    plotsToActivate.forEach((plot: Plot) => {
+      this.addActivatedPlot(plot.id)
+    })
   }
 
   plotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Plots {

@@ -50,14 +50,20 @@ export const useDatasetsStore = defineStore('datasets', {
     toggleActivatedPlot(id: number) {
       this.datasets.activeDataset.toggleActivatedPlot(id)
     },
-    activatePlot(id: number) {
-      this.datasets.activeDataset.activatePlot(id)
+    switchActivatedPlot(id: number) {
+      this.datasets.activeDataset.switchActivatedPlot(id)
     },
     setActiveDataset(id: number) {
       this.datasets.setActiveDataset(id)
     },
     sortPlots() {
       this.datasets.sortPlots()
+    },
+    activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
+      return this.datasets.activatePlotsInRectangleArea(
+        topLeftCoord,
+        bottomRightCoord,
+      )
     },
   },
 })

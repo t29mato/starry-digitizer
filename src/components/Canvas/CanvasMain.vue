@@ -87,6 +87,7 @@ export default defineComponent({
       'moveActivePlot',
       'clearActivePlots',
       'inactivatePlots',
+      'activatePlotsInRectangleArea',
     ]),
     ...mapActions(useCanvasStore, [
       'mouseDownOnCanvas',
@@ -191,8 +192,14 @@ export default defineComponent({
       }
 
       // INFO: EDITモードかつAutomatic Extractionでない場合にplotの複数選択を行う
-      if (this.canvas.manualMode === 2 && this.canvas.maskMode === -1) {
-        console.log(this.canvas.rectangle.startX, this)
+      if (this.canvas.manualMode === 1 && this.canvas.maskMode === -1) {
+        const rect = this.canvas.rectangle
+
+        this.activatePlotsInRectangleArea(
+          { xPx: rect.startX, yPx: rect.startY },
+          { xPx: rect.endX, yPx: rect.endY },
+        )
+
         return
       }
     },
