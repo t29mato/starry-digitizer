@@ -33,8 +33,8 @@ export const useCanvasStore = defineStore('canvas', {
       this.canvas.drawFitSizeImage()
     },
 
-    mouseMoveForPen(config: { xPx: number; yPx: number; penSize: number }) {
-      this.canvas.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
+    mouseDragForPen(config: { xPx: number; yPx: number; penSize: number }) {
+      this.canvas.mouseDragForPen(config.xPx, config.yPx, config.penSize)
     },
 
     setCanvasCursor(coord: Coord) {
