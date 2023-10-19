@@ -65,13 +65,18 @@ export class Canvas implements CanvasInterface {
     }
   }
 
+  mouseDown(xPx: number, yPx: number) {
+    this.rectangle.startY = yPx
+    this.rectangle.startX = xPx
+  }
+
   mouseDrag(xPx: number, yPx: number) {
     switch (this.maskMode) {
       case 0: // INFO: pen mask
         this.mouseDragForPen(xPx, yPx, this.penToolSizePx)
         break
       case 1: // INFO: box mask
-        this.mouseDragForBox(xPx, yPx)
+        this.mouseDragForBox()
         break
       case 2: // INFO: eraser mask
         this.mouseDragForEraser(xPx, yPx, this.eraserSizePx)
@@ -79,6 +84,11 @@ export class Canvas implements CanvasInterface {
       default:
         break
     }
+  }
+
+  mouseUp(xPx: number, yPx: number) {
+    this.rectangle.endY = yPx - this.rectangle.startY
+    this.rectangle.endX = xPx - this.rectangle.startX
   }
 
   mouseDragForPen(xPx: number, yPx: number, penSize: number) {
@@ -128,12 +138,7 @@ export class Canvas implements CanvasInterface {
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
-  mouseDownForBox(xPx: number, yPx: number) {
-    this.rectangle.startY = yPx
-    this.rectangle.startX = xPx
-  }
-
-  mouseDragForBox(xPx: number, yPx: number) {
+  mouseDragForBox() {
     this.tempMaskCanvas.context.strokeStyle = '#000000ff' // INFO: black
     this.tempMaskCanvas.context.clearRect(
       0,
@@ -141,8 +146,6 @@ export class Canvas implements CanvasInterface {
       this.maskCanvas.element.width,
       this.maskCanvas.element.height,
     )
-    this.rectangle.endY = yPx - this.rectangle.startY
-    this.rectangle.endX = xPx - this.rectangle.startX
     this.tempMaskCanvas.context.strokeRect(
       this.rectangle.startX,
       this.rectangle.startY,

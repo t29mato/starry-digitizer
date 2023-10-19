@@ -89,6 +89,8 @@ export default defineComponent({
       'inactivatePlots',
     ]),
     ...mapActions(useCanvasStore, [
+      'mouseDownOnCanvas',
+      'mouseUpOnCanvas',
       'mouseDragOnCanvas',
       'setCanvasCursor',
       'drawFitSizeImage',
@@ -174,13 +176,25 @@ export default defineComponent({
       const target = e.target as HTMLElement
       const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
       const yPx = e.offsetY + parseFloat(target.style.top)
-      if (this.canvas.maskMode === 1) {
-        this.canvas.mouseDownForBox(xPx, yPx)
-      }
+
+      this.mouseDownOnCanvas({ xPx, yPx })
     },
-    mouseUp() {
+    mouseUp(e: MouseEvent) {
+      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
+      const target = e.target as HTMLElement
+      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
+      const yPx = e.offsetY + parseFloat(target.style.top)
+      this.mouseUpOnCanvas({ xPx, yPx })
+
       if (this.canvas.maskMode === 1) {
         this.canvas.mouseUpForBox()
+        return
+      }
+
+      // INFO: EDITモードかつAutomatic Extractionでない場合にplotの複数選択を行う
+      if (this.canvas.manualMode === 2 && this.canvas.maskMode === -1) {
+        console.log(this.canvas.rectangle.startX, this)
+        return
       }
     },
     keyDownHandler(e: KeyboardEvent) {
