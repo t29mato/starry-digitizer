@@ -33,7 +33,7 @@ export interface DatasetInterface {
   clearPlots(): void
   inactivatePlots(): void
   clearActivePlots(): void
-  plotsSortedByXAscending(): Plots
+  plotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Plots
   plotsSortedByXDescending(): Plots
   plotsSortedByYAscending(): Plots
   plotsSortedByYDescending(): Plots

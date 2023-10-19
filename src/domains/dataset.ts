@@ -1,5 +1,5 @@
 import { Vector } from './axes/axesInterface'
-import { DatasetInterface, Plots } from './datasetInterface'
+import { DatasetInterface, Plots, Plot, Coord } from './datasetInterface'
 
 export class Dataset implements DatasetInterface {
   name: string
@@ -114,6 +114,17 @@ export class Dataset implements DatasetInterface {
           .map((plot) => (plot.xPx -= vector.distancePx))
         break
     }
+  }
+
+  plotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Plots {
+    return this.plots.filter((plot: Plot) => {
+      return (
+        plot.xPx >= topLeftCoord.xPx &&
+        plot.xPx <= bottomRightCoord.xPx &&
+        plot.yPx >= topLeftCoord.yPx &&
+        plot.yPx <= bottomRightCoord.yPx
+      )
+    })
   }
 
   plotsSortedByXAscending(): Plots {
