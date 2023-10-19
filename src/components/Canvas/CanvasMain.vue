@@ -150,7 +150,6 @@ export default defineComponent({
     },
     mouseDrag(coord: Coord) {
       // TODO: 呼び出すメソッドはCanvasに移譲したい
-      // TODO: mouseDragOnCanvasにリネーム？
       this.mouseDragOnCanvas(coord)
     },
     mouseMove(e: MouseEvent) {
