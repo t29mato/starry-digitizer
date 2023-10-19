@@ -67,10 +67,6 @@ export const useCanvasStore = defineStore('canvas', {
       this.canvas.mouseDown(coord.xPx, coord.yPx)
     },
 
-    mouseUpOnCanvas(coord: Coord) {
-      this.canvas.mouseUp(coord.xPx, coord.yPx)
-    },
-
     mouseDragOnCanvas(coord: Coord) {
       this.canvas.mouseDrag(coord.xPx, coord.yPx)
     },

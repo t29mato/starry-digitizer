@@ -90,7 +90,6 @@ export default defineComponent({
     ]),
     ...mapActions(useCanvasStore, [
       'mouseDownOnCanvas',
-      'mouseUpOnCanvas',
       'mouseDragOnCanvas',
       'setCanvasCursor',
       'drawFitSizeImage',
@@ -185,11 +184,7 @@ export default defineComponent({
 
       this.mouseDownOnCanvas({ xPx, yPx })
     },
-    mouseUp(e: MouseEvent) {
-      const { xPx, yPx } = this.getMouseXYFromMouseEvent(e)
-
-      this.mouseUpOnCanvas({ xPx, yPx })
-
+    mouseUp() {
       if (this.canvas.maskMode === 1) {
         this.canvas.mouseUpForBox()
         return
