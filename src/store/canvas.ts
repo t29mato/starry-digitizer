@@ -63,8 +63,8 @@ export const useCanvasStore = defineStore('canvas', {
       this.canvas.uploadImageUrl = url
     },
 
-    mouseMoveOnCanvas(coord: Coord) {
-      this.canvas.mouseMove(coord.xPx, coord.yPx)
+    mouseDragOnCanvas(coord: Coord) {
+      this.canvas.mouseDrag(coord.xPx, coord.yPx)
     },
   },
 })

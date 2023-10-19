@@ -65,23 +65,23 @@ export class Canvas implements CanvasInterface {
     }
   }
 
-  mouseMove(xPx: number, yPx: number) {
+  mouseDrag(xPx: number, yPx: number) {
     switch (this.maskMode) {
       case 0: // INFO: pen mask
-        this.mouseMoveForPen(xPx, yPx, this.penToolSizePx)
+        this.mouseDragForPen(xPx, yPx, this.penToolSizePx)
         break
       case 1: // INFO: box mask
-        this.mouseMoveForBox(xPx, yPx)
+        this.mouseDragForBox(xPx, yPx)
         break
       case 2: // INFO: eraser mask
-        this.mouseMoveForEraser(xPx, yPx, this.eraserSizePx)
+        this.mouseDragForEraser(xPx, yPx, this.eraserSizePx)
         break
       default:
         break
     }
   }
 
-  mouseMoveForPen(xPx: number, yPx: number, penSize: number) {
+  mouseDragForPen(xPx: number, yPx: number, penSize: number) {
     const ctx = this.maskCanvas.context
     ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     ctx.beginPath()
@@ -100,7 +100,7 @@ export class Canvas implements CanvasInterface {
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
-  mouseMoveForEraser(xPx: number, yPx: number, penSize: number) {
+  mouseDragForEraser(xPx: number, yPx: number, penSize: number) {
     const ctx = this.maskCanvas.context
     ctx.globalCompositeOperation = 'destination-out'
     ctx.strokeStyle = '#000000' // INFO: black
@@ -133,7 +133,7 @@ export class Canvas implements CanvasInterface {
     this.rectangle.startX = xPx
   }
 
-  mouseMoveForBox(xPx: number, yPx: number) {
+  mouseDragForBox(xPx: number, yPx: number) {
     this.tempMaskCanvas.context.strokeStyle = '#000000ff' // INFO: black
     this.tempMaskCanvas.context.clearRect(
       0,

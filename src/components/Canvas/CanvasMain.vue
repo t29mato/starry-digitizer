@@ -89,7 +89,7 @@ export default defineComponent({
       'inactivatePlots',
     ]),
     ...mapActions(useCanvasStore, [
-      'mouseMoveOnCanvas',
+      'mouseDragOnCanvas',
       'setCanvasCursor',
       'drawFitSizeImage',
       'setUploadImageUrl',
@@ -151,7 +151,7 @@ export default defineComponent({
     mouseDrag(coord: Coord) {
       // TODO: 呼び出すメソッドはCanvasに移譲したい
       // TODO: mouseDragOnCanvasにリネーム？
-      this.mouseMoveOnCanvas(coord)
+      this.mouseDragOnCanvas(coord)
     },
     mouseMove(e: MouseEvent) {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
