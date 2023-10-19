@@ -1,7 +1,7 @@
 <template>
   <v-file-input
     accept="image/*"
-    @change="uploadImage"
+    @change="onImageUploaded"
     :clearable="false"
     label="choose an image file"
     hide-details
