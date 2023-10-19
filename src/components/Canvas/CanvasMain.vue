@@ -150,15 +150,24 @@ export default defineComponent({
         return
       }
     },
+    getMouseXYFromMouseEvent(e: MouseEvent): Coord {
+      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
+      const target = e.target as HTMLElement
+      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
+      const yPx = e.offsetY + parseFloat(target.style.top)
+
+      return {
+        xPx,
+        yPx,
+      }
+    },
     mouseDrag(coord: Coord) {
       // TODO: 呼び出すメソッドはCanvasに移譲したい
       this.mouseDragOnCanvas(coord)
     },
     mouseMove(e: MouseEvent) {
-      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
-      const target = e.target as HTMLElement
-      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
-      const yPx = e.offsetY + parseFloat(target.style.top)
+      const { xPx, yPx } = this.getMouseXYFromMouseEvent(e)
+
       this.axes.isAdjusting = false
       this.datasets.activeDataset.plotsAreAdjusting = false
       this.setCanvasCursor({
@@ -172,18 +181,13 @@ export default defineComponent({
       }
     },
     mouseDown(e: MouseEvent) {
-      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
-      const target = e.target as HTMLElement
-      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
-      const yPx = e.offsetY + parseFloat(target.style.top)
+      const { xPx, yPx } = this.getMouseXYFromMouseEvent(e)
 
       this.mouseDownOnCanvas({ xPx, yPx })
     },
     mouseUp(e: MouseEvent) {
-      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
-      const target = e.target as HTMLElement
-      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
-      const yPx = e.offsetY + parseFloat(target.style.top)
+      const { xPx, yPx } = this.getMouseXYFromMouseEvent(e)
+
       this.mouseUpOnCanvas({ xPx, yPx })
 
       if (this.canvas.maskMode === 1) {
