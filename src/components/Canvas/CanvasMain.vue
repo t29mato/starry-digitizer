@@ -45,6 +45,8 @@ import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useExtractorStore } from '@/store/extractor'
 
+import calculationUtils from '@/domains/calculationUtils'
+
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 
@@ -195,10 +197,13 @@ export default defineComponent({
         const rect = this.canvas.rectangle
         const scale = this.canvas.scale
 
-        this.activatePlotsInRectangleArea(
-          { xPx: rect.startX / scale, yPx: rect.startY / scale },
-          { xPx: rect.endX / scale, yPx: rect.endY / scale },
-        )
+        const { topLeftCoord, bottomRightCoord } =
+          calculationUtils.getRectCoordsFromDragCoords(
+            { xPx: rect.startX / scale, yPx: rect.startY / scale },
+            { xPx: rect.endX / scale, yPx: rect.endY / scale },
+          )
+
+        this.activatePlotsInRectangleArea(topLeftCoord, bottomRightCoord)
 
         return
       }
