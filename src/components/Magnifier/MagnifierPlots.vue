@@ -16,6 +16,7 @@
       'background-color': isActive ? 'red' : 'dodgerblue',
       border: `${1}px solid white`,
       'border-radius': '50%',
+      opacity: 0.6, //TODO 設定可能にする
     }"
   ></div>
 </template>

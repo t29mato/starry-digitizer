@@ -11,7 +11,7 @@
       'background-color': isActive ? 'red' : 'dodgerblue',
       border: '1px solid white',
       'border-radius': '50%',
-      opacity: 0.6,
+      opacity: 0.6, //TODO 設定可能にする
     }"
     @click="click"
   ></div>
