@@ -151,7 +151,7 @@ export default defineComponent({
         return
       }
     },
-    //TODO: domain層に移動
+    //TODO: domain層に移動すべき？
     getMouseXYFromMouseEvent(e: MouseEvent): Coord {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
       const target = e.target as HTMLElement
