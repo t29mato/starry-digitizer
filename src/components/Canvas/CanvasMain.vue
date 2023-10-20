@@ -190,8 +190,8 @@ export default defineComponent({
     mouseUp() {
       this.mouseUpOnCanvas()
 
-      // INFO: EDITモードかつAutomatic Extractionでない場合にplotの複数選択を行う
-      if (this.canvas.manualMode === 1 && this.canvas.maskMode === -1) {
+      // INFO: EDITモードの場合にplotの複数選択を行う
+      if (this.canvas.manualMode === 1) {
         const rect = this.canvas.rectangle
         const scale = this.canvas.scale
 

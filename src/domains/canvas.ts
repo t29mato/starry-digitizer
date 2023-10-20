@@ -97,13 +97,15 @@ export class Canvas implements CanvasInterface {
     this.rectangle.endX = xPx
     this.rectangle.endY = yPx
 
-    if (this.manualMode !== -1 && this.maskMode === -1) {
+    //INFO: 現在のモードがmanual modeかmask modeかで処理を分岐
+    if (this.manualMode !== -1) {
       this.mouseDragInManualMode()
       return
     }
 
     if (this.maskMode !== -1) {
       this.mouseDragInMaskMode(xPx, yPx)
+      return
     }
   }
 
