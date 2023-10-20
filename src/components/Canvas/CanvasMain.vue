@@ -92,6 +92,7 @@ export default defineComponent({
     ...mapActions(useCanvasStore, [
       'mouseDownOnCanvas',
       'mouseDragOnCanvas',
+      'mouseUpOnCanvas',
       'setCanvasCursor',
       'drawFitSizeImage',
       'setUploadImageUrl',
@@ -186,10 +187,7 @@ export default defineComponent({
       this.mouseDownOnCanvas({ xPx, yPx })
     },
     mouseUp() {
-      if (this.canvas.maskMode === 1) {
-        this.canvas.drawBoxMask()
-        return
-      }
+      this.mouseUpOnCanvas()
 
       // INFO: EDITモードかつAutomatic Extractionでない場合にplotの複数選択を行う
       if (this.canvas.manualMode === 1 && this.canvas.maskMode === -1) {

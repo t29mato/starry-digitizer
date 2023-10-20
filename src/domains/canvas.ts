@@ -108,6 +108,14 @@ export class Canvas implements CanvasInterface {
     }
   }
 
+  mouseUp() {
+    this.clearTempMask()
+
+    if (this.maskMode === 1) {
+      this.drawBoxMask()
+    }
+  }
+
   drawDraggedArea() {
     this.tempMaskCanvas.context.strokeStyle = '#000000ff' // INFO: black
     this.tempMaskCanvas.context.clearRect(
@@ -182,12 +190,6 @@ export class Canvas implements CanvasInterface {
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
     this.isDrawnMask = true
     this.clearRectangle()
-    this.tempMaskCanvas.context.clearRect(
-      0,
-      0,
-      this.maskCanvas.element.width,
-      this.maskCanvas.element.height,
-    )
   }
 
   clearRectangle() {
@@ -248,6 +250,15 @@ export class Canvas implements CanvasInterface {
   changeImage(imageElement: HTMLImageElement) {
     this.imageElement = imageElement
     this.drawFitSizeImage()
+  }
+
+  clearTempMask() {
+    this.tempMaskCanvas.context.clearRect(
+      0,
+      0,
+      this.maskCanvas.element.width,
+      this.maskCanvas.element.height,
+    )
   }
 
   clearMask() {
