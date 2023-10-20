@@ -151,6 +151,7 @@ export default defineComponent({
         return
       }
     },
+    //TODO: domain層に移動
     getMouseXYFromMouseEvent(e: MouseEvent): Coord {
       // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
       const target = e.target as HTMLElement
@@ -192,10 +193,11 @@ export default defineComponent({
       // INFO: EDITモードかつAutomatic Extractionでない場合にplotの複数選択を行う
       if (this.canvas.manualMode === 1 && this.canvas.maskMode === -1) {
         const rect = this.canvas.rectangle
+        const scale = this.canvas.scale
 
         this.activatePlotsInRectangleArea(
-          { xPx: rect.startX, yPx: rect.startY },
-          { xPx: rect.endX, yPx: rect.endY },
+          { xPx: rect.startX / scale, yPx: rect.startY / scale },
+          { xPx: rect.endX / scale, yPx: rect.endY / scale },
         )
 
         return
