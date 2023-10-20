@@ -71,20 +71,17 @@ export class Canvas implements CanvasInterface {
   }
 
   mouseDrag(xPx: number, yPx: number) {
-    // this.rectangle.endX = xPx - this.rectangle.startX
-    // this.rectangle.endY = yPx - this.rectangle.startY
-
     this.rectangle.endX = xPx
     this.rectangle.endY = yPx
 
     switch (this.maskMode) {
-      case 0: // INFO: pen mask
+      case 0:
         this.drawPenMask(xPx, yPx, this.penToolSizePx)
         break
       case 1: // INFO: マウスドラッグ中は選択範囲を仮描画
         this.drawDraggedArea()
         break
-      case 2: // INFO: eraser mask
+      case 2:
         this.drawEraserMask(xPx, yPx, this.eraserSizePx)
         break
       default:
