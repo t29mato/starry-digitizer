@@ -70,10 +70,15 @@ export class Canvas implements CanvasInterface {
     this.rectangle.startY = yPx
   }
 
-  mouseDrag(xPx: number, yPx: number) {
-    this.rectangle.endX = xPx
-    this.rectangle.endY = yPx
+  mouseDragInManualMode() {
+    console.log(this.manualMode)
+    if (this.manualMode === 1) {
+      //INFO: only in EDIT mode
+      this.drawDraggedArea()
+    }
+  }
 
+  mouseDragInMaskMode(xPx: number, yPx: number) {
     switch (this.maskMode) {
       case 0:
         this.drawPenMask(xPx, yPx, this.penToolSizePx)
@@ -86,6 +91,20 @@ export class Canvas implements CanvasInterface {
         break
       default:
         break
+    }
+  }
+
+  mouseDrag(xPx: number, yPx: number) {
+    this.rectangle.endX = xPx
+    this.rectangle.endY = yPx
+
+    if (this.manualMode !== -1 && this.maskMode === -1) {
+      this.mouseDragInManualMode()
+      return
+    }
+
+    if (this.maskMode !== -1) {
+      this.mouseDragInMaskMode(xPx, yPx)
     }
   }
 
