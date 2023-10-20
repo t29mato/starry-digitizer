@@ -153,24 +153,12 @@ export default defineComponent({
         return
       }
     },
-    //TODO: domain層に移動すべき？
-    getMouseXYFromMouseEvent(e: MouseEvent): Coord {
-      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
-      const target = e.target as HTMLElement
-      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
-      const yPx = e.offsetY + parseFloat(target.style.top)
-
-      return {
-        xPx,
-        yPx,
-      }
-    },
     mouseDrag(coord: Coord) {
       // TODO: 呼び出すメソッドはCanvasに移譲したい
       this.mouseDragOnCanvas(coord)
     },
     mouseMove(e: MouseEvent) {
-      const { xPx, yPx } = this.getMouseXYFromMouseEvent(e)
+      const { xPx, yPx } = calculationUtils.getMouseCoordFromMouseEvent(e)
 
       this.axes.isAdjusting = false
       this.datasets.activeDataset.plotsAreAdjusting = false
@@ -185,7 +173,7 @@ export default defineComponent({
       }
     },
     mouseDown(e: MouseEvent) {
-      const { xPx, yPx } = this.getMouseXYFromMouseEvent(e)
+      const { xPx, yPx } = calculationUtils.getMouseCoordFromMouseEvent(e)
 
       this.mouseDownOnCanvas({ xPx, yPx })
     },
