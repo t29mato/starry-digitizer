@@ -81,8 +81,8 @@ export class Canvas implements CanvasInterface {
       case 0: // INFO: pen mask
         this.mouseDragForPen(xPx, yPx, this.penToolSizePx)
         break
-      case 1: // INFO: box mask
-        this.mouseDragForBox()
+      case 1: // INFO: マウスドラッグ中は選択範囲を仮描画
+        this.drawDraggedArea()
         break
       case 2: // INFO: eraser mask
         this.mouseDragForEraser(xPx, yPx, this.eraserSizePx)
@@ -90,6 +90,22 @@ export class Canvas implements CanvasInterface {
       default:
         break
     }
+  }
+
+  drawDraggedArea() {
+    this.tempMaskCanvas.context.strokeStyle = '#000000ff' // INFO: black
+    this.tempMaskCanvas.context.clearRect(
+      0,
+      0,
+      this.maskCanvas.element.width,
+      this.maskCanvas.element.height,
+    )
+    this.tempMaskCanvas.context.strokeRect(
+      this.rectangle.startX,
+      this.rectangle.startY,
+      this.rectangle.endX - this.rectangle.startX,
+      this.rectangle.endY - this.rectangle.startY,
+    )
   }
 
   mouseDragForPen(xPx: number, yPx: number, penSize: number) {
@@ -139,29 +155,13 @@ export class Canvas implements CanvasInterface {
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
-  mouseDragForBox() {
-    this.tempMaskCanvas.context.strokeStyle = '#000000ff' // INFO: black
-    this.tempMaskCanvas.context.clearRect(
-      0,
-      0,
-      this.maskCanvas.element.width,
-      this.maskCanvas.element.height,
-    )
-    this.tempMaskCanvas.context.strokeRect(
-      this.rectangle.startX,
-      this.rectangle.startY,
-      this.rectangle.endX,
-      this.rectangle.endY,
-    )
-  }
-
   mouseUpForBox() {
     this.maskCanvas.context.fillStyle = '#ffff00ff' // INFO: yellow
     this.maskCanvas.context.fillRect(
       this.rectangle.startX,
       this.rectangle.startY,
-      this.rectangle.endX,
-      this.rectangle.endY,
+      this.rectangle.endX - this.rectangle.startX,
+      this.rectangle.endY - this.rectangle.startY,
     )
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
     this.isDrawnMask = true
