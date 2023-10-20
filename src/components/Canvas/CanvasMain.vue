@@ -187,7 +187,7 @@ export default defineComponent({
     },
     mouseUp() {
       if (this.canvas.maskMode === 1) {
-        this.canvas.mouseUpForBox()
+        this.canvas.drawBoxMask()
         return
       }
 

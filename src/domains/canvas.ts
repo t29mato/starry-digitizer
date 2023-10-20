@@ -79,13 +79,13 @@ export class Canvas implements CanvasInterface {
 
     switch (this.maskMode) {
       case 0: // INFO: pen mask
-        this.mouseDragForPen(xPx, yPx, this.penToolSizePx)
+        this.drawPenMask(xPx, yPx, this.penToolSizePx)
         break
       case 1: // INFO: マウスドラッグ中は選択範囲を仮描画
         this.drawDraggedArea()
         break
       case 2: // INFO: eraser mask
-        this.mouseDragForEraser(xPx, yPx, this.eraserSizePx)
+        this.drawEraserMask(xPx, yPx, this.eraserSizePx)
         break
       default:
         break
@@ -108,7 +108,7 @@ export class Canvas implements CanvasInterface {
     )
   }
 
-  mouseDragForPen(xPx: number, yPx: number, penSize: number) {
+  drawPenMask(xPx: number, yPx: number, penSize: number) {
     const ctx = this.maskCanvas.context
     ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     ctx.beginPath()
@@ -127,7 +127,7 @@ export class Canvas implements CanvasInterface {
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
-  mouseDragForEraser(xPx: number, yPx: number, penSize: number) {
+  drawEraserMask(xPx: number, yPx: number, penSize: number) {
     const ctx = this.maskCanvas.context
     ctx.globalCompositeOperation = 'destination-out'
     ctx.strokeStyle = '#000000' // INFO: black
@@ -155,7 +155,7 @@ export class Canvas implements CanvasInterface {
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
-  mouseUpForBox() {
+  drawBoxMask() {
     this.maskCanvas.context.fillStyle = '#ffff00ff' // INFO: yellow
     this.maskCanvas.context.fillRect(
       this.rectangle.startX,
