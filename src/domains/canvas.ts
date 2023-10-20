@@ -71,7 +71,6 @@ export class Canvas implements CanvasInterface {
   }
 
   mouseDragInManualMode() {
-    console.log(this.manualMode)
     if (this.manualMode === 1) {
       //INFO: only in EDIT mode
       this.drawDraggedArea()
