@@ -3,12 +3,14 @@ import { defineStore } from 'pinia'
 export interface State {
   plotSizePx: number
   axisSizePx: number
+  plotOpacity: number
 }
 
 export const useStyleStore = defineStore('style', {
   state: (): State => ({
     plotSizePx: 10,
     axisSizePx: 20,
+    plotOpacity: 0.6,
   }),
   getters: {
     //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？
