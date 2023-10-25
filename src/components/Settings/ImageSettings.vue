@@ -1,5 +1,6 @@
 <template>
   <v-file-input
+    id="fileInput"
     accept="image/*"
     @change="onImageUploaded"
     :clearable="false"
