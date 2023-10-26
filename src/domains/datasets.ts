@@ -1,4 +1,3 @@
-import { Dataset } from './dataset'
 import { DatasetInterface, Plots } from './datasetInterface'
 
 export class Datasets {
