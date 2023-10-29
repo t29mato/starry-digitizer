@@ -23,7 +23,8 @@
     "preview": "vite preview",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "test": "jest"
+    "test": "jest",
+    "lint": "vue-tsc"
   },
   "dependencies": {
     "@handsontable/vue3": "^13.1.0",
