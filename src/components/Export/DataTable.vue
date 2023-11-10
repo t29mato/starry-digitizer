@@ -9,6 +9,7 @@
       class="overflow-y-auto"
     ></hot-table>
     <v-btn class="mt-1" @click="copyData" size="small">Copy to Clipboard</v-btn>
+    <v-btn class="mt-1" @click="testSpline" size="small">Test Spline</v-btn>
   </div>
 </template>
 
@@ -34,6 +35,8 @@ import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
+
+import Spline from 'cubic-spline'
 
 registerAllModules()
 
@@ -100,6 +103,22 @@ export default defineComponent({
       console.log({ data })
       const rows = data.map((row) => row.join(CSV_DELIMITER))
       return rows.join('\n')
+    },
+    testSpline() {
+      console.log(Spline)
+      const xs = this.datasets.activeDataset.plots.map((p) => p.xPx)
+      const ys = this.datasets.activeDataset.plots.map((p) => p.yPx)
+
+      console.log(this.axes)
+
+      const spline = new Spline(xs, ys)
+
+      const startX = this.axes.x1.coord.xPx
+      const endX = this.axes.x2.coord.xPx
+
+      for (let i = startX; i < endX; i += 30) {
+        this.datasets.activeDataset.addPlot(i, spline.at(i))
+      }
     },
   },
   watch: {
