@@ -5,13 +5,10 @@
       :settings="hotTableSettings"
       :key="key"
       ref="tableRef"
-      height="30vh"
+      height="35vh"
       class="overflow-y-auto"
     ></hot-table>
     <v-btn class="mt-1" @click="copyData" size="small">Copy to Clipboard</v-btn>
-    <v-btn class="mt-1" @click="testSpline" size="small"
-      >Test Curve Interpolation</v-btn
-    >
   </div>
 </template>
 
@@ -37,8 +34,6 @@ import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
-
-import { CurveInterpolator } from 'curve-interpolator'
 
 registerAllModules()
 
@@ -105,21 +100,6 @@ export default defineComponent({
       console.log({ data })
       const rows = data.map((row) => row.join(CSV_DELIMITER))
       return rows.join('\n')
-    },
-    testSpline() {
-      const points = this.datasets.activeDataset.plots.map((plot: Plot) => [
-        plot.xPx,
-        plot.yPx,
-      ])
-
-      const interp = new CurveInterpolator(points, { tension: 0.2, alpha: 0.5 })
-
-      const segments = 100
-      const interpolatedPoints = interp.getPoints(segments)
-
-      interpolatedPoints.forEach((point: number[]) => {
-        this.datasets.activeDataset.addPlot(point[0], point[1])
-      })
     },
   },
   watch: {

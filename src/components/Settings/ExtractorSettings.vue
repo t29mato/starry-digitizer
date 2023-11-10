@@ -5,7 +5,7 @@
       :model-value="canvas.manualMode"
       @update:model-value="changeManualMode"
       density="compact"
-      class="mb-4"
+      class="mb-2"
       divided
       :border="true"
     >
@@ -13,6 +13,10 @@
       <v-btn size="small" color="primary"> Edit (E) </v-btn>
       <v-btn size="small" color="primary"> Delete (D) </v-btn>
     </v-btn-toggle>
+    <v-btn class="mt-1 mb-4" @click="interpolateCurve" size="small"
+      >Interpolate a curve</v-btn
+    >
+
     <h4 class="mb-2">Automatic Extraction</h4>
     <v-select
       @update:model-value="setExtractStrategy"
@@ -55,6 +59,8 @@ import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 
+import { CurveInterpolator } from 'curve-interpolator'
+
 export default defineComponent({
   components: {
     SymbolExtractSettings,
@@ -70,6 +76,8 @@ export default defineComponent({
   computed: {
     ...mapState(useExtractorStore, ['extractor']),
     ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useAxesStore, ['axes']),
   },
   props: {
     initialExtractorStrategy: {
@@ -125,6 +133,24 @@ export default defineComponent({
       } finally {
         this.isExtracting = false
       }
+    },
+    interpolateCurve() {
+      //TODO move to domain
+      const points = this.datasets.activeDataset.plots.map((plot) => [
+        plot.xPx,
+        plot.yPx,
+      ])
+
+      const interp = new CurveInterpolator(points, { tension: 0.2, alpha: 0.5 })
+
+      const segments = 100
+      const interpolatedPoints = interp.getPoints(segments)
+
+      this.datasets.activeDataset.clearPlots()
+
+      interpolatedPoints.forEach((point: number[]) => {
+        this.datasets.activeDataset.addPlot(point[0], point[1])
+      })
     },
   },
 })
