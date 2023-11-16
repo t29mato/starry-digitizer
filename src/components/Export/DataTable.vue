@@ -15,10 +15,18 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
+// TODO: TSの型宣言エラーが解消できずignore いずれ再度調査
+// @ts-ignore
 import colors from 'vuetify/lib/util/colors'
 import XYAxesCalculator from '@/domains/XYAxesCalculator'
+
+// TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
+// @ts-ignore
 import { HotTable } from '@handsontable/vue3'
 import 'handsontable/dist/handsontable.full.css'
+
+// TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
+// @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
 import { Plot } from '@/domains/datasetInterface'
 

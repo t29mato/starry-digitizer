@@ -19,6 +19,8 @@ jobs:
           cache: 'yarn'
       - name: Install npm packages
         run: yarn
+      - name: Static code analysis
+        run: yarn lint
       - name: Unit test
         run: yarn test
   E2E-Test:

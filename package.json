@@ -2,7 +2,9 @@
   "name": "starry-digitizer",
   "version": "0.16.1",
   "type": "module",
-  "files": ["library-build/dist"],
+  "files": [
+    "library-build/dist"
+  ],
   "main": "./library-build/dist/index.umd.cjs",
   "module": "./library-build/dist/index.js",
   "exports": {
@@ -21,7 +23,8 @@
     "preview": "vite preview",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "test": "jest"
+    "test": "jest",
+    "lint": "vue-tsc"
   },
   "dependencies": {
     "@handsontable/vue3": "^13.1.0",
@@ -47,6 +50,7 @@
     "babel-jest": "^29.6.4",
     "cross-env": "^7.0.3",
     "cypress": "^13.1.0",
+    "cypress-file-upload": "^5.0.8",
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-jest": "^27.2.3",
