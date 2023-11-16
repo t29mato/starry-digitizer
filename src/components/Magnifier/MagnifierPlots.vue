@@ -16,6 +16,7 @@
       'background-color': isActive ? 'red' : 'dodgerblue',
       border: `${1}px solid white`,
       'border-radius': '50%',
+      opacity: plotOpacity,
     }"
   ></div>
 </template>
@@ -35,6 +36,7 @@ export default defineComponent({
     ...mapState(useMagnifierStore, ['magnifier']),
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useStyleStore, ['plotSizePx']),
+    ...mapState(useStyleStore, ['plotOpacity']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },

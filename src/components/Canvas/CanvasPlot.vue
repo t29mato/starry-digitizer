@@ -11,6 +11,7 @@
       'background-color': isActive ? 'red' : 'dodgerblue',
       border: '1px solid white',
       'border-radius': '50%',
+      opacity: plotOpacity,
     }"
     @click="click"
   ></div>
@@ -24,10 +25,12 @@ import { Plot } from '@/domains/datasetInterface'
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
+import { useStyleStore } from '@/store/style'
 
 export default defineComponent({
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useStyleStore, ['plotOpacity']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
