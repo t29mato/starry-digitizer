@@ -61,7 +61,7 @@ export default defineComponent({
   methods: {
     ...mapActions(useDatasetsStore, [
       'toggleActivatedPlot',
-      'activatePlot',
+      'switchActivatedPlot',
       'clearPlot',
     ]),
     click(event: MouseEvent) {
@@ -74,7 +74,7 @@ export default defineComponent({
             this.toggleActivatedPlot(this.plot.id)
             return
           }
-          this.activatePlot(this.plot.id)
+          this.switchActivatedPlot(this.plot.id)
           return
         case 2:
           this.clearPlot(this.plot.id)

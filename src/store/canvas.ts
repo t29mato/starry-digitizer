@@ -33,8 +33,8 @@ export const useCanvasStore = defineStore('canvas', {
       this.canvas.drawFitSizeImage()
     },
 
-    mouseMoveForPen(config: { xPx: number; yPx: number; penSize: number }) {
-      this.canvas.mouseMoveForPen(config.xPx, config.yPx, config.penSize)
+    drawPenMask(config: { xPx: number; yPx: number; penSize: number }) {
+      this.canvas.drawPenMask(config.xPx, config.yPx, config.penSize)
     },
 
     setCanvasCursor(coord: Coord) {
@@ -63,8 +63,16 @@ export const useCanvasStore = defineStore('canvas', {
       this.canvas.uploadImageUrl = url
     },
 
-    mouseMoveOnCanvas(coord: Coord) {
-      this.canvas.mouseMove(coord.xPx, coord.yPx)
+    mouseDownOnCanvas(coord: Coord) {
+      this.canvas.mouseDown(coord.xPx, coord.yPx)
+    },
+
+    mouseDragOnCanvas(coord: Coord) {
+      this.canvas.mouseDrag(coord.xPx, coord.yPx)
+    },
+
+    mouseUpOnCanvas() {
+      this.canvas.mouseUp()
     },
   },
 })
