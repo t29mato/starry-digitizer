@@ -95,6 +95,7 @@ export default defineComponent({
   methods: {
     ...mapActions(useDatasetsStore, [
       'addPlot',
+      'activatePlot',
       'moveActivePlot',
       'clearActivePlots',
       'inactivatePlots',
@@ -166,7 +167,10 @@ export default defineComponent({
     },
     updateInterpolationGuide(): void {
       const plots = this.datasets.activeDataset.plots
-      if (plots.length <= 1) return
+      if (plots.length <= 1) {
+        this.canvas.clearInterpolationGuideCanvas()
+        return
+      }
 
       this.setSplineInterpolatedCoords(plots)
 
@@ -254,6 +258,10 @@ export default defineComponent({
         if (key === 'Backspace' || key === 'Delete') {
           this.clearActivePlots()
           this.updateInterpolationGuide()
+
+          const lastPlotId = this.datasets.activeDataset.lastPlotId
+          if (lastPlotId === -1) return
+          this.activatePlot(lastPlotId)
         }
       }
       const shiftKeyIsPressed = e.shiftKey

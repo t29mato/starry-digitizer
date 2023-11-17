@@ -22,6 +22,7 @@ export interface DatasetInterface {
   plotsAreAdjusting: boolean
   activePlotIds: number[]
   get nextPlotId(): number
+  get lastPlotId(): number
   get plotsAreActive(): boolean
   scaledPlots(scale: number): Plots
   addPlot(xPx: number, yPx: number): void

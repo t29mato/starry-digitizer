@@ -45,6 +45,14 @@ export class Dataset implements DatasetInterface {
     return biggestId + 1
   }
 
+  get lastPlotId(): number {
+    const lastPlot = this.plots[this.plots.length - 1]
+
+    if (!lastPlot) return -1
+
+    return lastPlot.id
+  }
+
   activatePlot(id: number) {
     this.activePlotIds.length = 0
     this.activePlotIds.push(id)

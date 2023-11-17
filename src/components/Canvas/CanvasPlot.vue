@@ -28,6 +28,7 @@ import { mapState, mapActions } from 'pinia'
 export default defineComponent({
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useDatasetsStore, ['datasets']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -78,6 +79,7 @@ export default defineComponent({
           return
         case 2:
           this.clearPlot(this.plot.id)
+
           return
         default:
           break
