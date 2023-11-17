@@ -270,6 +270,10 @@ export class Canvas implements CanvasInterface {
     return new HTMLCanvas('tempMaskCanvas')
   }
 
+  get interpolationGuideCanvas() {
+    return new HTMLCanvas('interpolationGuideCanvas')
+  }
+
   get magnifierMaskCanvas() {
     return new HTMLCanvas('magnifierMaskCanvas')
   }

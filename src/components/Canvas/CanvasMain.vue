@@ -2,7 +2,7 @@
   <div
     id="canvasWrapper"
     class="c__canvas-wrapper"
-    @click="plot"
+    @click="click"
     @mousemove="mouseMove"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
@@ -25,6 +25,15 @@
         opacity: 0.5,
       }"
       id="maskCanvas"
+    ></canvas>
+    <canvas
+      :style="{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        opacity: 0.5,
+      }"
+      id="interpolationGuideCanvas"
     ></canvas>
     <canvas-axes-guide></canvas-axes-guide>
     <canvas-axes></canvas-axes>
@@ -147,6 +156,9 @@ export default defineComponent({
         }
         return
       }
+    },
+    click(e: MouseEvent): void {
+      this.plot(e)
     },
     mouseDrag(coord: Coord) {
       // TODO: 呼び出すメソッドはCanvasに移譲したい
