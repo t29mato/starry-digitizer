@@ -106,7 +106,6 @@ export default defineComponent({
       'drawFitSizeImage',
       'setUploadImageUrl',
       'setManualMode',
-      'drawInterpolationGuideLine',
     ]),
     ...mapActions(useAxesStore, [
       'addAxisCoord',
@@ -114,10 +113,6 @@ export default defineComponent({
       'moveActiveAxis',
     ]),
     ...mapActions(useExtractorStore, ['setSwatches']),
-    ...mapActions(useInterpolatorStore, [
-      'setSplineInterpolatedCoords',
-      'getPlotsTotalDistance',
-    ]),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき
@@ -172,9 +167,11 @@ export default defineComponent({
         return
       }
 
-      this.setSplineInterpolatedCoords(plots)
+      this.interpolator.setSplineInterpolatedCoords(plots)
 
-      this.drawInterpolationGuideLine(this.interpolator.interpolatedCoords)
+      this.canvas.drawInterpolationGuideLine(
+        this.interpolator.interpolatedCoords,
+      )
     },
     click(e: MouseEvent): void {
       this.plot(e)

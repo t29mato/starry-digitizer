@@ -117,14 +117,8 @@ export default defineComponent({
       'sortPlots',
       'inactivatePlots',
     ]),
-    ...mapActions(useCanvasStore, [
-      'setManualMode',
-      'drawInterpolationGuideLine',
-    ]),
-    ...mapActions(useInterpolatorStore, [
-      'setDensity',
-      'setSplineInterpolatedCoords',
-    ]),
+    ...mapActions(useCanvasStore, ['setManualMode']),
+    ...mapActions(useInterpolatorStore, ['setDensity']),
     changeManualMode(value: any) {
       this.inactivatePlots()
       if (value === undefined) {
@@ -167,8 +161,10 @@ export default defineComponent({
       this.setDensity(parseFloat(value))
 
       if (plots.length > 1) {
-        this.setSplineInterpolatedCoords(plots)
-        this.drawInterpolationGuideLine(this.interpolator.interpolatedCoords)
+        this.interpolator.setSplineInterpolatedCoords(plots)
+        this.canvas.drawInterpolationGuideLine(
+          this.interpolator.interpolatedCoords,
+        )
       }
     },
   },
