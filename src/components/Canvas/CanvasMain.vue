@@ -53,6 +53,7 @@ import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useExtractorStore } from '@/store/extractor'
+import { useInterpolatorStore } from '@/store/interpolator'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -74,6 +75,7 @@ export default defineComponent({
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useInterpolatorStore, ['interpolator']),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
@@ -103,6 +105,7 @@ export default defineComponent({
       'drawFitSizeImage',
       'setUploadImageUrl',
       'setManualMode',
+      'drawInterpolationGuideLine',
     ]),
     ...mapActions(useAxesStore, [
       'addAxisCoord',
@@ -110,6 +113,10 @@ export default defineComponent({
       'moveActiveAxis',
     ]),
     ...mapActions(useExtractorStore, ['setSwatches']),
+    ...mapActions(useInterpolatorStore, [
+      'setSplineInterpolatedCoords',
+      'getPlotsTotalDistance',
+    ]),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき
@@ -157,8 +164,17 @@ export default defineComponent({
         return
       }
     },
+    updateInterpolationGuide(): void {
+      const plots = this.datasets.activeDataset.plots
+      if (plots.length <= 1) return
+
+      this.setSplineInterpolatedCoords(plots)
+
+      this.drawInterpolationGuideLine(this.interpolator.interpolatedCoords)
+    },
     click(e: MouseEvent): void {
       this.plot(e)
+      this.updateInterpolationGuide()
     },
     mouseDrag(coord: Coord) {
       // TODO: 呼び出すメソッドはCanvasに移譲したい
@@ -237,6 +253,7 @@ export default defineComponent({
       if (this.datasets.activeDataset.hasActive()) {
         if (key === 'Backspace' || key === 'Delete') {
           this.clearActivePlots()
+          this.updateInterpolationGuide()
         }
       }
       const shiftKeyIsPressed = e.shiftKey

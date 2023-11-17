@@ -13,9 +13,22 @@
       <v-btn size="small" color="primary"> Edit (E) </v-btn>
       <v-btn size="small" color="primary"> Delete (D) </v-btn>
     </v-btn-toggle>
-    <v-btn class="mt-1 mb-4" @click="interpolateCurve" size="small"
-      >Interpolate a curve</v-btn
-    >
+    <h5 class="mt-2">Points Interpolation</h5>
+    <div class="d-flex align-end mt-1 mb-4">
+      <v-text-field
+        class="mr-4"
+        :model-value="interpolator.density"
+        @update:model-value="handleOnUpdateInterpolatorDensity"
+        label="density"
+        type="number"
+        min="0.1"
+        step="0.1"
+        max="3"
+        density="compact"
+        hide-details
+      ></v-text-field>
+      <v-btn @click="handleOnClickInterpolate" size="small">Interpolate</v-btn>
+    </div>
 
     <h4 class="mb-2">Automatic Extraction</h4>
     <v-select
@@ -44,6 +57,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { Coord } from '@/domains/datasetInterface'
 
 import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
@@ -58,8 +72,7 @@ import { useExtractorStore } from '@/store/extractor'
 import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
-
-import { CurveInterpolator } from 'curve-interpolator'
+import { useInterpolatorStore } from '@/store/interpolator'
 
 export default defineComponent({
   components: {
@@ -78,6 +91,7 @@ export default defineComponent({
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useAxesStore, ['axes']),
+    ...mapState(useInterpolatorStore, ['interpolator']),
   },
   props: {
     initialExtractorStrategy: {
@@ -103,7 +117,14 @@ export default defineComponent({
       'sortPlots',
       'inactivatePlots',
     ]),
-    ...mapActions(useCanvasStore, ['setManualMode']),
+    ...mapActions(useCanvasStore, [
+      'setManualMode',
+      'drawInterpolationGuideLine',
+    ]),
+    ...mapActions(useInterpolatorStore, [
+      'setDensity',
+      'setSplineInterpolatedCoords',
+    ]),
     changeManualMode(value: any) {
       this.inactivatePlots()
       if (value === undefined) {
@@ -134,23 +155,21 @@ export default defineComponent({
         this.isExtracting = false
       }
     },
-    interpolateCurve() {
-      //TODO move to domain
-      const points = this.datasets.activeDataset.plots.map((plot) => [
-        plot.xPx,
-        plot.yPx,
-      ])
-
-      const interp = new CurveInterpolator(points, { tension: 0.2, alpha: 0.5 })
-
-      const segments = 100
-      const interpolatedPoints = interp.getPoints(segments)
-
+    handleOnClickInterpolate() {
       this.datasets.activeDataset.clearPlots()
 
-      interpolatedPoints.forEach((point: number[]) => {
-        this.datasets.activeDataset.addPlot(point[0], point[1])
+      this.interpolator.interpolatedCoords.forEach((coord: Coord) => {
+        this.datasets.activeDataset.addPlot(coord.xPx, coord.yPx)
       })
+    },
+    handleOnUpdateInterpolatorDensity(value: any) {
+      const plots = this.datasets.activeDataset.plots
+      this.setDensity(parseFloat(value))
+
+      if (plots.length > 1) {
+        this.setSplineInterpolatedCoords(plots)
+        this.drawInterpolationGuideLine(this.interpolator.interpolatedCoords)
+      }
     },
   },
 })

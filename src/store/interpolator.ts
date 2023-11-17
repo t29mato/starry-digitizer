@@ -1,24 +1,25 @@
 import { defineStore } from 'pinia'
 import { Interpolator } from '@/domains/interpolator'
-import { Coord, Plot } from '@/domains/datasetInterface'
+import { Plot } from '@/domains/datasetInterface'
 
 export interface State {
   interpolator: Interpolator
 }
 
-export const useInterpolatorStore = defineStore('magnifier', {
+export const useInterpolatorStore = defineStore('interpolator', {
   state: (): State => ({
     interpolator: new Interpolator(),
   }),
   actions: {
-    getSplineInterpolatedCoords(
-      plots: Plot[],
-      numberOfCoords: number,
-    ): Coord[] {
-      return this.interpolator.getSplineInterpolatedCoords(
-        plots,
-        numberOfCoords,
-      )
+    setSplineInterpolatedCoords(plots: Plot[]): void {
+      this.interpolator.setSplineInterpolatedCoords(plots)
+    },
+    //TODO: interpolatorドメインに属しているのは不適切だと思うので、あとでしかるべきところに移管する
+    getPlotsTotalDistance(plots: Plot[]): number {
+      return this.interpolator.getPlotsTotalDistance(plots)
+    },
+    setDensity(density: number): void {
+      this.interpolator.density = density
     },
   },
 })

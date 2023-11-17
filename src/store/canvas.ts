@@ -66,5 +66,9 @@ export const useCanvasStore = defineStore('canvas', {
     mouseMoveOnCanvas(coord: Coord) {
       this.canvas.mouseMove(coord.xPx, coord.yPx)
     },
+
+    drawInterpolationGuideLine(interpolatedCoords: Coord[]) {
+      this.canvas.drawInterpolationGuideLine(interpolatedCoords)
+    },
   },
 })
