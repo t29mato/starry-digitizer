@@ -118,7 +118,6 @@ export default defineComponent({
       'inactivatePlots',
     ]),
     ...mapActions(useCanvasStore, ['setManualMode']),
-    ...mapActions(useInterpolatorStore, ['setDensity']),
     changeManualMode(value: any) {
       this.inactivatePlots()
       if (value === undefined) {
@@ -155,10 +154,12 @@ export default defineComponent({
       this.interpolator.interpolatedCoords.forEach((coord: Coord) => {
         this.datasets.activeDataset.addPlot(coord.xPx, coord.yPx)
       })
+
+      this.canvas.clearInterpolationGuideCanvas()
     },
     handleOnUpdateInterpolatorDensity(value: any) {
       const plots = this.datasets.activeDataset.plots
-      this.setDensity(parseFloat(value))
+      this.interpolator.setDensity(parseFloat(value))
 
       if (plots.length > 1) {
         this.interpolator.setSplineInterpolatedCoords(plots)
