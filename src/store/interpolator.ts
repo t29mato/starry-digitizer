@@ -9,9 +9,4 @@ export const useInterpolatorStore = defineStore('interpolator', {
   state: (): State => ({
     interpolator: new Interpolator(),
   }),
-  actions: {
-    setDensity(density: number): void {
-      this.interpolator.density = density
-    },
-  },
 })

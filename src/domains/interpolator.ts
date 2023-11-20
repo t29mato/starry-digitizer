@@ -7,6 +7,10 @@ export class Interpolator implements InterpolatorInterface {
   density = 1
   interpolatedCoords = []
 
+  setDensity(density: number) {
+    this.density = density
+  }
+
   setSplineInterpolatedCoords(plots: Plot[]): void {
     const points = plots.map((plot) => [plot.xPx, plot.yPx])
 
