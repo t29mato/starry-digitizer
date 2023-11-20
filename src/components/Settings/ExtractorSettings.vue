@@ -13,23 +13,25 @@
       <v-btn size="small" color="primary"> Edit (E) </v-btn>
       <v-btn size="small" color="primary"> Delete (D) </v-btn>
     </v-btn-toggle>
-    <h5 class="mt-2">Points Interpolation</h5>
+    <h5 class="mt-2">Interpolation</h5>
     <div class="d-flex align-end mt-1 mb-4">
       <v-text-field
         class="mr-4"
-        :model-value="interpolator.density"
-        @update:model-value="handleOnUpdateInterpolatorDensity"
-        label="density"
+        :model-value="interpolator.interval"
+        @update:model-value="handleOnUpdateInterpolatorInterval"
+        label="Points Interval"
         type="number"
-        min="0.1"
-        step="0.1"
-        max="3"
+        min="4"
+        step="2"
+        max="50"
         density="compact"
         hide-details
       ></v-text-field>
-      <v-btn @click="handleOnClickInterpolate" size="small">Interpolate</v-btn>
+      <v-btn @click="handleOnClickInterpolate" size="small" color="primary"
+        >Interpolate</v-btn
+      >
     </div>
-    <v-divider :thickness="2"></v-divider>
+    <v-divider></v-divider>
     <h4 class="mt-4 mb-2">Automatic Extraction</h4>
     <v-select
       @update:model-value="setExtractStrategy"
@@ -45,13 +47,16 @@
     </div>
     <mask-settings></mask-settings>
     <color-settings></color-settings>
-    <v-btn
-      :loading="isExtracting"
-      @click="extractPlots"
-      color="primary"
-      size="small"
-      >Run</v-btn
-    >
+    <div class="text-right mb-4">
+      <v-btn
+        :loading="isExtracting"
+        @click="extractPlots"
+        color="primary"
+        size="small"
+        >Run</v-btn
+      >
+    </div>
+    <v-divider></v-divider>
   </div>
 </template>
 
@@ -156,10 +161,11 @@ export default defineComponent({
       })
 
       this.canvas.clearInterpolationGuideCanvas()
+      this.interpolator.cleatInterpolatedCoords()
     },
-    handleOnUpdateInterpolatorDensity(value: any) {
+    handleOnUpdateInterpolatorInterval(value: any) {
       const plots = this.datasets.activeDataset.plots
-      this.interpolator.setDensity(parseFloat(value))
+      this.interpolator.updateInterval(parseFloat(value))
 
       if (plots.length > 1) {
         this.interpolator.setSplineInterpolatedCoords(plots)

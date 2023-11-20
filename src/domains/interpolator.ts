@@ -4,11 +4,11 @@ import { Plot } from '@/domains/datasetInterface'
 
 //MEMO: カーブの補間を司るドメイン
 export class Interpolator implements InterpolatorInterface {
-  density = 1
+  interval = 16
   interpolatedCoords = []
 
-  setDensity(density: number) {
-    this.density = density
+  updateInterval(interval: number): void {
+    this.interval = interval
   }
 
   setSplineInterpolatedCoords(plots: Plot[]): void {
@@ -16,7 +16,7 @@ export class Interpolator implements InterpolatorInterface {
 
     const interp = new CurveInterpolator(points, { tension: 0.2, alpha: 0.5 })
 
-    const segments = (this.getPlotsTotalDistance(plots) / 16) * this.density
+    const segments = this.getPlotsTotalDistance(plots) / this.interval
 
     this.interpolatedCoords = interp
       .getPoints(segments)
