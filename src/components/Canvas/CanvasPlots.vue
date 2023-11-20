@@ -6,6 +6,7 @@
       :plotSizePx="plotSizePx"
       :plot="plot"
       :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
+      :isVisible="datasets.activeDataset.visiblePlotIds.includes(plot.id)"
     ></canvas-plot>
   </div>
 </template>

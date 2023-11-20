@@ -6,6 +6,9 @@ export class Dataset implements DatasetInterface {
   plots: Plots
   id: number
   activePlotIds: number[] = []
+  visiblePlotIds: number[] = []
+  manuallyAddedPlotIds: number[] = []
+  interpolatedPlotIds: number[] = []
   plotsAreAdjusting = false
   constructor(name: string, plots: Plots, id: number) {
     this.name = name
@@ -30,6 +33,7 @@ export class Dataset implements DatasetInterface {
   addPlot(xPx: number, yPx: number) {
     this.activePlotIds.length = 0
     this.activePlotIds.push(this.nextPlotId)
+    this.visiblePlotIds.push(this.nextPlotId)
     this.plots.push({
       id: this.nextPlotId,
       xPx,
@@ -75,6 +79,10 @@ export class Dataset implements DatasetInterface {
       return id !== plot.id
     })
     this.activePlotIds.length = 0
+
+    this.removeVisiblePlotId(id)
+    this.removeManuallyAddedPlotId(id)
+    this.removeInterpolatedPlotId(id)
   }
 
   clearPlots() {
@@ -122,6 +130,41 @@ export class Dataset implements DatasetInterface {
           .map((plot) => (plot.xPx -= vector.distancePx))
         break
     }
+  }
+
+  addVisiblePlotId(id: number): void {
+    if (this.visiblePlotIds.includes(id)) return
+    this.visiblePlotIds.push(id)
+  }
+
+  removeVisiblePlotId(id: number): void {
+    this.visiblePlotIds = this.visiblePlotIds.filter((pId) => pId !== id)
+  }
+
+  addManuallyAddedPlotId(id: number): void {
+    if (this.manuallyAddedPlotIds.includes(id)) return
+    this.manuallyAddedPlotIds.push(id)
+  }
+
+  removeManuallyAddedPlotId(id: number): void {
+    this.manuallyAddedPlotIds = this.manuallyAddedPlotIds.filter(
+      (pId) => pId !== id,
+    )
+  }
+
+  clearManuallyAddedPlotIdss(): void {
+    this.manuallyAddedPlotIds.length = 0
+  }
+
+  addInterpolatedPlotId(id: number): void {
+    if (this.interpolatedPlotIds.includes(id)) return
+    this.interpolatedPlotIds.push(id)
+  }
+
+  removeInterpolatedPlotId(id: number): void {
+    this.interpolatedPlotIds = this.interpolatedPlotIds.filter(
+      (pId) => pId !== id,
+    )
   }
 
   plotsSortedByXAscending(): Plots {

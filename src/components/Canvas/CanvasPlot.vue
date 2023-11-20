@@ -11,6 +11,7 @@
       'background-color': isActive ? 'red' : 'dodgerblue',
       border: '1px solid white',
       'border-radius': '50%',
+      visibility: isVisible ? 'visible' : 'hidden',
     }"
     @click="click"
   ></div>
@@ -56,6 +57,9 @@ export default defineComponent({
       required: true,
     },
     isActive: {
+      type: Boolean,
+    },
+    isVisible: {
       type: Boolean,
     },
   },

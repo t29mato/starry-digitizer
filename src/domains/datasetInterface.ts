@@ -21,6 +21,9 @@ export interface DatasetInterface {
   id: number
   plotsAreAdjusting: boolean
   activePlotIds: number[]
+  visiblePlotIds: number[]
+  manuallyAddedPlotIds: number[]
+  interpolatedPlotIds: number[]
   get nextPlotId(): number
   get lastPlotId(): number
   get plotsAreActive(): boolean
@@ -34,6 +37,13 @@ export interface DatasetInterface {
   clearPlots(): void
   inactivatePlots(): void
   clearActivePlots(): void
+  addVisiblePlotId(id: number): void
+  removeVisiblePlotId(id: number): void
+  addManuallyAddedPlotId(id: number): void
+  removeManuallyAddedPlotId(id: number): void
+  addInterpolatedPlotId(id: number): void
+  removeInterpolatedPlotId(id: number): void
+  clearManuallyAddedPlotIdss(): void
   plotsSortedByXAscending(): Plots
   plotsSortedByXDescending(): Plots
   plotsSortedByYAscending(): Plots

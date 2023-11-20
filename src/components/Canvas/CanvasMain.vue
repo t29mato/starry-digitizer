@@ -134,6 +134,9 @@ export default defineComponent({
               : e.offsetY / this.canvas.scale,
           })
           this.inactivateAxis()
+          this.datasets.activeDataset.addManuallyAddedPlotId(
+            this.datasets.activeDataset.lastPlotId,
+          )
           return
         case 1:
           // INFO: CanvasPlot Component -> Click method

@@ -1,11 +1,11 @@
 import { CurveInterpolator } from 'curve-interpolator'
 import { InterpolatorInterface } from '@/domains/interpolatorInterfase'
-import { Plot } from '@/domains/datasetInterface'
+import { Coord, Plot } from '@/domains/datasetInterface'
 
 //MEMO: カーブの補間を司るドメイン
 export class Interpolator implements InterpolatorInterface {
-  interval = 16
-  interpolatedCoords = []
+  interval: number = 16
+  interpolatedCoords: Coord[] = []
 
   updateInterval(interval: number): void {
     this.interval = interval

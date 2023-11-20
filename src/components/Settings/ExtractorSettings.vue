@@ -154,14 +154,32 @@ export default defineComponent({
       }
     },
     handleOnClickInterpolate() {
-      this.datasets.activeDataset.clearPlots()
+      //TODO : move to usecase layer
+      const dataset = this.datasets.activeDataset
 
-      this.interpolator.interpolatedCoords.forEach((coord: Coord) => {
-        this.datasets.activeDataset.addPlot(coord.xPx, coord.yPx)
+      dataset.manuallyAddedPlotIds.forEach((plotId) => {
+        dataset.removeVisiblePlotId(plotId)
       })
 
-      this.canvas.clearInterpolationGuideCanvas()
-      this.interpolator.cleatInterpolatedCoords()
+      this.interpolator.interpolatedCoords.forEach((coord: Coord) => {
+        dataset.addPlot(coord.xPx, coord.yPx)
+        dataset.addInterpolatedPlotId(dataset.lastPlotId)
+      })
+
+      //TODO: Is there any way to get when plots are drawn
+      setTimeout(() => {
+        if (window.confirm('Do you want to apply this interpolation result?')) {
+          this.canvas.clearInterpolationGuideCanvas()
+          return
+        } else {
+          dataset.manuallyAddedPlotIds.forEach((plotId) => {
+            dataset.addVisiblePlotId(plotId)
+          })
+          dataset.interpolatedPlotIds.forEach((plotId) => {
+            dataset.clearPlot(plotId)
+          })
+        }
+      }, 300)
     },
     handleOnUpdateInterpolatorInterval(value: any) {
       const plots = this.datasets.activeDataset.plots

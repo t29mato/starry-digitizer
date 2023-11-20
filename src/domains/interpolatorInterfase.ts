@@ -1,8 +1,8 @@
 import { Coord, Plot } from './datasetInterface'
 
 export interface InterpolatorInterface {
-  interpolatedCoords: Coord[]
   interval: number
+  interpolatedCoords: Coord[]
 
   updateInterval(interval: number): void
   setSplineInterpolatedCoords(plots: Plot[]): void
