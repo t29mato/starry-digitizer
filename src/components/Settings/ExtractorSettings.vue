@@ -29,8 +29,8 @@
       ></v-text-field>
       <v-btn @click="handleOnClickInterpolate" size="small">Interpolate</v-btn>
     </div>
-
-    <h4 class="mb-2">Automatic Extraction</h4>
+    <v-divider :thickness="2"></v-divider>
+    <h4 class="mt-4 mb-2">Automatic Extraction</h4>
     <v-select
       @update:model-value="setExtractStrategy"
       :model-value="extractor.strategy.name"
