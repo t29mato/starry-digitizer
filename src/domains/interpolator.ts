@@ -12,7 +12,7 @@ export class Interpolator implements InterpolatorInterface {
 
     const interp = new CurveInterpolator(points, { tension: 0.2, alpha: 0.5 })
 
-    const segments = (this.getPlotsTotalDistance(plots) / 20) * this.density
+    const segments = (this.getPlotsTotalDistance(plots) / 16) * this.density
 
     this.interpolatedCoords = interp
       .getPoints(segments)
