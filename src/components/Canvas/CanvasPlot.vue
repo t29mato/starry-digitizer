@@ -8,7 +8,7 @@
       cursor: cursor,
       width: `${plotSizePx}px`,
       height: `${plotSizePx}px`,
-      'background-color': isActive ? 'red' : 'dodgerblue',
+      'background-color': backgroundColor,
       border: '1px solid white',
       'border-radius': '50%',
       visibility: isVisible ? 'visible' : 'hidden',
@@ -46,6 +46,15 @@ export default defineComponent({
       }
       return undefined
     },
+    backgroundColor() {
+      if (this.isActive) {
+        return '#ff0000'
+      }
+      if (this.isManuallyAdded) {
+        return '#1e90ff'
+      }
+      return '#6a5acd'
+    },
   },
   props: {
     plot: {
@@ -60,6 +69,9 @@ export default defineComponent({
       type: Boolean,
     },
     isVisible: {
+      type: Boolean,
+    },
+    isManuallyAdded: {
       type: Boolean,
     },
   },

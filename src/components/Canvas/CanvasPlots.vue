@@ -7,6 +7,9 @@
       :plot="plot"
       :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
       :isVisible="datasets.activeDataset.visiblePlotIds.includes(plot.id)"
+      :isManuallyAdded="
+        datasets.activeDataset.manuallyAddedPlotIds.includes(plot.id)
+      "
     ></canvas-plot>
   </div>
 </template>
