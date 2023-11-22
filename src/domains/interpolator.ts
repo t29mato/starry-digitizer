@@ -6,7 +6,6 @@ import { Coord, Plot } from '@/domains/datasetInterface'
 export class Interpolator implements InterpolatorInterface {
   interval: number = 10
   interpolatedCoords: Coord[] = []
-  lastInterpolatedPlotIds: number[] = []
 
   updateInterval(interval: number): void {
     this.interval = interval

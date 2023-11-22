@@ -27,7 +27,11 @@
         density="compact"
         hide-details
       ></v-text-field>
-      <v-btn @click="handleOnClickInterpolate" size="small" color="primary"
+      <v-btn
+        @click="handleOnClickInterpolate"
+        size="small"
+        color="primary"
+        :disabled="datasets.activeDataset.manuallyAddedPlotIds.length === 0"
         >Interpolate</v-btn
       >
     </div>
