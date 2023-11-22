@@ -158,9 +158,10 @@ export default defineComponent({
       }
     },
     handleOnClickInterpolate() {
-      //TODO : move to usecase layer
+      //TODO: Move to usecase layer
       const dataset = this.datasets.activeDataset
 
+      //INFO: Hide manually-added plots temporarilly, when previewing interpolation
       dataset.manuallyAddedPlotIds.forEach((plotId) => {
         dataset.removeVisiblePlotId(plotId)
       })
