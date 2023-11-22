@@ -53,10 +53,10 @@ export default defineComponent({
       if (this.isActive) {
         return '#ff0000'
       }
-      if (this.isManuallyAdded) {
-        return '#1e90ff'
+      if (this.isTemporary) {
+        return '#999999'
       }
-      return '#7b68ee'
+      return '#1e90ff'
     },
   },
   props: {
@@ -76,6 +76,10 @@ export default defineComponent({
     },
     isManuallyAdded: {
       type: Boolean,
+    },
+    isTemporary: {
+      type: Boolean,
+      default: false,
     },
   },
   methods: {

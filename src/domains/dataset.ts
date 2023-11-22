@@ -5,9 +5,11 @@ export class Dataset implements DatasetInterface {
   name: string
   plots: Plots
   id: number
+  tempPlots: Plots = []
   activePlotIds: number[] = []
   visiblePlotIds: number[] = []
   manuallyAddedPlotIds: number[] = []
+
   plotsAreAdjusting = false
   constructor(name: string, plots: Plots, id: number) {
     this.name = name
@@ -17,6 +19,16 @@ export class Dataset implements DatasetInterface {
 
   scaledPlots(scale: number): Plots {
     return this.plots.map((plot) => {
+      return {
+        id: plot.id,
+        xPx: plot.xPx * scale,
+        yPx: plot.yPx * scale,
+      }
+    })
+  }
+
+  scaledTempPlots(scale: number): Plots {
+    return this.tempPlots.map((plot) => {
       return {
         id: plot.id,
         xPx: plot.xPx * scale,
@@ -136,6 +148,26 @@ export class Dataset implements DatasetInterface {
     }
   }
 
+  addTempPlot(xPx: number, yPx: number) {
+    this.tempPlots.push({
+      id: this.nextTempPlotId,
+      xPx,
+      yPx,
+    })
+  }
+
+  get nextTempPlotId(): number {
+    if (this.tempPlots.length === 0) {
+      return 1
+    }
+    const biggestId = Math.max(...this.tempPlots.map((plot) => plot.id))
+    return biggestId + 1
+  }
+
+  clearTempPlot(id: number) {
+    this.tempPlots = this.tempPlots.filter((tempPlot) => tempPlot.id !== id)
+  }
+
   addVisiblePlotId(id: number): void {
     if (this.visiblePlotIds.includes(id)) return
     this.visiblePlotIds.push(id)
@@ -170,6 +202,17 @@ export class Dataset implements DatasetInterface {
     plotsToActivate.forEach((plot: Plot) => {
       this.addActivatedPlot(plot.id)
     })
+  }
+
+  moveTempPlotToPlot(tempPlotId: number): void {
+    const tempPlot = this.tempPlots.find(
+      (tempPlot) => tempPlot.id === tempPlotId,
+    )
+
+    if (!tempPlot) return
+
+    this.addPlot(tempPlot.xPx, tempPlot.yPx)
+    this.clearTempPlot(tempPlotId)
   }
 
   plotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Plots {
