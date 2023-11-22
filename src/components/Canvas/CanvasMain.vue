@@ -173,8 +173,6 @@ export default defineComponent({
         this.datasets.activeDataset.manuallyAddedPlotIds.includes(plot.id),
       )
 
-      console.log(plots)
-
       if (plots.length <= 1) {
         this.canvas.clearInterpolationGuideCanvas()
         return
