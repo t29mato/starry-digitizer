@@ -19,7 +19,7 @@
         class="mr-4"
         :model-value="interpolator.interval"
         @update:model-value="handleOnUpdateInterpolatorInterval"
-        label="Points Interval"
+        label="Interval"
         type="number"
         min="4"
         step="2"
