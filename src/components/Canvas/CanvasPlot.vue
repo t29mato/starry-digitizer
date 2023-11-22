@@ -56,7 +56,7 @@ export default defineComponent({
       if (this.isManuallyAdded) {
         return '#1e90ff'
       }
-      return '#6a5acd'
+      return '#7b68ee'
     },
   },
   props: {
