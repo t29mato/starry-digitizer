@@ -45,7 +45,7 @@ export interface DatasetInterface {
   removeVisiblePlotId(id: number): void
   addManuallyAddedPlotId(id: number): void
   removeManuallyAddedPlotId(id: number): void
-  clearManuallyAddedPlotIdss(): void
+  get manuallyAddedPlots(): Plots
   moveTempPlotToPlot(tempPlotId: number): void
   plotsSortedByXAscending(): Plots
   activatePlotsInRectangleArea(

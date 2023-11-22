@@ -188,8 +188,10 @@ export class Dataset implements DatasetInterface {
     )
   }
 
-  clearManuallyAddedPlotIdss(): void {
-    this.manuallyAddedPlotIds.length = 0
+  get manuallyAddedPlots(): Plots {
+    return this.plots.filter((plot) =>
+      this.manuallyAddedPlotIds.includes(plot.id),
+    )
   }
 
   activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {

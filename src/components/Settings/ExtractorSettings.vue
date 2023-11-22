@@ -191,7 +191,7 @@ export default defineComponent({
       }, 300)
     },
     handleOnUpdateInterpolatorInterval(value: any) {
-      const plots = this.datasets.activeDataset.plots
+      const plots = this.datasets.activeDataset.manuallyAddedPlots
       this.interpolator.updateInterval(parseFloat(value))
 
       if (plots.length > 1) {
