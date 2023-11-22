@@ -55,6 +55,8 @@ import { mapState, mapActions } from 'pinia'
 import { useExtractorStore } from '@/store/extractor'
 import { useInterpolatorStore } from '@/store/interpolator'
 
+import calculationUtils from '@/domains/calculationUtils'
+
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
 
@@ -95,13 +97,16 @@ export default defineComponent({
   methods: {
     ...mapActions(useDatasetsStore, [
       'addPlot',
-      'activatePlot',
+      'switchActivatedPlot',
       'moveActivePlot',
       'clearActivePlots',
       'inactivatePlots',
+      'activatePlotsInRectangleArea',
     ]),
     ...mapActions(useCanvasStore, [
-      'mouseMoveOnCanvas',
+      'mouseDownOnCanvas',
+      'mouseDragOnCanvas',
+      'mouseUpOnCanvas',
       'setCanvasCursor',
       'drawFitSizeImage',
       'setUploadImageUrl',
@@ -187,14 +192,11 @@ export default defineComponent({
     },
     mouseDrag(coord: Coord) {
       // TODO: 呼び出すメソッドはCanvasに移譲したい
-      // TODO: mouseDragOnCanvasにリネーム？
-      this.mouseMoveOnCanvas(coord)
+      this.mouseDragOnCanvas(coord)
     },
     mouseMove(e: MouseEvent) {
-      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
-      const target = e.target as HTMLElement
-      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
-      const yPx = e.offsetY + parseFloat(target.style.top)
+      const { xPx, yPx } = calculationUtils.getMouseCoordFromMouseEvent(e)
+
       this.axes.isAdjusting = false
       this.datasets.activeDataset.plotsAreAdjusting = false
       this.setCanvasCursor({
@@ -208,17 +210,27 @@ export default defineComponent({
       }
     },
     mouseDown(e: MouseEvent) {
-      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
-      const target = e.target as HTMLElement
-      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
-      const yPx = e.offsetY + parseFloat(target.style.top)
-      if (this.canvas.maskMode === 1) {
-        this.canvas.mouseDownForBox(xPx, yPx)
-      }
+      const { xPx, yPx } = calculationUtils.getMouseCoordFromMouseEvent(e)
+
+      this.mouseDownOnCanvas({ xPx, yPx })
     },
     mouseUp() {
-      if (this.canvas.maskMode === 1) {
-        this.canvas.mouseUpForBox()
+      this.mouseUpOnCanvas()
+
+      // INFO: EDITモードの場合にplotの複数選択を行う
+      if (this.canvas.manualMode === 1) {
+        const rect = this.canvas.rectangle
+        const scale = this.canvas.scale
+
+        const { topLeftCoord, bottomRightCoord } =
+          calculationUtils.getRectCoordsFromDragCoords(
+            { xPx: rect.startX / scale, yPx: rect.startY / scale },
+            { xPx: rect.endX / scale, yPx: rect.endY / scale },
+          )
+
+        this.activatePlotsInRectangleArea(topLeftCoord, bottomRightCoord)
+
+        return
       }
     },
     keyDownHandler(e: KeyboardEvent) {
@@ -266,7 +278,7 @@ export default defineComponent({
 
           const lastPlotId = this.datasets.activeDataset.lastPlotId
           if (lastPlotId === -1) return
-          this.activatePlot(lastPlotId)
+          this.switchActivatedPlot(lastPlotId)
         }
       }
       const shiftKeyIsPressed = e.shiftKey

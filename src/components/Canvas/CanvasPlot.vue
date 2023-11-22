@@ -12,6 +12,7 @@
       border: '1px solid white',
       'border-radius': '50%',
       visibility: isVisible ? 'visible' : 'hidden',
+      opacity: plotOpacity,
     }"
     @click="click"
   ></div>
@@ -25,11 +26,13 @@ import { Plot } from '@/domains/datasetInterface'
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
+import { useStyleStore } from '@/store/style'
 
 export default defineComponent({
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useStyleStore, ['plotOpacity']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -78,7 +81,7 @@ export default defineComponent({
   methods: {
     ...mapActions(useDatasetsStore, [
       'toggleActivatedPlot',
-      'activatePlot',
+      'switchActivatedPlot',
       'clearPlot',
     ]),
     click(event: MouseEvent) {
@@ -91,7 +94,7 @@ export default defineComponent({
             this.toggleActivatedPlot(this.plot.id)
             return
           }
-          this.activatePlot(this.plot.id)
+          this.switchActivatedPlot(this.plot.id)
           return
         case 2:
           this.clearPlot(this.plot.id)

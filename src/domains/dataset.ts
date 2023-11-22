@@ -1,5 +1,5 @@
 import { Vector } from './axes/axesInterface'
-import { DatasetInterface, Plots } from './datasetInterface'
+import { DatasetInterface, Plots, Plot, Coord } from './datasetInterface'
 
 export class Dataset implements DatasetInterface {
   name: string
@@ -56,11 +56,16 @@ export class Dataset implements DatasetInterface {
     return lastPlot.id
   }
 
-  activatePlot(id: number) {
+  switchActivatedPlot(id: number) {
     this.activePlotIds.length = 0
     this.activePlotIds.push(id)
   }
 
+  addActivatedPlot(id: number) {
+    this.activePlotIds.push(id)
+  }
+
+  //INFO クリックされたplotがactiveな場合はinactiveにし、そうでない場合はactive状態に追加する
   toggleActivatedPlot(toggledId: number) {
     if (this.activePlotIds.includes(toggledId)) {
       const activePlotIds = this.activePlotIds.filter((id) => {
@@ -70,7 +75,8 @@ export class Dataset implements DatasetInterface {
       this.activePlotIds.push(...activePlotIds)
       return
     }
-    this.activePlotIds.push(toggledId)
+
+    this.addActivatedPlot(toggledId)
   }
 
   clearPlot(id: number) {
@@ -152,6 +158,29 @@ export class Dataset implements DatasetInterface {
 
   clearManuallyAddedPlotIdss(): void {
     this.manuallyAddedPlotIds.length = 0
+  }
+
+  activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
+    this.inactivatePlots()
+
+    const plotsToActivate = this.plotsInRectangleArea(
+      topLeftCoord,
+      bottomRightCoord,
+    )
+    plotsToActivate.forEach((plot: Plot) => {
+      this.addActivatedPlot(plot.id)
+    })
+  }
+
+  plotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Plots {
+    return this.plots.filter((plot: Plot) => {
+      return (
+        plot.xPx >= topLeftCoord.xPx &&
+        plot.xPx <= bottomRightCoord.xPx &&
+        plot.yPx >= topLeftCoord.yPx &&
+        plot.yPx <= bottomRightCoord.yPx
+      )
+    })
   }
 
   plotsSortedByXAscending(): Plots {
