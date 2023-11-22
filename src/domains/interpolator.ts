@@ -4,8 +4,9 @@ import { Coord, Plot } from '@/domains/datasetInterface'
 
 //MEMO: カーブの補間を司るドメイン
 export class Interpolator implements InterpolatorInterface {
-  interval: number = 16
+  interval: number = 10
   interpolatedCoords: Coord[] = []
+  lastInterpolatedPlotIds: number[] = []
 
   updateInterval(interval: number): void {
     this.interval = interval
@@ -16,7 +17,9 @@ export class Interpolator implements InterpolatorInterface {
 
     const interp = new CurveInterpolator(points, { tension: 0.2, alpha: 0.5 })
 
-    const segments = this.getPlotsTotalDistance(plots) / this.interval
+    const segments = Math.floor(
+      this.getPlotsTotalDistance(plots) / (this.interval * 1.6), //INFO: intervalが10の時、点同士の間隔がおよそ16pxになるようにした比例式
+    )
 
     this.interpolatedCoords = interp
       .getPoints(segments)

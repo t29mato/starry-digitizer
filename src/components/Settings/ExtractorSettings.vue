@@ -21,9 +21,9 @@
         @update:model-value="handleOnUpdateInterpolatorInterval"
         label="Interval"
         type="number"
-        min="4"
-        step="2"
-        max="50"
+        min="2"
+        step="1"
+        max="30"
         density="compact"
         hide-details
       ></v-text-field>
