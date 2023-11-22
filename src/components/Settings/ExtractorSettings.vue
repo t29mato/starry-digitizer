@@ -170,7 +170,10 @@ export default defineComponent({
       setTimeout(() => {
         if (window.confirm('Do you want to apply this interpolation result?')) {
           this.canvas.clearInterpolationGuideCanvas()
-          return
+
+          dataset.manuallyAddedPlotIds.forEach((plotId) => {
+            dataset.clearPlot(plotId)
+          })
         } else {
           dataset.manuallyAddedPlotIds.forEach((plotId) => {
             dataset.addVisiblePlotId(plotId)

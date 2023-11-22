@@ -164,7 +164,12 @@ export default defineComponent({
       }
     },
     updateInterpolationGuide(): void {
-      const plots = this.datasets.activeDataset.plots
+      const plots = this.datasets.activeDataset.plots.filter((plot: Plot) =>
+        this.datasets.activeDataset.manuallyAddedPlotIds.includes(plot.id),
+      )
+
+      console.log(plots)
+
       if (plots.length <= 1) {
         this.canvas.clearInterpolationGuideCanvas()
         return
