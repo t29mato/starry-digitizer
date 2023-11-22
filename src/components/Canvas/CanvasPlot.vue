@@ -8,9 +8,10 @@
       cursor: cursor,
       width: `${plotSizePx}px`,
       height: `${plotSizePx}px`,
-      'background-color': isActive ? 'red' : 'dodgerblue',
+      'background-color': backgroundColor,
       border: '1px solid white',
       'border-radius': '50%',
+      visibility: isVisible ? 'visible' : 'hidden',
       opacity: plotOpacity,
     }"
     @click="click"
@@ -30,6 +31,7 @@ import { useStyleStore } from '@/store/style'
 export default defineComponent({
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useStyleStore, ['plotOpacity']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
@@ -47,6 +49,15 @@ export default defineComponent({
       }
       return undefined
     },
+    backgroundColor() {
+      if (this.isActive) {
+        return '#ff0000'
+      }
+      if (this.isTemporary) {
+        return '#999999'
+      }
+      return '#1e90ff'
+    },
   },
   props: {
     plot: {
@@ -59,6 +70,16 @@ export default defineComponent({
     },
     isActive: {
       type: Boolean,
+    },
+    isVisible: {
+      type: Boolean,
+    },
+    isManuallyAdded: {
+      type: Boolean,
+    },
+    isTemporary: {
+      type: Boolean,
+      default: false,
     },
   },
   methods: {
@@ -81,6 +102,7 @@ export default defineComponent({
           return
         case 2:
           this.clearPlot(this.plot.id)
+
           return
         default:
           break

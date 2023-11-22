@@ -10,7 +10,7 @@ export const useStyleStore = defineStore('style', {
   state: (): State => ({
     plotSizePx: 10,
     axisSizePx: 20,
-    plotOpacity: 0.6,
+    plotOpacity: 0.7,
   }),
   getters: {
     //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？

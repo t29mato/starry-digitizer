@@ -2,7 +2,7 @@
   <div
     id="canvasWrapper"
     class="c__canvas-wrapper"
-    @click="plot"
+    @click="click"
     @mousemove="mouseMove"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
@@ -26,6 +26,15 @@
       }"
       id="maskCanvas"
     ></canvas>
+    <canvas
+      :style="{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        opacity: 0.5,
+      }"
+      id="interpolationGuideCanvas"
+    ></canvas>
     <canvas-axes-guide></canvas-axes-guide>
     <canvas-axes></canvas-axes>
     <canvas-plots></canvas-plots>
@@ -44,6 +53,7 @@ import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useExtractorStore } from '@/store/extractor'
+import { useInterpolatorStore } from '@/store/interpolator'
 
 import calculationUtils from '@/domains/calculationUtils'
 
@@ -67,6 +77,7 @@ export default defineComponent({
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useInterpolatorStore, ['interpolator']),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
@@ -86,6 +97,7 @@ export default defineComponent({
   methods: {
     ...mapActions(useDatasetsStore, [
       'addPlot',
+      'switchActivatedPlot',
       'moveActivePlot',
       'clearActivePlots',
       'inactivatePlots',
@@ -127,6 +139,9 @@ export default defineComponent({
               : e.offsetY / this.canvas.scale,
           })
           this.inactivateAxis()
+          this.datasets.activeDataset.addManuallyAddedPlotId(
+            this.datasets.activeDataset.lastPlotId,
+          )
           return
         case 1:
           // INFO: CanvasPlot Component -> Click method
@@ -152,6 +167,26 @@ export default defineComponent({
         }
         return
       }
+    },
+    updateInterpolationGuide(): void {
+      const plots = this.datasets.activeDataset.plots.filter((plot: Plot) =>
+        this.datasets.activeDataset.manuallyAddedPlotIds.includes(plot.id),
+      )
+
+      if (plots.length <= 1) {
+        this.canvas.clearInterpolationGuideCanvas()
+        return
+      }
+
+      this.interpolator.setSplineInterpolatedCoords(plots)
+
+      this.canvas.drawInterpolationGuideLine(
+        this.interpolator.interpolatedCoords,
+      )
+    },
+    click(e: MouseEvent): void {
+      this.plot(e)
+      this.updateInterpolationGuide()
     },
     mouseDrag(coord: Coord) {
       // TODO: 呼び出すメソッドはCanvasに移譲したい
@@ -237,6 +272,11 @@ export default defineComponent({
       if (this.datasets.activeDataset.hasActive()) {
         if (key === 'Backspace' || key === 'Delete') {
           this.clearActivePlots()
+          this.updateInterpolationGuide()
+
+          const lastPlotId = this.datasets.activeDataset.lastPlotId
+          if (lastPlotId === -1) return
+          this.switchActivatedPlot(lastPlotId)
         }
       }
       const shiftKeyIsPressed = e.shiftKey

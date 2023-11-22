@@ -5,7 +5,7 @@
       :model-value="canvas.manualMode"
       @update:model-value="changeManualMode"
       density="compact"
-      class="mb-4"
+      class="mb-2"
       divided
       :border="true"
     >
@@ -13,7 +13,30 @@
       <v-btn size="small" color="primary"> Edit (E) </v-btn>
       <v-btn size="small" color="primary"> Delete (D) </v-btn>
     </v-btn-toggle>
-    <h4 class="mb-2">Automatic Extraction</h4>
+    <h5 class="mt-2">Interpolation</h5>
+    <div class="d-flex align-end mt-1 mb-4">
+      <v-text-field
+        class="mr-4"
+        :model-value="interpolator.interval"
+        @update:model-value="handleOnUpdateInterpolatorInterval"
+        label="Interval"
+        type="number"
+        min="2"
+        step="1"
+        max="30"
+        density="compact"
+        hide-details
+      ></v-text-field>
+      <v-btn
+        @click="handleOnClickInterpolate"
+        size="small"
+        color="primary"
+        :disabled="datasets.activeDataset.manuallyAddedPlotIds.length === 0"
+        >Interpolate</v-btn
+      >
+    </div>
+    <v-divider></v-divider>
+    <h4 class="mt-4 mb-2">Automatic Extraction</h4>
     <v-select
       @update:model-value="setExtractStrategy"
       :model-value="extractor.strategy.name"
@@ -28,18 +51,22 @@
     </div>
     <mask-settings></mask-settings>
     <color-settings></color-settings>
-    <v-btn
-      :loading="isExtracting"
-      @click="extractPlots"
-      color="primary"
-      size="small"
-      >Run</v-btn
-    >
+    <div class="text-right mb-4">
+      <v-btn
+        :loading="isExtracting"
+        @click="extractPlots"
+        color="primary"
+        size="small"
+        >Run</v-btn
+      >
+    </div>
+    <v-divider></v-divider>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { Coord } from '@/domains/datasetInterface'
 
 import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
@@ -54,6 +81,7 @@ import { useExtractorStore } from '@/store/extractor'
 import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
+import { useInterpolatorStore } from '@/store/interpolator'
 
 export default defineComponent({
   components: {
@@ -70,6 +98,9 @@ export default defineComponent({
   computed: {
     ...mapState(useExtractorStore, ['extractor']),
     ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useInterpolatorStore, ['interpolator']),
   },
   props: {
     initialExtractorStrategy: {
@@ -124,6 +155,51 @@ export default defineComponent({
         console.error('failed to extractPlots', { cause: e })
       } finally {
         this.isExtracting = false
+      }
+    },
+    handleOnClickInterpolate() {
+      //TODO: Move to usecase layer
+      const dataset = this.datasets.activeDataset
+
+      //INFO: Hide manually-added plots temporarilly, when previewing interpolation
+      dataset.manuallyAddedPlotIds.forEach((plotId) => {
+        dataset.removeVisiblePlotId(plotId)
+      })
+
+      this.interpolator.interpolatedCoords.forEach((coord: Coord) => {
+        dataset.addTempPlot(coord.xPx, coord.yPx)
+      })
+
+      //TODO: Is there any way to get when plots are drawn
+      setTimeout(() => {
+        if (window.confirm('Do you want to apply this interpolation result?')) {
+          this.canvas.clearInterpolationGuideCanvas()
+
+          dataset.manuallyAddedPlotIds.forEach((plotId) => {
+            dataset.clearPlot(plotId)
+          })
+          dataset.tempPlots.forEach((tempPlot) => {
+            dataset.moveTempPlotToPlot(tempPlot.id)
+          })
+        } else {
+          dataset.manuallyAddedPlotIds.forEach((plotId) => {
+            dataset.addVisiblePlotId(plotId)
+          })
+          dataset.tempPlots.forEach((tempPlot) => {
+            dataset.clearTempPlot(tempPlot.id)
+          })
+        }
+      }, 300)
+    },
+    handleOnUpdateInterpolatorInterval(value: any) {
+      const plots = this.datasets.activeDataset.manuallyAddedPlots
+      this.interpolator.updateInterval(parseFloat(value))
+
+      if (plots.length > 1) {
+        this.interpolator.setSplineInterpolatedCoords(plots)
+        this.canvas.drawInterpolationGuideLine(
+          this.interpolator.interpolatedCoords,
+        )
       }
     },
   },

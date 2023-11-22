@@ -13,7 +13,7 @@
       'pointer-events': 'none',
       width: `${plotSizePx}px`,
       height: `${plotSizePx}px`,
-      'background-color': isActive ? 'red' : 'dodgerblue',
+      'background-color': backgroundColor,
       border: `${1}px solid white`,
       'border-radius': '50%',
       opacity: plotOpacity,
@@ -49,6 +49,15 @@ export default defineComponent({
     yPx(): number {
       return this.plot.yPx
     },
+    backgroundColor() {
+      if (this.isActive) {
+        return '#ff0000'
+      }
+      if (this.isManuallyAdded) {
+        return '#1e90ff'
+      }
+      return '#7b68ee'
+    },
   },
   props: {
     plot: {
@@ -60,6 +69,9 @@ export default defineComponent({
       required: true,
     },
     isActive: {
+      type: Boolean,
+    },
+    isManuallyAdded: {
       type: Boolean,
     },
   },

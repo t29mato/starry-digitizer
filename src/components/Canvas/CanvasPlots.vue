@@ -6,6 +6,22 @@
       :plotSizePx="plotSizePx"
       :plot="plot"
       :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
+      :isVisible="datasets.activeDataset.visiblePlotIds.includes(plot.id)"
+      :isManuallyAdded="
+        datasets.activeDataset.manuallyAddedPlotIds.includes(plot.id)
+      "
+    ></canvas-plot>
+    <canvas-plot
+      v-for="(tempPlot, i) in datasets.activeDataset.scaledTempPlots(
+        canvas.scale,
+      )"
+      :key="i"
+      :plotSizePx="plotSizePx"
+      :plot="tempPlot"
+      :isActive="false"
+      :isVisible="true"
+      :isManuallyAdded="false"
+      :isTemporary="true"
     ></canvas-plot>
   </div>
 </template>
