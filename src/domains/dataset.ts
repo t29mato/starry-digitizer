@@ -8,7 +8,6 @@ export class Dataset implements DatasetInterface {
   activePlotIds: number[] = []
   visiblePlotIds: number[] = []
   manuallyAddedPlotIds: number[] = []
-  interpolatedPlotIds: number[] = []
   plotsAreAdjusting = false
   constructor(name: string, plots: Plots, id: number) {
     this.name = name
@@ -82,7 +81,6 @@ export class Dataset implements DatasetInterface {
 
     this.removeVisiblePlotId(id)
     this.removeManuallyAddedPlotId(id)
-    this.removeInterpolatedPlotId(id)
   }
 
   clearPlots() {
@@ -154,17 +152,6 @@ export class Dataset implements DatasetInterface {
 
   clearManuallyAddedPlotIdss(): void {
     this.manuallyAddedPlotIds.length = 0
-  }
-
-  addInterpolatedPlotId(id: number): void {
-    if (this.interpolatedPlotIds.includes(id)) return
-    this.interpolatedPlotIds.push(id)
-  }
-
-  removeInterpolatedPlotId(id: number): void {
-    this.interpolatedPlotIds = this.interpolatedPlotIds.filter(
-      (pId) => pId !== id,
-    )
   }
 
   plotsSortedByXAscending(): Plots {

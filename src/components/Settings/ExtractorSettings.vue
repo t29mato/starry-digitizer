@@ -155,6 +155,7 @@ export default defineComponent({
     },
     handleOnClickInterpolate() {
       //TODO : move to usecase layer
+      const interpolatedPlotIds: number[] = []
       const dataset = this.datasets.activeDataset
 
       dataset.manuallyAddedPlotIds.forEach((plotId) => {
@@ -163,7 +164,7 @@ export default defineComponent({
 
       this.interpolator.interpolatedCoords.forEach((coord: Coord) => {
         dataset.addPlot(coord.xPx, coord.yPx)
-        dataset.addInterpolatedPlotId(dataset.lastPlotId)
+        interpolatedPlotIds.push(dataset.lastPlotId)
       })
 
       //TODO: Is there any way to get when plots are drawn
@@ -178,7 +179,7 @@ export default defineComponent({
           dataset.manuallyAddedPlotIds.forEach((plotId) => {
             dataset.addVisiblePlotId(plotId)
           })
-          dataset.interpolatedPlotIds.forEach((plotId) => {
+          interpolatedPlotIds.forEach((plotId) => {
             dataset.clearPlot(plotId)
           })
         }
