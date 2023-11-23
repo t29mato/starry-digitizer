@@ -54,8 +54,8 @@ import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useExtractorStore } from '@/store/extractor'
 import { useInterpolatorStore } from '@/store/interpolator'
-
-import calculationUtils from '@/domains/calculationUtils'
+import { getMouseCoordFromMouseEvent } from '@/presentation/mouseEventUtilities'
+import { getRectCoordsFromDragCoords } from '@/presentation/dragRectangleCalculator'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -193,7 +193,7 @@ export default defineComponent({
       this.mouseDragOnCanvas(coord)
     },
     mouseMove(e: MouseEvent) {
-      const { xPx, yPx } = calculationUtils.getMouseCoordFromMouseEvent(e)
+      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
       this.axes.isAdjusting = false
       this.datasets.activeDataset.plotsAreAdjusting = false
@@ -208,7 +208,7 @@ export default defineComponent({
       }
     },
     mouseDown(e: MouseEvent) {
-      const { xPx, yPx } = calculationUtils.getMouseCoordFromMouseEvent(e)
+      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
       this.mouseDownOnCanvas({ xPx, yPx })
     },
@@ -220,11 +220,10 @@ export default defineComponent({
         const rect = this.canvas.rectangle
         const scale = this.canvas.scale
 
-        const { topLeftCoord, bottomRightCoord } =
-          calculationUtils.getRectCoordsFromDragCoords(
-            { xPx: rect.startX / scale, yPx: rect.startY / scale },
-            { xPx: rect.endX / scale, yPx: rect.endY / scale },
-          )
+        const { topLeftCoord, bottomRightCoord } = getRectCoordsFromDragCoords(
+          { xPx: rect.startX / scale, yPx: rect.startY / scale },
+          { xPx: rect.endX / scale, yPx: rect.endY / scale },
+        )
 
         this.activatePlotsInRectangleArea(topLeftCoord, bottomRightCoord)
 
