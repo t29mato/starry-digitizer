@@ -1,33 +1,62 @@
 import { Interpolator } from './interpolator'
 import { Plot } from '@/domains/datasetInterface'
 
-const interpolater = new Interpolator()
+describe('Interpolator', () => {
+  let interpolator: Interpolator
 
-describe('getPlotsTotalDistance', () => {
-  it('calculates total distance correctly for a given set of plots', () => {
-    const plots: Plot[] = [
-      { id: 1, xPx: 0, yPx: 0 },
-      { id: 2, xPx: 3, yPx: 4 }, // 5 units away from the first plot
-      { id: 3, xPx: 6, yPx: 8 }, // 5 units away from the second plot
-    ]
-
-    const expectedDistance = 10 // 5 + 5
-    const totalDistance = interpolater.getPlotsTotalDistance(plots)
-
-    // @ts-ignore
-    expect(totalDistance).toBe(expectedDistance)
+  beforeEach(() => {
+    interpolator = new Interpolator()
   })
-  it('calculates total distance correctly with negative coordinates', () => {
-    const plots: Plot[] = [
-      { id: 1, xPx: -3, yPx: -4 },
-      { id: 2, xPx: 0, yPx: 0 }, // 5 units away from the first plot
-      { id: 3, xPx: 3, yPx: 4 }, // 5 units away from the second plot
-    ]
 
-    const expectedDistance = 10 // 5 + 5
-    const totalDistance = interpolater.getPlotsTotalDistance(plots)
+  describe('updateInterval', () => {
+    it('should correctly update the interval', () => {
+      interpolator.updateInterval(20)
+      // @ts-ignore
+      expect(interpolator.interval).toBe(20)
+    })
+  })
 
-    // @ts-ignore
-    expect(totalDistance).toBe(expectedDistance)
+  describe('setSplineInterpolatedCoords', () => {
+    it('should correctly set interpolated coordinates', () => {
+      const mockPlots: Plot[] = [
+        {
+          id: 1,
+          xPx: 100,
+          yPx: 100,
+        },
+        {
+          id: 2,
+          xPx: 113,
+          yPx: 113,
+        },
+      ]
+
+      interpolator.setSplineInterpolatedCoords(mockPlots)
+      // 結果を検証するためのアサーション
+      // @ts-ignore
+      expect(interpolator.interpolatedCoords.length).toBeGreaterThan(0)
+      // その他、interpolatedCoordsの具体的な値に対する検証
+    })
+    it('should correctly set interpolated coordinates less than 11', () => {
+      // FIXME: xPxとyPxのそれぞれの差を11以下にするとエラーになる
+      const mockPlots: Plot[] = [
+        {
+          id: 1,
+          xPx: 100,
+          yPx: 100,
+        },
+        {
+          id: 2,
+          xPx: 111,
+          yPx: 111,
+        },
+      ]
+
+      interpolator.setSplineInterpolatedCoords(mockPlots)
+      // 結果を検証するためのアサーション
+      // @ts-ignore
+      expect(interpolator.interpolatedCoords.length).toBeGreaterThan(0)
+      // その他、interpolatedCoordsの具体的な値に対する検証
+    })
   })
 })

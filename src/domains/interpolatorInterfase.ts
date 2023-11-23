@@ -1,4 +1,4 @@
-import { Coord, Plot, Plots } from './datasetInterface'
+import { Coord, Plots } from './datasetInterface'
 
 export interface InterpolatorInterface {
   interval: number
@@ -6,6 +6,4 @@ export interface InterpolatorInterface {
 
   updateInterval(interval: number): void
   setSplineInterpolatedCoords(plots: Plots): void
-  //TODO: interpolatorドメインに属しているのは不適切だと思うので、あとでしかるべきところに移管する
-  getPlotsTotalDistance(plots: Plot[]): number
 }
