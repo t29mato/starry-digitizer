@@ -22,6 +22,11 @@ export interface DatasetInterface {
   plotsAreAdjusting: boolean
   tempPlots: Plots
   activePlotIds: number[]
+  /**
+   * INFO: Confirm interpolation: Delay finalization until user confirms via window.confirm.
+   * If canceled, manual points are restored. Temporarily hides manual points during preview
+   * by using 'visiblePlotIds' state.
+   */
   visiblePlotIds: number[]
   manuallyAddedPlotIds: number[]
   get nextPlotId(): number
