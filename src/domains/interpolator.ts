@@ -15,6 +15,7 @@ export class Interpolator implements InterpolatorInterface {
   setSplineInterpolatedCoords(plots: Plots): void {
     const points = plots.map((plot) => [plot.xPx, plot.yPx])
 
+    // TODO: Make it independent of CurveInterpolator.
     const interp = new CurveInterpolator(points, { tension: 0.2, alpha: 0.5 })
 
     const totalDistance = getPlotsTotalDistance(plots)
