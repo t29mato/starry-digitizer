@@ -1,5 +1,5 @@
 import { Interpolator } from './interpolator'
-import { Plot } from '@/domains/datasetInterface'
+import { Plot } from './datasetInterface'
 
 describe('Interpolator', () => {
   let interpolator: Interpolator
