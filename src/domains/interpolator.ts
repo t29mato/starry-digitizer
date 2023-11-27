@@ -18,9 +18,12 @@ export class Interpolator implements InterpolatorInterface {
     // TODO: Make it independent of CurveInterpolator.
     const interp = new CurveInterpolator(points, { tension: 0.2, alpha: 0.5 })
 
-    const totalDistance = getPlotsTotalDistance(plots)
-    const intervalScaled = this.interval * 1.6
-    const segments = Math.floor(totalDistance / intervalScaled)
+    const segments = Math.max(
+      Math.floor(
+        this.getPlotsTotalDistance(plots) / (this.interval * 1.6), //INFO: intervalが10の時、点同士の間隔がおよそ16pxになるようにした比例式
+      ),
+      1,
+    )
 
     this.interpolatedCoords = interp
       .getPoints(segments)
