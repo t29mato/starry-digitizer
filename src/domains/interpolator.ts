@@ -20,7 +20,7 @@ export class Interpolator implements InterpolatorInterface {
 
     const segments = Math.max(
       Math.floor(
-        this.getPlotsTotalDistance(plots) / (this.interval * 1.6), //INFO: intervalが10の時、点同士の間隔がおよそ16pxになるようにした比例式
+        getPlotsTotalDistance(plots) / (this.interval * 1.6), //INFO: intervalが10の時、点同士の間隔がおよそ16pxになるようにした比例式
       ),
       1,
     )
