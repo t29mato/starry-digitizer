@@ -82,6 +82,7 @@ import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 import { useInterpolatorStore } from '@/store/interpolator'
+import { useConfirmerStore } from '@/store/confirmer'
 
 export default defineComponent({
   components: {
@@ -101,6 +102,7 @@ export default defineComponent({
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useInterpolatorStore, ['interpolator']),
+    ...mapState(useConfirmerStore, ['confirmer']),
   },
   props: {
     initialExtractorStrategy: {
@@ -170,25 +172,30 @@ export default defineComponent({
         dataset.addTempPlot(coord.xPx, coord.yPx)
       })
 
-      //TODO: Is there any way to get when plots are drawn
       setTimeout(() => {
-        if (window.confirm('Do you want to apply this interpolation result?')) {
-          this.canvas.clearInterpolationGuideCanvas()
+        this.confirmer.activate({
+          message: 'Do you want to apply these points?',
+          onConfirm: () => {
+            this.canvas.clearInterpolationGuideCanvas()
 
-          dataset.manuallyAddedPlotIds.forEach((plotId) => {
-            dataset.clearPlot(plotId)
-          })
-          dataset.tempPlots.forEach((tempPlot) => {
-            dataset.moveTempPlotToPlot(tempPlot.id)
-          })
-        } else {
-          dataset.manuallyAddedPlotIds.forEach((plotId) => {
-            dataset.addVisiblePlotId(plotId)
-          })
-          dataset.tempPlots.forEach((tempPlot) => {
-            dataset.clearTempPlot(tempPlot.id)
-          })
-        }
+            dataset.manuallyAddedPlotIds.forEach((plotId) => {
+              dataset.clearPlot(plotId)
+            })
+            dataset.tempPlots.forEach((tempPlot) => {
+              dataset.moveTempPlotToPlot(tempPlot.id)
+            })
+          },
+          onCancel: () => {
+            const dataset = this.datasets.activeDataset
+
+            dataset.manuallyAddedPlotIds.forEach((plotId) => {
+              dataset.addVisiblePlotId(plotId)
+            })
+            dataset.tempPlots.forEach((tempPlot) => {
+              dataset.clearTempPlot(tempPlot.id)
+            })
+          },
+        })
       }, 300)
     },
     handleOnUpdateInterpolatorInterval(value: any) {
@@ -205,3 +212,4 @@ export default defineComponent({
   },
 })
 </script>
+@/store/confirmer
