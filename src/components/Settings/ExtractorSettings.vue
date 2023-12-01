@@ -147,7 +147,6 @@ export default defineComponent({
     async extractPlots() {
       this.isExtracting = true
       this.inactivateAxis()
-      this.clearPlots()
       try {
         this.setPlots(this.extractor.execute(this.canvas))
         this.sortPlots()

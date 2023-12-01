@@ -30,6 +30,7 @@ export class Datasets {
   }
 
   setPlots(coords: Coord[]) {
+    this.activeDataset.clearPlots()
     coords.forEach((coord) => {
       this.activeDataset.addPlot(coord.xPx, coord.yPx)
     })
