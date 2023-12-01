@@ -1,4 +1,4 @@
-import { Plot } from '../datasetInterface'
+import { Coord } from '../datasetInterface'
 
 // INFO: Strategy Pattern
 export default interface ExtractStrategyInterface {
@@ -11,5 +11,5 @@ export default interface ExtractStrategyInterface {
     isDrawnMask: boolean,
     targetColor: [number, number, number],
     colorMatchThreshold: number,
-  ): Plot[]
+  ): Coord[]
 }

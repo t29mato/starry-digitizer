@@ -1,5 +1,5 @@
 import { CanvasInterface } from './canvasInterface'
-import { Plots } from './datasetInterface'
+import { Coord } from './datasetInterface'
 import ExtractStrategyInterface from './extractStrategies/extractStrategyInterface'
 
 export type ExtractStrategy = 'Symbol Extract' | 'Line Extract'
@@ -12,7 +12,7 @@ export interface ExtractorInterface {
   colorDistancePct: number
   swatches: string[][]
 
-  execute(canvas: CanvasInterface): Plots
+  execute(canvas: CanvasInterface): Coord[]
 
   get targetColor(): { R: number; G: number; B: number }
   get targetColorHex(): string

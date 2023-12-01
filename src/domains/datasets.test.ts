@@ -23,3 +23,16 @@ test('pop a dataset', () => {
   datasets.popDataset()
   expect(datasets.datasets[datasets.datasets.length - 1].id).toBe(3)
 })
+
+test('set plots', () => {
+  const datasets = new Datasets(new Dataset('dataset 1', [], 1))
+  datasets.addDataset(new Dataset('dataset 2', [], datasets.nextDatasetId))
+  datasets.setPlots([{ xPx: 1, yPx: 1 }])
+  expect(datasets.activeDataset.plots).toStrictEqual([
+    { id: 1, xPx: 1, yPx: 1 },
+  ])
+  datasets.setPlots([{ xPx: 2, yPx: 2 }])
+  expect(datasets.activeDataset.plots).toStrictEqual([
+    { id: 1, xPx: 2, yPx: 2 },
+  ])
+})
