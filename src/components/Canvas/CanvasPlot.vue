@@ -74,9 +74,6 @@ export default defineComponent({
     isVisible: {
       type: Boolean,
     },
-    isManuallyAdded: {
-      type: Boolean,
-    },
     isTemporary: {
       type: Boolean,
       default: false,

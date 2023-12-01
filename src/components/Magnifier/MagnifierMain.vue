@@ -18,9 +18,14 @@
           :plot="plot"
           :magnifierSize="magnifier.sizePx"
           :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
-          :isManuallyAdded="
-            datasets.activeDataset.manuallyAddedPlotIds.includes(plot.id)
-          "
+        ></magnifier-plots>
+      </div>
+      <div v-for="plot in datasets.activeDataset.tempPlots" :key="plot.id">
+        <magnifier-plots
+          :plot="plot"
+          :magnifierSize="magnifier.sizePx"
+          :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
+          :isTemporary="true"
         ></magnifier-plots>
       </div>
       <magnifier-extract-size></magnifier-extract-size>
