@@ -1,4 +1,4 @@
-import { DatasetInterface, Plots, Coord } from './datasetInterface'
+import { DatasetInterface, Coord } from './datasetInterface'
 
 export class Datasets {
   datasets: DatasetInterface[]
@@ -29,8 +29,10 @@ export class Datasets {
     return this.datasets[this.datasets.length - 1].id + 1
   }
 
-  setPlots(plots: Plots) {
-    this.activeDataset.plots = plots
+  setPlots(coords: Coord[]) {
+    coords.forEach((coord) => {
+      this.activeDataset.addPlot(coord.xPx, coord.yPx)
+    })
   }
 
   sortPlots() {

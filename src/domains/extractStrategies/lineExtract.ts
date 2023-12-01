@@ -1,6 +1,6 @@
 import ExtractStrategyInterface from './extractStrategyInterface'
 import { ExtractParent } from './extractParent'
-import { Plot } from '../datasetInterface'
+import { Coord } from '../datasetInterface'
 
 export default class LineExtract
   extends ExtractParent
@@ -30,7 +30,7 @@ export default class LineExtract
     targetColor: [number, number, number],
     colorMatchThreshold: number,
   ) {
-    const plots = []
+    const coords: Coord[] = []
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
       Array(width).fill(false),
     )
@@ -74,9 +74,8 @@ export default class LineExtract
         )
         visitedArea[h][w] = true
         if (isMatch) {
-          const pixels: Plot[] = [
+          const pixels: Coord[] = [
             {
-              id: 0,
               xPx: w,
               yPx: h,
             },
@@ -115,7 +114,6 @@ export default class LineExtract
                   this.matchColor([r, g, b], targetColor, colorMatchThreshold)
                 ) {
                   pixels.push({
-                    id: pixels.length,
                     xPx: nw,
                     yPx: nh,
                   })
@@ -135,14 +133,13 @@ export default class LineExtract
           // INFO: In manual, pixels are limited to moving one pixel at a time.
           const offsetPx = 0.5
           // TODO: ここで桁数を指定する必要ない。表示時のみ対応でOK。
-          plots.push({
-            id: plots.length,
+          coords.push({
             xPx: parseFloat((xPxTotal / pixels.length + offsetPx).toFixed(1)),
             yPx: parseFloat((yPxTotal / pixels.length + offsetPx).toFixed(1)),
           })
         }
       }
     }
-    return plots
+    return coords
   }
 }
