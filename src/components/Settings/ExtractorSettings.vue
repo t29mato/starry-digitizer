@@ -160,16 +160,15 @@ export default defineComponent({
       }
     },
     handleOnClickInterpolate() {
-      //TODO: Move to usecase layer
-      const dataset = this.datasets.activeDataset
+      const activeDataset = this.datasets.activeDataset
 
       //INFO: Hide manually-added plots temporarilly, when previewing interpolation
-      dataset.manuallyAddedPlotIds.forEach((plotId) => {
-        dataset.removeVisiblePlotId(plotId)
+      activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
+        activeDataset.removeVisiblePlotId(plotId)
       })
 
       this.interpolator.interpolatedCoords.forEach((coord: Coord) => {
-        dataset.addTempPlot(coord.xPx, coord.yPx)
+        activeDataset.addTempPlot(coord.xPx, coord.yPx)
       })
 
       setTimeout(() => {
@@ -178,21 +177,19 @@ export default defineComponent({
           onConfirm: () => {
             this.canvas.clearInterpolationGuideCanvas()
 
-            dataset.manuallyAddedPlotIds.forEach((plotId) => {
-              dataset.clearPlot(plotId)
+            activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
+              activeDataset.clearPlot(plotId)
             })
-            dataset.tempPlots.forEach((tempPlot) => {
-              dataset.moveTempPlotToPlot(tempPlot.id)
+            activeDataset.tempPlots.forEach((tempPlot) => {
+              activeDataset.moveTempPlotToPlot(tempPlot.id)
             })
           },
           onCancel: () => {
-            const dataset = this.datasets.activeDataset
-
-            dataset.manuallyAddedPlotIds.forEach((plotId) => {
-              dataset.addVisiblePlotId(plotId)
+            activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
+              activeDataset.addVisiblePlotId(plotId)
             })
-            dataset.tempPlots.forEach((tempPlot) => {
-              dataset.clearTempPlot(tempPlot.id)
+            activeDataset.tempPlots.forEach((tempPlot) => {
+              activeDataset.clearTempPlot(tempPlot.id)
             })
           },
         })
