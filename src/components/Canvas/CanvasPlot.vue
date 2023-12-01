@@ -12,7 +12,7 @@
       border: '1px solid white',
       'border-radius': '50%',
       visibility: isVisible ? 'visible' : 'hidden',
-      opacity: plotOpacity,
+      opacity: opacity,
     }"
     @click="click"
   ></div>
@@ -32,7 +32,7 @@ export default defineComponent({
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useStyleStore, ['plotOpacity']),
+    ...mapState(useStyleStore, ['plotOpacity', 'tempPlotOpacity']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -49,13 +49,14 @@ export default defineComponent({
       }
       return undefined
     },
+    opacity() {
+      return this.isTemporary ? this.tempPlotOpacity : this.plotOpacity
+    },
     backgroundColor() {
       if (this.isActive) {
         return '#ff0000'
       }
-      if (this.isTemporary) {
-        return '#999999'
-      }
+
       return '#1e90ff'
     },
   },
