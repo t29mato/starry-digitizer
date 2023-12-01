@@ -12,7 +12,7 @@ wwwwww
 rrrrrr
 wwwwww
 `, () => {
-    const plots = extractor.execute(6, 6, [
+    const coords = extractor.execute(6, 6, [
         0, 0, 0, 0,
         0, 0, 0, 0,
         0, 0, 0, 0,
@@ -32,18 +32,15 @@ wwwwww
         0, 0, 0, 0,
         0, 0, 0, 0,
     ], [], false, [255, 0, 0], 10)
-    expect(plots).toEqual([{
-            "id": 0,
+    expect(coords).toEqual([{
             "xPx": 1,
             "yPx": 1.5,
         },
         {
-            "id": 1,
             "xPx": 3,
             "yPx": 1.5,
         },
         {
-            "id": 2,
             "xPx": 5,
             "yPx": 1.5,
         },
