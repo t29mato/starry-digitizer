@@ -4,6 +4,7 @@ export interface State {
   plotSizePx: number
   axisSizePx: number
   plotOpacity: number
+  tempPlotOpacity: number
 }
 
 export const useStyleStore = defineStore('style', {
@@ -11,6 +12,7 @@ export const useStyleStore = defineStore('style', {
     plotSizePx: 10,
     axisSizePx: 20,
     plotOpacity: 0.7,
+    tempPlotOpacity: 0.4,
   }),
   getters: {
     //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？

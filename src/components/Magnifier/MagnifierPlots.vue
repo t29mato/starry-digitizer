@@ -16,7 +16,7 @@
       'background-color': backgroundColor,
       border: `${1}px solid white`,
       'border-radius': '50%',
-      opacity: plotOpacity,
+      opacity: opacity,
     }"
   ></div>
 </template>
@@ -36,7 +36,7 @@ export default defineComponent({
     ...mapState(useMagnifierStore, ['magnifier']),
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useStyleStore, ['plotSizePx']),
-    ...mapState(useStyleStore, ['plotOpacity']),
+    ...mapState(useStyleStore, ['plotOpacity', 'tempPlotOpacity']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -49,12 +49,12 @@ export default defineComponent({
     yPx(): number {
       return this.plot.yPx
     },
+    opacity() {
+      return this.isTemporary ? this.tempPlotOpacity : this.plotOpacity
+    },
     backgroundColor() {
       if (this.isActive) {
         return '#ff0000'
-      }
-      if (this.isTemporary) {
-        return '#999999'
       }
       return '#1e90ff'
     },
