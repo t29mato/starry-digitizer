@@ -82,6 +82,7 @@ import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 import { useInterpolatorStore } from '@/store/interpolator'
+import { useConfirmerStore } from '@/store/confirmer'
 
 export default defineComponent({
   components: {
@@ -101,6 +102,7 @@ export default defineComponent({
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useInterpolatorStore, ['interpolator']),
+    ...mapState(useConfirmerStore, ['confirmer']),
   },
   props: {
     initialExtractorStrategy: {
@@ -157,37 +159,39 @@ export default defineComponent({
       }
     },
     handleOnClickInterpolate() {
-      //TODO: Move to usecase layer
-      const dataset = this.datasets.activeDataset
+      const activeDataset = this.datasets.activeDataset
 
       //INFO: Hide manually-added plots temporarilly, when previewing interpolation
-      dataset.manuallyAddedPlotIds.forEach((plotId) => {
-        dataset.removeVisiblePlotId(plotId)
+      activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
+        activeDataset.removeVisiblePlotId(plotId)
       })
 
       this.interpolator.interpolatedCoords.forEach((coord: Coord) => {
-        dataset.addTempPlot(coord.xPx, coord.yPx)
+        activeDataset.addTempPlot(coord.xPx, coord.yPx)
       })
 
-      //TODO: Is there any way to get when plots are drawn
       setTimeout(() => {
-        if (window.confirm('Do you want to apply this interpolation result?')) {
-          this.canvas.clearInterpolationGuideCanvas()
+        this.confirmer.activate({
+          message: 'Do you want to apply these points?',
+          onConfirm: () => {
+            this.canvas.clearInterpolationGuideCanvas()
 
-          dataset.manuallyAddedPlotIds.forEach((plotId) => {
-            dataset.clearPlot(plotId)
-          })
-          dataset.tempPlots.forEach((tempPlot) => {
-            dataset.moveTempPlotToPlot(tempPlot.id)
-          })
-        } else {
-          dataset.manuallyAddedPlotIds.forEach((plotId) => {
-            dataset.addVisiblePlotId(plotId)
-          })
-          dataset.tempPlots.forEach((tempPlot) => {
-            dataset.clearTempPlot(tempPlot.id)
-          })
-        }
+            activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
+              activeDataset.clearPlot(plotId)
+            })
+            activeDataset.tempPlots.forEach((tempPlot) => {
+              activeDataset.moveTempPlotToPlot(tempPlot.id)
+            })
+          },
+          onCancel: () => {
+            activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
+              activeDataset.addVisiblePlotId(plotId)
+            })
+            activeDataset.tempPlots.forEach((tempPlot) => {
+              activeDataset.clearTempPlot(tempPlot.id)
+            })
+          },
+        })
       }, 300)
     },
     handleOnUpdateInterpolatorInterval(value: any) {
@@ -204,3 +208,4 @@ export default defineComponent({
   },
 })
 </script>
+@/store/confirmer
