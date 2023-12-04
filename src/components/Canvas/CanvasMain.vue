@@ -56,6 +56,7 @@ import { useExtractorStore } from '@/store/extractor'
 import { useInterpolatorStore } from '@/store/interpolator'
 import { getMouseCoordFromMouseEvent } from '@/presentation/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/dragRectangleCalculator'
+import { useConfirmerStore } from '@/store/confirmer'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -78,6 +79,7 @@ export default defineComponent({
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useInterpolatorStore, ['interpolator']),
+    ...mapState(useConfirmerStore, ['confirmer']),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
@@ -185,6 +187,8 @@ export default defineComponent({
       )
     },
     click(e: MouseEvent): void {
+      if (this.confirmer.isActive) return
+
       this.plot(e)
       this.updateInterpolationGuide()
     },
@@ -193,6 +197,8 @@ export default defineComponent({
       this.mouseDragOnCanvas(coord)
     },
     mouseMove(e: MouseEvent) {
+      if (this.confirmer.isActive) return
+
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
       this.axes.isAdjusting = false
@@ -208,11 +214,15 @@ export default defineComponent({
       }
     },
     mouseDown(e: MouseEvent) {
+      if (this.confirmer.isActive) return
+
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
       this.mouseDownOnCanvas({ xPx, yPx })
     },
     mouseUp() {
+      if (this.confirmer.isActive) return
+
       this.mouseUpOnCanvas()
 
       // INFO: EDITモードの場合にplotの複数選択を行う
@@ -231,6 +241,8 @@ export default defineComponent({
       }
     },
     keyDownHandler(e: KeyboardEvent) {
+      if (this.confirmer.isActive) return
+
       const target = e.target as Element
       // INFO: 編集可能HTMLにカーソルが当たってる場合はスルー
       if (target.hasAttribute('contentEditable')) {
