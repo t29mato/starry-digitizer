@@ -193,12 +193,12 @@ export default defineComponent({
       this.updateInterpolationGuide()
     },
     mouseDrag(coord: Coord) {
+      if (this.confirmer.isActive) return
+
       // TODO: 呼び出すメソッドはCanvasに移譲したい
       this.mouseDragOnCanvas(coord)
     },
     mouseMove(e: MouseEvent) {
-      if (this.confirmer.isActive) return
-
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
       this.axes.isAdjusting = false
