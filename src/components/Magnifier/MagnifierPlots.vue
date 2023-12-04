@@ -16,6 +16,7 @@
       'background-color': backgroundColor,
       border: `${1}px solid white`,
       'border-radius': '50%',
+      visibility: isVisible ? 'visible' : 'hidden',
       opacity: opacity,
     }"
   ></div>
@@ -69,6 +70,9 @@ export default defineComponent({
       required: true,
     },
     isActive: {
+      type: Boolean,
+    },
+    isVisible: {
       type: Boolean,
     },
     isTemporary: {
