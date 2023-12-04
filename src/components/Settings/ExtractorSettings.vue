@@ -66,7 +66,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { Coord } from '@/domains/datasetInterface'
 
 import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
@@ -83,6 +82,7 @@ import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 import { useInterpolatorStore } from '@/store/interpolator'
 import { useConfirmerStore } from '@/store/confirmer'
+import { previewInterpolation } from '@/services/interpolationPreviewer'
 
 export default defineComponent({
   components: {
@@ -159,40 +159,7 @@ export default defineComponent({
       }
     },
     handleOnClickInterpolate() {
-      const activeDataset = this.datasets.activeDataset
-
-      //INFO: Hide manually-added plots temporarilly, when previewing interpolation
-      activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
-        activeDataset.removeVisiblePlotId(plotId)
-      })
-
-      this.interpolator.interpolatedCoords.forEach((coord: Coord) => {
-        activeDataset.addTempPlot(coord.xPx, coord.yPx)
-      })
-
-      setTimeout(() => {
-        this.confirmer.activate({
-          message: 'Do you want to apply these points?',
-          onConfirm: () => {
-            this.canvas.clearInterpolationGuideCanvas()
-
-            activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
-              activeDataset.clearPlot(plotId)
-            })
-            activeDataset.tempPlots.forEach((tempPlot) => {
-              activeDataset.moveTempPlotToPlot(tempPlot.id)
-            })
-          },
-          onCancel: () => {
-            activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
-              activeDataset.addVisiblePlotId(plotId)
-            })
-            activeDataset.tempPlots.forEach((tempPlot) => {
-              activeDataset.clearTempPlot(tempPlot.id)
-            })
-          },
-        })
-      }, 300)
+      previewInterpolation()
     },
     handleOnUpdateInterpolatorInterval(value: any) {
       const plots = this.datasets.activeDataset.manuallyAddedPlots
