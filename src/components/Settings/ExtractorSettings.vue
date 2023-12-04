@@ -172,7 +172,7 @@ export default defineComponent({
 
       setTimeout(() => {
         this.confirmer.activate({
-          message: 'Do you want to apply these points?',
+          message: 'Confirm the interpolated points?',
           onConfirm: () => {
             this.canvas.clearInterpolationGuideCanvas()
 
