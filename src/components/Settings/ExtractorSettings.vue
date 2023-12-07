@@ -13,7 +13,17 @@
       <v-btn size="small" color="primary"> Edit (E) </v-btn>
       <v-btn size="small" color="primary"> Delete (D) </v-btn>
     </v-btn-toggle>
-    <h5 class="mt-2">Interpolation</h5>
+    <div class="d-flex align-center">
+      <h5>Interpolation</h5>
+      <v-switch
+        class="ml-3"
+        color="primary"
+        v-model="isInterpolationEnabled"
+        hide-details
+        density="compact"
+      ></v-switch>
+    </div>
+
     <div class="d-flex align-end mt-1 mb-4">
       <v-text-field
         class="mr-4"
@@ -26,6 +36,7 @@
         max="30"
         density="compact"
         hide-details
+        :disabled="!isInterpolationEnabled"
       ></v-text-field>
       <v-btn
         @click="handleOnClickInterpolate"
@@ -94,6 +105,7 @@ export default defineComponent({
   data() {
     return {
       isExtracting: false,
+      isInterpolationEnabled: false,
     }
   },
   computed: {
