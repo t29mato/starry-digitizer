@@ -5,4 +5,9 @@ export const useSettingsStore = defineStore('settings', {
     isInterpolatorEnabled: false,
     //TODO: pointMode, manualMode, maskModeなども新仕様に合わせてここで管理する
   }),
+  actions: {
+    setIsInterpolatorEnabled(isToEnable: boolean) {
+      this.isInterpolatorEnabled = isToEnable
+    },
+  },
 })

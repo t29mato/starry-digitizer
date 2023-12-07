@@ -18,7 +18,8 @@
       <v-switch
         class="ml-3"
         color="primary"
-        v-model="isInterpolationEnabled"
+        :model-value="isInterpolatorEnabled"
+        @update:model-value="setInterpolatorEnabled"
         hide-details
         density="compact"
       ></v-switch>
@@ -36,7 +37,7 @@
         max="30"
         density="compact"
         hide-details
-        :disabled="!isInterpolationEnabled"
+        :disabled="!isInterpolatorEnabled"
       ></v-text-field>
       <v-btn
         @click="handleOnClickInterpolate"
@@ -94,6 +95,7 @@ import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 import { useInterpolatorStore } from '@/store/interpolator'
 import { useConfirmerStore } from '@/store/confirmer'
+import { useSettingsStore } from '@/store/settings'
 
 export default defineComponent({
   components: {
@@ -105,7 +107,6 @@ export default defineComponent({
   data() {
     return {
       isExtracting: false,
-      isInterpolationEnabled: false,
     }
   },
   computed: {
@@ -115,6 +116,7 @@ export default defineComponent({
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useInterpolatorStore, ['interpolator']),
     ...mapState(useConfirmerStore, ['confirmer']),
+    ...mapState(useSettingsStore, ['isInterpolatorEnabled']),
   },
   props: {
     initialExtractorStrategy: {
@@ -141,6 +143,7 @@ export default defineComponent({
       'inactivatePlots',
     ]),
     ...mapActions(useCanvasStore, ['setManualMode']),
+    ...mapActions(useSettingsStore, ['setIsInterpolatorEnabled']),
     changeManualMode(value: any) {
       this.inactivatePlots()
       if (value === undefined) {
@@ -217,7 +220,9 @@ export default defineComponent({
         )
       }
     },
+    setInterpolatorEnabled(isToEnable: any) {
+      this.setIsInterpolatorEnabled(isToEnable)
+    },
   },
 })
 </script>
-@/store/confirmer
