@@ -19,6 +19,7 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
 //Pinia
 import { createPinia } from 'pinia'
+import { initializeSettings } from './services/initializeSettings'
 
 const pinia = createPinia()
 
@@ -46,6 +47,8 @@ const vuetify = createVuetify({
 })
 
 const app = createApp(App).use(pinia).use(vuetify)
+initializeSettings()
+
 app.mount('#app')
 
 if (process.env.NODE_ENV === 'production') {
