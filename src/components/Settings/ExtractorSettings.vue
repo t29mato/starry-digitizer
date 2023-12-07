@@ -19,7 +19,7 @@
         class="ml-3"
         color="primary"
         :model-value="isInterpolatorEnabled"
-        @update:model-value="setInterpolatorEnabled"
+        @update:model-value="handleOnClickInterpolatorSwitch"
         hide-details
         density="compact"
       ></v-switch>
@@ -220,7 +220,8 @@ export default defineComponent({
         )
       }
     },
-    setInterpolatorEnabled(isToEnable: any) {
+    //INFO: isToEnable: boolean だが@updateのところで型エラーが出るのでany
+    handleOnClickInterpolatorSwitch(isToEnable: any) {
       this.setIsInterpolatorEnabled(isToEnable)
     },
   },
