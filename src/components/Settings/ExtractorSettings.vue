@@ -97,6 +97,8 @@ import { useInterpolatorStore } from '@/store/interpolator'
 import { useConfirmerStore } from '@/store/confirmer'
 import { useSettingsStore } from '@/store/settings'
 
+import { addLocalStorageData } from '@/services/localStorageHandler'
+
 export default defineComponent({
   components: {
     SymbolExtractSettings,
@@ -223,6 +225,7 @@ export default defineComponent({
     //INFO: isToEnable: boolean だが@updateのところで型エラーが出るのでany
     handleOnClickInterpolatorSwitch(isToEnable: any) {
       this.setIsInterpolatorEnabled(isToEnable)
+      addLocalStorageData('isInterpolatorEnabled', String(isToEnable))
     },
   },
 })
