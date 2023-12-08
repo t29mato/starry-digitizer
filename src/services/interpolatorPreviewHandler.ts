@@ -1,4 +1,4 @@
-import { Plot } from '@/domains/datasetInterface'
+import { Coord, Plot } from '@/domains/datasetInterface'
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { useInterpolatorStore } from '@/store/interpolator'
@@ -8,9 +8,11 @@ const updateInterpolationPreview = () => {
   const { canvas } = useCanvasStore()
   const { interpolator } = useInterpolatorStore()
 
-  const anchorPlots = datasets.activeDataset.plots.filter((plot: Plot) =>
+  const activeDataset = datasets.activeDataset
+
+  const anchorPlots = activeDataset.plots.filter((plot: Plot) =>
     //TODO: 本来はinterpolatorに属するanchor coordsのようなものを使うべきだが、暫定仕様としてplotのロジックを流用
-    datasets.activeDataset.manuallyAddedPlotIds.includes(plot.id),
+    activeDataset.manuallyAddedPlotIds.includes(plot.id),
   )
 
   canvas.clearInterpolationGuideCanvas()
@@ -22,6 +24,13 @@ const updateInterpolationPreview = () => {
   interpolator.setSplineInterpolatedCoords(anchorPlots)
 
   canvas.drawInterpolationGuideLine(interpolator.interpolatedCoords)
+
+  activeDataset.tempPlots.forEach((tempPlot) => {
+    activeDataset.clearTempPlot(tempPlot.id)
+  })
+  interpolator.interpolatedCoords.forEach((coord: Coord) => {
+    activeDataset.addTempPlot(coord.xPx, coord.yPx)
+  })
 }
 
 export { updateInterpolationPreview }

@@ -3,16 +3,17 @@
     class="canvas-plot"
     :style="{
       position: 'absolute',
-      top: `${yPx - plotHalfSize}px`,
-      left: `${xPx - plotHalfSize}px`,
+      top: top,
+      left: left,
       cursor: cursor,
-      width: `${plotSizePx}px`,
-      height: `${plotSizePx}px`,
+      width: size,
+      height: size,
       'background-color': backgroundColor,
       border: '1px solid white',
       'border-radius': borderRadius,
       visibility: isVisible ? 'visible' : 'hidden',
       opacity: opacity,
+      zIndex: zIndex,
     }"
     @click="click"
   ></div>
@@ -33,11 +34,13 @@ export default defineComponent({
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useStyleStore, ['plotOpacity', 'tempPlotOpacity']),
+    ...mapState(useStyleStore, [
+      'plotOpacity',
+      'tempPlotOpacity',
+      'plotSizePx',
+      'tempPlotSizePx',
+    ]),
     ...mapState(useInterpolatorStore, ['interpolator']),
-    plotHalfSize(): number {
-      return this.plotSizePx / 2
-    },
     xPx(): number {
       return this.plot.xPx
     },
@@ -59,9 +62,13 @@ export default defineComponent({
         return '#ff0000'
       }
 
+      if (this.isManuallyAdded) {
+        return '#6a5acd'
+      }
+
       return '#1e90ff'
     },
-    borderRadius() {
+    borderRadius(): string {
       //TODO: 本来はinterpolatorのanchor pointsであるべきものを、暫定的にplotで表現しているので、最終的にここは消したい
 
       if (this.isManuallyAdded) {
@@ -70,14 +77,38 @@ export default defineComponent({
 
       return '50%'
     },
+    size(): string {
+      if (this.isTemporary) {
+        return this.tempPlotSizePx + 'px'
+      }
+
+      return this.plotSizePx + 'px'
+    },
+    top(): string {
+      if (this.isTemporary) {
+        return this.yPx - this.tempPlotSizePx / 2 + 'px'
+      }
+
+      return this.yPx - this.plotSizePx / 2 + 'px'
+    },
+    left(): string {
+      if (this.isTemporary) {
+        return this.xPx - this.tempPlotSizePx / 2 + 'px'
+      }
+
+      return this.xPx - this.plotSizePx / 2 + 'px'
+    },
+    zIndex(): string {
+      if (this.isTemporary) {
+        return '1'
+      }
+
+      return '2'
+    },
   },
   props: {
     plot: {
       type: Object as () => Plot,
-      required: true,
-    },
-    plotSizePx: {
-      type: Number,
       required: true,
     },
     isActive: {

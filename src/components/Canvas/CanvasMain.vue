@@ -268,7 +268,7 @@ export default defineComponent({
       if (this.datasets.activeDataset.hasActive()) {
         if (key === 'Backspace' || key === 'Delete') {
           this.clearActivePlots()
-          this.updateInterpolationGuide()
+          updateInterpolationPreview()
 
           const lastPlotId = this.datasets.activeDataset.lastPlotId
           if (lastPlotId === -1) return
