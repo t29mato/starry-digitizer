@@ -126,6 +126,7 @@ export default defineComponent({
     ...mapActions(useExtractorStore, ['setStrategy']),
     ...mapActions(useAxesStore, ['inactivateAxis']),
     ...mapActions(useDatasetsStore, [
+      'switchActivatedPlot',
       'clearPlots',
       'setPlots',
       'sortPlots',
@@ -170,6 +171,8 @@ export default defineComponent({
       activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
         activeDataset.clearPlot(plotId)
       })
+
+      this.switchActivatedPlot(activeDataset.lastPlotId)
 
       clearInterpolationPreview()
     },
