@@ -102,8 +102,7 @@ export class Dataset implements DatasetInterface {
   }
 
   clearPlots() {
-    this.plots = []
-    this.activePlotIds.length = 0
+    this.plots.forEach((plot) => this.clearPlot(plot.id))
   }
 
   inactivatePlots() {

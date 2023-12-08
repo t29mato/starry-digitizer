@@ -18,7 +18,7 @@
       size="small"
       class="ml-2"
       :disabled="datasets.activeDataset.plots.length === 0"
-      @click="clearPlots"
+      @click="handleOnClickClearPlots"
       >Clear Points</v-btn
     >
     <v-btn
@@ -41,6 +41,8 @@ import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
 import { useCanvasStore } from '@/store/canvas'
 import { mapState, mapActions } from 'pinia'
+
+import { clearInterpolationPreview } from '@/services/interpolatorPreviewHandler'
 
 export default defineComponent({
   computed: {
@@ -66,6 +68,10 @@ export default defineComponent({
     clearYAxis() {
       this.clearAxesCoords()
       this.setManualMode(-1)
+    },
+    handleOnClickClearPlots() {
+      this.clearPlots()
+      clearInterpolationPreview()
     },
   },
 })

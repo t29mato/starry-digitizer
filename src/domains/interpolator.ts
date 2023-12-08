@@ -29,4 +29,8 @@ export class Interpolator implements InterpolatorInterface {
       .getPoints(segments)
       .map((p: number[]) => ({ xPx: p[0], yPx: p[1] }))
   }
+
+  cleatInterpolatedCoords(): void {
+    this.interpolatedCoords = []
+  }
 }

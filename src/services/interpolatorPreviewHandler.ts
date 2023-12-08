@@ -20,17 +20,33 @@ const updateInterpolationPreview = () => {
   if (anchorPlots.length <= 1) {
     return
   }
+  activeDataset.tempPlots.forEach((tempPlot) => {
+    activeDataset.clearTempPlot(tempPlot.id)
+  })
 
   interpolator.setSplineInterpolatedCoords(anchorPlots)
 
   canvas.drawInterpolationGuideLine(interpolator.interpolatedCoords)
 
-  activeDataset.tempPlots.forEach((tempPlot) => {
-    activeDataset.clearTempPlot(tempPlot.id)
-  })
   interpolator.interpolatedCoords.forEach((coord: Coord) => {
     activeDataset.addTempPlot(coord.xPx, coord.yPx)
   })
 }
 
-export { updateInterpolationPreview }
+const clearInterpolationPreview = () => {
+  const { datasets } = useDatasetsStore()
+  const { canvas } = useCanvasStore()
+  const { interpolator } = useInterpolatorStore()
+
+  const activeDataset = datasets.activeDataset
+
+  activeDataset.tempPlots.forEach((tempPlot) => {
+    activeDataset.clearTempPlot(tempPlot.id)
+  })
+
+  canvas.clearInterpolationGuideCanvas()
+
+  interpolator.cleatInterpolatedCoords()
+}
+
+export { updateInterpolationPreview, clearInterpolationPreview }
