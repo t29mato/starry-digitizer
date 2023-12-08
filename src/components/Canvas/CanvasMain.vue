@@ -286,6 +286,7 @@ export default defineComponent({
       }
       if (this.datasets.activeDataset.plotsAreActive) {
         this.moveActivePlot(vector)
+        updateInterpolationPreview()
         this.setCanvasCursor(
           this.datasets.activeDataset.plots.filter((plot: Plot) =>
             this.datasets.activeDataset.activePlotIds.includes(plot.id),
