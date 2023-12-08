@@ -82,7 +82,10 @@ import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 import { useInterpolatorStore } from '@/store/interpolator'
 import { useConfirmerStore } from '@/store/confirmer'
-import { updateInterpolationPreview } from '@/services/interpolatorPreviewHandler'
+import {
+  updateInterpolationPreview,
+  clearInterpolationPreview,
+} from '@/services/interpolatorPreviewHandler'
 
 export default defineComponent({
   components: {
@@ -161,14 +164,14 @@ export default defineComponent({
     handleOnConfirmInterpolation() {
       const activeDataset = this.datasets.activeDataset
 
-      this.canvas.clearInterpolationGuideCanvas()
-
-      activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
-        activeDataset.clearPlot(plotId)
-      })
       activeDataset.tempPlots.forEach((tempPlot) => {
         activeDataset.moveTempPlotToPlot(tempPlot.id)
       })
+      activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
+        activeDataset.clearPlot(plotId)
+      })
+
+      clearInterpolationPreview()
     },
     handleOnUpdateInterpolatorInterval(value: any) {
       this.interpolator.updateInterval(parseFloat(value))
