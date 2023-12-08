@@ -16,13 +16,13 @@ const updateInterpolationPreview = () => {
   )
 
   canvas.clearInterpolationGuideCanvas()
+  activeDataset.tempPlots.forEach((tempPlot) => {
+    activeDataset.clearTempPlot(tempPlot.id)
+  })
 
   if (anchorPlots.length <= 1) {
     return
   }
-  activeDataset.tempPlots.forEach((tempPlot) => {
-    activeDataset.clearTempPlot(tempPlot.id)
-  })
 
   interpolator.setSplineInterpolatedCoords(anchorPlots)
 
