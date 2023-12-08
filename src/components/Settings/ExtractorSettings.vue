@@ -28,7 +28,7 @@
         hide-details
       ></v-text-field>
       <v-btn
-        @click="handleOnClickInterpolate"
+        @click="handleOnConfirmInterpolation"
         size="small"
         color="primary"
         :disabled="datasets.activeDataset.manuallyAddedPlotIds.length === 0"
@@ -82,6 +82,7 @@ import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 import { useInterpolatorStore } from '@/store/interpolator'
 import { useConfirmerStore } from '@/store/confirmer'
+import { updateInterpolationPreview } from '@/services/interpolatorPreviewHandler'
 
 export default defineComponent({
   components: {
@@ -157,7 +158,7 @@ export default defineComponent({
         this.isExtracting = false
       }
     },
-    handleOnClickInterpolate() {
+    handleOnConfirmInterpolation() {
       const activeDataset = this.datasets.activeDataset
 
       this.canvas.clearInterpolationGuideCanvas()
@@ -170,17 +171,10 @@ export default defineComponent({
       })
     },
     handleOnUpdateInterpolatorInterval(value: any) {
-      const plots = this.datasets.activeDataset.manuallyAddedPlots
       this.interpolator.updateInterval(parseFloat(value))
 
-      if (plots.length > 1) {
-        this.interpolator.setSplineInterpolatedCoords(plots)
-        this.canvas.drawInterpolationGuideLine(
-          this.interpolator.interpolatedCoords,
-        )
-      }
+      updateInterpolationPreview()
     },
   },
 })
 </script>
-@/store/confirmer
