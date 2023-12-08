@@ -10,7 +10,7 @@
       height: `${plotSizePx}px`,
       'background-color': backgroundColor,
       border: '1px solid white',
-      'border-radius': '50%',
+      'border-radius': borderRadius,
       visibility: isVisible ? 'visible' : 'hidden',
       opacity: opacity,
     }"
@@ -27,12 +27,14 @@ import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useStyleStore } from '@/store/style'
+import { useInterpolatorStore } from '@/store/interpolator'
 
 export default defineComponent({
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useStyleStore, ['plotOpacity', 'tempPlotOpacity']),
+    ...mapState(useInterpolatorStore, ['interpolator']),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -59,6 +61,15 @@ export default defineComponent({
 
       return '#1e90ff'
     },
+    borderRadius() {
+      //TODO: 本来はinterpolatorのanchor pointsであるべきものを、暫定的にplotで表現しているので、最終的にここは消したい
+
+      if (this.isManuallyAdded) {
+        return '0'
+      }
+
+      return '50%'
+    },
   },
   props: {
     plot: {
@@ -76,6 +87,10 @@ export default defineComponent({
       type: Boolean,
     },
     isTemporary: {
+      type: Boolean,
+      default: false,
+    },
+    isManuallyAdded: {
       type: Boolean,
       default: false,
     },
