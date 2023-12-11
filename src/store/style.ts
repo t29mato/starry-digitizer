@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 
 export interface State {
   plotSizePx: number
+  tempPlotSizePx: number
   axisSizePx: number
   plotOpacity: number
   tempPlotOpacity: number
@@ -10,6 +11,7 @@ export interface State {
 export const useStyleStore = defineStore('style', {
   state: (): State => ({
     plotSizePx: 10,
+    tempPlotSizePx: 8,
     axisSizePx: 20,
     plotOpacity: 0.7,
     tempPlotOpacity: 0.4,

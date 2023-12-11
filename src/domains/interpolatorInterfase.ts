@@ -6,4 +6,5 @@ export interface InterpolatorInterface {
 
   updateInterval(interval: number): void
   setSplineInterpolatedCoords(plots: Plots): void
+  cleatInterpolatedCoords(): void
 }

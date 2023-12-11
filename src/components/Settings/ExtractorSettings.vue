@@ -28,11 +28,11 @@
         hide-details
       ></v-text-field>
       <v-btn
-        @click="handleOnClickInterpolate"
+        @click="handleOnConfirmInterpolation"
         size="small"
         color="primary"
         :disabled="datasets.activeDataset.manuallyAddedPlotIds.length === 0"
-        >Interpolate</v-btn
+        >Confirm</v-btn
       >
     </div>
     <v-divider></v-divider>
@@ -66,7 +66,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { Coord } from '@/domains/datasetInterface'
 
 import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
@@ -83,6 +82,10 @@ import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 import { useInterpolatorStore } from '@/store/interpolator'
 import { useConfirmerStore } from '@/store/confirmer'
+import {
+  updateInterpolationPreview,
+  clearInterpolationPreview,
+} from '@/services/interpolatorPreviewHandler'
 
 export default defineComponent({
   components: {
@@ -123,6 +126,7 @@ export default defineComponent({
     ...mapActions(useExtractorStore, ['setStrategy']),
     ...mapActions(useAxesStore, ['inactivateAxis']),
     ...mapActions(useDatasetsStore, [
+      'switchActivatedPlot',
       'clearPlots',
       'setPlots',
       'sortPlots',
@@ -158,54 +162,25 @@ export default defineComponent({
         this.isExtracting = false
       }
     },
-    handleOnClickInterpolate() {
+    handleOnConfirmInterpolation() {
       const activeDataset = this.datasets.activeDataset
 
-      //INFO: Hide manually-added plots temporarilly, when previewing interpolation
+      activeDataset.tempPlots.forEach((tempPlot) => {
+        activeDataset.moveTempPlotToPlot(tempPlot.id)
+      })
       activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
-        activeDataset.removeVisiblePlotId(plotId)
+        activeDataset.clearPlot(plotId)
       })
 
-      this.interpolator.interpolatedCoords.forEach((coord: Coord) => {
-        activeDataset.addTempPlot(coord.xPx, coord.yPx)
-      })
+      this.switchActivatedPlot(activeDataset.lastPlotId)
 
-      setTimeout(() => {
-        this.confirmer.activate({
-          message: 'Confirm the interpolated points?',
-          onConfirm: () => {
-            this.canvas.clearInterpolationGuideCanvas()
-
-            activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
-              activeDataset.clearPlot(plotId)
-            })
-            activeDataset.tempPlots.forEach((tempPlot) => {
-              activeDataset.moveTempPlotToPlot(tempPlot.id)
-            })
-          },
-          onCancel: () => {
-            activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
-              activeDataset.addVisiblePlotId(plotId)
-            })
-            activeDataset.tempPlots.forEach((tempPlot) => {
-              activeDataset.clearTempPlot(tempPlot.id)
-            })
-          },
-        })
-      }, 300)
+      clearInterpolationPreview()
     },
     handleOnUpdateInterpolatorInterval(value: any) {
-      const plots = this.datasets.activeDataset.manuallyAddedPlots
       this.interpolator.updateInterval(parseFloat(value))
 
-      if (plots.length > 1) {
-        this.interpolator.setSplineInterpolatedCoords(plots)
-        this.canvas.drawInterpolationGuideLine(
-          this.interpolator.interpolatedCoords,
-        )
-      }
+      updateInterpolationPreview()
     },
   },
 })
 </script>
-@/store/confirmer

@@ -57,6 +57,7 @@ import { useInterpolatorStore } from '@/store/interpolator'
 import { getMouseCoordFromMouseEvent } from '@/presentation/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/dragRectangleCalculator'
 import { useConfirmerStore } from '@/store/confirmer'
+import { updateInterpolationPreview } from '@/services/interpolatorPreviewHandler'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -170,27 +171,11 @@ export default defineComponent({
         return
       }
     },
-    updateInterpolationGuide(): void {
-      const plots = this.datasets.activeDataset.plots.filter((plot: Plot) =>
-        this.datasets.activeDataset.manuallyAddedPlotIds.includes(plot.id),
-      )
-
-      if (plots.length <= 1) {
-        this.canvas.clearInterpolationGuideCanvas()
-        return
-      }
-
-      this.interpolator.setSplineInterpolatedCoords(plots)
-
-      this.canvas.drawInterpolationGuideLine(
-        this.interpolator.interpolatedCoords,
-      )
-    },
     click(e: MouseEvent): void {
       if (this.confirmer.isActive) return
 
       this.plot(e)
-      this.updateInterpolationGuide()
+      updateInterpolationPreview()
     },
     mouseDrag(coord: Coord) {
       if (this.confirmer.isActive) return
@@ -283,7 +268,7 @@ export default defineComponent({
       if (this.datasets.activeDataset.hasActive()) {
         if (key === 'Backspace' || key === 'Delete') {
           this.clearActivePlots()
-          this.updateInterpolationGuide()
+          updateInterpolationPreview()
 
           const lastPlotId = this.datasets.activeDataset.lastPlotId
           if (lastPlotId === -1) return
@@ -301,6 +286,7 @@ export default defineComponent({
       }
       if (this.datasets.activeDataset.plotsAreActive) {
         this.moveActivePlot(vector)
+        updateInterpolationPreview()
         this.setCanvasCursor(
           this.datasets.activeDataset.plots.filter((plot: Plot) =>
             this.datasets.activeDataset.activePlotIds.includes(plot.id),
