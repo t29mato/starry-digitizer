@@ -26,7 +26,7 @@ const updateInterpolationPreview = () => {
 
   interpolator.setSplineInterpolatedCoords(anchorPlots)
 
-  canvas.drawInterpolationGuideLine(interpolator.interpolatedCoords)
+  canvas.drawInterpolationGuideLine(interpolator.interpolatedCoordsForGuideline)
 
   interpolator.interpolatedCoords.forEach((coord: Coord) => {
     activeDataset.addTempPlot(coord.xPx, coord.yPx)
