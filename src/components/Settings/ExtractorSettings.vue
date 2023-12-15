@@ -80,12 +80,9 @@ import { useExtractorStore } from '@/store/extractor'
 import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
-import { useInterpolatorStore } from '@/store/interpolator'
 import { useConfirmerStore } from '@/store/confirmer'
-import {
-  updateInterpolationPreview,
-  clearInterpolationPreview,
-} from '@/services/interpolatorPreviewHandler'
+
+import { Interpolator } from '@/application/services/interpolator'
 
 export default defineComponent({
   components: {
@@ -96,6 +93,7 @@ export default defineComponent({
   },
   data() {
     return {
+      interpolator: Interpolator.getInstance(),
       isExtracting: false,
     }
   },
@@ -104,7 +102,6 @@ export default defineComponent({
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useAxesStore, ['axes']),
-    ...mapState(useInterpolatorStore, ['interpolator']),
     ...mapState(useConfirmerStore, ['confirmer']),
   },
   props: {
@@ -174,12 +171,11 @@ export default defineComponent({
 
       this.switchActivatedPlot(activeDataset.lastPlotId)
 
-      clearInterpolationPreview()
+      this.interpolator.clearPreview()
     },
     handleOnUpdateInterpolatorInterval(value: any) {
       this.interpolator.updateInterval(parseFloat(value))
-
-      updateInterpolationPreview()
+      this.interpolator.updatePreview()
     },
   },
 })

@@ -1,5 +1,6 @@
 import { Plot } from '@/domains/datasetInterface'
 
+//TODO: public interfaceの、Plots型の、getTotalDistanceとして定義する
 export function getPlotsTotalDistance(plots: Plot[]): number {
   let previousPlot: undefined | Plot = undefined
   let totalDistance: number = 0

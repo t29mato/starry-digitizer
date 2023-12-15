@@ -28,7 +28,6 @@ import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useStyleStore } from '@/store/style'
-import { useInterpolatorStore } from '@/store/interpolator'
 
 export default defineComponent({
   computed: {
@@ -40,7 +39,6 @@ export default defineComponent({
       'plotSizePx',
       'tempPlotSizePx',
     ]),
-    ...mapState(useInterpolatorStore, ['interpolator']),
     xPx(): number {
       return this.plot.xPx
     },
