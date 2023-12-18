@@ -193,28 +193,6 @@ export class Canvas implements CanvasInterface {
     this.clearRectangle()
   }
 
-  drawInterpolationGuideLine(interpolatedCoords: Coord[]) {
-    this.clearInterpolationGuideCanvas()
-
-    this.interpolationGuideCanvas.context.beginPath()
-
-    this.interpolationGuideCanvas.context.lineWidth = 3
-    this.interpolationGuideCanvas.context.strokeStyle = '#ffd700'
-    this.interpolationGuideCanvas.context.moveTo(
-      interpolatedCoords[0].xPx * this.scale,
-      interpolatedCoords[0].yPx * this.scale,
-    )
-
-    for (let i = 1; i < interpolatedCoords.length; i++) {
-      this.interpolationGuideCanvas.context.lineTo(
-        interpolatedCoords[i].xPx * this.scale,
-        interpolatedCoords[i].yPx * this.scale,
-      )
-    }
-
-    this.interpolationGuideCanvas.context.stroke()
-  }
-
   clearRectangle() {
     this.rectangle = {
       startX: 0,
@@ -300,15 +278,6 @@ export class Canvas implements CanvasInterface {
     this.isDrawnMask = false
   }
 
-  clearInterpolationGuideCanvas() {
-    this.interpolationGuideCanvas.context.clearRect(
-      0,
-      0,
-      this.interpolationGuideCanvas.element.width,
-      this.interpolationGuideCanvas.element.height,
-    )
-  }
-
   get originalWidth(): number {
     return this.imageElement.width
   }
@@ -331,10 +300,6 @@ export class Canvas implements CanvasInterface {
 
   get tempMaskCanvas() {
     return new HTMLCanvas('tempMaskCanvas')
-  }
-
-  get interpolationGuideCanvas() {
-    return new HTMLCanvas('interpolationGuideCanvas')
   }
 
   get magnifierMaskCanvas() {
@@ -396,7 +361,5 @@ export class Canvas implements CanvasInterface {
       width,
       height,
     )
-    this.interpolationGuideCanvas.element.width = width
-    this.interpolationGuideCanvas.element.height = height
   }
 }
