@@ -2,8 +2,10 @@
   <div class="d-flex justify-end">
     <div></div>
     <div class="ml-2">
-      <v-btn size="small" @click="scaleDown"><v-icon>mdi-minus</v-icon></v-btn>
-      <v-btn size="small" class="ml-2" @click="scaleUp"
+      <v-btn size="small" @click="handleOnClickScaleDownButton"
+        ><v-icon>mdi-minus</v-icon></v-btn
+      >
+      <v-btn size="small" class="ml-2" @click="handleOnClickScaleUpButton"
         ><v-icon>mdi-plus</v-icon></v-btn
       >
       <v-btn size="small" class="ml-2" @click="resizeCanvasToOriginal"
@@ -20,8 +22,14 @@ import { defineComponent } from 'vue'
 
 import { useCanvasStore } from '@/store/canvas'
 import { mapState, mapActions } from 'pinia'
+import { Interpolator } from '@/application/services/interpolator'
 
 export default defineComponent({
+  data() {
+    return {
+      interpolator: Interpolator.getInstance(),
+    }
+  },
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
     showCanvasScale(): string {
@@ -35,6 +43,14 @@ export default defineComponent({
       'resizeCanvasToOriginal',
       'drawFitSizeImage',
     ]),
+    handleOnClickScaleUpButton() {
+      this.scaleUp()
+      this.interpolator.resizeGuideCanvas()
+    },
+    handleOnClickScaleDownButton() {
+      this.scaleDown()
+      this.interpolator.resizeGuideCanvas()
+    },
   },
 })
 </script>

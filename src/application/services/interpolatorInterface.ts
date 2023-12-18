@@ -9,6 +9,7 @@ export interface InterpolatorInterface {
   guideCanvas?: HTMLCanvas
   initialize(): void
   setIsActive(isActive: boolean): void
+  resizeGuideCanvas(): void
   setGuideCanvas(guideCanvas: HTMLCanvas): void
   updateInterval(interval: number): void
   updatePreview(): void

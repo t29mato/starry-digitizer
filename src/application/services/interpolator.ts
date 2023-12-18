@@ -96,7 +96,7 @@ export class Interpolator implements InterpolatorInterface {
   }
 
   //TODO: canvas操作系は独立したapplicationとして、各serviceのcanvasを一括でそうさできたほうがいいかも
-  private resizeGuideCanvas(): void {
+  public resizeGuideCanvas(): void {
     if (!this.guideCanvas) return
 
     const { canvas } = useCanvasStore()
@@ -106,13 +106,10 @@ export class Interpolator implements InterpolatorInterface {
 
     this.guideCanvas.element.width = newWidth
     this.guideCanvas.element.height = newHeight
-    this.guideCanvas.context.drawImage(
-      this.guideCanvas.element,
-      0,
-      0,
-      newWidth,
-      newHeight,
-    )
+
+    if (this.interpolatedCoords.length) {
+      this.drawInterpolationLineOnGuideCanvas()
+    }
   }
 
   public initialize(): void {
