@@ -44,8 +44,8 @@
         size="small"
         color="primary"
         :disabled="
-          !interpolator.isActive &&
-          datasets.activeDataset.manuallyAddedPlotIds.length === 0
+          !interpolator.isActive ||
+          datasets.activeDataset.manuallyAddedPlotIds.length < 2
         "
         >Confirm</v-btn
       >
