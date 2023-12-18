@@ -182,7 +182,10 @@ export default defineComponent({
       if (this.confirmer.isActive) return
 
       this.plot(e)
-      this.interpolator.updatePreview()
+
+      if (this.interpolator.isActive) {
+        this.interpolator.updatePreview()
+      }
     },
     mouseDrag(coord: Coord) {
       if (this.confirmer.isActive) return
