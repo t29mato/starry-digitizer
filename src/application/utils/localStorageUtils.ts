@@ -1,10 +1,12 @@
 import { LOCAL_STORAGE_GLOBAL_KEY } from '@/constants/constants'
 
+//TODO: どうテストする？
+
 const initializeStorageData = () => {
   localStorage.setItem(LOCAL_STORAGE_GLOBAL_KEY, '')
 }
 
-const addLocalStorageData = (key: string, value: string) => {
+const addLocalStorageData = (key: string, value: string): void => {
   const storageData: string | null = localStorage.getItem(
     LOCAL_STORAGE_GLOBAL_KEY,
   )
@@ -24,7 +26,7 @@ const addLocalStorageData = (key: string, value: string) => {
   )
 }
 
-const removeLocalStorageData = (key: string) => {
+const removeLocalStorageData = (key: string): void => {
   const storageData: string | null = localStorage.getItem(
     LOCAL_STORAGE_GLOBAL_KEY,
   )
@@ -43,4 +45,24 @@ const removeLocalStorageData = (key: string) => {
   )
 }
 
-export { addLocalStorageData, removeLocalStorageData }
+const getLocalStorageDataByKey = (key: string): string => {
+  //TODO: テスト時にエラー回避するためのworkaround しかるべき方針を考える
+  if (typeof localStorage !== 'object') {
+    return ''
+  }
+
+  const storageData: string | null = localStorage.getItem(
+    LOCAL_STORAGE_GLOBAL_KEY,
+  )
+
+  if (storageData === null) {
+    console.warn(
+      `tried to get data of '${key}' from localstorage, but localstorage is not initialized yet.`,
+    )
+    return ''
+  }
+
+  return JSON.parse(storageData)[key] || ''
+}
+
+export { addLocalStorageData, removeLocalStorageData, getLocalStorageDataByKey }

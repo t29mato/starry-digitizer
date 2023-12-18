@@ -13,7 +13,18 @@
       <v-btn size="small" color="primary"> Edit (E) </v-btn>
       <v-btn size="small" color="primary"> Delete (D) </v-btn>
     </v-btn-toggle>
-    <h5 class="mt-2">Interpolation</h5>
+    <div class="d-flex align-center">
+      <h5>Interpolation</h5>
+      <v-switch
+        class="ml-3"
+        color="primary"
+        :model-value="interpolator.isActive"
+        @update:model-value="setIsInterpolationActive"
+        hide-details
+        density="compact"
+      ></v-switch>
+    </div>
+
     <div class="d-flex align-end mt-1 mb-4">
       <v-text-field
         class="mr-4"
@@ -26,12 +37,16 @@
         max="30"
         density="compact"
         hide-details
+        :disabled="!interpolator.isActive"
       ></v-text-field>
       <v-btn
         @click="handleOnConfirmInterpolation"
         size="small"
         color="primary"
-        :disabled="datasets.activeDataset.manuallyAddedPlotIds.length === 0"
+        :disabled="
+          !interpolator.isActive &&
+          datasets.activeDataset.manuallyAddedPlotIds.length === 0
+        "
         >Confirm</v-btn
       >
     </div>
@@ -83,6 +98,7 @@ import { mapState, mapActions } from 'pinia'
 import { useConfirmerStore } from '@/store/confirmer'
 
 import { Interpolator } from '@/application/services/interpolator'
+import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 
 export default defineComponent({
   components: {
@@ -158,6 +174,11 @@ export default defineComponent({
       } finally {
         this.isExtracting = false
       }
+    },
+    //INFO: isActive: booleanであるが、@updateでtsエラーになるのでanyとしている
+    setIsInterpolationActive(isActive: any) {
+      this.interpolator.setIsActive(isActive)
+      addLocalStorageData('isInterpolatorActive', String(isActive))
     },
     handleOnConfirmInterpolation() {
       const activeDataset = this.datasets.activeDataset

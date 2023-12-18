@@ -5,6 +5,7 @@ import { useDatasetsStore } from '@/store/datasets'
 import { getInterpolatedCoordsList } from '../lib/CurveInterpolatorLib'
 import { getPlotsTotalDistance } from '@/services/getPlotsTotalDistance'
 import { useCanvasStore } from '@/store/canvas'
+import { getLocalStorageDataByKey } from '../utils/localStorageUtils'
 
 export class Interpolator implements InterpolatorInterface {
   private static instance: InterpolatorInterface
@@ -92,6 +93,20 @@ export class Interpolator implements InterpolatorInterface {
     }
 
     this.guideCanvas.context.stroke()
+  }
+
+  public initialize(): void {
+    const isActive = getLocalStorageDataByKey('isInterpolatorActive')
+
+    if (isActive === 'true') {
+      this.isActive = true
+    } else if (isActive === 'false') {
+      this.isActive = false
+    }
+  }
+
+  public setIsActive(isActive: boolean): void {
+    this.isActive = isActive
   }
 
   public setGuideCanvas(guideCanvas: HTMLCanvas): void {
