@@ -43,10 +43,7 @@
         @click="handleOnConfirmInterpolation"
         size="small"
         color="primary"
-        :disabled="
-          !interpolator.isActive ||
-          datasets.activeDataset.manuallyAddedPlotIds.length < 2
-        "
+        :disabled="!interpolator.isActive"
         >Confirm</v-btn
       >
     </div>
@@ -181,6 +178,12 @@ export default defineComponent({
       addLocalStorageData('isInterpolatorActive', String(isActive))
     },
     handleOnConfirmInterpolation() {
+      if (this.datasets.activeDataset.manuallyAddedPlotIds.length < 2) {
+        alert(
+          'Plot 2 or more points by clicking the graph image to execute interpolation.',
+        )
+        return
+      }
       const activeDataset = this.datasets.activeDataset
 
       activeDataset.tempPlots.forEach((tempPlot) => {

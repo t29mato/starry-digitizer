@@ -95,6 +95,26 @@ export class Interpolator implements InterpolatorInterface {
     this.guideCanvas.context.stroke()
   }
 
+  //TODO: canvas操作系は独立したapplicationとして、各serviceのcanvasを一括でそうさできたほうがいいかも
+  private resizeGuideCanvas(): void {
+    if (!this.guideCanvas) return
+
+    const { canvas } = useCanvasStore()
+
+    const newWidth = canvas.originalWidth * canvas.scale
+    const newHeight = canvas.originalHeight * canvas.scale
+
+    this.guideCanvas.element.width = newWidth
+    this.guideCanvas.element.height = newHeight
+    this.guideCanvas.context.drawImage(
+      this.guideCanvas.element,
+      0,
+      0,
+      newWidth,
+      newHeight,
+    )
+  }
+
   public initialize(): void {
     const isActive = getLocalStorageDataByKey('isInterpolatorActive')
 
