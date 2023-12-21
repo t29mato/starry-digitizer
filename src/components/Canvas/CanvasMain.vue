@@ -182,6 +182,7 @@ export default defineComponent({
       }
     },
     click(e: MouseEvent): void {
+      console.log(e)
       if (this.confirmer.isActive) return
 
       this.plot(e)

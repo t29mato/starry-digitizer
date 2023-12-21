@@ -16,6 +16,7 @@
     <div class="d-flex align-center">
       <h5>Interpolation</h5>
       <v-switch
+        id="switch-interpolation"
         class="ml-3"
         color="primary"
         :model-value="interpolator.isActive"
@@ -27,6 +28,7 @@
 
     <div class="d-flex align-end mt-1 mb-4">
       <v-text-field
+        id="interpolation-interval"
         class="mr-4"
         :model-value="interpolator.interval"
         @update:model-value="handleOnUpdateInterpolatorInterval"
@@ -40,6 +42,7 @@
         :disabled="!interpolator.isActive"
       ></v-text-field>
       <v-btn
+        id="confirm-interpolation"
         @click="handleOnConfirmInterpolation"
         size="small"
         color="primary"
