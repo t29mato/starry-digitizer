@@ -5,10 +5,11 @@ describe('template spec', () => {
     cy.visit('/')
 
     cy.get('#switch-interpolation').click()
+    cy.get('#reset-canvas-scale').click()
   })
 
   //INFO: アンカーポイントと仮で補間された点の区別ができないのでその合計数を検証
-  it('asserts that there are 22 points in default interval setting', () => {
+  it('asserts that there are 18 points in default interval setting', () => {
     cy.get('#canvasWrapper')
       .click(50, 390)
       .click(400, 50)
@@ -16,11 +17,11 @@ describe('template spec', () => {
       .click(150, 220)
       .click(250, 150)
 
-    cy.get('.canvas-plot').should('have.length', 22)
+    cy.get('.canvas-plot').should('have.length', 18)
   })
 
   //INFO: 補間確定後はアンカーポイントが削除されるので点が3つ減る
-  it('asserts that there are 19 points after confirming interpolation in default interval setting', () => {
+  it('asserts that there are 15 points after confirming interpolation in default interval setting', () => {
     cy.get('#canvasWrapper')
       .click(50, 390)
       .click(400, 50)
@@ -30,10 +31,10 @@ describe('template spec', () => {
 
     cy.get('button#confirm-interpolation').click()
 
-    cy.get('.canvas-plot').should('have.length', 19)
+    cy.get('.canvas-plot').should('have.length', 15)
   })
 
-  it('asserts that there are 16 points when interval is 15', () => {
+  it('asserts that there are 13 points when interval is 15', () => {
     cy.get('input#interpolation-interval').clear().type('15')
 
     cy.get('#canvasWrapper')
@@ -43,7 +44,7 @@ describe('template spec', () => {
       .click(150, 220)
       .click(250, 150)
 
-    cy.get('.canvas-plot').should('have.length', 16)
+    cy.get('.canvas-plot').should('have.length', 13)
   })
 
   it('asserts that there are 3 points when interpolation is disabled', () => {

@@ -8,7 +8,11 @@
       <v-btn size="small" class="ml-2" @click="handleOnClickScaleUpButton"
         ><v-icon>mdi-plus</v-icon></v-btn
       >
-      <v-btn size="small" class="ml-2" @click="handleOnClickResetScaleButton"
+      <v-btn
+        id="reset-canvas-scale"
+        size="small"
+        class="ml-2"
+        @click="handleOnClickResetScaleButton"
         >100%</v-btn
       >
       <v-btn size="small" class="ml-2" @click="drawFitSizeImage">Fit</v-btn>
