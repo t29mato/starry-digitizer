@@ -8,7 +8,7 @@
       <v-btn size="small" class="ml-2" @click="handleOnClickScaleUpButton"
         ><v-icon>mdi-plus</v-icon></v-btn
       >
-      <v-btn size="small" class="ml-2" @click="resizeCanvasToOriginal"
+      <v-btn size="small" class="ml-2" @click="handleOnClickResetScaleButton"
         >100%</v-btn
       >
       <v-btn size="small" class="ml-2" @click="drawFitSizeImage">Fit</v-btn>
@@ -49,6 +49,10 @@ export default defineComponent({
     },
     handleOnClickScaleDownButton() {
       this.scaleDown()
+      this.interpolator.resizeGuideCanvas()
+    },
+    handleOnClickResetScaleButton() {
+      this.resizeCanvasToOriginal()
       this.interpolator.resizeGuideCanvas()
     },
   },
