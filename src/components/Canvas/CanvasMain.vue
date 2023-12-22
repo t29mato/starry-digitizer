@@ -278,15 +278,20 @@ export default defineComponent({
           this.setManualMode(2)
           return
       }
-      if (this.datasets.activeDataset.hasActive()) {
-        if (key === 'Backspace' || key === 'Delete') {
-          this.clearActivePlots()
-          this.interpolator.updatePreview()
+      if (
+        this.datasets.activeDataset.hasActive() &&
+        (key === 'Backspace' || key === 'Delete')
+      ) {
+        this.clearActivePlots()
+        this.interpolator.updatePreview()
 
-          const lastPlotId = this.datasets.activeDataset.lastPlotId
-          if (lastPlotId === -1) return
+        const lastPlotId = this.datasets.activeDataset.lastPlotId
+
+        if (lastPlotId !== -1) {
           this.switchActivatedPlot(lastPlotId)
         }
+
+        return
       }
       const shiftKeyIsPressed = e.shiftKey
       const vector: Vector = {
