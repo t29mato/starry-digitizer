@@ -2,19 +2,9 @@ import { LOCAL_STORAGE_GLOBAL_KEY } from '@/constants/constants'
 
 //TODO: どうテストする？
 
-const initializeStorageData = () => {
-  localStorage.setItem(LOCAL_STORAGE_GLOBAL_KEY, '')
-}
-
 const addLocalStorageData = (key: string, value: string): void => {
-  const storageData: string | null = localStorage.getItem(
-    LOCAL_STORAGE_GLOBAL_KEY,
-  )
-
-  if (storageData === null) {
-    initializeStorageData()
-    return
-  }
+  const storageData: string =
+    localStorage.getItem(LOCAL_STORAGE_GLOBAL_KEY) || '{}'
 
   const storageDataObject = JSON.parse(storageData)
 
