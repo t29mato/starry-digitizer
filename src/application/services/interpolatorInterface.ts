@@ -7,10 +7,12 @@ export interface InterpolatorInterface {
   interpolatedCoords: Coord[]
   interpolatedCoordsForGuideline: Coord[]
   guideCanvas?: HTMLCanvas
+  magnifierCanvas?: HTMLCanvas
   initialize(): void
   setIsActive(isActive: boolean): void
-  resizeGuideCanvas(): void
+  resizeCanvas(): void
   setGuideCanvas(guideCanvas: HTMLCanvas): void
+  setMagnifierCanvas(magnifierCanvas: HTMLCanvas): void
   updateInterval(interval: number): void
   updatePreview(): void
   clearPreview(): void

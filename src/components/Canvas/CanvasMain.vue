@@ -97,7 +97,7 @@ export default defineComponent({
       this.setSwatches(this.canvas.colorSwatches)
 
       //TODO: interpolation canvasをinterpolator appに移譲したのでここで呼んでいるがcanvas初期化一連を行うapplicationにまとめたい
-      this.interpolator.resizeGuideCanvas()
+      this.interpolator.resizeCanvas()
     } finally {
       //
     }

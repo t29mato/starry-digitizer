@@ -49,15 +49,15 @@ export default defineComponent({
     ]),
     handleOnClickScaleUpButton() {
       this.scaleUp()
-      this.interpolator.resizeGuideCanvas()
+      this.interpolator.resizeCanvas()
     },
     handleOnClickScaleDownButton() {
       this.scaleDown()
-      this.interpolator.resizeGuideCanvas()
+      this.interpolator.resizeCanvas()
     },
     handleOnClickResetScaleButton() {
       this.resizeCanvasToOriginal()
-      this.interpolator.resizeGuideCanvas()
+      this.interpolator.resizeCanvas()
     },
   },
 })
