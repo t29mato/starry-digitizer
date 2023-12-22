@@ -20,7 +20,7 @@ export class Interpolator implements InterpolatorInterface {
     return this.instance
   }
 
-  public isActive: boolean = false
+  public isActive: boolean = true
   public interval: number = 10
   public interpolatedCoords: Coord[] = []
   public interpolatedCoordsForGuideline: Coord[] = []
