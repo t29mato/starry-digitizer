@@ -42,9 +42,14 @@ import { useDatasetsStore } from '@/store/datasets'
 import { useCanvasStore } from '@/store/canvas'
 import { mapState, mapActions } from 'pinia'
 
-import { clearInterpolationPreview } from '@/services/interpolatorPreviewHandler'
+import { Interpolator } from '@/application/services/interpolator'
 
 export default defineComponent({
+  data() {
+    return {
+      interpolator: Interpolator.getInstance(),
+    }
+  },
   computed: {
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),
@@ -71,7 +76,7 @@ export default defineComponent({
     },
     handleOnClickClearPlots() {
       this.clearPlots()
-      clearInterpolationPreview()
+      this.interpolator.clearPreview()
     },
   },
 })

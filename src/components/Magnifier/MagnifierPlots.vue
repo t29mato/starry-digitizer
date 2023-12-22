@@ -32,8 +32,14 @@ import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
 import { useMagnifierStore } from '@/store/magnifier'
 import { mapState } from 'pinia'
+import { Interpolator } from '@/application/services/interpolator'
 
 export default defineComponent({
+  data() {
+    return {
+      interpolator: Interpolator.getInstance(),
+    }
+  },
   computed: {
     ...mapState(useMagnifierStore, ['magnifier']),
     ...mapState(useCanvasStore, ['canvas']),
@@ -64,7 +70,7 @@ export default defineComponent({
         return '#ff0000'
       }
 
-      if (this.isManuallyAdded) {
+      if (this.isManuallyAdded && this.interpolator.isActive) {
         return '#6a5acd'
       }
 
@@ -73,7 +79,7 @@ export default defineComponent({
     borderRadius(): string {
       //TODO: 本来はinterpolatorのanchor pointsであるべきものを、暫定的にplotで表現しているので、最終的にここは消したい
 
-      if (this.isManuallyAdded) {
+      if (this.isManuallyAdded && this.interpolator.isActive) {
         return '0'
       }
 

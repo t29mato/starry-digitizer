@@ -53,11 +53,12 @@ import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useExtractorStore } from '@/store/extractor'
-import { useInterpolatorStore } from '@/store/interpolator'
 import { getMouseCoordFromMouseEvent } from '@/presentation/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/dragRectangleCalculator'
 import { useConfirmerStore } from '@/store/confirmer'
-import { updateInterpolationPreview } from '@/services/interpolatorPreviewHandler'
+
+import { Interpolator } from '@/application/services/interpolator'
+import { HTMLCanvas } from '@/domains/dom/HTMLCanvas'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -79,11 +80,12 @@ export default defineComponent({
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useInterpolatorStore, ['interpolator']),
     ...mapState(useConfirmerStore, ['confirmer']),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
+
+    this.interpolator.setGuideCanvas(new HTMLCanvas('interpolationGuideCanvas'))
 
     if (!this.imagePath) {
       return
@@ -93,8 +95,16 @@ export default defineComponent({
       this.drawFitSizeImage()
       this.setUploadImageUrl(this.imagePath)
       this.setSwatches(this.canvas.colorSwatches)
+
+      //TODO: interpolation canvasをinterpolator appに移譲したのでここで呼んでいるがcanvas初期化一連を行うapplicationにまとめたい
+      this.interpolator.resizeCanvas()
     } finally {
       //
+    }
+  },
+  data() {
+    return {
+      interpolator: Interpolator.getInstance(),
     }
   },
   methods: {
@@ -175,7 +185,10 @@ export default defineComponent({
       if (this.confirmer.isActive) return
 
       this.plot(e)
-      updateInterpolationPreview()
+
+      if (this.interpolator.isActive) {
+        this.interpolator.updatePreview()
+      }
     },
     mouseDrag(coord: Coord) {
       if (this.confirmer.isActive) return
@@ -268,7 +281,7 @@ export default defineComponent({
       if (this.datasets.activeDataset.hasActive()) {
         if (key === 'Backspace' || key === 'Delete') {
           this.clearActivePlots()
-          updateInterpolationPreview()
+          this.interpolator.updatePreview()
 
           const lastPlotId = this.datasets.activeDataset.lastPlotId
           if (lastPlotId === -1) return
@@ -286,7 +299,7 @@ export default defineComponent({
       }
       if (this.datasets.activeDataset.plotsAreActive) {
         this.moveActivePlot(vector)
-        updateInterpolationPreview()
+        this.interpolator.updatePreview()
         this.setCanvasCursor(
           this.datasets.activeDataset.plots.filter((plot: Plot) =>
             this.datasets.activeDataset.activePlotIds.includes(plot.id),

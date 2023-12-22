@@ -28,9 +28,14 @@ import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useStyleStore } from '@/store/style'
-import { useInterpolatorStore } from '@/store/interpolator'
+import { Interpolator } from '@/application/services/interpolator'
 
 export default defineComponent({
+  data() {
+    return {
+      interpolator: Interpolator.getInstance(),
+    }
+  },
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
@@ -40,7 +45,6 @@ export default defineComponent({
       'plotSizePx',
       'tempPlotSizePx',
     ]),
-    ...mapState(useInterpolatorStore, ['interpolator']),
     xPx(): number {
       return this.plot.xPx
     },
@@ -62,7 +66,7 @@ export default defineComponent({
         return '#ff0000'
       }
 
-      if (this.isManuallyAdded) {
+      if (this.isManuallyAdded && this.interpolator.isActive) {
         return '#6a5acd'
       }
 
@@ -71,7 +75,7 @@ export default defineComponent({
     borderRadius(): string {
       //TODO: 本来はinterpolatorのanchor pointsであるべきものを、暫定的にplotで表現しているので、最終的にここは消したい
 
-      if (this.isManuallyAdded) {
+      if (this.isManuallyAdded && this.interpolator.isActive) {
         return '0'
       }
 
