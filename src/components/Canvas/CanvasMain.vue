@@ -283,7 +283,10 @@ export default defineComponent({
         (key === 'Backspace' || key === 'Delete')
       ) {
         this.clearActivePlots()
-        this.interpolator.updatePreview()
+
+        if (this.interpolator.isActive) {
+          this.interpolator.updatePreview()
+        }
 
         const lastPlotId = this.datasets.activeDataset.lastPlotId
 
