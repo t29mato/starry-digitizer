@@ -4,7 +4,6 @@ describe('template spec', () => {
   beforeEach(() => {
     cy.visit('/')
 
-    cy.get('#switch-interpolation').click()
     cy.get('#reset-canvas-scale').click()
   })
 
@@ -58,5 +57,12 @@ describe('template spec', () => {
       .click(250, 150)
 
     cy.get('.canvas-plot').should('have.length', 3)
+  })
+
+  it('asserts that interpolation on/off settings are remained after reload (localStorage feature)', () => {
+    cy.get('#switch-interpolation').click()
+    cy.visit('/')
+
+    cy.get('#switch-interpolation').should('have.value', 'true')
   })
 })
