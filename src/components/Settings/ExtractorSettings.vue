@@ -179,7 +179,9 @@ export default defineComponent({
     handleOnClickInterpolatiorSwitch(isActive: any) {
       this.interpolator.setIsActive(isActive)
 
-      if (!isActive) {
+      if (isActive) {
+        this.interpolator.updatePreview()
+      } else {
         this.interpolator.clearPreview()
       }
 
