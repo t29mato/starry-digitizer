@@ -20,7 +20,7 @@
         class="ml-3"
         color="primary"
         :model-value="interpolator.isActive"
-        @update:model-value="setIsInterpolationActive"
+        @update:model-value="handleOnClickInterpolatiorSwitch"
         hide-details
         density="compact"
       ></v-switch>
@@ -176,8 +176,15 @@ export default defineComponent({
       }
     },
     //INFO: isActive: booleanであるが、@updateでtsエラーになるのでanyとしている
-    setIsInterpolationActive(isActive: any) {
+    handleOnClickInterpolatiorSwitch(isActive: any) {
       this.interpolator.setIsActive(isActive)
+
+      if (isActive) {
+        this.interpolator.updatePreview()
+      } else {
+        this.interpolator.clearPreview()
+      }
+
       addLocalStorageData('isInterpolatorActive', String(isActive))
     },
     handleOnConfirmInterpolation() {
