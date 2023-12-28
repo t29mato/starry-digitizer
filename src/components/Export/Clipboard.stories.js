@@ -4,8 +4,8 @@ export default {
   title: 'Components/Export/Clipboard',
   component: Clipboard,
   argTypes: {
-    activatePlot: {
-      action: 'activatePlot',
+    switchActivatedPlot: {
+      action: 'switchActivatedPlot',
     },
     calculatedPlots: {
       defaultValue: [

@@ -1,5 +1,5 @@
 import { CanvasInterface } from './canvasInterface'
-import { Plots } from './datasetInterface'
+import { Coord } from './datasetInterface'
 import ExtractStrategyInterface from './extractStrategies/extractStrategyInterface'
 
 //TODO 間藤さんに確認
@@ -17,7 +17,7 @@ export class Extractor {
     this.strategy = strategy
   }
 
-  execute(canvas: CanvasInterface): Plots {
+  execute(canvas: CanvasInterface): Coord[] {
     return this.strategy.execute(
       canvas.imageElement.height,
       canvas.imageElement.width,

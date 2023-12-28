@@ -5,7 +5,7 @@
       :model-value="canvas.manualMode"
       @update:model-value="changeManualMode"
       density="compact"
-      class="mb-4"
+      class="mb-2"
       divided
       :border="true"
     >
@@ -13,7 +13,45 @@
       <v-btn size="small" color="primary"> Edit (E) </v-btn>
       <v-btn size="small" color="primary"> Delete (D) </v-btn>
     </v-btn-toggle>
-    <h4 class="mb-2">Automatic Extraction</h4>
+    <div class="d-flex align-center">
+      <h5>Interpolation</h5>
+      <v-switch
+        id="switch-interpolation"
+        class="ml-3"
+        color="primary"
+        :model-value="interpolator.isActive"
+        @update:model-value="handleOnClickInterpolatiorSwitch"
+        hide-details
+        density="compact"
+      ></v-switch>
+    </div>
+
+    <div class="d-flex align-end mt-1 mb-4">
+      <v-text-field
+        id="interpolation-interval"
+        class="mr-4"
+        :model-value="interpolator.interval"
+        @update:model-value="handleOnUpdateInterpolatorInterval"
+        label="Interval"
+        type="number"
+        min="2"
+        step="1"
+        max="30"
+        density="compact"
+        hide-details
+        :disabled="!interpolator.isActive"
+      ></v-text-field>
+      <v-btn
+        id="confirm-interpolation"
+        @click="handleOnConfirmInterpolation"
+        size="small"
+        color="primary"
+        :disabled="!interpolator.isActive"
+        >Confirm</v-btn
+      >
+    </div>
+    <v-divider></v-divider>
+    <h4 class="mt-4 mb-2">Automatic Extraction</h4>
     <v-select
       @update:model-value="setExtractStrategy"
       :model-value="extractor.strategy.name"
@@ -28,13 +66,16 @@
     </div>
     <mask-settings></mask-settings>
     <color-settings></color-settings>
-    <v-btn
-      :loading="isExtracting"
-      @click="extractPlots"
-      color="primary"
-      size="small"
-      >Run</v-btn
-    >
+    <div class="text-right mb-4">
+      <v-btn
+        :loading="isExtracting"
+        @click="extractPlots"
+        color="primary"
+        size="small"
+        >Run</v-btn
+      >
+    </div>
+    <v-divider></v-divider>
   </div>
 </template>
 
@@ -54,6 +95,10 @@ import { useExtractorStore } from '@/store/extractor'
 import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
+import { useConfirmerStore } from '@/store/confirmer'
+
+import { Interpolator } from '@/application/services/interpolator'
+import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 
 export default defineComponent({
   components: {
@@ -64,12 +109,16 @@ export default defineComponent({
   },
   data() {
     return {
+      interpolator: Interpolator.getInstance(),
       isExtracting: false,
     }
   },
   computed: {
     ...mapState(useExtractorStore, ['extractor']),
     ...mapState(useCanvasStore, ['canvas']),
+    ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useAxesStore, ['axes']),
+    ...mapState(useConfirmerStore, ['confirmer']),
   },
   props: {
     initialExtractorStrategy: {
@@ -90,6 +139,7 @@ export default defineComponent({
     ...mapActions(useExtractorStore, ['setStrategy']),
     ...mapActions(useAxesStore, ['inactivateAxis']),
     ...mapActions(useDatasetsStore, [
+      'switchActivatedPlot',
       'clearPlots',
       'setPlots',
       'sortPlots',
@@ -116,7 +166,6 @@ export default defineComponent({
     async extractPlots() {
       this.isExtracting = true
       this.inactivateAxis()
-      this.clearPlots()
       try {
         this.setPlots(this.extractor.execute(this.canvas))
         this.sortPlots()
@@ -125,6 +174,42 @@ export default defineComponent({
       } finally {
         this.isExtracting = false
       }
+    },
+    //INFO: isActive: booleanであるが、@updateでtsエラーになるのでanyとしている
+    handleOnClickInterpolatiorSwitch(isActive: any) {
+      this.interpolator.setIsActive(isActive)
+
+      if (isActive) {
+        this.interpolator.updatePreview()
+      } else {
+        this.interpolator.clearPreview()
+      }
+
+      addLocalStorageData('isInterpolatorActive', String(isActive))
+    },
+    handleOnConfirmInterpolation() {
+      if (this.datasets.activeDataset.manuallyAddedPlotIds.length < 2) {
+        alert(
+          'Plot 2 or more points by clicking the graph image to execute interpolation.',
+        )
+        return
+      }
+      const activeDataset = this.datasets.activeDataset
+
+      activeDataset.tempPlots.forEach((tempPlot) => {
+        activeDataset.moveTempPlotToPlot(tempPlot.id)
+      })
+      activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
+        activeDataset.clearPlot(plotId)
+      })
+
+      this.switchActivatedPlot(activeDataset.lastPlotId)
+
+      this.interpolator.clearPreview()
+    },
+    handleOnUpdateInterpolatorInterval(value: any) {
+      this.interpolator.updateInterval(parseFloat(value))
+      this.interpolator.updatePreview()
     },
   },
 })

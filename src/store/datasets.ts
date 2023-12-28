@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { Datasets } from '@/domains/datasets'
 import { Dataset } from '@/domains/dataset'
-import { Plots, Coord } from '@/domains/datasetInterface'
+import { Coord } from '@/domains/datasetInterface'
 import { Vector } from '@/domains/axes/axesInterface'
 
 export interface State {
@@ -44,20 +44,26 @@ export const useDatasetsStore = defineStore('datasets', {
     clearActivePlots() {
       this.datasets.activeDataset.clearActivePlots()
     },
-    setPlots(plots: Plots) {
-      this.datasets.setPlots(plots)
+    setPlots(coords: Coord[]) {
+      this.datasets.setPlots(coords)
     },
     toggleActivatedPlot(id: number) {
       this.datasets.activeDataset.toggleActivatedPlot(id)
     },
-    activatePlot(id: number) {
-      this.datasets.activeDataset.activatePlot(id)
+    switchActivatedPlot(id: number) {
+      this.datasets.activeDataset.switchActivatedPlot(id)
     },
     setActiveDataset(id: number) {
       this.datasets.setActiveDataset(id)
     },
     sortPlots() {
       this.datasets.sortPlots()
+    },
+    activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
+      return this.datasets.activatePlotsInRectangleArea(
+        topLeftCoord,
+        bottomRightCoord,
+      )
     },
   },
 })

@@ -4,18 +4,21 @@
     class="magnifier-plots"
     :style="{
       position: 'absolute',
-      top: `${(yPx - plotHalfSize) * magnifier.scale}px`,
-      left: `${(xPx - plotHalfSize) * magnifier.scale}px`,
+      top: top,
+      left: left,
       transform: `scale(${magnifier.scale}) translate(-${
         canvas.cursor.xPx - magnifierHalfSize / magnifier.scale
       }px, -${canvas.cursor.yPx - magnifierHalfSize / magnifier.scale}px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      width: `${plotSizePx}px`,
-      height: `${plotSizePx}px`,
-      'background-color': isActive ? 'red' : 'dodgerblue',
+      width: size,
+      height: size,
+      'background-color': backgroundColor,
       border: `${1}px solid white`,
-      'border-radius': '50%',
+      'border-radius': borderRadius,
+      visibility: isVisible ? 'visible' : 'hidden',
+      opacity: opacity,
+      zIndex: zIndex,
     }"
   ></div>
 </template>
@@ -29,12 +32,24 @@ import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
 import { useMagnifierStore } from '@/store/magnifier'
 import { mapState } from 'pinia'
+import { Interpolator } from '@/application/services/interpolator'
 
 export default defineComponent({
+  data() {
+    return {
+      interpolator: Interpolator.getInstance(),
+    }
+  },
   computed: {
     ...mapState(useMagnifierStore, ['magnifier']),
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useStyleStore, ['plotSizePx']),
+    ...mapState(useStyleStore, [
+      'plotOpacity',
+      'tempPlotOpacity',
+      'plotSizePx',
+      'tempPlotSizePx',
+    ]),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -46,6 +61,61 @@ export default defineComponent({
     },
     yPx(): number {
       return this.plot.yPx
+    },
+    opacity() {
+      return this.isTemporary ? this.tempPlotOpacity : this.plotOpacity
+    },
+    backgroundColor() {
+      if (this.isActive) {
+        return '#ff0000'
+      }
+
+      if (this.isManuallyAdded && this.interpolator.isActive) {
+        return '#6a5acd'
+      }
+
+      return '#1e90ff'
+    },
+    borderRadius(): string {
+      //TODO: 本来はinterpolatorのanchor pointsであるべきものを、暫定的にplotで表現しているので、最終的にここは消したい
+
+      if (this.isManuallyAdded && this.interpolator.isActive) {
+        return '0'
+      }
+
+      return '50%'
+    },
+    size(): string {
+      if (this.isTemporary) {
+        return this.tempPlotSizePx + 'px'
+      }
+
+      return this.plotSizePx + 'px'
+    },
+    top(): string {
+      if (this.isTemporary) {
+        return (
+          (this.yPx - this.tempPlotSizePx / 2) * this.magnifier.scale + 'px'
+        )
+      }
+
+      return (this.yPx - this.plotSizePx / 2) * this.magnifier.scale + 'px'
+    },
+    left(): string {
+      if (this.isTemporary) {
+        return (
+          (this.xPx - this.tempPlotSizePx / 2) * this.magnifier.scale + 'px'
+        )
+      }
+
+      return (this.xPx - this.plotSizePx / 2) * this.magnifier.scale + 'px'
+    },
+    zIndex(): string {
+      if (this.isTemporary) {
+        return '1'
+      }
+
+      return '2'
     },
   },
   props: {
@@ -59,6 +129,17 @@ export default defineComponent({
     },
     isActive: {
       type: Boolean,
+    },
+    isVisible: {
+      type: Boolean,
+    },
+    isTemporary: {
+      type: Boolean,
+      default: false,
+    },
+    isManuallyAdded: {
+      type: Boolean,
+      default: false,
     },
   },
 })

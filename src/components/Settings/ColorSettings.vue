@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-3 mb-5">
+  <div class="mt-3">
     <h5 class="mb-2">Extracted Color</h5>
     <!-- TODO: 抽出色設定もColorSettingsComponentに入れる -->
     <v-row class="mt-1">

@@ -65,23 +65,75 @@ export class Canvas implements CanvasInterface {
     }
   }
 
-  mouseMove(xPx: number, yPx: number) {
+  mouseDown(xPx: number, yPx: number) {
+    this.rectangle.startX = xPx
+    this.rectangle.startY = yPx
+  }
+
+  mouseDragInManualMode() {
+    if (this.manualMode === 1) {
+      //INFO: only in EDIT mode
+      this.drawDraggedArea()
+    }
+  }
+
+  mouseDragInMaskMode(xPx: number, yPx: number) {
     switch (this.maskMode) {
-      case 0: // INFO: pen mask
-        this.mouseMoveForPen(xPx, yPx, this.penToolSizePx)
+      case 0:
+        this.drawPenMask(xPx, yPx, this.penToolSizePx)
         break
-      case 1: // INFO: box mask
-        this.mouseMoveForBox(xPx, yPx)
+      case 1: // INFO: マウスドラッグ中は選択範囲を仮描画
+        this.drawDraggedArea()
         break
-      case 2: // INFO: eraser mask
-        this.mouseMoveForEraser(xPx, yPx, this.eraserSizePx)
+      case 2:
+        this.drawEraserMask(xPx, yPx, this.eraserSizePx)
         break
       default:
         break
     }
   }
 
-  mouseMoveForPen(xPx: number, yPx: number, penSize: number) {
+  mouseDrag(xPx: number, yPx: number) {
+    this.rectangle.endX = xPx
+    this.rectangle.endY = yPx
+
+    //INFO: 現在のモードがmanual modeかmask modeかで処理を分岐
+    if (this.manualMode !== -1) {
+      this.mouseDragInManualMode()
+      return
+    }
+
+    if (this.maskMode !== -1) {
+      this.mouseDragInMaskMode(xPx, yPx)
+      return
+    }
+  }
+
+  mouseUp() {
+    this.clearTempMask()
+
+    if (this.maskMode === 1) {
+      this.drawBoxMask()
+    }
+  }
+
+  drawDraggedArea() {
+    this.tempMaskCanvas.context.strokeStyle = '#000000ff' // INFO: black
+    this.tempMaskCanvas.context.clearRect(
+      0,
+      0,
+      this.maskCanvas.element.width,
+      this.maskCanvas.element.height,
+    )
+    this.tempMaskCanvas.context.strokeRect(
+      this.rectangle.startX,
+      this.rectangle.startY,
+      this.rectangle.endX - this.rectangle.startX,
+      this.rectangle.endY - this.rectangle.startY,
+    )
+  }
+
+  drawPenMask(xPx: number, yPx: number, penSize: number) {
     const ctx = this.maskCanvas.context
     ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     ctx.beginPath()
@@ -100,7 +152,7 @@ export class Canvas implements CanvasInterface {
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
-  mouseMoveForEraser(xPx: number, yPx: number, penSize: number) {
+  drawEraserMask(xPx: number, yPx: number, penSize: number) {
     const ctx = this.maskCanvas.context
     ctx.globalCompositeOperation = 'destination-out'
     ctx.strokeStyle = '#000000' // INFO: black
@@ -128,46 +180,17 @@ export class Canvas implements CanvasInterface {
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
-  mouseDownForBox(xPx: number, yPx: number) {
-    this.rectangle.startY = yPx
-    this.rectangle.startX = xPx
-  }
-
-  mouseMoveForBox(xPx: number, yPx: number) {
-    this.tempMaskCanvas.context.strokeStyle = '#000000ff' // INFO: black
-    this.tempMaskCanvas.context.clearRect(
-      0,
-      0,
-      this.maskCanvas.element.width,
-      this.maskCanvas.element.height,
-    )
-    this.rectangle.endY = yPx - this.rectangle.startY
-    this.rectangle.endX = xPx - this.rectangle.startX
-    this.tempMaskCanvas.context.strokeRect(
-      this.rectangle.startX,
-      this.rectangle.startY,
-      this.rectangle.endX,
-      this.rectangle.endY,
-    )
-  }
-
-  mouseUpForBox() {
+  drawBoxMask() {
     this.maskCanvas.context.fillStyle = '#ffff00ff' // INFO: yellow
     this.maskCanvas.context.fillRect(
       this.rectangle.startX,
       this.rectangle.startY,
-      this.rectangle.endX,
-      this.rectangle.endY,
+      this.rectangle.endX - this.rectangle.startX,
+      this.rectangle.endY - this.rectangle.startY,
     )
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
     this.isDrawnMask = true
     this.clearRectangle()
-    this.tempMaskCanvas.context.clearRect(
-      0,
-      0,
-      this.maskCanvas.element.width,
-      this.maskCanvas.element.height,
-    )
   }
 
   clearRectangle() {
@@ -228,6 +251,15 @@ export class Canvas implements CanvasInterface {
   changeImage(imageElement: HTMLImageElement) {
     this.imageElement = imageElement
     this.drawFitSizeImage()
+  }
+
+  clearTempMask() {
+    this.tempMaskCanvas.context.clearRect(
+      0,
+      0,
+      this.maskCanvas.element.width,
+      this.maskCanvas.element.height,
+    )
   }
 
   clearMask() {

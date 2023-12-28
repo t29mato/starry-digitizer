@@ -2,7 +2,7 @@
   <div
     id="canvasWrapper"
     class="c__canvas-wrapper"
-    @click="plot"
+    @click="click"
     @mousemove="mouseMove"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
@@ -26,6 +26,15 @@
       }"
       id="maskCanvas"
     ></canvas>
+    <canvas
+      :style="{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        opacity: 0.5,
+      }"
+      id="interpolationGuideCanvas"
+    ></canvas>
     <canvas-axes-guide></canvas-axes-guide>
     <canvas-axes></canvas-axes>
     <canvas-plots></canvas-plots>
@@ -44,6 +53,12 @@ import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useExtractorStore } from '@/store/extractor'
+import { getMouseCoordFromMouseEvent } from '@/presentation/mouseEventUtilities'
+import { getRectCoordsFromDragCoords } from '@/presentation/dragRectangleCalculator'
+import { useConfirmerStore } from '@/store/confirmer'
+
+import { Interpolator } from '@/application/services/interpolator'
+import { HTMLCanvas } from '@/domains/dom/HTMLCanvas'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -65,9 +80,12 @@ export default defineComponent({
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),
+    ...mapState(useConfirmerStore, ['confirmer']),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
+
+    this.interpolator.setGuideCanvas(new HTMLCanvas('interpolationGuideCanvas'))
 
     if (!this.imagePath) {
       return
@@ -77,19 +95,31 @@ export default defineComponent({
       this.drawFitSizeImage()
       this.setUploadImageUrl(this.imagePath)
       this.setSwatches(this.canvas.colorSwatches)
+
+      //TODO: interpolation canvasをinterpolator appに移譲したのでここで呼んでいるがcanvas初期化一連を行うapplicationにまとめたい
+      this.interpolator.resizeCanvas()
     } finally {
       //
+    }
+  },
+  data() {
+    return {
+      interpolator: Interpolator.getInstance(),
     }
   },
   methods: {
     ...mapActions(useDatasetsStore, [
       'addPlot',
+      'switchActivatedPlot',
       'moveActivePlot',
       'clearActivePlots',
       'inactivatePlots',
+      'activatePlotsInRectangleArea',
     ]),
     ...mapActions(useCanvasStore, [
-      'mouseMoveOnCanvas',
+      'mouseDownOnCanvas',
+      'mouseDragOnCanvas',
+      'mouseUpOnCanvas',
       'setCanvasCursor',
       'drawFitSizeImage',
       'setUploadImageUrl',
@@ -122,6 +152,9 @@ export default defineComponent({
               : e.offsetY / this.canvas.scale,
           })
           this.inactivateAxis()
+          this.datasets.activeDataset.addManuallyAddedPlotId(
+            this.datasets.activeDataset.lastPlotId,
+          )
           return
         case 1:
           // INFO: CanvasPlot Component -> Click method
@@ -148,16 +181,24 @@ export default defineComponent({
         return
       }
     },
+    click(e: MouseEvent): void {
+      if (this.confirmer.isActive) return
+
+      this.plot(e)
+
+      if (this.interpolator.isActive) {
+        this.interpolator.updatePreview()
+      }
+    },
     mouseDrag(coord: Coord) {
+      if (this.confirmer.isActive) return
+
       // TODO: 呼び出すメソッドはCanvasに移譲したい
-      // TODO: mouseDragOnCanvasにリネーム？
-      this.mouseMoveOnCanvas(coord)
+      this.mouseDragOnCanvas(coord)
     },
     mouseMove(e: MouseEvent) {
-      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
-      const target = e.target as HTMLElement
-      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
-      const yPx = e.offsetY + parseFloat(target.style.top)
+      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
+
       this.axes.isAdjusting = false
       this.datasets.activeDataset.plotsAreAdjusting = false
       this.setCanvasCursor({
@@ -171,20 +212,35 @@ export default defineComponent({
       }
     },
     mouseDown(e: MouseEvent) {
-      // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
-      const target = e.target as HTMLElement
-      const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
-      const yPx = e.offsetY + parseFloat(target.style.top)
-      if (this.canvas.maskMode === 1) {
-        this.canvas.mouseDownForBox(xPx, yPx)
-      }
+      if (this.confirmer.isActive) return
+
+      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
+
+      this.mouseDownOnCanvas({ xPx, yPx })
     },
     mouseUp() {
-      if (this.canvas.maskMode === 1) {
-        this.canvas.mouseUpForBox()
+      if (this.confirmer.isActive) return
+
+      this.mouseUpOnCanvas()
+
+      // INFO: EDITモードの場合にplotの複数選択を行う
+      if (this.canvas.manualMode === 1) {
+        const rect = this.canvas.rectangle
+        const scale = this.canvas.scale
+
+        const { topLeftCoord, bottomRightCoord } = getRectCoordsFromDragCoords(
+          { xPx: rect.startX / scale, yPx: rect.startY / scale },
+          { xPx: rect.endX / scale, yPx: rect.endY / scale },
+        )
+
+        this.activatePlotsInRectangleArea(topLeftCoord, bottomRightCoord)
+
+        return
       }
     },
     keyDownHandler(e: KeyboardEvent) {
+      if (this.confirmer.isActive) return
+
       const target = e.target as Element
       // INFO: 編集可能HTMLにカーソルが当たってる場合はスルー
       if (target.hasAttribute('contentEditable')) {
@@ -222,10 +278,23 @@ export default defineComponent({
           this.setManualMode(2)
           return
       }
-      if (this.datasets.activeDataset.hasActive()) {
-        if (key === 'Backspace' || key === 'Delete') {
-          this.clearActivePlots()
+      if (
+        this.datasets.activeDataset.hasActive() &&
+        (key === 'Backspace' || key === 'Delete')
+      ) {
+        this.clearActivePlots()
+
+        if (this.interpolator.isActive) {
+          this.interpolator.updatePreview()
         }
+
+        const lastPlotId = this.datasets.activeDataset.lastPlotId
+
+        if (lastPlotId !== -1) {
+          this.switchActivatedPlot(lastPlotId)
+        }
+
+        return
       }
       const shiftKeyIsPressed = e.shiftKey
       const vector: Vector = {
@@ -238,6 +307,7 @@ export default defineComponent({
       }
       if (this.datasets.activeDataset.plotsAreActive) {
         this.moveActivePlot(vector)
+        this.interpolator.updatePreview()
         this.setCanvasCursor(
           this.datasets.activeDataset.plots.filter((plot: Plot) =>
             this.datasets.activeDataset.activePlotIds.includes(plot.id),

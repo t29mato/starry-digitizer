@@ -12,6 +12,7 @@
       </div>
       <div class="c__main-area">
         <canvas-header></canvas-header>
+        <confirmer-bar></confirmer-bar>
         <canvas-main :imagePath="initialGraphImagePath"></canvas-main>
         <canvas-footer></canvas-footer>
       </div>
@@ -37,6 +38,7 @@ import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
 import { AxesSettings, ExtractorSettings, ImageSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { version } from '../../package.json'
+import ConfirmerBar from '@/components/Generals/ConfirmerBar.vue'
 import DataTable from '@/components/Export/DataTable.vue'
 
 export default defineComponent({
@@ -50,6 +52,7 @@ export default defineComponent({
     DatasetManager,
     ExtractorSettings,
     ImageSettings,
+    ConfirmerBar,
   },
   props: {
     // should be imported by require function
