@@ -24,7 +24,7 @@
         ></extractor-settings>
         <p class="text-caption text-right">
           <!-- INFO: vバージョン#actionsのビルド番号 -->
-          v{{ version }}#{{ githubRunNumber }}
+          {{ appVerAndBuildInfo }}
         </p>
       </div>
     </div>
@@ -70,10 +70,21 @@ export default defineComponent({
       required: false,
     },
   },
+  computed: {
+    appVerAndBuildInfo() {
+      const appVer: string = this.isProd ? `v${this.version}` : ''
+      const buildNumber: string = this.githubRunNumber
+        ? `#${this.githubRunNumber}`
+        : ''
+
+      return appVer + buildNumber
+    },
+  },
   data() {
     return {
       version,
       githubRunNumber: import.meta.env.VITE_APP_GITHUB_RUN_NUMBER,
+      isProd: process.env.NODE_ENV === 'production',
     }
   },
 })
