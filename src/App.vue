@@ -20,7 +20,7 @@
         </v-btn>
         <v-col class="text-center text-white" cols="12">
           {{ new Date().getFullYear() }} — <strong>StarryDigitizer</strong
-          ><span class="ml-2 mt-1">{{ version }}</span>
+          ><span class="ml-2 mt-1">{{ isProd ? version : 'dev' }}</span>
         </v-col>
       </v-row>
     </v-footer>
