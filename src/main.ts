@@ -52,7 +52,7 @@ const vuetify = createVuetify({
 const app = createApp(App).use(pinia).use(vuetify)
 app.mount('#app')
 
-if (process.env.NODE_ENV === 'production') {
+if (import.meta.env.MODE === 'production') {
   Sentry.init({
     app,
     dsn: process.env.VUE_APP_SENTRY_DSN,

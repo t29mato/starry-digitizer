@@ -84,7 +84,7 @@ export default defineComponent({
     return {
       version,
       githubRunNumber: import.meta.env.VITE_APP_GITHUB_RUN_NUMBER,
-      isProd: process.env.NODE_ENV === 'production',
+      isProd: import.meta.env.MODE === 'production',
     }
   },
 })
