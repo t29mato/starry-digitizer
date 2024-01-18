@@ -19,7 +19,7 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
 //Pinia
 import { createPinia } from 'pinia'
-import { Interpolator } from './application/services/interpolator'
+import { Interpolator } from './applications/services/interpolator'
 
 //INFO: initialize application services
 Interpolator.getInstance().initialize()

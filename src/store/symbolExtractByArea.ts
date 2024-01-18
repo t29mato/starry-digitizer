@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
+import SymbolExtractByArea from '@/applications/strategies/extractStrategies/symbolExtractByArea'
 
 export interface State {
   symbolExtractByArea: SymbolExtractByArea

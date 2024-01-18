@@ -1,19 +1,19 @@
 import ExtractStrategyInterface from './extractStrategyInterface'
 import { ExtractParent } from './extractParent'
-import { Coord } from '../datasetInterface'
+import { Coord } from '@/domains/datasetInterface'
 
-export default class SymbolExtractByArea
+export default class LineExtract
   extends ExtractParent
   implements ExtractStrategyInterface
 {
-  name = 'Symbol Extract'
-  minDiameterPx = 5
-  maxDiameterPx = 100
+  name = 'Line Extract'
+  dxPx = 10
+  dyPx = 10
 
-  static #instance: SymbolExtractByArea
-  static get instance(): SymbolExtractByArea {
+  static #instance: LineExtract
+  static get instance(): LineExtract {
     if (!this.#instance) {
-      this.#instance = new SymbolExtractByArea()
+      this.#instance = new LineExtract()
     }
     return this.#instance
   }
@@ -55,11 +55,11 @@ export default class SymbolExtractByArea
         }
       }
     }
-
     // TODO: never usedのため一旦コメントアウトしている
     // let count = 0
-    for (let h = 0; h < height; h++) {
-      for (let w = 0; w < width; w++) {
+    // INFO: 線グラフは左から右なので横から探す
+    for (let w = 0; w < width; w++) {
+      for (let h = 0; h < height; h++) {
         if (visitedArea[h][w]) {
           continue
         }
@@ -96,6 +96,12 @@ export default class SymbolExtractByArea
                 if (nh < 0 || nw < 0 || nh >= height || nw >= width) {
                   continue
                 }
+                if (Math.abs(nw - w) > this.dxPx) {
+                  continue
+                }
+                if (Math.abs(nh - h) > this.dyPx) {
+                  continue
+                }
                 if (visitedArea[nh][nw]) {
                   continue
                 }
@@ -123,23 +129,14 @@ export default class SymbolExtractByArea
           const yPxTotal = pixels.reduce((prev, cur) => {
             return prev + cur.yPx
           }, 0)
-          const area = pixels.length
-          // area = πr^2
-          // r = √(area / π)
-          // diameter = r * 2
-          const diameter = Math.sqrt(area / Math.PI) * 2
-          if (
-            this.minDiameterPx <= diameter &&
-            diameter <= this.maxDiameterPx
-          ) {
-            // To avoid gaps between calculation and rendering
-            // INFO: In manual, pixels are limited to moving one pixel at a time.
-            const offsetPx = 0.5
-            coords.push({
-              xPx: parseFloat((xPxTotal / pixels.length + offsetPx).toFixed(1)),
-              yPx: parseFloat((yPxTotal / pixels.length + offsetPx).toFixed(1)),
-            })
-          }
+          // To avoid gaps between calculation and rendering
+          // INFO: In manual, pixels are limited to moving one pixel at a time.
+          const offsetPx = 0.5
+          // TODO: ここで桁数を指定する必要ない。表示時のみ対応でOK。
+          coords.push({
+            xPx: parseFloat((xPxTotal / pixels.length + offsetPx).toFixed(1)),
+            yPx: parseFloat((yPxTotal / pixels.length + offsetPx).toFixed(1)),
+          })
         }
       }
     }

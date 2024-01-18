@@ -8,7 +8,7 @@
           <input
             type="color"
             :value="extractor.colorPicker"
-            @input="inputColorPicker"
+            @input="handleOnInputColorPalette"
           />
           <v-icon size="small">mdi-palette</v-icon>
         </label>
@@ -28,7 +28,7 @@
     </v-row>
     <v-color-picker
       :model-value="extractor.colorPicker"
-      @update:model-value="setColorPicker"
+      @update:model-value="handleOnSelectColor"
       hide-canvas
       hide-inputs
       show-swatches
@@ -40,26 +40,25 @@
 </template>
 
 <script lang="ts">
+import { Extractor } from '@/applications/services/extractor'
 import { defineComponent } from 'vue'
-
-import { useExtractorStore } from '@/store/extractor'
-import { mapState, mapActions } from 'pinia'
 
 export default defineComponent({
   data() {
     return {
       colorDistancePctErrorMsg: '',
+      extractor: Extractor.getInstance(),
     }
   },
-  computed: {
-    ...mapState(useExtractorStore, ['extractor']),
-  },
-
   methods: {
-    ...mapActions(useExtractorStore, ['setColorPicker', 'setColorDistancePct']),
-    inputColorPicker(value: any) {
-      console.log(value)
-      this.setColorPicker(value.target.value)
+    handleOnInputColorPalette(value: any) {
+      this.setColorPickerColor(value.target.value)
+    },
+    handleOnSelectColor(value: any) {
+      this.setColorPickerColor(value)
+    },
+    setColorPickerColor(color: any) {
+      this.extractor.setColorPicker(color)
     },
     inputColorDistancePct(inputValue: string) {
       const distance = parseInt(inputValue)
@@ -72,7 +71,7 @@ export default defineComponent({
         this.colorDistancePctErrorMsg =
           'The Color Difference(%) is supposed to be size="small"er than 100%'
       }
-      this.setColorDistancePct(distance)
+      this.extractor.setColorDistancePct(distance)
     },
   },
 })
