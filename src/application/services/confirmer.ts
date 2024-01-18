@@ -7,6 +7,18 @@ export class Confirmer implements ConfirmerInterface {
   handleOnConfirm: Function = () => {}
   handleOnCancel: Function = () => {}
 
+  private static instance: ConfirmerInterface
+
+  private constructor() {}
+
+  static getInstance(): ConfirmerInterface {
+    if (!this.instance) {
+      this.instance = new Confirmer()
+    }
+
+    return this.instance
+  }
+
   activate({
     message,
     onConfirm,

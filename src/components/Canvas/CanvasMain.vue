@@ -55,10 +55,10 @@ import { mapState, mapActions } from 'pinia'
 import { useExtractorStore } from '@/store/extractor'
 import { getMouseCoordFromMouseEvent } from '@/presentation/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/dragRectangleCalculator'
-import { useConfirmerStore } from '@/store/confirmer'
 
 import { Interpolator } from '@/application/services/interpolator'
 import { HTMLCanvas } from '@/domains/dom/HTMLCanvas'
+import { Confirmer } from '@/application/services/confirmer'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -80,7 +80,6 @@ export default defineComponent({
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useConfirmerStore, ['confirmer']),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
@@ -105,6 +104,7 @@ export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
+      confirmer: Confirmer.getInstance(),
     }
   },
   methods: {
