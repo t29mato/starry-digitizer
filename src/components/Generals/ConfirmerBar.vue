@@ -20,13 +20,14 @@
 </template>
 
 <script lang="ts">
-import { useConfirmerStore } from '@/store/confirmer'
-import { mapState } from 'pinia'
+import { Confirmer } from '@/application/services/confirmer'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  computed: {
-    ...mapState(useConfirmerStore, ['confirmer']),
+  data() {
+    return {
+      confirmer: Confirmer.getInstance(),
+    }
   },
   methods: {
     handleOnClickConfirm() {

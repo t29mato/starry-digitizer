@@ -95,10 +95,10 @@ import { useExtractorStore } from '@/store/extractor'
 import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
-import { useConfirmerStore } from '@/store/confirmer'
 
 import { Interpolator } from '@/application/services/interpolator'
 import { addLocalStorageData } from '@/application/utils/localStorageUtils'
+import { Confirmer } from '@/application/services/confirmer'
 
 export default defineComponent({
   components: {
@@ -110,6 +110,7 @@ export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
+      confirmer: Confirmer.getInstance(),
       isExtracting: false,
     }
   },
@@ -118,7 +119,6 @@ export default defineComponent({
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useAxesStore, ['axes']),
-    ...mapState(useConfirmerStore, ['confirmer']),
   },
   props: {
     initialExtractorStrategy: {
