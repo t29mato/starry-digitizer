@@ -1,5 +1,5 @@
 import { Coord, Plot } from '@/domains/datasetInterface'
-import { InterpolatorInterface } from './interpolatorInterface'
+import { InterpolatorInterface } from '../interfaces/interpolatorInterface'
 import { HTMLCanvas } from '@/domains/dom/HTMLCanvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { getInterpolatedCoordsList } from '../lib/CurveInterpolatorLib'
