@@ -32,7 +32,7 @@ import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
 import { useMagnifierStore } from '@/store/magnifier'
 import { mapState } from 'pinia'
-import { Interpolator } from '@/application/services/interpolator'
+import { Interpolator } from '@/applications/services/interpolator'
 
 export default defineComponent({
   data() {
@@ -144,3 +144,4 @@ export default defineComponent({
   },
 })
 </script>
+@/applications/services/interpolator

@@ -1,20 +1,45 @@
-import { CanvasInterface } from './canvasInterface'
-import { Coord } from './datasetInterface'
-import ExtractStrategyInterface from './extractStrategies/extractStrategyInterface'
+import { CanvasInterface } from '../../domains/canvasInterface'
+import { Coord } from '../../domains/datasetInterface'
+import { ExtractorInterface } from '../interfaces/extractorInterface'
+import ExtractStrategyInterface from '../strategies/extractStrategies/extractStrategyInterface'
+import LineExtract from '../strategies/extractStrategies/lineExtract'
 
-//TODO 間藤さんに確認
-// export type ExtractStrategy = 'Symbol Extract' | 'Line Extract'
-
-export class Extractor {
+export class Extractor implements ExtractorInterface {
   strategy: ExtractStrategyInterface
-  strategies: String[] = ['Symbol Extract', 'Line Extract']
+  strategies: string[] = ['Symbol Extract', 'Line Extract']
   colorPicker = '#000000ff'
   colors = [] as { R: number; G: number; B: number }[][]
   colorDistancePct = 5
   swatches = [...Array(5)].map(() => []) as string[][]
 
-  constructor(strategy: ExtractStrategyInterface) {
+  private static instance: ExtractorInterface
+
+  private constructor(strategy: ExtractStrategyInterface) {
     this.strategy = strategy
+  }
+
+  static getInstance(): ExtractorInterface {
+    if (!this.instance) {
+      this.instance = new Extractor(LineExtract.instance)
+    }
+
+    return this.instance
+  }
+
+  setColorDistancePct(colorDistancePct: number): void {
+    this.colorDistancePct = colorDistancePct
+  }
+
+  setStrategy(strategy: ExtractStrategyInterface): void {
+    this.strategy = strategy
+  }
+
+  setColorPicker(color: string): void {
+    this.colorPicker = color
+  }
+
+  setSwatches(colorSwatches: string[]): void {
+    this.updateSwatches(colorSwatches)
   }
 
   execute(canvas: CanvasInterface): Coord[] {

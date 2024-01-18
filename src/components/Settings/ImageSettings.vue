@@ -16,15 +16,17 @@ import { defineComponent } from 'vue'
 import { useCanvasStore } from '@/store/canvas'
 import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
-import { useExtractorStore } from '@/store/extractor'
 import { mapState, mapActions } from 'pinia'
+import { Extractor } from '@/applications/services/extractor'
 
 export default defineComponent({
   computed: {
     ...mapState(useCanvasStore, ['canvas']),
   },
   data() {
-    return {}
+    return {
+      extractor: Extractor.getInstance(),
+    }
   },
   mounted() {
     document.addEventListener('paste', this.onImagePasted.bind(this))
@@ -36,7 +38,6 @@ export default defineComponent({
     ...mapActions(useCanvasStore, ['drawFitSizeImage', 'setUploadImageUrl']),
     ...mapActions(useAxesStore, ['clearAxesCoords']),
     ...mapActions(useDatasetsStore, ['clearPlots']),
-    ...mapActions(useExtractorStore, ['setSwatches']),
     async updateImage(file: File) {
       try {
         if (!this.isValidFileType(file.type)) {
@@ -51,7 +52,7 @@ export default defineComponent({
 
         await this.canvas.initializeImageElement(fr.result)
         this.drawFitSizeImage()
-        this.setSwatches(this.canvas.colorSwatches)
+        this.extractor.setSwatches(this.canvas.colorSwatches)
         this.setUploadImageUrl(fr.result)
         this.clearAxesCoords()
         this.clearPlots()

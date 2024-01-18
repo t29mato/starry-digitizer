@@ -52,13 +52,13 @@ import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
-import { useExtractorStore } from '@/store/extractor'
 import { getMouseCoordFromMouseEvent } from '@/presentation/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/dragRectangleCalculator'
 
-import { Interpolator } from '@/application/services/interpolator'
+import { Interpolator } from '@/applications/services/interpolator'
 import { HTMLCanvas } from '@/domains/dom/HTMLCanvas'
-import { Confirmer } from '@/application/services/confirmer'
+import { Confirmer } from '@/applications/services/confirmer'
+import { Extractor } from '@/applications/services/extractor'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -93,7 +93,7 @@ export default defineComponent({
       await this.canvas.initializeImageElement(this.imagePath)
       this.drawFitSizeImage()
       this.setUploadImageUrl(this.imagePath)
-      this.setSwatches(this.canvas.colorSwatches)
+      this.extractor.setSwatches(this.canvas.colorSwatches)
 
       //TODO: interpolation canvasをinterpolator appに移譲したのでここで呼んでいるがcanvas初期化一連を行うapplicationにまとめたい
       this.interpolator.resizeCanvas()
@@ -105,6 +105,7 @@ export default defineComponent({
     return {
       interpolator: Interpolator.getInstance(),
       confirmer: Confirmer.getInstance(),
+      extractor: Extractor.getInstance(),
     }
   },
   methods: {
@@ -130,7 +131,6 @@ export default defineComponent({
       'inactivateAxis',
       'moveActiveAxis',
     ]),
-    ...mapActions(useExtractorStore, ['setSwatches']),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき
@@ -345,3 +345,4 @@ export default defineComponent({
   }
 }
 </style>
+@/applications/services/interpolator@/applications/services/confirmer

@@ -86,19 +86,19 @@ import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
 import MaskSettings from './MaskSettings.vue'
 import ColorSettings from './ColorSettings.vue'
-// import { ExtractStrategy } from '@/domains/extractor'
-import SymbolExtractByArea from '@/domains/extractStrategies/symbolExtractByArea'
-import LineExtract from '@/domains/extractStrategies/lineExtract'
+// import { ExtractStrategy } from '@/applications/strategies/extractor'
+import SymbolExtractByArea from '@/applications/strategies/extractStrategies/symbolExtractByArea'
+import LineExtract from '@/applications/strategies/extractStrategies/lineExtract'
 
 import { useCanvasStore } from '@/store/canvas'
-import { useExtractorStore } from '@/store/extractor'
 import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 
-import { Interpolator } from '@/application/services/interpolator'
-import { addLocalStorageData } from '@/application/utils/localStorageUtils'
-import { Confirmer } from '@/application/services/confirmer'
+import { Interpolator } from '@/applications/services/interpolator'
+import { addLocalStorageData } from '@/applications/utils/localStorageUtils'
+import { Confirmer } from '@/applications/services/confirmer'
+import { Extractor } from '@/applications/services/extractor'
 
 export default defineComponent({
   components: {
@@ -111,11 +111,11 @@ export default defineComponent({
     return {
       interpolator: Interpolator.getInstance(),
       confirmer: Confirmer.getInstance(),
+      extractor: Extractor.getInstance(),
       isExtracting: false,
     }
   },
   computed: {
-    ...mapState(useExtractorStore, ['extractor']),
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useAxesStore, ['axes']),
@@ -129,14 +129,13 @@ export default defineComponent({
   mounted() {
     switch (this.initialExtractorStrategy) {
       case 'Symbol Extract':
-        this.setStrategy(SymbolExtractByArea.instance)
+        this.extractor.setStrategy(SymbolExtractByArea.instance)
         break
       case 'Line Extract':
-        this.setStrategy(LineExtract.instance)
+        this.extractor.setStrategy(LineExtract.instance)
     }
   },
   methods: {
-    ...mapActions(useExtractorStore, ['setStrategy']),
     ...mapActions(useAxesStore, ['inactivateAxis']),
     ...mapActions(useDatasetsStore, [
       'switchActivatedPlot',
@@ -157,10 +156,10 @@ export default defineComponent({
     setExtractStrategy(strategy: any) {
       switch (strategy) {
         case 'Symbol Extract':
-          this.setStrategy(SymbolExtractByArea.instance)
+          this.extractor.setStrategy(SymbolExtractByArea.instance)
           break
         case 'Line Extract':
-          this.setStrategy(LineExtract.instance)
+          this.extractor.setStrategy(LineExtract.instance)
       }
     },
     async extractPlots() {
