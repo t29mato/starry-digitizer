@@ -23,5 +23,5 @@ describe('DragRectangleCalculator', () => {
     })
   })
 
-  // 他のテストケースをここに追加...
+  // 他のテストケースをここに追加..
 })
