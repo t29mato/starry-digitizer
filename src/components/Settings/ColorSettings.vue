@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts">
-import { Extractor } from '@/applications/services/extractor'
+import { Extractor } from '@/application/services/extractor'
 import { defineComponent } from 'vue'
 
 export default defineComponent({

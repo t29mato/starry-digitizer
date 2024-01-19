@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import LineExtract from '@/applications/strategies/extractStrategies/lineExtract'
+import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
 export interface State {
   lineExtract: LineExtract

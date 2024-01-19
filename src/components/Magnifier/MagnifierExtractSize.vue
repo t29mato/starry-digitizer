@@ -45,7 +45,7 @@ import { useMagnifierStore } from '@/store/magnifier'
 import { useLineExtractStore } from '@/store/lineExtract'
 import { useSymbolExtractByAreaStore } from '@/store/symbolExtractByArea'
 import { mapState } from 'pinia'
-import { Extractor } from '@/applications/services/extractor'
+import { Extractor } from '@/application/services/extractor'
 
 export default defineComponent({
   data() {

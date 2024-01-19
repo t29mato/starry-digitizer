@@ -17,7 +17,7 @@ import { useCanvasStore } from '@/store/canvas'
 import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
-import { Extractor } from '@/applications/services/extractor'
+import { Extractor } from '@/application/services/extractor'
 
 export default defineComponent({
   computed: {

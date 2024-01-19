@@ -1,6 +1,6 @@
 import { CanvasInterface } from '@/domains/canvasInterface'
 import { Coord } from '@/domains/datasetInterface'
-import ExtractStrategyInterface from '@/applications/strategies/extractStrategies/extractStrategyInterface'
+import ExtractStrategyInterface from '@/application/strategies/extractStrategies/extractStrategyInterface'
 
 export interface ExtractorInterface {
   strategy: ExtractStrategyInterface

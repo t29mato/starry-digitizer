@@ -28,7 +28,7 @@ import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useStyleStore } from '@/store/style'
-import { Interpolator } from '@/applications/services/interpolator'
+import { Interpolator } from '@/application/services/interpolator'
 
 export default defineComponent({
   data() {
@@ -159,4 +159,4 @@ export default defineComponent({
   },
 })
 </script>
-@/applications/services/interpolator
+@/application/services/interpolator

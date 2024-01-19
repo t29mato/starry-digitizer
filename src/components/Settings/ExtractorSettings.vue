@@ -86,19 +86,19 @@ import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
 import MaskSettings from './MaskSettings.vue'
 import ColorSettings from './ColorSettings.vue'
-// import { ExtractStrategy } from '@/applications/strategies/extractor'
-import SymbolExtractByArea from '@/applications/strategies/extractStrategies/symbolExtractByArea'
-import LineExtract from '@/applications/strategies/extractStrategies/lineExtract'
+// import { ExtractStrategy } from '@/application/strategies/extractor'
+import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
+import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 
-import { Interpolator } from '@/applications/services/interpolator'
-import { addLocalStorageData } from '@/applications/utils/localStorageUtils'
-import { Confirmer } from '@/applications/services/confirmer'
-import { Extractor } from '@/applications/services/extractor'
+import { Interpolator } from '@/application/services/interpolator'
+import { addLocalStorageData } from '@/application/utils/localStorageUtils'
+import { Confirmer } from '@/application/services/confirmer'
+import { Extractor } from '@/application/services/extractor'
 
 export default defineComponent({
   components: {
