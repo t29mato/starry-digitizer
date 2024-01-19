@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import StarryDigitizer from '@/components/StarryDigitizer.vue'
+import StarryDigitizer from '@/presentation/components/StarryDigitizer.vue'
 
 import { version } from '../package.json'
 

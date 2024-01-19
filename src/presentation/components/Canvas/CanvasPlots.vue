@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-import CanvasPlot from '@/components/Canvas/CanvasPlot.vue'
+import CanvasPlot from '@/presentation/components/Canvas/CanvasPlot.vue'
 import { defineComponent } from 'vue'
 
 import { useCanvasStore } from '@/store/canvas'

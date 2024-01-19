@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import CanvasAxis from '@/components/Canvas/CanvasAxis.vue'
+import CanvasAxis from '@/presentation/components/Canvas/CanvasAxis.vue'
 
 import { useAxesStore } from '@/store/axes'
 import { mapState } from 'pinia'

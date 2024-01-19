@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import MagnifierAxis from '@/components/Magnifier/MagnifierAxis.vue'
+import MagnifierAxis from '@/presentation/components/Magnifier/MagnifierAxis.vue'
 import { defineComponent } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
