@@ -1,7 +1,7 @@
 import ColorThief from 'colorthief'
 import { CanvasInterface } from './canvasInterface'
 import { Coord } from './datasetInterface'
-import { HTMLCanvas } from './dom/HTMLCanvas'
+import { HTMLCanvas } from '../presentation/dom/HTMLCanvas'
 const colorThief = new ColorThief()
 
 export class Canvas implements CanvasInterface {

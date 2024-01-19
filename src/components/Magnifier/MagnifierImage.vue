@@ -54,7 +54,7 @@ import { useMagnifierStore } from '@/store/magnifier'
 import { mapState } from 'pinia'
 
 import { Interpolator } from '@/application/services/interpolator'
-import { HTMLCanvas } from '@/domain/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 
 export default defineComponent({
   data() {
@@ -76,4 +76,3 @@ export default defineComponent({
   },
 })
 </script>
-@/application/services/interpolator

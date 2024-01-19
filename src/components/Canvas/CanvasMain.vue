@@ -56,7 +56,7 @@ import { getMouseCoordFromMouseEvent } from '@/presentation/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/dragRectangleCalculator'
 
 import { Interpolator } from '@/application/services/interpolator'
-import { HTMLCanvas } from '@/domain/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { Confirmer } from '@/application/services/confirmer'
 import { Extractor } from '@/application/services/extractor'
 
@@ -346,3 +346,4 @@ export default defineComponent({
 }
 </style>
 @/application/services/interpolator@/application/services/confirmer
+@/presentation/dom/HTMLCanvas

@@ -1,5 +1,5 @@
 import { Coord } from '@/domain/datasetInterface'
-import { HTMLCanvas } from '@/domain/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 
 export interface InterpolatorInterface {
   isActive: boolean

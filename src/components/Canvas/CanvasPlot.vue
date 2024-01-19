@@ -159,4 +159,3 @@ export default defineComponent({
   },
 })
 </script>
-@/application/services/interpolator

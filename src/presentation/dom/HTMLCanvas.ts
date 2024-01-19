@@ -16,7 +16,7 @@ export class HTMLCanvas {
       0,
       0,
       this.element.width,
-      this.element.height
+      this.element.height,
     ).data
   }
   #getCanvasElementById(id: string): HTMLCanvasElement {
