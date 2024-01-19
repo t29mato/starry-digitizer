@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import { Axes } from '@/domains/axes/axes'
-import { Coord } from '@/domains/datasetInterface'
-import { Axis } from '@/domains/axes/axis'
-import { Vector } from '@/domains/axes/axesInterface'
+import { Axes } from '@/domain/axes/axes'
+import { Coord } from '@/domain/datasetInterface'
+import { Axis } from '@/domain/axes/axis'
+import { Vector } from '@/domain/axes/axesInterface'
 
 export interface State {
   axes: Axes

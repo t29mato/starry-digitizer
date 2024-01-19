@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { AxisInterface } from '@/domains/axes/axisInterface'
+import { AxisInterface } from '@/domain/axes/axisInterface'
 import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
 import { defineComponent } from 'vue'

@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import { AxisInterface } from '@/domains/axes/axisInterface'
+import { AxisInterface } from '@/domain/axes/axisInterface'
 import { defineComponent } from 'vue'
 
 import { useAxesStore } from '@/store/axes'

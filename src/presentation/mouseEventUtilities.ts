@@ -1,4 +1,4 @@
-import { Coord } from '@/domains/datasetInterface'
+import { Coord } from '@/domain/datasetInterface'
 
 // Canvas上のpositionを返す関数
 export function getMouseCoordFromMouseEvent(e: MouseEvent): Coord {

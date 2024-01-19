@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { Magnifier } from '@/domains/magnifier'
+import { Magnifier } from '@/domain/magnifier'
 
 export interface State {
   magnifier: Magnifier

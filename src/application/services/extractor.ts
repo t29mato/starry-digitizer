@@ -1,5 +1,5 @@
-import { CanvasInterface } from '../../domains/canvasInterface'
-import { Coord } from '../../domains/datasetInterface'
+import { CanvasInterface } from '../../domain/canvasInterface'
+import { Coord } from '../../domain/datasetInterface'
 import { ExtractorInterface } from '../interfaces/extractorInterface'
 import ExtractStrategyInterface from '../strategies/extractStrategies/extractStrategyInterface'
 import LineExtract from '../strategies/extractStrategies/lineExtract'

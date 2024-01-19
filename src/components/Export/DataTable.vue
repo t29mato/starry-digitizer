@@ -18,7 +18,7 @@ import { defineComponent } from 'vue'
 // TODO: TSの型宣言エラーが解消できずignore いずれ再度調査
 // @ts-ignore
 import colors from 'vuetify/lib/util/colors'
-import XYAxesCalculator from '@/domains/XYAxesCalculator'
+import XYAxesCalculator from '@/domain/XYAxesCalculator'
 
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
@@ -28,7 +28,7 @@ import 'handsontable/dist/handsontable.full.css'
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
-import { Plot } from '@/domains/datasetInterface'
+import { Plot } from '@/domain/datasetInterface'
 
 import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'

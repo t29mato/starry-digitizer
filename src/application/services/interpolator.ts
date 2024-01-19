@@ -1,6 +1,6 @@
-import { Coord, Plot } from '@/domains/datasetInterface'
+import { Coord, Plot } from '@/domain/datasetInterface'
 import { InterpolatorInterface } from '../interfaces/interpolatorInterface'
-import { HTMLCanvas } from '@/domains/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/domain/dom/HTMLCanvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { getInterpolatedCoordsList } from '../lib/CurveInterpolatorLib'
 import { getPlotsTotalDistance } from '@/services/getPlotsTotalDistance'

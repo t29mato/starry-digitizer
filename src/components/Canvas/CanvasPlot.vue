@@ -22,7 +22,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Plot } from '@/domains/datasetInterface'
+import { Plot } from '@/domain/datasetInterface'
 
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'

@@ -45,8 +45,8 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { CanvasAxes, CanvasPlots, CanvasCursor, CanvasAxesGuide } from '.'
-import { Vector } from '@/domains/axes/axesInterface'
-import { Coord, Plot } from '@/domains/datasetInterface'
+import { Vector } from '@/domain/axes/axesInterface'
+import { Coord, Plot } from '@/domain/datasetInterface'
 
 import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
@@ -56,7 +56,7 @@ import { getMouseCoordFromMouseEvent } from '@/presentation/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/dragRectangleCalculator'
 
 import { Interpolator } from '@/application/services/interpolator'
-import { HTMLCanvas } from '@/domains/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/domain/dom/HTMLCanvas'
 import { Confirmer } from '@/application/services/confirmer'
 import { Extractor } from '@/application/services/extractor'
 

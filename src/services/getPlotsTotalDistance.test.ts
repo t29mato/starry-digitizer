@@ -1,5 +1,5 @@
 import { getPlotsTotalDistance } from './getPlotsTotalDistance'
-import { Plot } from '@/domains/datasetInterface'
+import { Plot } from '@/domain/datasetInterface'
 
 describe('getPlotsTotalDistance', () => {
   it('calculates total distance correctly for a given set of plots', () => {

@@ -1,6 +1,6 @@
 import ExtractStrategyInterface from './extractStrategyInterface'
 import { ExtractParent } from './extractParent'
-import { Coord } from '@/domains/datasetInterface'
+import { Coord } from '@/domain/datasetInterface'
 
 export default class SymbolExtractByArea
   extends ExtractParent

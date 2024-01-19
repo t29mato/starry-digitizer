@@ -1,4 +1,4 @@
-import { Coord } from '@/domains/datasetInterface'
+import { Coord } from '@/domain/datasetInterface'
 
 // INFO: Strategy Pattern
 export default interface ExtractStrategyInterface {

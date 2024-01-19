@@ -60,7 +60,7 @@ import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/components/Magnifier/MagnifierExtractSize.vue'
-import XYAxesCalculator from '@/domains/XYAxesCalculator'
+import XYAxesCalculator from '@/domain/XYAxesCalculator'
 
 import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'

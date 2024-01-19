@@ -26,7 +26,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Coord } from '@/domains/datasetInterface'
+import { Coord } from '@/domain/datasetInterface'
 
 import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'

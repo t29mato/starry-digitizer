@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import { Canvas } from '@/domains/canvas'
-import { Coord } from '@/domains/datasetInterface'
+import { Canvas } from '@/domain/canvas'
+import { Coord } from '@/domain/datasetInterface'
 
 // export interface State {
 //   canvas: CanvasInterface

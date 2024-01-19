@@ -1,4 +1,4 @@
-import { Plot } from '@/domains/datasetInterface'
+import { Plot } from '@/domain/datasetInterface'
 
 //TODO: public interfaceの、Plots型の、getTotalDistanceとして定義する
 export function getPlotsTotalDistance(plots: Plot[]): number {

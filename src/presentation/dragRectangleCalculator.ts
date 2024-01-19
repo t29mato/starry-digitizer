@@ -1,4 +1,4 @@
-import { Coord } from '@/domains/datasetInterface'
+import { Coord } from '@/domain/datasetInterface'
 
 // 右下から左上にドラッグした時でもabsoluteな四角形を作る関数
 export function getRectCoordsFromDragCoords(
