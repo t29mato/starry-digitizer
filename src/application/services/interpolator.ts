@@ -3,9 +3,9 @@ import { InterpolatorInterface } from '../interfaces/interpolatorInterface'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { getInterpolatedCoordsList } from '../lib/CurveInterpolatorLib'
-import { getPlotsTotalDistance } from '@/services/getPlotsTotalDistance'
 import { useCanvasStore } from '@/store/canvas'
 import { getLocalStorageDataByKey } from '../utils/localStorageUtils'
+import { getPlotsTotalDistance } from '../utils/pointsUtils'
 
 export class Interpolator implements InterpolatorInterface {
   private static instance: InterpolatorInterface

@@ -1,6 +1,6 @@
 import { Plot } from '@/domain/datasetInterface'
+//TODO Re-consider where to place this logic: should move to domain repo with Plots repository??
 
-//TODO: public interfaceの、Plots型の、getTotalDistanceとして定義する
 export function getPlotsTotalDistance(plots: Plot[]): number {
   let previousPlot: undefined | Plot = undefined
   let totalDistance: number = 0
