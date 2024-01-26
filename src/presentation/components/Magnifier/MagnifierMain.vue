@@ -65,8 +65,8 @@ import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
 import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
-import { useMagnifierStore } from '@/store/magnifier'
-import { mapState, mapActions } from 'pinia'
+import { mapState } from 'pinia'
+import { Magnifier } from '@/application/services/magnifier/magnifier'
 
 export default defineComponent({
   components: {
@@ -83,11 +83,11 @@ export default defineComponent({
     return {
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
+      magnifier: Magnifier.getInstance(),
     }
   },
   computed: {
     ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useMagnifierStore, ['magnifier']),
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useCanvasStore, ['canvas']),
     // magnifierHalfSize(): number {
@@ -119,7 +119,6 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(useMagnifierStore, ['setScale']),
     toggleSettingsDialog(): void {
       this.shouldShowSettingsDialog = !this.shouldShowSettingsDialog
     },
@@ -129,12 +128,11 @@ export default defineComponent({
       if (scale < 2) {
         this.magnifierSettingError =
           'The Magnifier scale is supposed to be larger than 2 times.'
-        this.setScale(2)
+        this.magnifier.setScale(2)
         return
       }
-      this.setScale(parseInt(value))
+      this.magnifier.setScale(parseInt(value))
     },
   },
 })
 </script>
-@/domain/services/XYAxesCalculator

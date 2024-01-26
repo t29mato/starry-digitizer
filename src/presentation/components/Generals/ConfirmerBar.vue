@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { Confirmer } from '@/application/services/confirmer'
+import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
@@ -53,4 +53,5 @@ export default defineComponent({
   }
 }
 </style>
-@/application/services/confirmer
+@/application/services/confirmer/confirmer
+@/application/services/confirmer/confirmer/confirmer

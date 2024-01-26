@@ -12,14 +12,16 @@
 </template>
 
 <script lang="ts">
+import { Magnifier } from '@/application/services/magnifier/magnifier'
 import { defineComponent } from 'vue'
 
-import { useMagnifierStore } from '@/store/magnifier'
-import { mapState } from 'pinia'
-
 export default defineComponent({
+  data() {
+    return {
+      magnifier: Magnifier.getInstance(),
+    }
+  },
   computed: {
-    ...mapState(useMagnifierStore, ['magnifier']),
     // INFO: 十字線を作成する箱の横幅
     width(): number {
       return (this.magnifier.sizePx - this.magnifier.crosshairSizePx) / 2

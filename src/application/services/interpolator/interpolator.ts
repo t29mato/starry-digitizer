@@ -1,11 +1,11 @@
 import { Coord, Plot } from '@/domain/datasetInterface'
-import { InterpolatorInterface } from '../interfaces/interpolatorInterface'
+import { InterpolatorInterface } from './interpolatorInterface'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { useDatasetsStore } from '@/store/datasets'
-import { getInterpolatedCoordsList } from '../lib/CurveInterpolatorLib'
+import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
 import { useCanvasStore } from '@/store/canvas'
-import { getLocalStorageDataByKey } from '../utils/localStorageUtils'
-import { getPlotsTotalDistance } from '../utils/pointsUtils'
+import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
+import { getPlotsTotalDistance } from '../../utils/pointsUtils'
 
 export class Interpolator implements InterpolatorInterface {
   private static instance: InterpolatorInterface
