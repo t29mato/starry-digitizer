@@ -49,18 +49,17 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useCanvasStore } from '@/store/canvas'
-import { mapState } from 'pinia'
-
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
       magnifier: Magnifier.getInstance(),
+      canvas: Canvas.getInstance(),
     }
   },
   mounted() {
@@ -69,7 +68,6 @@ export default defineComponent({
     )
   },
   computed: {
-    ...mapState(useCanvasStore, ['canvas']),
     halfSize(): number {
       return this.magnifier.sizePx / 2
     },

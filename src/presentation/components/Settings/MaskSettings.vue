@@ -43,34 +43,32 @@
 </template>
 
 <script lang="ts">
+import { Canvas } from '@/application/services/canvas/canvas'
 import { defineComponent } from 'vue'
 
-import { useCanvasStore } from '@/store/canvas'
-import { mapState, mapActions } from 'pinia'
-
 export default defineComponent({
-  computed: {
-    ...mapState(useCanvasStore, ['canvas']),
+  data() {
+    return {
+      canvas: Canvas.getInstance(),
+    }
   },
-
   methods: {
-    ...mapActions(useCanvasStore, [
-      'setPenToolSizePx',
-      'setMaskMode',
-      'setEraserSizePx',
-    ]),
     onChangePenToolSizePx(event: Event) {
-      this.setPenToolSizePx(Number((<HTMLInputElement>event.target).value))
+      this.canvas.setPenToolSizePx(
+        Number((<HTMLInputElement>event.target).value),
+      )
     },
     onChangeEraserSizePx(event: Event) {
-      this.setEraserSizePx(Number((<HTMLInputElement>event.target).value))
+      this.canvas.setEraserSizePx(
+        Number((<HTMLInputElement>event.target).value),
+      )
     },
     change(value: any) {
       if (value === undefined) {
-        this.setMaskMode(-1)
+        this.canvas.setMaskMode(-1)
         return
       }
-      this.setMaskMode(value)
+      this.canvas.setMaskMode(value)
     },
     clearMask() {
       this.canvas.clearMask()

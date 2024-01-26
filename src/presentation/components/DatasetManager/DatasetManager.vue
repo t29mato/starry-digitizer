@@ -56,14 +56,15 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   components: {},
   data() {
     return {
+      canvas: Canvas.getInstance(),
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
@@ -72,7 +73,6 @@ export default defineComponent({
   },
   computed: {
     ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useCanvasStore, ['canvas']),
   },
   props: {
     exportBtnText: {

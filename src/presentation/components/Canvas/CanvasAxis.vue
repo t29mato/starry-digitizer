@@ -42,9 +42,9 @@ import { AxisInterface } from '@/domain/axes/axisInterface'
 import { defineComponent } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
-import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
 import { mapState } from 'pinia'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   props: {
@@ -56,6 +56,7 @@ export default defineComponent({
   data() {
     return {
       fontSize: 14,
+      canvas: Canvas.getInstance(),
     }
   },
   computed: {
@@ -67,7 +68,6 @@ export default defineComponent({
       'axisCrossTopPx',
       'axisCrossCursorPx',
     ]),
-    ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useAxesStore, ['axes']),
     xPx(): number {
       if (this.axis.coord) {

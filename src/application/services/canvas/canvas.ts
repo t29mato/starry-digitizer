@@ -1,7 +1,8 @@
+//TODO: Separate into multiple apps based on feature (so far, multiple features related to canvas are gethered at this class but it is not ideal)
 import ColorThief from 'colorthief'
 import { CanvasInterface } from './canvasInterface'
-import { Coord } from './datasetInterface'
-import { HTMLCanvas } from '../presentation/dom/HTMLCanvas'
+import { Coord } from '../../../domain/datasetInterface'
+import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
 const colorThief = new ColorThief()
 
 export class Canvas implements CanvasInterface {
@@ -21,8 +22,18 @@ export class Canvas implements CanvasInterface {
   eraserSizePx = 30
   uploadImageUrl = ''
 
-  constructor() {
+  private static instance: CanvasInterface
+
+  private constructor() {
     this.imageElement = new Image()
+  }
+
+  static getInstance(): CanvasInterface {
+    if (!this.instance) {
+      this.instance = new Canvas()
+    }
+
+    return this.instance
   }
 
   async initializeImageElement(imagePath: string) {
@@ -361,5 +372,31 @@ export class Canvas implements CanvasInterface {
       width,
       height,
     )
+  }
+
+  setUploadImageUrl(url: string) {
+    this.uploadImageUrl = url
+  }
+
+  setCursor(coord: Coord) {
+    this.cursor = coord
+  }
+
+  setManualMode(mode: number) {
+    this.manualMode = mode
+    this.maskMode = -1
+  }
+
+  setMaskMode(mode: number) {
+    this.maskMode = mode
+    this.manualMode = -1
+  }
+
+  setPenToolSizePx(size: number) {
+    this.penToolSizePx = size
+  }
+
+  setEraserSizePx(size: number) {
+    this.eraserSizePx = size
   }
 }

@@ -63,10 +63,10 @@ import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierE
 import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
 
 import { useAxesStore } from '@/store/axes'
-import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   components: {
@@ -84,12 +84,12 @@ export default defineComponent({
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
       magnifier: Magnifier.getInstance(),
+      canvas: Canvas.getInstance(),
     }
   },
   computed: {
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useAxesStore, ['axes']),
-    ...mapState(useCanvasStore, ['canvas']),
     // magnifierHalfSize(): number {
     //   return this.magnifier.sizePx / 2
     // },
