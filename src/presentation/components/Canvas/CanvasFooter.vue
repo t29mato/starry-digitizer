@@ -58,12 +58,12 @@ export default defineComponent({
   methods: {
     ...mapActions(useDatasetsStore, ['clearPlots', 'clearActivePlots']),
     ...mapActions(useAxesStore, [
-      'clearAxesCoords',
+      'clearAxisCoords',
       'clearXAxisCoords',
       'clearYAxisCoords',
     ]),
     clearAxes() {
-      this.clearAxesCoords()
+      this.clearAxisCoords()
       this.canvas.setManualMode(-1)
     },
     clearXAxis() {
@@ -71,7 +71,7 @@ export default defineComponent({
       this.canvas.setManualMode(-1)
     },
     clearYAxis() {
-      this.clearAxesCoords()
+      this.clearAxisCoords()
       this.canvas.setManualMode(-1)
     },
     handleOnClickClearPlots() {

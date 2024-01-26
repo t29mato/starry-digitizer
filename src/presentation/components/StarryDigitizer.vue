@@ -35,7 +35,11 @@
 import { defineComponent } from 'vue'
 import { MagnifierMain } from '@/presentation/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
-import { AxesSettings, ExtractorSettings, ImageSettings } from './Settings'
+import {
+  AxisRepositorySettings,
+  ExtractorSettings,
+  ImageSettings,
+} from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { version } from '../../../package.json'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'

@@ -1,8 +1,8 @@
 import { Coord } from '../../models/dataset/datasetInterface'
-import { AxesInterface, Vector } from './axesInterface'
+import { AxisRepositoryInterface, Vector } from './axisRepositoryInterface'
 import { AxisInterface } from '../../models/axis/axisInterface'
 
-export class Axes implements AxesInterface {
+export class AxisRepository implements AxisRepositoryInterface {
   x1: AxisInterface
   x2: AxisInterface
   y1: AxisInterface
@@ -133,7 +133,7 @@ export class Axes implements AxesInterface {
     }
   }
 
-  clearAxesCoords() {
+  clearAxisCoords() {
     this.x1.clearCoord()
     this.x2.clearCoord()
     this.y1.clearCoord()

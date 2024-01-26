@@ -1,13 +1,13 @@
 //INFO: implementing this class because this calculation logics hand XY values over to the dataset domain, using the states of axes domain (handling multiple domain models)
-import { AxesInterface } from '../repositories/axes/axesInterface'
+import { AxisRepositoryInterface } from '../repositories/axisRepository/axisRepositoryInterface'
 
 export default class XYAxesCalculator {
   // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
   effectiveDigits: number = 4
 
-  #axes: AxesInterface
+  #axes: AxisRepositoryInterface
   #isLog: { x: boolean; y: boolean }
-  constructor(axes: AxesInterface, isLog: { x: boolean; y: boolean }) {
+  constructor(axes: AxisRepositoryInterface, isLog: { x: boolean; y: boolean }) {
     this.#axes = axes
     this.#isLog = isLog
   }

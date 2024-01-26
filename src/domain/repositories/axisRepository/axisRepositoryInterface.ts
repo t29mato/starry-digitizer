@@ -7,7 +7,7 @@ export type Vector = {
   distancePx: number
 }
 
-export interface AxesInterface {
+export interface AxisRepositoryInterface {
   x1: AxisInterface
   x2: AxisInterface
   y1: AxisInterface
@@ -25,7 +25,7 @@ export interface AxesInterface {
   get activeAxis(): AxisInterface | null
   get nextAxis(): AxisInterface | null
   moveActiveAxis(vector: Vector): void
-  clearAxesCoords(): void
+  clearAxisCoords(): void
   clearXAxisCoords(): void
   clearYAxisCoords(): void
   addAxisCoord(coord: Coord): void

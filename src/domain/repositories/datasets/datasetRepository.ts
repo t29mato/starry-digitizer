@@ -1,6 +1,6 @@
 import { DatasetInterface, Coord } from '../../models/dataset/datasetInterface'
 
-export class Datasets {
+export class DatasetRepository {
   datasets: DatasetInterface[]
   activeDatasetId = 1
 
@@ -71,7 +71,7 @@ export class Datasets {
   }
 
   activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
-    return this.activeDataset.activatePlotsInRectangleArea(
+    this.activeDataset.activatePlotsInRectangleArea(
       topLeftCoord,
       bottomRightCoord,
     )

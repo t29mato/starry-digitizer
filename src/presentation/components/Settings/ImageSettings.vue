@@ -33,7 +33,7 @@ export default defineComponent({
     document.removeEventListener('paste', this.onImagePasted)
   },
   methods: {
-    ...mapActions(useAxesStore, ['clearAxesCoords']),
+    ...mapActions(useAxesStore, ['clearAxisCoords']),
     ...mapActions(useDatasetsStore, ['clearPlots']),
     async updateImage(file: File) {
       try {
@@ -51,7 +51,7 @@ export default defineComponent({
         this.canvas.drawFitSizeImage()
         this.extractor.setSwatches(this.canvas.colorSwatches)
         this.canvas.setUploadImageUrl(fr.result)
-        this.clearAxesCoords()
+        this.clearAxisCoords()
         this.clearPlots()
       } catch (e) {
         console.error('failed to update image', { cause: e })

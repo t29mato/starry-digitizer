@@ -1,16 +1,16 @@
 import { defineStore } from 'pinia'
-import { Datasets } from '@/domain/repositories/datasets/datasets'
+import { DatasetRepository } from '@/domain/repositories/datasets/datasetRepository'
 import { Dataset } from '@/domain/models/dataset/dataset'
 import { Coord } from '@/domain/models/dataset/datasetInterface'
-import { Vector } from '@/domain/repositories/axes/axesInterface'
+import { Vector } from '@/domain/repositories/axisRepository/axisRepositoryInterface'
 
 export interface State {
-  datasets: Datasets
+  datasets: DatasetRepository
 }
 
-export const useDatasetsStore = defineStore('datasets', {
+export const useDatasetRepositoryStore = defineStore('datasets', {
   state: (): State => ({
-    datasets: new Datasets(new Dataset('dataset 1', [], 1)),
+    datasets: new DatasetRepository(new Dataset('dataset 1', [], 1)),
   }),
   getters: {
     //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？

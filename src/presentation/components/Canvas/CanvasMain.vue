@@ -45,7 +45,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { CanvasAxes, CanvasPlots, CanvasCursor, CanvasAxesGuide } from '.'
-import { Vector } from '@/domain/axes/axesInterface'
+import { Vector } from '@/domain/axes/axisRepositoryInterface'
 import { Coord, Plot } from '@/domain/datasetInterface'
 
 import { useAxesStore } from '@/store/axes'
@@ -336,4 +336,4 @@ export default defineComponent({
 }
 </style>
 @/domain/models/dataset/datasetInterface
-@/domain/repositories/axes/axesInterface
+@/domain/repositories/axisRepository/axisRepositoryInterface

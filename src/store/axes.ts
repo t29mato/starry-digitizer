@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import { Axes } from '@/domain/repositories/axes/axes'
+import { AxisRepository } from '@/domain/repositories/axisRepository/axisRepository'
 import { Coord } from '@/domain/models/dataset/datasetInterface'
 import { Axis } from '@/domain/models/axis/axis'
-import { Vector } from '@/domain/repositories/axes/axesInterface'
+import { Vector } from '@/domain/repositories/axisRepository/axisRepositoryInterface'
 
 export interface State {
   axes: Axes
@@ -43,8 +43,8 @@ export const useAxesStore = defineStore('axes', {
     setYIsLog(value: boolean) {
       this.axes.yIsLog = value
     },
-    clearAxesCoords() {
-      this.axes.clearAxesCoords()
+    clearAxisCoords() {
+      this.axes.clearAxisCoords()
     },
     clearXAxisCoords() {
       this.axes.clearXAxisCoords()

@@ -1,4 +1,4 @@
-import { Vector } from '../../repositories/axes/axesInterface'
+import { Vector } from '../../repositories/axisRepository/axisRepositoryInterface'
 import { DatasetInterface, Plots, Plot, Coord } from './datasetInterface'
 
 export class Dataset implements DatasetInterface {
