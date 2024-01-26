@@ -17,13 +17,13 @@ import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapActions } from 'pinia'
 import { Extractor } from '@/application/services/extractor/extractor'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 export default defineComponent({
   data() {
     return {
       extractor: Extractor.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvas: CanvasHandler.getInstance(),
     }
   },
   mounted() {

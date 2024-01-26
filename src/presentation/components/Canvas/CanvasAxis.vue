@@ -44,7 +44,7 @@ import { defineComponent } from 'vue'
 import { useAxesStore } from '@/store/axes'
 import { useStyleStore } from '@/store/style'
 import { mapState } from 'pinia'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 export default defineComponent({
   props: {
@@ -56,7 +56,7 @@ export default defineComponent({
   data() {
     return {
       fontSize: 14,
-      canvas: Canvas.getInstance(),
+      canvas: CanvasHandler.getInstance(),
     }
   },
   computed: {

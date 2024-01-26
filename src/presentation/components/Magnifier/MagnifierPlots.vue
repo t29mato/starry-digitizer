@@ -32,14 +32,14 @@ import { useStyleStore } from '@/store/style'
 import { mapState } from 'pinia'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
       magnifier: Magnifier.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvas: CanvasHandler.getInstance(),
     }
   },
   computed: {

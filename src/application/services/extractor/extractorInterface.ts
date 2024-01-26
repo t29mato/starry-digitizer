@@ -1,4 +1,4 @@
-import { CanvasInterface } from '@/application/services/canvas/canvasInterface'
+import { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
 import { Coord } from '@/domain/models/dataset/datasetInterface'
 import ExtractStrategyInterface from '@/application/strategies/extractStrategies/extractStrategyInterface'
 
@@ -15,7 +15,7 @@ export interface ExtractorInterface {
   setColorPicker(color: string): void
   setSwatches(colorSwatches: string[]): void
 
-  execute(canvas: CanvasInterface): Coord[]
+  execute(canvas: CanvasHandlerInterface): Coord[]
 
   get targetColor(): { R: number; G: number; B: number }
   get targetColorHex(): string

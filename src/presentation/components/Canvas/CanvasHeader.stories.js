@@ -1,7 +1,7 @@
 import CanvasHeader from './CanvasHeader.vue'
 
 export default {
-  title: 'Components/Canvas/Header',
+  title: 'components/Canvas/Header',
   component: CanvasHeader,
   argTypes: {
     uploadImage: {

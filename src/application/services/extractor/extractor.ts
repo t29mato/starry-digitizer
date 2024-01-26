@@ -1,4 +1,4 @@
-import { CanvasInterface } from '../canvas/canvasInterface'
+import { CanvasHandlerInterface } from '../canvasHandler/canvasHandlerInterface'
 import { Coord } from '../../../domain/models/dataset/datasetInterface'
 import { ExtractorInterface } from './extractorInterface'
 import ExtractStrategyInterface from '../../strategies/extractStrategies/extractStrategyInterface'
@@ -42,7 +42,7 @@ export class Extractor implements ExtractorInterface {
     this.updateSwatches(colorSwatches)
   }
 
-  execute(canvas: CanvasInterface): Coord[] {
+  execute(canvas: CanvasHandlerInterface): Coord[] {
     return this.strategy.execute(
       canvas.imageElement.height,
       canvas.imageElement.width,

@@ -33,7 +33,7 @@ import { Plot } from '@/domain/datasetInterface'
 import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 registerAllModules()
 
@@ -62,7 +62,7 @@ export default defineComponent({
   },
   data() {
     return {
-      canvas: Canvas.getInstance(),
+      canvas: CanvasHandler.getInstance(),
       key: 0,
       activeColor: colors.green.lighten5,
       hotTableSettings: {

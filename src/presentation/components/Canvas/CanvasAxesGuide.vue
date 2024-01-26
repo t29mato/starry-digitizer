@@ -13,7 +13,7 @@ import { CSSProperties } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
 import { mapState } from 'pinia'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 const axesGuideCommonStyle: CSSProperties = {
   position: 'absolute',
@@ -25,7 +25,7 @@ const axesGuideCommonStyle: CSSProperties = {
 export default defineComponent({
   data() {
     return {
-      canvas: Canvas.getInstance(),
+      canvas: CanvasHandler.getInstance(),
     }
   },
   methods: {

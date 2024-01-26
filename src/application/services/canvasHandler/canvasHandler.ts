@@ -1,11 +1,11 @@
 //TODO: Separate into multiple apps based on feature (so far, multiple features related to canvas are gethered at this class but it is not ideal)
 import ColorThief from 'colorthief'
-import { CanvasInterface } from './canvasInterface'
+import { CanvasHandlerInterface } from './canvasHandlerInterface'
 import { Coord } from '../../../domain/models/dataset/datasetInterface'
 import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
 const colorThief = new ColorThief()
 
-export class Canvas implements CanvasInterface {
+export class CanvasHandler implements CanvasHandlerInterface {
   isDrawnMask = false
   imageElement: HTMLImageElement
   scale = 1
@@ -22,15 +22,15 @@ export class Canvas implements CanvasInterface {
   eraserSizePx = 30
   uploadImageUrl = ''
 
-  private static instance: CanvasInterface
+  private static instance: CanvasHandlerInterface
 
   private constructor() {
     this.imageElement = new Image()
   }
 
-  static getInstance(): CanvasInterface {
+  static getInstance(): CanvasHandlerInterface {
     if (!this.instance) {
-      this.instance = new Canvas()
+      this.instance = new CanvasHandler()
     }
 
     return this.instance

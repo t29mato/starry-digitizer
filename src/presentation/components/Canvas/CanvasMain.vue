@@ -58,7 +58,7 @@ import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -81,7 +81,7 @@ export default defineComponent({
       interpolator: Interpolator.getInstance(),
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvas: CanvasHandler.getInstance(),
     }
   },
   computed: {

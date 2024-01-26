@@ -30,7 +30,7 @@ import { defineComponent } from 'vue'
 
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 export default defineComponent({
   components: {
@@ -41,7 +41,7 @@ export default defineComponent({
   },
   data() {
     return {
-      canvas: Canvas.getInstance(),
+      canvas: CanvasHandler.getInstance(),
     }
   },
 

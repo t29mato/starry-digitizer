@@ -1,7 +1,7 @@
 import CanvasFooter from './CanvasFooter.vue'
 
 export default {
-  title: 'Components/Canvas/Footer',
+  title: 'components/Canvas/Footer',
   component: CanvasFooter,
   argTypes: {
     plotIsActive: {

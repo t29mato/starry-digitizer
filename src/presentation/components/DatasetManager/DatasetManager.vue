@@ -58,13 +58,13 @@ import { defineComponent } from 'vue'
 
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 export default defineComponent({
   components: {},
   data() {
     return {
-      canvas: Canvas.getInstance(),
+      canvas: CanvasHandler.getInstance(),
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',

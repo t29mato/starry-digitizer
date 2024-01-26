@@ -5,7 +5,7 @@ import { useDatasetsStore } from '@/store/datasets'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
 import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
 import { getPlotsTotalDistance } from '../../utils/pointsUtils'
-import { Canvas } from '../canvas/canvas'
+import { CanvasHandler } from '../canvasHandler/canvasHandler'
 
 export class Interpolator implements InterpolatorInterface {
   private static instance: InterpolatorInterface
@@ -87,8 +87,8 @@ export class Interpolator implements InterpolatorInterface {
       throw new Error('interpolator guide canvas is not set')
     }
 
-    //TODO: Depending on other application is not good. Canvas app should be separated drawing logic and canvas entitiy ifselves
-    const canvas = Canvas.getInstance()
+    //TODO: Depending on other application is not good. CanvasHandler app should be separated drawing logic and canvas entitiy ifselves
+    const canvas = CanvasHandler.getInstance()
     this.clearGuideCanvasContext()
 
     this.guideCanvas.context.beginPath()
@@ -122,8 +122,8 @@ export class Interpolator implements InterpolatorInterface {
   public resizeCanvas(): void {
     if (!this.guideCanvas || !this.magnifierCanvas) return
 
-    //TODO: Depending on other application is not good. Canvas app should be separated drawing logic and canvas entitiy ifselves
-    const canvas = Canvas.getInstance()
+    //TODO: Depending on other application is not good. CanvasHandler app should be separated drawing logic and canvas entitiy ifselves
+    const canvas = CanvasHandler.getInstance()
 
     const newWidth = canvas.originalWidth * canvas.scale
     const newHeight = canvas.originalHeight * canvas.scale

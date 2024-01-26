@@ -120,4 +120,3 @@ $l_mainAreaSideMargin: 20px;
   }
 }
 </style>
-../../../package.json

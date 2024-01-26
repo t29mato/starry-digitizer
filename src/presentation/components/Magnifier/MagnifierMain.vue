@@ -66,7 +66,7 @@ import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 export default defineComponent({
   components: {
@@ -84,7 +84,7 @@ export default defineComponent({
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
       magnifier: Magnifier.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvas: CanvasHandler.getInstance(),
     }
   },
   computed: {

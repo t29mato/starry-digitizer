@@ -47,7 +47,7 @@ import { useAxesStore } from '@/store/axes'
 import { useStyleStore } from '@/store/style'
 import { mapState } from 'pinia'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 export default defineComponent({
   components: {
@@ -57,7 +57,7 @@ export default defineComponent({
   data() {
     return {
       magnifier: Magnifier.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvas: CanvasHandler.getInstance(),
     }
   },
   computed: {
