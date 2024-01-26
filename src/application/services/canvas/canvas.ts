@@ -373,4 +373,30 @@ export class Canvas implements CanvasInterface {
       height,
     )
   }
+
+  setUploadImageUrl(url: string) {
+    this.uploadImageUrl = url
+  }
+
+  setCursor(coord: Coord) {
+    this.cursor = coord
+  }
+
+  setManualMode(mode: number) {
+    this.manualMode = mode
+    this.maskMode = -1
+  }
+
+  setMaskMode(mode: number) {
+    this.maskMode = mode
+    this.manualMode = -1
+  }
+
+  setPenToolSizePx(size: number) {
+    this.penToolSizePx = size
+  }
+
+  setEraserSizePx(size: number) {
+    this.eraserSizePx = size
+  }
 }

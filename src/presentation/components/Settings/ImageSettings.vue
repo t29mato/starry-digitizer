@@ -13,19 +13,17 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useCanvasStore } from '@/store/canvas'
 import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
-import { mapState, mapActions } from 'pinia'
+import { mapActions } from 'pinia'
 import { Extractor } from '@/application/services/extractor/extractor'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
-  computed: {
-    ...mapState(useCanvasStore, ['canvas']),
-  },
   data() {
     return {
       extractor: Extractor.getInstance(),
+      canvas: Canvas.getInstance(),
     }
   },
   mounted() {
@@ -35,7 +33,6 @@ export default defineComponent({
     document.removeEventListener('paste', this.onImagePasted)
   },
   methods: {
-    ...mapActions(useCanvasStore, ['drawFitSizeImage', 'setUploadImageUrl']),
     ...mapActions(useAxesStore, ['clearAxesCoords']),
     ...mapActions(useDatasetsStore, ['clearPlots']),
     async updateImage(file: File) {
@@ -51,9 +48,9 @@ export default defineComponent({
         }
 
         await this.canvas.initializeImageElement(fr.result)
-        this.drawFitSizeImage()
+        this.canvas.drawFitSizeImage()
         this.extractor.setSwatches(this.canvas.colorSwatches)
-        this.setUploadImageUrl(fr.result)
+        this.canvas.setUploadImageUrl(fr.result)
         this.clearAxesCoords()
         this.clearPlots()
       } catch (e) {
@@ -119,4 +116,3 @@ export default defineComponent({
   },
 })
 </script>
-@/application/services/extractor/extractor/extractor

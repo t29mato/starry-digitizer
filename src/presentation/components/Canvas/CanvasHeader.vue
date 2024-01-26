@@ -15,7 +15,9 @@
         @click="handleOnClickResetScaleButton"
         >100%</v-btn
       >
-      <v-btn size="small" class="ml-2" @click="drawFitSizeImage">Fit</v-btn>
+      <v-btn size="small" class="ml-2" @click="canvas.drawFitSizeImage"
+        >Fit</v-btn
+      >
     </div>
     <span class="ma-1">{{ showCanvasScale }}</span>
   </div>
@@ -24,42 +26,34 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useCanvasStore } from '@/store/canvas'
-import { mapState, mapActions } from 'pinia'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
+      canvas: Canvas.getInstance(),
     }
   },
   computed: {
-    ...mapState(useCanvasStore, ['canvas']),
     showCanvasScale(): string {
       return Math.trunc(this.canvas.scale * 100) + '%'
     },
   },
   methods: {
-    ...mapActions(useCanvasStore, [
-      'scaleUp',
-      'scaleDown',
-      'resizeCanvasToOriginal',
-      'drawFitSizeImage',
-    ]),
     handleOnClickScaleUpButton() {
-      this.scaleUp()
+      this.canvas.scaleUp()
       this.interpolator.resizeCanvas()
     },
     handleOnClickScaleDownButton() {
-      this.scaleDown()
+      this.canvas.scaleDown()
       this.interpolator.resizeCanvas()
     },
     handleOnClickResetScaleButton() {
-      this.resizeCanvasToOriginal()
+      this.canvas.drawOriginalSizeImage()
       this.interpolator.resizeCanvas()
     },
   },
 })
 </script>
-@/application/services/interpolator/interpolator/interpolator

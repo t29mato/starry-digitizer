@@ -12,8 +12,8 @@ import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
-import { useCanvasStore } from '@/store/canvas'
 import { mapState } from 'pinia'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 const axesGuideCommonStyle: CSSProperties = {
   position: 'absolute',
@@ -23,7 +23,11 @@ const axesGuideCommonStyle: CSSProperties = {
 }
 
 export default defineComponent({
-  components: {},
+  data() {
+    return {
+      canvas: Canvas.getInstance(),
+    }
+  },
   methods: {
     //INFO: computedではリアクティブにならなかったのでmethodとしている
     getImageCanvasSize(): { w: number; h: number } {
@@ -36,7 +40,6 @@ export default defineComponent({
   },
   computed: {
     ...mapState(useAxesStore, ['axes']),
-    ...mapState(useCanvasStore, ['canvas']),
     isActive(): boolean {
       return this.axes.pointMode === 0
     },

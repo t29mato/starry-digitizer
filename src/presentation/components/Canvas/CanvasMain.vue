@@ -49,7 +49,6 @@ import { Vector } from '@/domain/axes/axesInterface'
 import { Coord, Plot } from '@/domain/datasetInterface'
 
 import { useAxesStore } from '@/store/axes'
-import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
@@ -59,6 +58,7 @@ import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -76,8 +76,15 @@ export default defineComponent({
   beforeDestroy() {
     document.removeEventListener('keydown', this.keyDownHandler)
   },
+  data() {
+    return {
+      interpolator: Interpolator.getInstance(),
+      confirmer: Confirmer.getInstance(),
+      extractor: Extractor.getInstance(),
+      canvas: Canvas.getInstance(),
+    }
+  },
   computed: {
-    ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),
   },
@@ -91,21 +98,14 @@ export default defineComponent({
     }
     try {
       await this.canvas.initializeImageElement(this.imagePath)
-      this.drawFitSizeImage()
-      this.setUploadImageUrl(this.imagePath)
+      this.canvas.drawFitSizeImage()
+      this.canvas.setUploadImageUrl(this.imagePath)
       this.extractor.setSwatches(this.canvas.colorSwatches)
 
       //TODO: interpolation canvasをinterpolator appに移譲したのでここで呼んでいるがcanvas初期化一連を行うapplicationにまとめたい
       this.interpolator.resizeCanvas()
     } finally {
       //
-    }
-  },
-  data() {
-    return {
-      interpolator: Interpolator.getInstance(),
-      confirmer: Confirmer.getInstance(),
-      extractor: Extractor.getInstance(),
     }
   },
   methods: {
@@ -116,15 +116,6 @@ export default defineComponent({
       'clearActivePlots',
       'inactivatePlots',
       'activatePlotsInRectangleArea',
-    ]),
-    ...mapActions(useCanvasStore, [
-      'mouseDownOnCanvas',
-      'mouseDragOnCanvas',
-      'mouseUpOnCanvas',
-      'setCanvasCursor',
-      'drawFitSizeImage',
-      'setUploadImageUrl',
-      'setManualMode',
     ]),
     ...mapActions(useAxesStore, [
       'addAxisCoord',
@@ -193,15 +184,14 @@ export default defineComponent({
     mouseDrag(coord: Coord) {
       if (this.confirmer.isActive) return
 
-      // TODO: 呼び出すメソッドはCanvasに移譲したい
-      this.mouseDragOnCanvas(coord)
+      this.canvas.mouseDrag(coord.xPx, coord.yPx)
     },
     mouseMove(e: MouseEvent) {
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
       this.axes.isAdjusting = false
       this.datasets.activeDataset.plotsAreAdjusting = false
-      this.setCanvasCursor({
+      this.canvas.setCursor({
         xPx: xPx / this.canvas.scale,
         yPx: yPx / this.canvas.scale,
       })
@@ -216,12 +206,12 @@ export default defineComponent({
 
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
-      this.mouseDownOnCanvas({ xPx, yPx })
+      this.canvas.mouseDown(xPx, yPx)
     },
     mouseUp() {
       if (this.confirmer.isActive) return
 
-      this.mouseUpOnCanvas()
+      this.canvas.mouseUp()
 
       // INFO: EDITモードの場合にplotの複数選択を行う
       if (this.canvas.manualMode === 1) {
@@ -269,13 +259,13 @@ export default defineComponent({
       e.preventDefault()
       switch (key) {
         case 'a':
-          this.setManualMode(0)
+          this.canvas.setManualMode(0)
           return
         case 'e':
-          this.setManualMode(1)
+          this.canvas.setManualMode(1)
           return
         case 'd':
-          this.setManualMode(2)
+          this.canvas.setManualMode(2)
           return
       }
       if (
@@ -303,12 +293,12 @@ export default defineComponent({
       }
       if (this.axes.activeAxis && this.axes.activeAxis.coord) {
         this.moveActiveAxis(vector)
-        this.setCanvasCursor(this.axes.activeAxis.coord)
+        this.canvas.setCursor(this.axes.activeAxis.coord)
       }
       if (this.datasets.activeDataset.plotsAreActive) {
         this.moveActivePlot(vector)
         this.interpolator.updatePreview()
-        this.setCanvasCursor(
+        this.canvas.setCursor(
           this.datasets.activeDataset.plots.filter((plot: Plot) =>
             this.datasets.activeDataset.activePlotIds.includes(plot.id),
           )[0],
@@ -345,8 +335,3 @@ export default defineComponent({
   }
 }
 </style>
-@/application/services/interpolator/interpolator@/application/services/confirmer/confirmer
-@/presentation/dom/HTMLCanvas
-@/application/services/interpolator/interpolator/interpolator
-@/application/services/extractor/extractor/extractor
-@/application/services/confirmer/confirmer/confirmer

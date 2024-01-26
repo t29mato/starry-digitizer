@@ -90,7 +90,6 @@ import ColorSettings from './ColorSettings.vue'
 import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
-import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
@@ -99,6 +98,7 @@ import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   components: {
@@ -112,11 +112,11 @@ export default defineComponent({
       interpolator: Interpolator.getInstance(),
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
+      canvas: Canvas.getInstance(),
       isExtracting: false,
     }
   },
   computed: {
-    ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useAxesStore, ['axes']),
   },
@@ -144,14 +144,13 @@ export default defineComponent({
       'sortPlots',
       'inactivatePlots',
     ]),
-    ...mapActions(useCanvasStore, ['setManualMode']),
     changeManualMode(value: any) {
       this.inactivatePlots()
       if (value === undefined) {
-        this.setManualMode(-1)
+        this.canvas.setManualMode(-1)
         return
       }
-      this.setManualMode(value)
+      this.canvas.setManualMode(value)
     },
     setExtractStrategy(strategy: any) {
       switch (strategy) {
@@ -213,6 +212,3 @@ export default defineComponent({
   },
 })
 </script>
-@/application/services/interpolator/interpolator/interpolator
-@/application/services/extractor/extractor/extractor
-@/application/services/confirmer/confirmer/confirmer

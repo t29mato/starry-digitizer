@@ -39,15 +39,16 @@ import { defineComponent } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
-import { useCanvasStore } from '@/store/canvas'
 import { mapState, mapActions } from 'pinia'
 
 import { Interpolator } from '@/application/services/interpolator/interpolator'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
+      canvas: Canvas.getInstance(),
     }
   },
   computed: {
@@ -61,18 +62,17 @@ export default defineComponent({
       'clearXAxisCoords',
       'clearYAxisCoords',
     ]),
-    ...mapActions(useCanvasStore, ['setManualMode']),
     clearAxes() {
       this.clearAxesCoords()
-      this.setManualMode(-1)
+      this.canvas.setManualMode(-1)
     },
     clearXAxis() {
       this.clearXAxisCoords()
-      this.setManualMode(-1)
+      this.canvas.setManualMode(-1)
     },
     clearYAxis() {
       this.clearAxesCoords()
-      this.setManualMode(-1)
+      this.canvas.setManualMode(-1)
     },
     handleOnClickClearPlots() {
       this.clearPlots()
@@ -81,4 +81,3 @@ export default defineComponent({
   },
 })
 </script>
-@/application/services/interpolator/interpolator/interpolator

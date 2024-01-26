@@ -28,21 +28,21 @@ import { defineComponent } from 'vue'
 
 import { Coord } from '@/domain/datasetInterface'
 
-import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
 import { mapState } from 'pinia'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
       magnifier: Magnifier.getInstance(),
+      canvas: Canvas.getInstance(),
     }
   },
   computed: {
-    ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useStyleStore, ['plotSizePx']),
     ...mapState(useStyleStore, [
       'plotOpacity',

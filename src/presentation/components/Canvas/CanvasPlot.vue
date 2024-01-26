@@ -24,20 +24,20 @@ import { defineComponent } from 'vue'
 
 import { Plot } from '@/domain/datasetInterface'
 
-import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useStyleStore } from '@/store/style'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
+      canvas: Canvas.getInstance(),
     }
   },
   computed: {
-    ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useStyleStore, [
       'plotOpacity',
@@ -159,4 +159,3 @@ export default defineComponent({
   },
 })
 </script>
-@/application/services/interpolator/interpolator/interpolator

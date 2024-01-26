@@ -44,10 +44,10 @@ import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
 import { defineComponent } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
-import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
 import { mapState } from 'pinia'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   components: {
@@ -57,11 +57,11 @@ export default defineComponent({
   data() {
     return {
       magnifier: Magnifier.getInstance(),
+      canvas: Canvas.getInstance(),
     }
   },
   computed: {
     ...mapState(useAxesStore, ['axes']),
-    ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useStyleStore, [
       'axisSizePx',
       'axisHalfSizePx',

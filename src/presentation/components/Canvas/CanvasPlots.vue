@@ -28,9 +28,9 @@
 import CanvasPlot from '@/presentation/components/Canvas/CanvasPlot.vue'
 import { defineComponent } from 'vue'
 
-import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 export default defineComponent({
   components: {
@@ -38,10 +38,11 @@ export default defineComponent({
   },
   computed: {
     ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useCanvasStore, ['canvas']),
   },
   data() {
-    return {}
+    return {
+      canvas: Canvas.getInstance(),
+    }
   },
 
   methods: {},

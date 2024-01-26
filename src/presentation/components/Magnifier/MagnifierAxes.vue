@@ -28,7 +28,6 @@ import MagnifierAxis from '@/presentation/components/Magnifier/MagnifierAxis.vue
 import { defineComponent } from 'vue'
 
 import { useAxesStore } from '@/store/axes'
-import { useCanvasStore } from '@/store/canvas'
 import { mapState } from 'pinia'
 
 export default defineComponent({
@@ -37,7 +36,6 @@ export default defineComponent({
   },
   computed: {
     ...mapState(useAxesStore, ['axes']),
-    ...mapState(useCanvasStore, ['canvas']),
   },
 })
 </script>

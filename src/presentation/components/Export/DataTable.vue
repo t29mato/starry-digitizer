@@ -31,9 +31,9 @@ import { registerAllModules } from 'handsontable/registry'
 import { Plot } from '@/domain/datasetInterface'
 
 import { useAxesStore } from '@/store/axes'
-import { useCanvasStore } from '@/store/canvas'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
+import { Canvas } from '@/application/services/canvas/canvas'
 
 registerAllModules()
 
@@ -46,7 +46,6 @@ export default defineComponent({
   computed: {
     ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useAxesStore, ['axes']),
-    ...mapState(useCanvasStore, ['canvas']),
     tableData() {
       if (this.datasets.activeDataset.plots.length > 0) {
         return this.datasets.activeDataset.plots.map((plot: Plot) => {
@@ -63,6 +62,7 @@ export default defineComponent({
   },
   data() {
     return {
+      canvas: Canvas.getInstance(),
       key: 0,
       activeColor: colors.green.lighten5,
       hotTableSettings: {
