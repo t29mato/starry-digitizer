@@ -1,4 +1,4 @@
-import { Coord } from '@/domain/datasetInterface'
+import { Coord } from '@/domain/models/dataset/datasetInterface'
 
 export interface CanvasInterface {
   isDrawnMask: boolean

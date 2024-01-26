@@ -1,4 +1,4 @@
-import { Coord, Plot } from '@/domain/datasetInterface'
+import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
 import { InterpolatorInterface } from './interpolatorInterface'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { useDatasetsStore } from '@/store/datasets'

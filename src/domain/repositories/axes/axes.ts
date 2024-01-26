@@ -1,6 +1,6 @@
-import { Coord } from '../datasetInterface'
+import { Coord } from '../../models/dataset/datasetInterface'
 import { AxesInterface, Vector } from './axesInterface'
-import { AxisInterface } from './axisInterface'
+import { AxisInterface } from '../../models/axis/axisInterface'
 
 export class Axes implements AxesInterface {
   x1: AxisInterface

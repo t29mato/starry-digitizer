@@ -1,5 +1,5 @@
 import { expect } from '@jest/globals'
-import { Dataset } from './dataset'
+import { Dataset } from '../../models/dataset/dataset'
 import { Datasets } from './datasets'
 
 test('next dataset ID', () => {

@@ -1,7 +1,7 @@
 //TODO: Separate into multiple apps based on feature (so far, multiple features related to canvas are gethered at this class but it is not ideal)
 import ColorThief from 'colorthief'
 import { CanvasInterface } from './canvasInterface'
-import { Coord } from '../../../domain/datasetInterface'
+import { Coord } from '../../../domain/models/dataset/datasetInterface'
 import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
 const colorThief = new ColorThief()
 

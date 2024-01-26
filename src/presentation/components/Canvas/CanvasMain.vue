@@ -335,3 +335,5 @@ export default defineComponent({
   }
 }
 </style>
+@/domain/models/dataset/datasetInterface
+@/domain/repositories/axes/axesInterface

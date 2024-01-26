@@ -1,7 +1,7 @@
 import { expect } from '@jest/globals'
 import { Axes } from './axes'
-import { Axis } from './axis'
-import { AxisInterface } from './axisInterface'
+import { Axis } from '../../models/axis/axis'
+import { AxisInterface } from '../../models/axis/axisInterface'
 
 let x1: AxisInterface
 let x2: AxisInterface

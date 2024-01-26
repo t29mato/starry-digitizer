@@ -1,5 +1,5 @@
 import { CanvasInterface } from '@/application/services/canvas/canvasInterface'
-import { Coord } from '@/domain/datasetInterface'
+import { Coord } from '@/domain/models/dataset/datasetInterface'
 import ExtractStrategyInterface from '@/application/strategies/extractStrategies/extractStrategyInterface'
 
 export interface ExtractorInterface {

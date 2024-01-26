@@ -1,5 +1,5 @@
 //INFO: implementing this class because this calculation logics hand XY values over to the dataset domain, using the states of axes domain (handling multiple domain models)
-import { AxesInterface } from '../axes/axesInterface'
+import { AxesInterface } from '../repositories/axes/axesInterface'
 
 export default class XYAxesCalculator {
   // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため

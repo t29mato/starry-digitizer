@@ -1,4 +1,4 @@
-import { Plot } from '@/domain/datasetInterface'
+import { Plot } from '@/domain/models/dataset/datasetInterface'
 //TODO Re-consider where to place this logic: should move to domain repo with Plots repository??
 
 export function getPlotsTotalDistance(plots: Plot[]): number {

@@ -93,3 +93,4 @@ export default defineComponent({
   methods: {},
 })
 </script>
+@/domain/models/axis/axisInterface

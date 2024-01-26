@@ -1,4 +1,4 @@
-import { DatasetInterface, Coord } from './datasetInterface'
+import { DatasetInterface, Coord } from '../../models/dataset/datasetInterface'
 
 export class Datasets {
   datasets: DatasetInterface[]
