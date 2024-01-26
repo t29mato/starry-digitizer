@@ -1,4 +1,4 @@
-import { Extractor } from '../services/extractor'
+import { Extractor } from './extractor'
 import SymbolExtractByArea from '../strategies/extractStrategies/symbolExtractByArea'
 
 test('DO write extractor test', () => {
