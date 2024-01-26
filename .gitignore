@@ -22,4 +22,4 @@ dist-ssr
 
 .env
 
-coverage
+/coverage
