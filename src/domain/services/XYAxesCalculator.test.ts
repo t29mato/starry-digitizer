@@ -1,8 +1,8 @@
 import { expect } from '@jest/globals'
 import XYAxesCalculator from './XYAxesCalculator'
-import { AxesInterface } from './axes/axesInterface'
-import { Axis } from './axes/axis'
-import { Axes } from './axes/axes'
+import { AxesInterface } from '../axes/axesInterface'
+import { Axis } from '../axes/axis'
+import { Axes } from '../axes/axes'
 
 describe('XYAxesCalculator', () => {
   let axesMock: AxesInterface

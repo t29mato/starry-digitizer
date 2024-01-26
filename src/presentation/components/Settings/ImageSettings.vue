@@ -17,7 +17,7 @@ import { useCanvasStore } from '@/store/canvas'
 import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
-import { Extractor } from '@/application/services/extractor'
+import { Extractor } from '@/application/services/extractor/extractor'
 
 export default defineComponent({
   computed: {
@@ -119,3 +119,4 @@ export default defineComponent({
   },
 })
 </script>
+@/application/services/extractor/extractor/extractor

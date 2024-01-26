@@ -55,10 +55,10 @@ import { mapState, mapActions } from 'pinia'
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
 
-import { Interpolator } from '@/application/services/interpolator'
+import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
-import { Confirmer } from '@/application/services/confirmer'
-import { Extractor } from '@/application/services/extractor'
+import { Confirmer } from '@/application/services/confirmer/confirmer'
+import { Extractor } from '@/application/services/extractor/extractor'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -345,5 +345,8 @@ export default defineComponent({
   }
 }
 </style>
-@/application/services/interpolator@/application/services/confirmer
+@/application/services/interpolator/interpolator@/application/services/confirmer/confirmer
 @/presentation/dom/HTMLCanvas
+@/application/services/interpolator/interpolator/interpolator
+@/application/services/extractor/extractor/extractor
+@/application/services/confirmer/confirmer/confirmer

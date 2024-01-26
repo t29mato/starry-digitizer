@@ -46,8 +46,8 @@ import { defineComponent } from 'vue'
 import { useAxesStore } from '@/store/axes'
 import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
-import { useMagnifierStore } from '@/store/magnifier'
 import { mapState } from 'pinia'
+import { Magnifier } from '@/application/services/magnifier/magnifier'
 
 export default defineComponent({
   components: {
@@ -55,7 +55,9 @@ export default defineComponent({
     MagnifierAxisLabelY,
   },
   data() {
-    return {}
+    return {
+      magnifier: Magnifier.getInstance(),
+    }
   },
   computed: {
     ...mapState(useAxesStore, ['axes']),
@@ -68,7 +70,6 @@ export default defineComponent({
       'axisCrossTopPx',
       'axisCrossCursorPx',
     ]),
-    ...mapState(useMagnifierStore, ['magnifier']),
     xPx(): number {
       return this.axis.coord.xPx
     },

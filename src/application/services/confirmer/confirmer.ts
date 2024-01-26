@@ -1,4 +1,4 @@
-import { ConfirmerInterface } from '../interfaces/confirmerInterface'
+import { ConfirmerInterface } from './confirmerInterface'
 
 export class Confirmer implements ConfirmerInterface {
   isActive: Boolean = false

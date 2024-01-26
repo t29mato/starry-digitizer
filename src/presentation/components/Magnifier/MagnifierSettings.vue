@@ -28,17 +28,14 @@
 </template>
 
 <script lang="ts">
+import { Magnifier } from '@/application/services/magnifier/magnifier'
 import { defineComponent } from 'vue'
-
-import { useMagnifierStore } from '@/store/magnifier'
-import { mapState } from 'pinia'
 
 export default defineComponent({
   data() {
-    return {}
-  },
-  computed: {
-    ...mapState(useMagnifierStore, ['magnifier']),
+    return {
+      magnifier: Magnifier.getInstance(),
+    }
   },
   props: {
     shouldShowSettingsDialog: {

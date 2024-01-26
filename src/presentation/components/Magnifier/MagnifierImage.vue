@@ -50,16 +50,17 @@
 import { defineComponent } from 'vue'
 
 import { useCanvasStore } from '@/store/canvas'
-import { useMagnifierStore } from '@/store/magnifier'
 import { mapState } from 'pinia'
 
-import { Interpolator } from '@/application/services/interpolator'
+import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
+import { Magnifier } from '@/application/services/magnifier/magnifier'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
+      magnifier: Magnifier.getInstance(),
     }
   },
   mounted() {
@@ -68,7 +69,6 @@ export default defineComponent({
     )
   },
   computed: {
-    ...mapState(useMagnifierStore, ['magnifier']),
     ...mapState(useCanvasStore, ['canvas']),
     halfSize(): number {
       return this.magnifier.sizePx / 2

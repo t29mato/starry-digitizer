@@ -95,10 +95,10 @@ import { useDatasetsStore } from '@/store/datasets'
 import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 
-import { Interpolator } from '@/application/services/interpolator'
+import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { addLocalStorageData } from '@/application/utils/localStorageUtils'
-import { Confirmer } from '@/application/services/confirmer'
-import { Extractor } from '@/application/services/extractor'
+import { Confirmer } from '@/application/services/confirmer/confirmer'
+import { Extractor } from '@/application/services/extractor/extractor'
 
 export default defineComponent({
   components: {
@@ -213,3 +213,6 @@ export default defineComponent({
   },
 })
 </script>
+@/application/services/interpolator/interpolator/interpolator
+@/application/services/extractor/extractor/extractor
+@/application/services/confirmer/confirmer/confirmer

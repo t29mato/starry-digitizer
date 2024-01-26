@@ -30,18 +30,18 @@ import { Coord } from '@/domain/datasetInterface'
 
 import { useCanvasStore } from '@/store/canvas'
 import { useStyleStore } from '@/store/style'
-import { useMagnifierStore } from '@/store/magnifier'
 import { mapState } from 'pinia'
-import { Interpolator } from '@/application/services/interpolator'
+import { Interpolator } from '@/application/services/interpolator/interpolator'
+import { Magnifier } from '@/application/services/magnifier/magnifier'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
+      magnifier: Magnifier.getInstance(),
     }
   },
   computed: {
-    ...mapState(useMagnifierStore, ['magnifier']),
     ...mapState(useCanvasStore, ['canvas']),
     ...mapState(useStyleStore, ['plotSizePx']),
     ...mapState(useStyleStore, [
@@ -144,3 +144,4 @@ export default defineComponent({
   },
 })
 </script>
+@/application/services/interpolator/interpolator/interpolator

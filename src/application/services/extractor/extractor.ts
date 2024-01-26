@@ -1,8 +1,8 @@
-import { CanvasInterface } from '../../domain/canvasInterface'
-import { Coord } from '../../domain/datasetInterface'
-import { ExtractorInterface } from '../interfaces/extractorInterface'
-import ExtractStrategyInterface from '../strategies/extractStrategies/extractStrategyInterface'
-import LineExtract from '../strategies/extractStrategies/lineExtract'
+import { CanvasInterface } from '../../../domain/canvasInterface'
+import { Coord } from '../../../domain/datasetInterface'
+import { ExtractorInterface } from './extractorInterface'
+import ExtractStrategyInterface from '../../strategies/extractStrategies/extractStrategyInterface'
+import LineExtract from '../../strategies/extractStrategies/lineExtract'
 
 export class Extractor implements ExtractorInterface {
   strategy: ExtractStrategyInterface

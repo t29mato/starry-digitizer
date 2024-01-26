@@ -40,21 +40,20 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-
-import { useMagnifierStore } from '@/store/magnifier'
 import { useLineExtractStore } from '@/store/lineExtract'
 import { useSymbolExtractByAreaStore } from '@/store/symbolExtractByArea'
 import { mapState } from 'pinia'
-import { Extractor } from '@/application/services/extractor'
+import { Extractor } from '@/application/services/extractor/extractor'
+import { Magnifier } from '@/application/services/magnifier/magnifier'
 
 export default defineComponent({
   data() {
     return {
       extractor: Extractor.getInstance(),
+      magnifier: Magnifier.getInstance(),
     }
   },
   computed: {
-    ...mapState(useMagnifierStore, ['magnifier']),
     ...mapState(useLineExtractStore, ['lineExtract']),
     ...mapState(useSymbolExtractByAreaStore, ['symbolExtractByArea']),
     symbolMinDiameter(): number {
@@ -66,3 +65,4 @@ export default defineComponent({
   },
 })
 </script>
+@/application/services/extractor/extractor/extractor
