@@ -76,4 +76,3 @@ export default defineComponent({
   },
 })
 </script>
-@/application/services/extractor/extractor/extractor
