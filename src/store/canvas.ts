@@ -1,14 +1,18 @@
+//TODO: remove this file after replacing this with domain repository
+
 import { defineStore } from 'pinia'
-import { Canvas } from '@/domain/canvas'
+import { Canvas } from '@/application/services/canvas/canvas'
 import { Coord } from '@/domain/datasetInterface'
 
 // export interface State {
 //   canvas: CanvasInterface
 // }
 
+const canvas = Canvas.getInstance()
+
 export const useCanvasStore = defineStore('canvas', {
   state: () => ({
-    canvas: new Canvas(),
+    canvas: canvas,
   }),
   getters: {
     //MEMO: Piniaでこの書き方だと循環参照してしまう。そもそも不要？
@@ -17,6 +21,7 @@ export const useCanvasStore = defineStore('canvas', {
     // },
   },
   actions: {
+    //Emitting many ts errors but this logics will be removed at the end so ignore
     scaleUp() {
       this.canvas.scaleUp()
     },

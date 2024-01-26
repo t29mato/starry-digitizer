@@ -1,4 +1,4 @@
-import { CanvasInterface } from '../../../domain/canvasInterface'
+import { CanvasInterface } from '../canvas/canvasInterface'
 import { Coord } from '../../../domain/datasetInterface'
 import { ExtractorInterface } from './extractorInterface'
 import ExtractStrategyInterface from '../../strategies/extractStrategies/extractStrategyInterface'
