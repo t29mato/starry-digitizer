@@ -5,12 +5,12 @@ import { Axis } from '@/domain/models/axis/axis'
 import { Vector } from '@/domain/repositories/axisRepository/axisRepositoryInterface'
 
 export interface State {
-  axes: Axes
+  axes: AxisRepository
 }
 
 export const useAxesStore = defineStore('axes', {
   state: (): State => ({
-    axes: new Axes(
+    axes: new AxisRepository(
       new Axis('x1', 0),
       new Axis('x2', 1),
       new Axis('y1', 0),

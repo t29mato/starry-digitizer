@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { DatasetRepository } from '@/domain/repositories/datasets/datasetRepository'
+import { DatasetRepository } from '@/domain/repositories/datasetRepository/datasetRepository'
 import { Dataset } from '@/domain/models/dataset/dataset'
 import { Coord } from '@/domain/models/dataset/datasetInterface'
 import { Vector } from '@/domain/repositories/axisRepository/axisRepositoryInterface'
@@ -8,7 +8,7 @@ export interface State {
   datasets: DatasetRepository
 }
 
-export const useDatasetRepositoryStore = defineStore('datasets', {
+export const useDatasetsStore = defineStore('datasets', {
   state: (): State => ({
     datasets: new DatasetRepository(new Dataset('dataset 1', [], 1)),
   }),

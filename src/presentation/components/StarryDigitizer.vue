@@ -35,15 +35,12 @@
 import { defineComponent } from 'vue'
 import { MagnifierMain } from '@/presentation/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
-import {
-  AxisRepositorySettings,
-  ExtractorSettings,
-  ImageSettings,
-} from './Settings'
+import { AxesSettings, ExtractorSettings, ImageSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { version } from '../../../package.json'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'
 import DataTable from '@/presentation/components/Export/DataTable.vue'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 
 export default defineComponent({
   components: {
@@ -73,6 +70,9 @@ export default defineComponent({
       type: Function,
       required: false,
     },
+  },
+  mounted() {
+    console.log(AxisRepositoryManager.getInstance())
   },
   computed: {
     appVerAndBuildInfo() {
