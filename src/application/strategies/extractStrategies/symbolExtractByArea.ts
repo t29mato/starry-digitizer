@@ -145,4 +145,12 @@ export default class SymbolExtractByArea
     }
     return coords
   }
+
+  setMinDiameterPx(minDiameterPx: number) {
+    this.minDiameterPx = minDiameterPx
+  }
+
+  setMaxDiameterPx(maxDiameterPx: number) {
+    this.maxDiameterPx = maxDiameterPx
+  }
 }
