@@ -98,6 +98,8 @@ import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandle
 import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
+import { forceRenderCanvasPlots } from '@/presentation/hacks/forceRenderCanvasPlots'
+
 export default defineComponent({
   components: {
     SymbolExtractSettings,
@@ -171,6 +173,9 @@ export default defineComponent({
         this.interpolator.clearPreview()
       }
 
+      //HACK: Since tempPlots are not drawn, force rendering as a temporary measure. Fundamental solution required
+      forceRenderCanvasPlots(this.datasets)
+
       addLocalStorageData('isInterpolatorActive', String(isActive))
     },
     handleOnConfirmInterpolation() {
@@ -196,6 +201,9 @@ export default defineComponent({
     handleOnUpdateInterpolatorInterval(value: any) {
       this.interpolator.updateInterval(parseFloat(value))
       this.interpolator.updatePreview()
+
+      //HACK: Since tempPlots are not drawn, force rendering as a temporary measure. Fundamental solution required
+      forceRenderCanvasPlots(this.datasets)
     },
   },
 })
