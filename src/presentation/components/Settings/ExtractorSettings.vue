@@ -90,15 +90,13 @@ import ColorSettings from './ColorSettings.vue'
 import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
-import { useDatasetsStore } from '@/store/datasets'
-import { mapState, mapActions } from 'pinia'
-
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export default defineComponent({
   components: {
@@ -114,11 +112,9 @@ export default defineComponent({
       extractor: Extractor.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
       isExtracting: false,
     }
-  },
-  computed: {
-    ...mapState(useDatasetsStore, ['datasets']),
   },
   props: {
     initialExtractorStrategy: {
@@ -136,15 +132,8 @@ export default defineComponent({
     }
   },
   methods: {
-    ...mapActions(useDatasetsStore, [
-      'switchActivatedPlot',
-      'clearPlots',
-      'setPlots',
-      'sortPlots',
-      'inactivatePlots',
-    ]),
     changeManualMode(value: any) {
-      this.inactivatePlots()
+      this.datasets.activeDataset.inactivatePlots()
       if (value === undefined) {
         this.canvasHandler.setManualMode(-1)
         return
@@ -164,8 +153,8 @@ export default defineComponent({
       this.isExtracting = true
       this.axes.inactivateAxis()
       try {
-        this.setPlots(this.extractor.execute(this.canvasHandler))
-        this.sortPlots()
+        this.datasets.setPlots(this.extractor.execute(this.canvasHandler))
+        this.datasets.sortPlots()
       } catch (e) {
         console.error('failed to extractPlots', { cause: e })
       } finally {
@@ -200,7 +189,7 @@ export default defineComponent({
         activeDataset.clearPlot(plotId)
       })
 
-      this.switchActivatedPlot(activeDataset.lastPlotId)
+      this.datasets.activeDataset.switchActivatedPlot(activeDataset.lastPlotId)
 
       this.interpolator.clearPreview()
     },

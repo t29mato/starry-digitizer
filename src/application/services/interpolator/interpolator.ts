@@ -1,11 +1,11 @@
 import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
 import { InterpolatorInterface } from './interpolatorInterface'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
-import { useDatasetsStore } from '@/store/datasets'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
 import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
 import { getPlotsTotalDistance } from '../../utils/pointsUtils'
 import { CanvasHandler } from '../canvasHandler/canvasHandler'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export class Interpolator implements InterpolatorInterface {
   private static instance: InterpolatorInterface
@@ -88,7 +88,7 @@ export class Interpolator implements InterpolatorInterface {
     }
 
     //TODO: Depending on other application is not good. CanvasHandler app should be separated drawing logic and canvas entitiy ifselves
-    const canvas = CanvasHandler.getInstance()
+    const canvasHandler = CanvasHandler.getInstance()
     this.clearGuideCanvasContext()
 
     this.guideCanvas.context.beginPath()
@@ -123,7 +123,7 @@ export class Interpolator implements InterpolatorInterface {
     if (!this.guideCanvas || !this.magnifierCanvas) return
 
     //TODO: Depending on other application is not good. CanvasHandler app should be separated drawing logic and canvas entitiy ifselves
-    const canvas = CanvasHandler.getInstance()
+    const canvasHandler = CanvasHandler.getInstance()
 
     const newWidth = canvasHandler.originalWidth * canvasHandler.scale
     const newHeight = canvasHandler.originalHeight * canvasHandler.scale
@@ -174,8 +174,7 @@ export class Interpolator implements InterpolatorInterface {
   }
 
   public updatePreview(): void {
-    //TODO: pinia storeとドメインリポジトリを分けて、application serviceがpiniaに依存しないようにする
-    const { datasets } = useDatasetsStore()
+    const datasets = DatasetRepositoryManager.getInstance()
 
     const activeDataset = datasets.activeDataset
     const anchorPlots = activeDataset.plots.filter((plot: Plot) =>
@@ -204,7 +203,7 @@ export class Interpolator implements InterpolatorInterface {
 
   public clearPreview(): void {
     //TODO: pinia storeとドメインリポジトリを分けて、application serviceがpiniaに依存しないようにする
-    const { datasets } = useDatasetsStore()
+    const datasets = DatasetRepositoryManager.getInstance()
 
     const activeDataset = datasets.activeDataset
 

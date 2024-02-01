@@ -22,23 +22,23 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Plot } from '@/domain/datasetInterface'
+import { Plot } from '@/domain/models/dataset/datasetInterface'
 
-import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { useStyleStore } from '@/store/style'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
     }
   },
   computed: {
-    ...mapState(useDatasetsStore, ['datasets']),
     ...mapState(useStyleStore, [
       'plotOpacity',
       'tempPlotOpacity',
@@ -131,11 +131,6 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(useDatasetsStore, [
-      'toggleActivatedPlot',
-      'switchActivatedPlot',
-      'clearPlot',
-    ]),
     click(event: MouseEvent) {
       switch (this.canvasHandler.manualMode) {
         // INFO: CanvasMain Component -> plot method
@@ -143,13 +138,13 @@ export default defineComponent({
           return
         case 1:
           if (event.ctrlKey || event.metaKey) {
-            this.toggleActivatedPlot(this.plot.id)
+            this.datasets.activeDataset.toggleActivatedPlot(this.plot.id)
             return
           }
-          this.switchActivatedPlot(this.plot.id)
+          this.datasets.activeDataset.switchActivatedPlot(this.plot.id)
           return
         case 2:
-          this.clearPlot(this.plot.id)
+          this.datasets.activeDataset.clearPlot(this.plot.id)
 
           return
         default:

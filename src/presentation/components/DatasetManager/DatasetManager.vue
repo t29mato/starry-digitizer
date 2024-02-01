@@ -2,12 +2,12 @@
   <div>
     <h4>
       Datasets
-      <v-btn @click="addDataset" size="x-small" class="ml-2"
+      <v-btn @click="datasets.addDataset" size="x-small" class="ml-2"
         ><v-icon>mdi-plus</v-icon></v-btn
       >
       <v-btn
         size="x-small"
-        @click="popDataset"
+        @click="datasets.popDataset"
         :disabled="datasets.datasets.length === 1"
         class="ml-2"
         ><v-icon>mdi-minus</v-icon></v-btn
@@ -56,23 +56,20 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useDatasetsStore } from '@/store/datasets'
-import { mapState, mapActions } from 'pinia'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export default defineComponent({
   components: {},
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
       sortOrders: ['ascending', 'descending'],
     }
-  },
-  computed: {
-    ...mapState(useDatasetsStore, ['datasets']),
   },
   props: {
     exportBtnText: {
@@ -85,13 +82,8 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(useDatasetsStore, [
-      'addDataset',
-      'setActiveDataset',
-      'popDataset',
-    ]),
     activateDataset(id: number) {
-      this.setActiveDataset(id)
+      this.datasets.setActiveDataset(id)
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
       this.canvasHandler.clearMask()
       this.canvasHandler.maskMode = -1

@@ -30,10 +30,9 @@ import 'handsontable/dist/handsontable.full.css'
 import { registerAllModules } from 'handsontable/registry'
 import { Plot } from '@/domain/models/dataset/datasetInterface'
 
-import { useDatasetsStore } from '@/store/datasets'
-import { mapState } from 'pinia'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 registerAllModules()
 
@@ -44,7 +43,6 @@ export default defineComponent({
     HotTable,
   },
   computed: {
-    ...mapState(useDatasetsStore, ['datasets']),
     tableData() {
       if (this.datasets.activeDataset.plots.length > 0) {
         return this.datasets.activeDataset.plots.map((plot: Plot) => {
@@ -63,6 +61,7 @@ export default defineComponent({
     return {
       canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
       key: 0,
       activeColor: colors.green.lighten5,
       hotTableSettings: {
@@ -114,4 +113,3 @@ export default defineComponent({
   },
 })
 </script>
-@/domain/models/dataset/datasetInterface

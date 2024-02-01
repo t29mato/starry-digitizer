@@ -28,20 +28,17 @@
 import CanvasPlot from '@/presentation/components/Canvas/CanvasPlot.vue'
 import { defineComponent } from 'vue'
 
-import { useDatasetsStore } from '@/store/datasets'
-import { mapState } from 'pinia'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export default defineComponent({
   components: {
     CanvasPlot,
   },
-  computed: {
-    ...mapState(useDatasetsStore, ['datasets']),
-  },
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
     }
   },
 

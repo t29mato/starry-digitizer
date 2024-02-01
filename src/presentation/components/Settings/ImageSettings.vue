@@ -13,11 +13,10 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useDatasetsStore } from '@/store/datasets'
-import { mapActions } from 'pinia'
 import { Extractor } from '@/application/services/extractor/extractor'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export default defineComponent({
   data() {
@@ -25,6 +24,7 @@ export default defineComponent({
       extractor: Extractor.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
     }
   },
   mounted() {
@@ -34,7 +34,6 @@ export default defineComponent({
     document.removeEventListener('paste', this.onImagePasted)
   },
   methods: {
-    ...mapActions(useDatasetsStore, ['clearPlots']),
     async updateImage(file: File) {
       try {
         if (!this.isValidFileType(file.type)) {
@@ -52,7 +51,7 @@ export default defineComponent({
         this.extractor.setSwatches(this.canvasHandler.colorSwatches)
         this.canvasHandler.setUploadImageUrl(fr.result)
         this.axes.clearAxisCoords()
-        this.clearPlots()
+        this.datasets.activeDataset.clearPlots()
       } catch (e) {
         console.error('failed to update image', { cause: e })
       }
