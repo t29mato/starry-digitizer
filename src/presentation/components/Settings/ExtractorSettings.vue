@@ -91,7 +91,6 @@ import SymbolExtractByArea from '@/application/strategies/extractStrategies/symb
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
 import { useDatasetsStore } from '@/store/datasets'
-import { useAxesStore } from '@/store/axes'
 import { mapState, mapActions } from 'pinia'
 
 import { Interpolator } from '@/application/services/interpolator/interpolator'
@@ -99,6 +98,7 @@ import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 
 export default defineComponent({
   components: {
@@ -113,12 +113,12 @@ export default defineComponent({
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
       canvas: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
       isExtracting: false,
     }
   },
   computed: {
     ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useAxesStore, ['axes']),
   },
   props: {
     initialExtractorStrategy: {
@@ -136,7 +136,6 @@ export default defineComponent({
     }
   },
   methods: {
-    ...mapActions(useAxesStore, ['inactivateAxis']),
     ...mapActions(useDatasetsStore, [
       'switchActivatedPlot',
       'clearPlots',
@@ -163,7 +162,7 @@ export default defineComponent({
     },
     async extractPlots() {
       this.isExtracting = true
-      this.inactivateAxis()
+      this.axes.inactivateAxis()
       try {
         this.setPlots(this.extractor.execute(this.canvas))
         this.sortPlots()

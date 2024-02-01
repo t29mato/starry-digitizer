@@ -11,9 +11,8 @@
 import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
-import { useAxesStore } from '@/store/axes'
-import { mapState } from 'pinia'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 
 const axesGuideCommonStyle: CSSProperties = {
   position: 'absolute',
@@ -26,6 +25,7 @@ export default defineComponent({
   data() {
     return {
       canvas: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
     }
   },
   methods: {
@@ -39,7 +39,6 @@ export default defineComponent({
     },
   },
   computed: {
-    ...mapState(useAxesStore, ['axes']),
     isActive(): boolean {
       return this.axes.pointMode === 0
     },

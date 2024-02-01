@@ -45,10 +45,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { CanvasAxes, CanvasPlots, CanvasCursor, CanvasAxesGuide } from '.'
-import { Vector } from '@/domain/axes/axisRepositoryInterface'
-import { Coord, Plot } from '@/domain/datasetInterface'
+import { Vector } from '@/domain/repositories/axisRepository/axisRepositoryInterface'
+import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
 
-import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState, mapActions } from 'pinia'
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
@@ -59,6 +58,7 @@ import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -82,10 +82,10 @@ export default defineComponent({
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
       canvas: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
     }
   },
   computed: {
-    ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),
   },
   async mounted() {
@@ -117,11 +117,6 @@ export default defineComponent({
       'inactivatePlots',
       'activatePlotsInRectangleArea',
     ]),
-    ...mapActions(useAxesStore, [
-      'addAxisCoord',
-      'inactivateAxis',
-      'moveActiveAxis',
-    ]),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき
@@ -142,7 +137,7 @@ export default defineComponent({
               ? (e.offsetY + parseFloat(target.style.top)) / this.canvas.scale
               : e.offsetY / this.canvas.scale,
           })
-          this.inactivateAxis()
+          this.axes.inactivateAxis()
           this.datasets.activeDataset.addManuallyAddedPlotId(
             this.datasets.activeDataset.lastPlotId,
           )
@@ -160,7 +155,7 @@ export default defineComponent({
         return
       }
       if (this.axes.nextAxis) {
-        this.addAxisCoord({
+        this.axes.addAxisCoord({
           xPx: (e.offsetX - offsetPx) / this.canvas.scale,
           yPx: e.offsetY / this.canvas.scale,
         })
@@ -292,7 +287,7 @@ export default defineComponent({
         distancePx: shiftKeyIsPressed ? 10 : 1,
       }
       if (this.axes.activeAxis && this.axes.activeAxis.coord) {
-        this.moveActiveAxis(vector)
+        this.axes.moveActiveAxis(vector)
         this.canvas.setCursor(this.axes.activeAxis.coord)
       }
       if (this.datasets.activeDataset.plotsAreActive) {
@@ -335,5 +330,3 @@ export default defineComponent({
   }
 }
 </style>
-@/domain/models/dataset/datasetInterface
-@/domain/repositories/axisRepository/axisRepositoryInterface

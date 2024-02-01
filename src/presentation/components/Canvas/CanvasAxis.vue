@@ -38,13 +38,13 @@
 </template>
 
 <script lang="ts">
-import { AxisInterface } from '@/domain/axes/axisInterface'
 import { defineComponent } from 'vue'
 
-import { useAxesStore } from '@/store/axes'
 import { useStyleStore } from '@/store/style'
 import { mapState } from 'pinia'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisInterface } from '@/domain/models/axis/axisInterface'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 
 export default defineComponent({
   props: {
@@ -57,6 +57,7 @@ export default defineComponent({
     return {
       fontSize: 14,
       canvas: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
     }
   },
   computed: {
@@ -68,7 +69,6 @@ export default defineComponent({
       'axisCrossTopPx',
       'axisCrossCursorPx',
     ]),
-    ...mapState(useAxesStore, ['axes']),
     xPx(): number {
       if (this.axis.coord) {
         return this.axis.coord.xPx * this.canvas.scale
@@ -114,4 +114,3 @@ export default defineComponent({
   methods: {},
 })
 </script>
-@/domain/models/axis/axisInterface

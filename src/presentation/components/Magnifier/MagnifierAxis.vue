@@ -38,12 +38,11 @@
 </template>
 
 <script lang="ts">
-import { AxisInterface } from '@/domain/axes/axisInterface'
+import { AxisInterface } from '@/domain/models/axis/axisInterface'
 import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
 import { defineComponent } from 'vue'
 
-import { useAxesStore } from '@/store/axes'
 import { useStyleStore } from '@/store/style'
 import { mapState } from 'pinia'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
@@ -61,7 +60,6 @@ export default defineComponent({
     }
   },
   computed: {
-    ...mapState(useAxesStore, ['axes']),
     ...mapState(useStyleStore, [
       'axisSizePx',
       'axisHalfSizePx',
@@ -93,4 +91,3 @@ export default defineComponent({
   methods: {},
 })
 </script>
-@/domain/models/axis/axisInterface

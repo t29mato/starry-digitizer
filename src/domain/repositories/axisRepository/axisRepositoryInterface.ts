@@ -12,6 +12,7 @@ export interface AxisRepositoryInterface {
   x2: AxisInterface
   y1: AxisInterface
   y2: AxisInterface
+  x2y2: AxisInterface
   xIsLog: boolean
   yIsLog: boolean
   activeAxisName: string
@@ -30,4 +31,10 @@ export interface AxisRepositoryInterface {
   clearYAxisCoords(): void
   addAxisCoord(coord: Coord): void
   inactivateAxis(): void
+  setX1Value(value: number): void
+  setX2Value(value: number): void
+  setY1Value(value: number): void
+  setY2Value(value: number): void
+  setXIsLog(value: boolean): void
+  setYIsLog(value: boolean): void
 }

@@ -62,11 +62,11 @@ import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
 import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
 
-import { useAxesStore } from '@/store/axes'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 
 export default defineComponent({
   components: {
@@ -85,11 +85,11 @@ export default defineComponent({
       shouldShowSettingsDialog: false,
       magnifier: Magnifier.getInstance(),
       canvas: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
     }
   },
   computed: {
     ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useAxesStore, ['axes']),
     // magnifierHalfSize(): number {
     //   return this.magnifier.sizePx / 2
     // },

@@ -49,11 +49,11 @@
 import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
-import { useAxesStore } from '@/store/axes'
 import { useStyleStore } from '@/store/style'
 import { useDatasetsStore } from '@/store/datasets'
 import { mapState } from 'pinia'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 
 const guideLineBaseStyles: CSSProperties = {
   position: 'absolute',
@@ -65,11 +65,11 @@ export default defineComponent({
   data() {
     return {
       canvas: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
     }
   },
   computed: {
     ...mapState(useStyleStore, ['axisCrossCursorPx', 'axisHalfSizePx']),
-    ...mapState(useAxesStore, ['axes']),
     ...mapState(useDatasetsStore, ['datasets']),
     rightLabel(): string {
       switch (this.canvas.maskMode) {

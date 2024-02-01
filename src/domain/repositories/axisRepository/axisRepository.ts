@@ -185,4 +185,28 @@ export class AxisRepository implements AxisRepositoryInterface {
   inactivateAxis() {
     this.activeAxisName = ''
   }
+
+  setX1Value(value: number): void {
+    this.x1.value = value
+  }
+
+  setX2Value(value: number): void {
+    this.x2.value = value
+  }
+
+  setY1Value(value: number): void {
+    this.y1.value = value
+  }
+
+  setY2Value(value: number): void {
+    this.y2.value = value
+  }
+
+  setXIsLog(value: boolean): void {
+    this.xIsLog = value
+  }
+
+  setYIsLog(value: boolean): void {
+    this.yIsLog = value
+  }
 }
