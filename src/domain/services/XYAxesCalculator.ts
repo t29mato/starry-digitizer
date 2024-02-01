@@ -7,7 +7,10 @@ export default class XYAxesCalculator {
 
   #axes: AxisRepositoryInterface
   #isLog: { x: boolean; y: boolean }
-  constructor(axes: AxisRepositoryInterface, isLog: { x: boolean; y: boolean }) {
+  constructor(
+    axes: AxisRepositoryInterface,
+    isLog: { x: boolean; y: boolean },
+  ) {
     this.#axes = axes
     this.#isLog = isLog
   }

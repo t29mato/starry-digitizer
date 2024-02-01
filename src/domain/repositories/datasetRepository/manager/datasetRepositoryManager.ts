@@ -1,6 +1,6 @@
-import { Dataset } from '../../../models/dataset/dataset'
-import { DatasetRepository } from '../datasetRepository'
-import { DatasetRepositoryInterface } from '../datasetRepositoryInterface'
+import { Dataset } from '@/domain/models/dataset/dataset'
+import { DatasetRepository } from '@/domain/repositories/datasetRepository/datasetRepository'
+import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 
 export class DatasetRepositoryManager {
   private static instance: DatasetRepositoryInterface

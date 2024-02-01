@@ -1,4 +1,4 @@
-import { Axis } from '../../../models/axis/axis'
+import { Axis } from '@/domain/models/axis/axis'
 import { AxisRepository } from '../axisRepository'
 import { AxisRepositoryInterface } from '../axisRepositoryInterface'
 
