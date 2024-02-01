@@ -9,10 +9,8 @@
 </template>
 
 <script lang="ts">
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 import CanvasAxis from '@/presentation/components/Canvas/CanvasAxis.vue'
-
-import { useAxesStore } from '@/store/axes'
-import { mapState } from 'pinia'
 
 import { defineComponent } from 'vue'
 
@@ -20,10 +18,10 @@ export default defineComponent({
   components: {
     CanvasAxis,
   },
-  computed: {
-    ...mapState(useAxesStore, ['axes']),
+  data() {
+    return {
+      axes: AxisRepositoryManager.getInstance(),
+    }
   },
-
-  methods: {},
 })
 </script>

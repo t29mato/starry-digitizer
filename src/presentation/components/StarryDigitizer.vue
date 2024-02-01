@@ -40,6 +40,7 @@ import { DatasetManager } from './DatasetManager'
 import { version } from '../../../package.json'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'
 import DataTable from '@/presentation/components/Export/DataTable.vue'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 
 export default defineComponent({
   components: {
@@ -69,6 +70,9 @@ export default defineComponent({
       type: Function,
       required: false,
     },
+  },
+  mounted() {
+    console.log(AxisRepositoryManager.getInstance())
   },
   computed: {
     appVerAndBuildInfo() {
@@ -120,4 +124,3 @@ $l_mainAreaSideMargin: 20px;
   }
 }
 </style>
-../../../package.json

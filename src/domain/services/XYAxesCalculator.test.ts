@@ -1,14 +1,14 @@
 import { expect } from '@jest/globals'
 import XYAxesCalculator from './XYAxesCalculator'
-import { AxesInterface } from '../axes/axesInterface'
-import { Axis } from '../axes/axis'
-import { Axes } from '../axes/axes'
+import { AxisRepositoryInterface } from '../repositories/axisRepository/axisRepositoryInterface'
+import { Axis } from '../models/axis/axis'
+import { AxisRepository } from '../repositories/axisRepository/axisRepository'
 
 describe('XYAxesCalculator', () => {
-  let axesMock: AxesInterface
+  let axesMock: AxisRepositoryInterface
   beforeEach(() => {
-    // Initialize mock AxesInterface with minimal data
-    axesMock = new Axes(
+    // Initialize mock AxisRepositoryInterface with minimal data
+    axesMock = new AxisRepository(
       new Axis('x1', 1, { xPx: 0, yPx: 0 }),
       new Axis('x2', 10, { xPx: 1000, yPx: 0 }),
       new Axis('y1', 1, { xPx: 0, yPx: 1000 }),

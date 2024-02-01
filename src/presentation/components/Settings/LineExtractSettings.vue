@@ -29,19 +29,19 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useLineExtractStore } from '@/store/lineExtract'
-import { mapState, mapActions } from 'pinia'
+import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
 export default defineComponent({
-  computed: {
-    ...mapState(useLineExtractStore, ['lineExtract']),
+  data() {
+    return {
+      lineExtract: LineExtract.instance,
+    }
   },
 
   methods: {
-    ...mapActions(useLineExtractStore, ['setDyPx', 'setDxPx']),
     inputDxDyPx(value: string) {
-      this.setDxPx(parseInt(value))
-      this.setDyPx(parseInt(value))
+      this.lineExtract.setDxPx(parseInt(value))
+      this.lineExtract.setDyPx(parseInt(value))
     },
   },
 })

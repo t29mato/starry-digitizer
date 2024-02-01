@@ -53,5 +53,3 @@ export default defineComponent({
   }
 }
 </style>
-@/application/services/confirmer/confirmer
-@/application/services/confirmer/confirmer/confirmer

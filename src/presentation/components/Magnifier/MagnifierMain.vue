@@ -62,11 +62,10 @@ import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
 import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
 
-import { useAxesStore } from '@/store/axes'
-import { useDatasetsStore } from '@/store/datasets'
-import { mapState } from 'pinia'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export default defineComponent({
   components: {
@@ -84,12 +83,12 @@ export default defineComponent({
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
       magnifier: Magnifier.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
     }
   },
   computed: {
-    ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useAxesStore, ['axes']),
     // magnifierHalfSize(): number {
     //   return this.magnifier.sizePx / 2
     // },
@@ -113,8 +112,8 @@ export default defineComponent({
         y: this.axes.yIsLog,
       })
       return calculator.calculateXYValues(
-        this.canvas.cursor.xPx,
-        this.canvas.cursor.yPx,
+        this.canvasHandler.cursor.xPx,
+        this.canvasHandler.cursor.yPx,
       )
     },
   },

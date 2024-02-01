@@ -1,7 +1,7 @@
 import CanvasFooter from './CanvasFooter.vue'
 
 export default {
-  title: 'Components/Canvas/Footer',
+  title: 'components/Canvas/Footer',
   component: CanvasFooter,
   argTypes: {
     plotIsActive: {
@@ -23,8 +23,8 @@ export default {
         { xPx: 48, yPx: 380 },
       ],
     },
-    clearAxesCoords: {
-      action: 'clearAxesCoords',
+    clearAxisCoords: {
+      action: 'clearAxisCoords',
     },
     clearPlots: {
       action: 'clearPlots',

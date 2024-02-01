@@ -177,12 +177,10 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useAxesStore } from '@/store/axes'
-import { mapState, mapActions } from 'pinia'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 
 export default defineComponent({
   computed: {
-    ...mapState(useAxesStore, ['axes']),
     errorMessage(): string {
       if (this.axes.xIsLog) {
         if (this.x1 === '0' || this.x2 === '0') {
@@ -207,6 +205,7 @@ export default defineComponent({
   },
   data() {
     return {
+      axes: AxisRepositoryManager.getInstance(),
       x1: '0',
       x2: '1',
       y1: '0',
@@ -217,14 +216,6 @@ export default defineComponent({
   },
 
   methods: {
-    ...mapActions(useAxesStore, [
-      'setX1Value',
-      'setX2Value',
-      'setY1Value',
-      'setY2Value',
-      'setXIsLog',
-      'setYIsLog',
-    ]),
     multiplyByTenX1() {
       this.x1 = String(this.multiplyByTen(parseFloat(this.x1)))
     },
@@ -272,22 +263,22 @@ export default defineComponent({
   },
   watch: {
     xIsLog(value: boolean) {
-      this.setXIsLog(value)
+      this.axes.setXIsLog(value)
     },
     yIsLog(value: boolean) {
-      this.setYIsLog(value)
+      this.axes.setYIsLog(value)
     },
     x1(value: string) {
-      this.setX1Value(parseFloat(value))
+      this.axes.setX1Value(parseFloat(value))
     },
     x2(value: string) {
-      this.setX2Value(parseFloat(value))
+      this.axes.setX2Value(parseFloat(value))
     },
     y1(value: string) {
-      this.setY1Value(parseFloat(value))
+      this.axes.setY1Value(parseFloat(value))
     },
     y2(value: string) {
-      this.setY2Value(parseFloat(value))
+      this.axes.setY2Value(parseFloat(value))
     },
   },
 })

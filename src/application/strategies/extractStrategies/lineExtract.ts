@@ -1,6 +1,6 @@
 import ExtractStrategyInterface from './extractStrategyInterface'
 import { ExtractParent } from './extractParent'
-import { Coord } from '@/domain/datasetInterface'
+import { Coord } from '@/domain/models/dataset/datasetInterface'
 
 export default class LineExtract
   extends ExtractParent
@@ -141,5 +141,13 @@ export default class LineExtract
       }
     }
     return coords
+  }
+
+  setDyPx(dyPx: number) {
+    this.dyPx = dyPx
+  }
+
+  setDxPx(dxPx: number) {
+    this.dxPx = dxPx
   }
 }

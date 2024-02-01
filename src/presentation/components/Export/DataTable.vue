@@ -28,12 +28,11 @@ import 'handsontable/dist/handsontable.full.css'
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
-import { Plot } from '@/domain/datasetInterface'
+import { Plot } from '@/domain/models/dataset/datasetInterface'
 
-import { useAxesStore } from '@/store/axes'
-import { useDatasetsStore } from '@/store/datasets'
-import { mapState } from 'pinia'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 registerAllModules()
 
@@ -44,8 +43,6 @@ export default defineComponent({
     HotTable,
   },
   computed: {
-    ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useAxesStore, ['axes']),
     tableData() {
       if (this.datasets.activeDataset.plots.length > 0) {
         return this.datasets.activeDataset.plots.map((plot: Plot) => {
@@ -62,7 +59,9 @@ export default defineComponent({
   },
   data() {
     return {
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
       key: 0,
       activeColor: colors.green.lighten5,
       hotTableSettings: {

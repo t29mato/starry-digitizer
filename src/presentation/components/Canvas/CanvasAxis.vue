@@ -38,13 +38,12 @@
 </template>
 
 <script lang="ts">
-import { AxisInterface } from '@/domain/axes/axisInterface'
 import { defineComponent } from 'vue'
 
-import { useAxesStore } from '@/store/axes'
-import { useStyleStore } from '@/store/style'
-import { mapState } from 'pinia'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisInterface } from '@/domain/models/axis/axisInterface'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
   props: {
@@ -56,30 +55,38 @@ export default defineComponent({
   data() {
     return {
       fontSize: 14,
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
+      axisSizePx: STYLE.axisSizePx,
     }
   },
   computed: {
-    ...mapState(useStyleStore, [
-      'axisSizePx',
-      'axisHalfSizePx',
-      'axisCrossBorderHalfPx',
-      'axisCrossBorderPx',
-      'axisCrossTopPx',
-      'axisCrossCursorPx',
-    ]),
-    ...mapState(useAxesStore, ['axes']),
     xPx(): number {
       if (this.axis.coord) {
-        return this.axis.coord.xPx * this.canvas.scale
+        return this.axis.coord.xPx * this.canvasHandler.scale
       }
       return -999
     },
     yPx(): number {
       if (this.axis.coord) {
-        return this.axis.coord.yPx * this.canvas.scale
+        return this.axis.coord.yPx * this.canvasHandler.scale
       }
       return -999
+    },
+    axisHalfSizePx(): number {
+      return this.axisSizePx / 2
+    },
+    axisCrossBorderPx(): number {
+      return this.axisSizePx * 0.1
+    },
+    axisCrossBorderHalfPx(): number {
+      return this.axisCrossBorderPx * 0.5
+    },
+    axisCrossTopPx(): number {
+      return (this.axisSizePx - this.axisCrossBorderPx) / 2
+    },
+    axisCrossCursorPx(): number {
+      return this.axisSizePx * 0.7
     },
     labelLeft(): number {
       if (this.axis.name.includes('x')) {

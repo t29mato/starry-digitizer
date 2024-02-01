@@ -1,8 +1,8 @@
-import { Coord } from '../datasetInterface'
-import { AxesInterface, Vector } from './axesInterface'
-import { AxisInterface } from './axisInterface'
+import { Coord } from '@/domain/models/dataset/datasetInterface'
+import { AxisRepositoryInterface, Vector } from './axisRepositoryInterface'
+import { AxisInterface } from '@/domain/models/axis/axisInterface'
 
-export class Axes implements AxesInterface {
+export class AxisRepository implements AxisRepositoryInterface {
   x1: AxisInterface
   x2: AxisInterface
   y1: AxisInterface
@@ -133,7 +133,7 @@ export class Axes implements AxesInterface {
     }
   }
 
-  clearAxesCoords() {
+  clearAxisCoords() {
     this.x1.clearCoord()
     this.x2.clearCoord()
     this.y1.clearCoord()
@@ -184,5 +184,29 @@ export class Axes implements AxesInterface {
 
   inactivateAxis() {
     this.activeAxisName = ''
+  }
+
+  setX1Value(value: number): void {
+    this.x1.value = value
+  }
+
+  setX2Value(value: number): void {
+    this.x2.value = value
+  }
+
+  setY1Value(value: number): void {
+    this.y1.value = value
+  }
+
+  setY2Value(value: number): void {
+    this.y2.value = value
+  }
+
+  setXIsLog(value: boolean): void {
+    this.xIsLog = value
+  }
+
+  setYIsLog(value: boolean): void {
+    this.yIsLog = value
   }
 }

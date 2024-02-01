@@ -1,5 +1,5 @@
-import { CanvasInterface } from '../canvas/canvasInterface'
-import { Coord } from '../../../domain/datasetInterface'
+import { CanvasHandlerInterface } from '../canvasHandler/canvasHandlerInterface'
+import { Coord } from '../../../domain/models/dataset/datasetInterface'
 import { ExtractorInterface } from './extractorInterface'
 import ExtractStrategyInterface from '../../strategies/extractStrategies/extractStrategyInterface'
 import LineExtract from '../../strategies/extractStrategies/lineExtract'
@@ -42,13 +42,13 @@ export class Extractor implements ExtractorInterface {
     this.updateSwatches(colorSwatches)
   }
 
-  execute(canvas: CanvasInterface): Coord[] {
+  execute(canvasHandler: CanvasHandlerInterface): Coord[] {
     return this.strategy.execute(
-      canvas.imageElement.height,
-      canvas.imageElement.width,
-      canvas.originalImageCanvasColors,
-      canvas.originalSizeMaskCanvasColors,
-      canvas.isDrawnMask,
+      canvasHandler.imageElement.height,
+      canvasHandler.imageElement.width,
+      canvasHandler.originalImageCanvasColors,
+      canvasHandler.originalSizeMaskCanvasColors,
+      canvasHandler.isDrawnMask,
       [this.targetColor.R, this.targetColor.G, this.targetColor.B],
       this.colorDistancePct,
     )

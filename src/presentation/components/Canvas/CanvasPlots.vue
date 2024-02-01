@@ -1,7 +1,7 @@
 <template>
   <div>
     <canvas-plot
-      v-for="plot in datasets.activeDataset.scaledPlots(canvas.scale)"
+      v-for="plot in datasets.activeDataset.scaledPlots(canvasHandler.scale)"
       :key="plot.id"
       :plot="plot"
       :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
@@ -12,7 +12,7 @@
     ></canvas-plot>
     <canvas-plot
       v-for="(tempPlot, i) in datasets.activeDataset.scaledTempPlots(
-        canvas.scale,
+        canvasHandler.scale,
       )"
       :key="i"
       :plot="tempPlot"
@@ -28,20 +28,17 @@
 import CanvasPlot from '@/presentation/components/Canvas/CanvasPlot.vue'
 import { defineComponent } from 'vue'
 
-import { useDatasetsStore } from '@/store/datasets'
-import { mapState } from 'pinia'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export default defineComponent({
   components: {
     CanvasPlot,
   },
-  computed: {
-    ...mapState(useDatasetsStore, ['datasets']),
-  },
   data() {
     return {
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
     }
   },
 

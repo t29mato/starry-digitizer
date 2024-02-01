@@ -45,12 +45,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { CanvasAxes, CanvasPlots, CanvasCursor, CanvasAxesGuide } from '.'
-import { Vector } from '@/domain/axes/axesInterface'
-import { Coord, Plot } from '@/domain/datasetInterface'
+import { Vector } from '@/domain/repositories/axisRepository/axisRepositoryInterface'
+import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
 
-import { useAxesStore } from '@/store/axes'
-import { useDatasetsStore } from '@/store/datasets'
-import { mapState, mapActions } from 'pinia'
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
 
@@ -58,7 +55,9 @@ import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -81,12 +80,10 @@ export default defineComponent({
       interpolator: Interpolator.getInstance(),
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
     }
-  },
-  computed: {
-    ...mapState(useAxesStore, ['axes']),
-    ...mapState(useDatasetsStore, ['datasets']),
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler.bind(this))
@@ -97,10 +94,10 @@ export default defineComponent({
       return
     }
     try {
-      await this.canvas.initializeImageElement(this.imagePath)
-      this.canvas.drawFitSizeImage()
-      this.canvas.setUploadImageUrl(this.imagePath)
-      this.extractor.setSwatches(this.canvas.colorSwatches)
+      await this.canvasHandler.initializeImageElement(this.imagePath)
+      this.canvasHandler.drawFitSizeImage()
+      this.canvasHandler.setUploadImageUrl(this.imagePath)
+      this.extractor.setSwatches(this.canvasHandler.colorSwatches)
 
       //TODO: interpolation canvasをinterpolator appに移譲したのでここで呼んでいるがcanvas初期化一連を行うapplicationにまとめたい
       this.interpolator.resizeCanvas()
@@ -109,40 +106,28 @@ export default defineComponent({
     }
   },
   methods: {
-    ...mapActions(useDatasetsStore, [
-      'addPlot',
-      'switchActivatedPlot',
-      'moveActivePlot',
-      'clearActivePlots',
-      'inactivatePlots',
-      'activatePlotsInRectangleArea',
-    ]),
-    ...mapActions(useAxesStore, [
-      'addAxisCoord',
-      'inactivateAxis',
-      'moveActiveAxis',
-    ]),
     // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
     plot(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき
-      if (this.canvas.isDrawingMask) {
+      if (this.canvasHandler.isDrawingMask) {
         return
       }
       const target = e.target as HTMLElement
       const isOnCanvasPlot = target.className === 'canvas-plot'
       // INFO: canvas-plot element上の時は、plot edit modeになるので
-      switch (this.canvas.manualMode) {
+      switch (this.canvasHandler.manualMode) {
         case 0:
-          this.addPlot({
-            xPx: isOnCanvasPlot
+          this.datasets.activeDataset.addPlot(
+            isOnCanvasPlot
               ? (e.offsetX + parseFloat(target.style.left) - offsetPx) /
-                this.canvas.scale
-              : (e.offsetX - offsetPx) / this.canvas.scale,
-            yPx: isOnCanvasPlot
-              ? (e.offsetY + parseFloat(target.style.top)) / this.canvas.scale
-              : e.offsetY / this.canvas.scale,
-          })
-          this.inactivateAxis()
+                  this.canvasHandler.scale
+              : (e.offsetX - offsetPx) / this.canvasHandler.scale,
+            isOnCanvasPlot
+              ? (e.offsetY + parseFloat(target.style.top)) /
+                  this.canvasHandler.scale
+              : e.offsetY / this.canvasHandler.scale,
+          )
+          this.axes.inactivateAxis()
           this.datasets.activeDataset.addManuallyAddedPlotId(
             this.datasets.activeDataset.lastPlotId,
           )
@@ -160,14 +145,14 @@ export default defineComponent({
         return
       }
       if (this.axes.nextAxis) {
-        this.addAxisCoord({
-          xPx: (e.offsetX - offsetPx) / this.canvas.scale,
-          yPx: e.offsetY / this.canvas.scale,
+        this.axes.addAxisCoord({
+          xPx: (e.offsetX - offsetPx) / this.canvasHandler.scale,
+          yPx: e.offsetY / this.canvasHandler.scale,
         })
-        this.inactivatePlots()
+        this.datasets.activeDataset.inactivatePlots()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
         if (!this.axes.nextAxis) {
-          this.canvas.manualMode = 0
+          this.canvasHandler.manualMode = 0
         }
         return
       }
@@ -184,16 +169,16 @@ export default defineComponent({
     mouseDrag(coord: Coord) {
       if (this.confirmer.isActive) return
 
-      this.canvas.mouseDrag(coord.xPx, coord.yPx)
+      this.canvasHandler.mouseDrag(coord.xPx, coord.yPx)
     },
     mouseMove(e: MouseEvent) {
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
       this.axes.isAdjusting = false
       this.datasets.activeDataset.plotsAreAdjusting = false
-      this.canvas.setCursor({
-        xPx: xPx / this.canvas.scale,
-        yPx: yPx / this.canvas.scale,
+      this.canvasHandler.setCursor({
+        xPx: xPx / this.canvasHandler.scale,
+        yPx: yPx / this.canvasHandler.scale,
       })
       // INFO: 左クリックされていない状態
       const isClicking = e.buttons === 1
@@ -206,24 +191,27 @@ export default defineComponent({
 
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
-      this.canvas.mouseDown(xPx, yPx)
+      this.canvasHandler.mouseDown(xPx, yPx)
     },
     mouseUp() {
       if (this.confirmer.isActive) return
 
-      this.canvas.mouseUp()
+      this.canvasHandler.mouseUp()
 
       // INFO: EDITモードの場合にplotの複数選択を行う
-      if (this.canvas.manualMode === 1) {
-        const rect = this.canvas.rectangle
-        const scale = this.canvas.scale
+      if (this.canvasHandler.manualMode === 1) {
+        const rect = this.canvasHandler.rectangle
+        const scale = this.canvasHandler.scale
 
         const { topLeftCoord, bottomRightCoord } = getRectCoordsFromDragCoords(
           { xPx: rect.startX / scale, yPx: rect.startY / scale },
           { xPx: rect.endX / scale, yPx: rect.endY / scale },
         )
 
-        this.activatePlotsInRectangleArea(topLeftCoord, bottomRightCoord)
+        this.datasets.activeDataset.activatePlotsInRectangleArea(
+          topLeftCoord,
+          bottomRightCoord,
+        )
 
         return
       }
@@ -259,20 +247,20 @@ export default defineComponent({
       e.preventDefault()
       switch (key) {
         case 'a':
-          this.canvas.setManualMode(0)
+          this.canvasHandler.setManualMode(0)
           return
         case 'e':
-          this.canvas.setManualMode(1)
+          this.canvasHandler.setManualMode(1)
           return
         case 'd':
-          this.canvas.setManualMode(2)
+          this.canvasHandler.setManualMode(2)
           return
       }
       if (
         this.datasets.activeDataset.hasActive() &&
         (key === 'Backspace' || key === 'Delete')
       ) {
-        this.clearActivePlots()
+        this.datasets.activeDataset.clearActivePlots()
 
         if (this.interpolator.isActive) {
           this.interpolator.updatePreview()
@@ -281,7 +269,7 @@ export default defineComponent({
         const lastPlotId = this.datasets.activeDataset.lastPlotId
 
         if (lastPlotId !== -1) {
-          this.switchActivatedPlot(lastPlotId)
+          this.datasets.activeDataset.switchActivatedPlot(lastPlotId)
         }
 
         return
@@ -292,13 +280,13 @@ export default defineComponent({
         distancePx: shiftKeyIsPressed ? 10 : 1,
       }
       if (this.axes.activeAxis && this.axes.activeAxis.coord) {
-        this.moveActiveAxis(vector)
-        this.canvas.setCursor(this.axes.activeAxis.coord)
+        this.axes.moveActiveAxis(vector)
+        this.canvasHandler.setCursor(this.axes.activeAxis.coord)
       }
       if (this.datasets.activeDataset.plotsAreActive) {
-        this.moveActivePlot(vector)
+        this.datasets.activeDataset.moveActivePlot(vector)
         this.interpolator.updatePreview()
-        this.canvas.setCursor(
+        this.canvasHandler.setCursor(
           this.datasets.activeDataset.plots.filter((plot: Plot) =>
             this.datasets.activeDataset.activePlotIds.includes(plot.id),
           )[0],

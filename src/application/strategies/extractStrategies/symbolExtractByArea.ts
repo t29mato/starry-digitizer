@@ -1,6 +1,6 @@
 import ExtractStrategyInterface from './extractStrategyInterface'
 import { ExtractParent } from './extractParent'
-import { Coord } from '@/domain/datasetInterface'
+import { Coord } from '@/domain/models/dataset/datasetInterface'
 
 export default class SymbolExtractByArea
   extends ExtractParent
@@ -144,5 +144,13 @@ export default class SymbolExtractByArea
       }
     }
     return coords
+  }
+
+  setMinDiameterPx(minDiameterPx: number) {
+    this.minDiameterPx = minDiameterPx
+  }
+
+  setMaxDiameterPx(maxDiameterPx: number) {
+    this.maxDiameterPx = maxDiameterPx
   }
 }

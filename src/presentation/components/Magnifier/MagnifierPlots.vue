@@ -7,8 +7,10 @@
       top: top,
       left: left,
       transform: `scale(${magnifier.scale}) translate(-${
-        canvas.cursor.xPx - magnifierHalfSize / magnifier.scale
-      }px, -${canvas.cursor.yPx - magnifierHalfSize / magnifier.scale}px)`,
+        canvasHandler.cursor.xPx - magnifierHalfSize / magnifier.scale
+      }px, -${
+        canvasHandler.cursor.yPx - magnifierHalfSize / magnifier.scale
+      }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
       width: size,
@@ -26,30 +28,26 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Coord } from '@/domain/datasetInterface'
+import { Coord } from '@/domain/models/dataset/datasetInterface'
 
-import { useStyleStore } from '@/store/style'
-import { mapState } from 'pinia'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
       magnifier: Magnifier.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
+      plotSizePx: STYLE.plotSizePx,
+      plotOpacity: STYLE.plotOpacity,
+      tempPlotOpacity: STYLE.tempPlotOpacity,
+      tempPlotSizePx: STYLE.tempPlotSizePx,
     }
   },
   computed: {
-    ...mapState(useStyleStore, ['plotSizePx']),
-    ...mapState(useStyleStore, [
-      'plotOpacity',
-      'tempPlotOpacity',
-      'plotSizePx',
-      'tempPlotSizePx',
-    ]),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },
@@ -144,4 +142,3 @@ export default defineComponent({
   },
 })
 </script>
-@/application/services/interpolator/interpolator/interpolator

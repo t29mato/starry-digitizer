@@ -24,18 +24,17 @@
 </template>
 
 <script lang="ts">
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 import MagnifierAxis from '@/presentation/components/Magnifier/MagnifierAxis.vue'
 import { defineComponent } from 'vue'
-
-import { useAxesStore } from '@/store/axes'
-import { mapState } from 'pinia'
-
 export default defineComponent({
   components: {
     MagnifierAxis,
   },
-  computed: {
-    ...mapState(useAxesStore, ['axes']),
+  data() {
+    return {
+      axes: AxisRepositoryManager.getInstance(),
+    }
   },
 })
 </script>

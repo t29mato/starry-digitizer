@@ -1,5 +1,5 @@
-import { Coord } from '../datasetInterface'
-import { AxisInterface } from './axisInterface'
+import { Coord } from '../../models/dataset/datasetInterface'
+import { AxisInterface } from '../../models/axis/axisInterface'
 
 // TODO: VectorはDatasetInterfaceでも利用しており共通Typeの場所を用意するべきか検討する
 export type Vector = {
@@ -7,11 +7,12 @@ export type Vector = {
   distancePx: number
 }
 
-export interface AxesInterface {
+export interface AxisRepositoryInterface {
   x1: AxisInterface
   x2: AxisInterface
   y1: AxisInterface
   y2: AxisInterface
+  x2y2: AxisInterface
   xIsLog: boolean
   yIsLog: boolean
   activeAxisName: string
@@ -25,9 +26,15 @@ export interface AxesInterface {
   get activeAxis(): AxisInterface | null
   get nextAxis(): AxisInterface | null
   moveActiveAxis(vector: Vector): void
-  clearAxesCoords(): void
+  clearAxisCoords(): void
   clearXAxisCoords(): void
   clearYAxisCoords(): void
   addAxisCoord(coord: Coord): void
   inactivateAxis(): void
+  setX1Value(value: number): void
+  setX2Value(value: number): void
+  setY1Value(value: number): void
+  setY2Value(value: number): void
+  setXIsLog(value: boolean): void
+  setYIsLog(value: boolean): void
 }

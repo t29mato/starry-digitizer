@@ -2,7 +2,7 @@
   <div>
     <h4 class="mb-2">Manual Extraction</h4>
     <v-btn-toggle
-      :model-value="canvas.manualMode"
+      :model-value="canvasHandler.manualMode"
       @update:model-value="changeManualMode"
       density="compact"
       class="mb-2"
@@ -90,15 +90,13 @@ import ColorSettings from './ColorSettings.vue'
 import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
-import { useDatasetsStore } from '@/store/datasets'
-import { useAxesStore } from '@/store/axes'
-import { mapState, mapActions } from 'pinia'
-
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export default defineComponent({
   components: {
@@ -112,13 +110,11 @@ export default defineComponent({
       interpolator: Interpolator.getInstance(),
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
       isExtracting: false,
     }
-  },
-  computed: {
-    ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useAxesStore, ['axes']),
   },
   props: {
     initialExtractorStrategy: {
@@ -136,21 +132,13 @@ export default defineComponent({
     }
   },
   methods: {
-    ...mapActions(useAxesStore, ['inactivateAxis']),
-    ...mapActions(useDatasetsStore, [
-      'switchActivatedPlot',
-      'clearPlots',
-      'setPlots',
-      'sortPlots',
-      'inactivatePlots',
-    ]),
     changeManualMode(value: any) {
-      this.inactivatePlots()
+      this.datasets.activeDataset.inactivatePlots()
       if (value === undefined) {
-        this.canvas.setManualMode(-1)
+        this.canvasHandler.setManualMode(-1)
         return
       }
-      this.canvas.setManualMode(value)
+      this.canvasHandler.setManualMode(value)
     },
     setExtractStrategy(strategy: any) {
       switch (strategy) {
@@ -163,10 +151,10 @@ export default defineComponent({
     },
     async extractPlots() {
       this.isExtracting = true
-      this.inactivateAxis()
+      this.axes.inactivateAxis()
       try {
-        this.setPlots(this.extractor.execute(this.canvas))
-        this.sortPlots()
+        this.datasets.setPlots(this.extractor.execute(this.canvasHandler))
+        this.datasets.sortPlots()
       } catch (e) {
         console.error('failed to extractPlots', { cause: e })
       } finally {
@@ -201,7 +189,7 @@ export default defineComponent({
         activeDataset.clearPlot(plotId)
       })
 
-      this.switchActivatedPlot(activeDataset.lastPlotId)
+      this.datasets.activeDataset.switchActivatedPlot(activeDataset.lastPlotId)
 
       this.interpolator.clearPreview()
     },

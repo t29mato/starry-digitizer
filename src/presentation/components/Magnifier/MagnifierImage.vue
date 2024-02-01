@@ -1,15 +1,15 @@
 <template>
   <div>
     <img
-      :src="canvas.uploadImageUrl"
+      :src="canvasHandler.uploadImageUrl"
       alt="the image you uploaded"
       :style="{
         position: 'absolute',
         top: 0,
         left: 0,
         transform: `scale(${magnifier.scale}) translate(-${
-          canvas.cursor.xPx - halfSize / magnifier.scale
-        }px, -${canvas.cursor.yPx - halfSize / magnifier.scale}px)`,
+          canvasHandler.cursor.xPx - halfSize / magnifier.scale
+        }px, -${canvasHandler.cursor.yPx - halfSize / magnifier.scale}px)`,
         'transform-origin': 'top left',
       }"
     />
@@ -20,10 +20,14 @@
         top: 0,
         left: 0,
         opacity: 0.5,
-        transform: `scale(${magnifier.scale / canvas.scale}) translate(-${
-          (canvas.cursor.xPx - halfSize / magnifier.scale) * canvas.scale
+        transform: `scale(${
+          magnifier.scale / canvasHandler.scale
+        }) translate(-${
+          (canvasHandler.cursor.xPx - halfSize / magnifier.scale) *
+          canvasHandler.scale
         }px, -${
-          (canvas.cursor.yPx - halfSize / magnifier.scale) * canvas.scale
+          (canvasHandler.cursor.yPx - halfSize / magnifier.scale) *
+          canvasHandler.scale
         }px)`,
         'transform-origin': 'top left',
       }"
@@ -35,10 +39,14 @@
         top: 0,
         left: 0,
         opacity: 0.5,
-        transform: `scale(${magnifier.scale / canvas.scale}) translate(-${
-          (canvas.cursor.xPx - halfSize / magnifier.scale) * canvas.scale
+        transform: `scale(${
+          magnifier.scale / canvasHandler.scale
+        }) translate(-${
+          (canvasHandler.cursor.xPx - halfSize / magnifier.scale) *
+          canvasHandler.scale
         }px, -${
-          (canvas.cursor.yPx - halfSize / magnifier.scale) * canvas.scale
+          (canvasHandler.cursor.yPx - halfSize / magnifier.scale) *
+          canvasHandler.scale
         }px)`,
         'transform-origin': 'top left',
       }"
@@ -52,14 +60,14 @@ import { defineComponent } from 'vue'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
       magnifier: Magnifier.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
     }
   },
   mounted() {

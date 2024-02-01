@@ -1,6 +1,7 @@
-import { DatasetInterface, Coord } from './datasetInterface'
+import { Dataset } from '@/domain/models/dataset/dataset'
+import { DatasetInterface, Coord } from '../../models/dataset/datasetInterface'
 
-export class Datasets {
+export class DatasetRepository {
   datasets: DatasetInterface[]
   activeDatasetId = 1
 
@@ -56,11 +57,17 @@ export class Datasets {
     targetDataset.name = newName
   }
 
-  addDataset(dataset: DatasetInterface) {
+  createNewDataset(): void {
+    this.addDataset(
+      new Dataset(`dataset ${this.nextDatasetId}`, [], this.nextDatasetId),
+    )
+  }
+
+  addDataset(dataset: DatasetInterface): void {
     this.datasets.push(dataset)
   }
 
-  popDataset() {
+  popDataset(): void {
     if (this.datasets.length === 1) {
       return
     }
@@ -71,7 +78,7 @@ export class Datasets {
   }
 
   activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
-    return this.activeDataset.activatePlotsInRectangleArea(
+    this.activeDataset.activatePlotsInRectangleArea(
       topLeftCoord,
       bottomRightCoord,
     )

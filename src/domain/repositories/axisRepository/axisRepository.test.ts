@@ -1,21 +1,21 @@
 import { expect } from '@jest/globals'
-import { Axes } from './axes'
-import { Axis } from './axis'
-import { AxisInterface } from './axisInterface'
+import { AxisRepository } from './axisRepository'
+import { Axis } from '../../models/axis/axis'
+import { AxisInterface } from '../../models/axis/axisInterface'
 
 let x1: AxisInterface
 let x2: AxisInterface
 let y1: AxisInterface
 let y2: AxisInterface
 let x2y2: AxisInterface
-let axes: Axes
+let axes: AxisRepository
 beforeEach(() => {
   x1 = new Axis('x1', 0)
   x2 = new Axis('x2', 1)
   y1 = new Axis('y1', 0)
   y2 = new Axis('y2', 1)
   x2y2 = new Axis('x2y2', -1)
-  axes = new Axes(x1, x2, y1, y2, x2y2)
+  axes = new AxisRepository(x1, x2, y1, y2, x2y2)
 })
 
 describe('4 points setting mode', () => {
@@ -32,7 +32,7 @@ describe('4 points setting mode', () => {
     expect(axes.hasAtLeastOneAxis).toBe(true)
     axes.addAxisCoord({ xPx: 100, yPx: 100 }) // x1, y1
     expect(axes.hasAtLeastOneAxis).toBe(true)
-    axes.clearAxesCoords()
+    axes.clearAxisCoords()
     expect(axes.hasAtLeastOneAxis).toBe(false)
   })
 

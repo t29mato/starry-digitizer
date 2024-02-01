@@ -7,8 +7,10 @@
         left: `${(xPx - axisCrossBorderHalfPx) * magnifier.scale}px`,
         'pointer-events': 'none',
         transform: `scale(${magnifier.scale}) translate(-${
-          canvas.cursor.xPx - magnifierHalfSizePx / magnifier.scale
-        }px, -${canvas.cursor.yPx - magnifierHalfSizePx / magnifier.scale}px)`,
+          canvasHandler.cursor.xPx - magnifierHalfSizePx / magnifier.scale
+        }px, -${
+          canvasHandler.cursor.yPx - magnifierHalfSizePx / magnifier.scale
+        }px)`,
         'transform-origin': 'top left',
         width: `${axisCrossBorderPx}px`,
         height: `${axisSizePx}px`,
@@ -38,16 +40,14 @@
 </template>
 
 <script lang="ts">
-import { AxisInterface } from '@/domain/axes/axisInterface'
+import { AxisInterface } from '@/domain/models/axis/axisInterface'
 import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
 import { defineComponent } from 'vue'
 
-import { useAxesStore } from '@/store/axes'
-import { useStyleStore } from '@/store/style'
-import { mapState } from 'pinia'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
   components: {
@@ -57,19 +57,11 @@ export default defineComponent({
   data() {
     return {
       magnifier: Magnifier.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
+      axisSizePx: STYLE.axisSizePx,
     }
   },
   computed: {
-    ...mapState(useAxesStore, ['axes']),
-    ...mapState(useStyleStore, [
-      'axisSizePx',
-      'axisHalfSizePx',
-      'axisCrossBorderHalfPx',
-      'axisCrossBorderPx',
-      'axisCrossTopPx',
-      'axisCrossCursorPx',
-    ]),
     xPx(): number {
       return this.axis.coord.xPx
     },
@@ -78,6 +70,21 @@ export default defineComponent({
     },
     magnifierHalfSizePx(): number {
       return this.magnifier.sizePx / 2
+    },
+    axisHalfSizePx(): number {
+      return this.axisSizePx / 2
+    },
+    axisCrossBorderPx(): number {
+      return this.axisSizePx * 0.1
+    },
+    axisCrossBorderHalfPx(): number {
+      return this.axisCrossBorderPx * 0.5
+    },
+    axisCrossTopPx(): number {
+      return (this.axisSizePx - this.axisCrossBorderPx) / 2
+    },
+    axisCrossCursorPx(): number {
+      return this.axisSizePx * 0.7
     },
   },
   props: {

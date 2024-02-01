@@ -2,7 +2,7 @@
   <div class="mt-3 mb-5">
     <h5 class="mb-2">Selection Area</h5>
     <v-btn-toggle
-      :model-value="canvas.maskMode"
+      :model-value="canvasHandler.maskMode"
       @update:model-value="change"
       density="compact"
       class="mb-2"
@@ -16,14 +16,14 @@
     <v-btn
       size="small"
       class="ml-1"
-      :disabled="!canvas.isDrawnMask"
+      :disabled="!canvasHandler.isDrawnMask"
       @click="clearMask"
     >
       Clear
     </v-btn>
     <v-text-field
-      v-if="canvas.maskMode === 0"
-      :model-value="canvas.penToolSizePx"
+      v-if="canvasHandler.maskMode === 0"
+      :model-value="canvasHandler.penToolSizePx"
       @change="onChangePenToolSizePx"
       type="number"
       hide-details
@@ -31,8 +31,8 @@
       density="compact"
     ></v-text-field>
     <v-text-field
-      v-if="canvas.maskMode === 2"
-      :model-value="canvas.eraserSizePx"
+      v-if="canvasHandler.maskMode === 2"
+      :model-value="canvasHandler.eraserSizePx"
       @change="onChangeEraserSizePx"
       type="number"
       hide-details
@@ -43,38 +43,38 @@
 </template>
 
 <script lang="ts">
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
   data() {
     return {
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
     }
   },
   methods: {
     onChangePenToolSizePx(event: Event) {
-      this.canvas.setPenToolSizePx(
+      this.canvasHandler.setPenToolSizePx(
         Number((<HTMLInputElement>event.target).value),
       )
     },
     onChangeEraserSizePx(event: Event) {
-      this.canvas.setEraserSizePx(
+      this.canvasHandler.setEraserSizePx(
         Number((<HTMLInputElement>event.target).value),
       )
     },
     change(value: any) {
       if (value === undefined) {
-        this.canvas.setMaskMode(-1)
+        this.canvasHandler.setMaskMode(-1)
         return
       }
-      this.canvas.setMaskMode(value)
+      this.canvasHandler.setMaskMode(value)
     },
     clearMask() {
-      this.canvas.clearMask()
+      this.canvasHandler.clearMask()
       // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
-      if (this.canvas.maskMode === 2) {
-        this.canvas.maskMode = -1
+      if (this.canvasHandler.maskMode === 2) {
+        this.canvasHandler.maskMode = -1
       }
     },
   },

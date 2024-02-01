@@ -1,11 +1,11 @@
-import { Coord, Plot } from '@/domain/datasetInterface'
+import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
 import { InterpolatorInterface } from './interpolatorInterface'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
-import { useDatasetsStore } from '@/store/datasets'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
 import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
 import { getPlotsTotalDistance } from '../../utils/pointsUtils'
-import { Canvas } from '../canvas/canvas'
+import { CanvasHandler } from '../canvasHandler/canvasHandler'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export class Interpolator implements InterpolatorInterface {
   private static instance: InterpolatorInterface
@@ -87,8 +87,8 @@ export class Interpolator implements InterpolatorInterface {
       throw new Error('interpolator guide canvas is not set')
     }
 
-    //TODO: Depending on other application is not good. Canvas app should be separated drawing logic and canvas entitiy ifselves
-    const canvas = Canvas.getInstance()
+    //TODO: Depending on other application is not good. CanvasHandler app should be separated drawing logic and canvas entitiy ifselves
+    const canvasHandler = CanvasHandler.getInstance()
     this.clearGuideCanvasContext()
 
     this.guideCanvas.context.beginPath()
@@ -96,14 +96,14 @@ export class Interpolator implements InterpolatorInterface {
     this.guideCanvas.context.lineWidth = 3
     this.guideCanvas.context.strokeStyle = '#ffd700'
     this.guideCanvas.context.moveTo(
-      this.interpolatedCoordsForGuideline[0].xPx * canvas.scale,
-      this.interpolatedCoordsForGuideline[0].yPx * canvas.scale,
+      this.interpolatedCoordsForGuideline[0].xPx * canvasHandler.scale,
+      this.interpolatedCoordsForGuideline[0].yPx * canvasHandler.scale,
     )
 
     for (let i = 1; i < this.interpolatedCoordsForGuideline.length; i++) {
       this.guideCanvas.context.lineTo(
-        this.interpolatedCoordsForGuideline[i].xPx * canvas.scale,
-        this.interpolatedCoordsForGuideline[i].yPx * canvas.scale,
+        this.interpolatedCoordsForGuideline[i].xPx * canvasHandler.scale,
+        this.interpolatedCoordsForGuideline[i].yPx * canvasHandler.scale,
       )
     }
 
@@ -122,11 +122,11 @@ export class Interpolator implements InterpolatorInterface {
   public resizeCanvas(): void {
     if (!this.guideCanvas || !this.magnifierCanvas) return
 
-    //TODO: Depending on other application is not good. Canvas app should be separated drawing logic and canvas entitiy ifselves
-    const canvas = Canvas.getInstance()
+    //TODO: Depending on other application is not good. CanvasHandler app should be separated drawing logic and canvas entitiy ifselves
+    const canvasHandler = CanvasHandler.getInstance()
 
-    const newWidth = canvas.originalWidth * canvas.scale
-    const newHeight = canvas.originalHeight * canvas.scale
+    const newWidth = canvasHandler.originalWidth * canvasHandler.scale
+    const newHeight = canvasHandler.originalHeight * canvasHandler.scale
 
     this.guideCanvas.element.width = newWidth
     this.guideCanvas.element.height = newHeight
@@ -174,8 +174,7 @@ export class Interpolator implements InterpolatorInterface {
   }
 
   public updatePreview(): void {
-    //TODO: pinia storeとドメインリポジトリを分けて、application serviceがpiniaに依存しないようにする
-    const { datasets } = useDatasetsStore()
+    const datasets = DatasetRepositoryManager.getInstance()
 
     const activeDataset = datasets.activeDataset
     const anchorPlots = activeDataset.plots.filter((plot: Plot) =>
@@ -203,8 +202,7 @@ export class Interpolator implements InterpolatorInterface {
   }
 
   public clearPreview(): void {
-    //TODO: pinia storeとドメインリポジトリを分けて、application serviceがpiniaに依存しないようにする
-    const { datasets } = useDatasetsStore()
+    const datasets = DatasetRepositoryManager.getInstance()
 
     const activeDataset = datasets.activeDataset
 

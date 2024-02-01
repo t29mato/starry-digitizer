@@ -22,29 +22,26 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Plot } from '@/domain/datasetInterface'
+import { Plot } from '@/domain/models/dataset/datasetInterface'
 
-import { useDatasetsStore } from '@/store/datasets'
-import { mapState, mapActions } from 'pinia'
-import { useStyleStore } from '@/store/style'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
+      plotOpacity: STYLE.plotOpacity,
+      tempPlotOpacity: STYLE.tempPlotOpacity,
+      plotSizePx: STYLE.plotSizePx,
+      tempPlotSizePx: STYLE.tempPlotSizePx,
     }
   },
   computed: {
-    ...mapState(useDatasetsStore, ['datasets']),
-    ...mapState(useStyleStore, [
-      'plotOpacity',
-      'tempPlotOpacity',
-      'plotSizePx',
-      'tempPlotSizePx',
-    ]),
     xPx(): number {
       return this.plot.xPx
     },
@@ -52,7 +49,7 @@ export default defineComponent({
       return this.plot.yPx
     },
     cursor(): string | undefined {
-      const mode = this.canvas.manualMode
+      const mode = this.canvasHandler.manualMode
       if (mode === 1 || mode === 2) {
         return 'pointer'
       }
@@ -131,25 +128,20 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(useDatasetsStore, [
-      'toggleActivatedPlot',
-      'switchActivatedPlot',
-      'clearPlot',
-    ]),
     click(event: MouseEvent) {
-      switch (this.canvas.manualMode) {
+      switch (this.canvasHandler.manualMode) {
         // INFO: CanvasMain Component -> plot method
         case 0:
           return
         case 1:
           if (event.ctrlKey || event.metaKey) {
-            this.toggleActivatedPlot(this.plot.id)
+            this.datasets.activeDataset.toggleActivatedPlot(this.plot.id)
             return
           }
-          this.switchActivatedPlot(this.plot.id)
+          this.datasets.activeDataset.switchActivatedPlot(this.plot.id)
           return
         case 2:
-          this.clearPlot(this.plot.id)
+          this.datasets.activeDataset.clearPlot(this.plot.id)
 
           return
         default:

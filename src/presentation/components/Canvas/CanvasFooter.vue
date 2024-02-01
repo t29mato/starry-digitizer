@@ -28,7 +28,7 @@
         datasets.activeDataset.plots.length === 0 ||
         !datasets.activeDataset.nextPlotId
       "
-      @click="clearActivePlots"
+      @click="datasets.activeDataset.clearActivePlots"
       >Clear Active Point</v-btn
     >
   </div>
@@ -37,45 +37,35 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useAxesStore } from '@/store/axes'
-import { useDatasetsStore } from '@/store/datasets'
-import { mapState, mapActions } from 'pinia'
-
 import { Interpolator } from '@/application/services/interpolator/interpolator'
-import { Canvas } from '@/application/services/canvas/canvas'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
-      canvas: Canvas.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
+      axes: AxisRepositoryManager.getInstance(),
+      datasets: DatasetRepositoryManager.getInstance(),
     }
   },
-  computed: {
-    ...mapState(useAxesStore, ['axes']),
-    ...mapState(useDatasetsStore, ['datasets']),
-  },
   methods: {
-    ...mapActions(useDatasetsStore, ['clearPlots', 'clearActivePlots']),
-    ...mapActions(useAxesStore, [
-      'clearAxesCoords',
-      'clearXAxisCoords',
-      'clearYAxisCoords',
-    ]),
     clearAxes() {
-      this.clearAxesCoords()
-      this.canvas.setManualMode(-1)
+      this.axes.clearAxisCoords()
+      this.canvasHandler.setManualMode(-1)
     },
     clearXAxis() {
-      this.clearXAxisCoords()
-      this.canvas.setManualMode(-1)
+      this.axes.clearXAxisCoords()
+      this.canvasHandler.setManualMode(-1)
     },
     clearYAxis() {
-      this.clearAxesCoords()
-      this.canvas.setManualMode(-1)
+      this.axes.clearAxisCoords()
+      this.canvasHandler.setManualMode(-1)
     },
     handleOnClickClearPlots() {
-      this.clearPlots()
+      this.datasets.activeDataset.clearPlots()
       this.interpolator.clearPreview()
     },
   },
