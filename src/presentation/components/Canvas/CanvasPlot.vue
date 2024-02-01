@@ -24,11 +24,10 @@ import { defineComponent } from 'vue'
 
 import { Plot } from '@/domain/models/dataset/datasetInterface'
 
-import { mapState } from 'pinia'
-import { useStyleStore } from '@/store/style'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
   data() {
@@ -36,15 +35,13 @@ export default defineComponent({
       interpolator: Interpolator.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
       datasets: DatasetRepositoryManager.getInstance(),
+      plotOpacity: STYLE.plotOpacity,
+      tempPlotOpacity: STYLE.tempPlotOpacity,
+      plotSizePx: STYLE.plotSizePx,
+      tempPlotSizePx: STYLE.tempPlotSizePx,
     }
   },
   computed: {
-    ...mapState(useStyleStore, [
-      'plotOpacity',
-      'tempPlotOpacity',
-      'plotSizePx',
-      'tempPlotSizePx',
-    ]),
     xPx(): number {
       return this.plot.xPx
     },

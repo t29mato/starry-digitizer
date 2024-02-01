@@ -28,13 +28,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Coord } from '@/domain/datasetInterface'
+import { Coord } from '@/domain/models/dataset/datasetInterface'
 
-import { useStyleStore } from '@/store/style'
-import { mapState } from 'pinia'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
   data() {
@@ -42,16 +41,13 @@ export default defineComponent({
       interpolator: Interpolator.getInstance(),
       magnifier: Magnifier.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
+      plotSizePx: STYLE.plotSizePx,
+      plotOpacity: STYLE.plotOpacity,
+      tempPlotOpacity: STYLE.tempPlotOpacity,
+      tempPlotSizePx: STYLE.tempPlotSizePx,
     }
   },
   computed: {
-    ...mapState(useStyleStore, ['plotSizePx']),
-    ...mapState(useStyleStore, [
-      'plotOpacity',
-      'tempPlotOpacity',
-      'plotSizePx',
-      'tempPlotSizePx',
-    ]),
     plotHalfSize(): number {
       return this.plotSizePx / 2
     },

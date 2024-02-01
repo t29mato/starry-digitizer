@@ -40,11 +40,10 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useStyleStore } from '@/store/style'
-import { mapState } from 'pinia'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
 import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
   props: {
@@ -58,17 +57,10 @@ export default defineComponent({
       fontSize: 14,
       canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
+      axisSizePx: STYLE.axisSizePx,
     }
   },
   computed: {
-    ...mapState(useStyleStore, [
-      'axisSizePx',
-      'axisHalfSizePx',
-      'axisCrossBorderHalfPx',
-      'axisCrossBorderPx',
-      'axisCrossTopPx',
-      'axisCrossCursorPx',
-    ]),
     xPx(): number {
       if (this.axis.coord) {
         return this.axis.coord.xPx * this.canvasHandler.scale
@@ -80,6 +72,21 @@ export default defineComponent({
         return this.axis.coord.yPx * this.canvasHandler.scale
       }
       return -999
+    },
+    axisHalfSizePx(): number {
+      return this.axisSizePx / 2
+    },
+    axisCrossBorderPx(): number {
+      return this.axisSizePx * 0.1
+    },
+    axisCrossBorderHalfPx(): number {
+      return this.axisCrossBorderPx * 0.5
+    },
+    axisCrossTopPx(): number {
+      return (this.axisSizePx - this.axisCrossBorderPx) / 2
+    },
+    axisCrossCursorPx(): number {
+      return this.axisSizePx * 0.7
     },
     labelLeft(): number {
       if (this.axis.name.includes('x')) {

@@ -45,10 +45,9 @@ import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
 import { defineComponent } from 'vue'
 
-import { useStyleStore } from '@/store/style'
-import { mapState } from 'pinia'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
   components: {
@@ -59,17 +58,10 @@ export default defineComponent({
     return {
       magnifier: Magnifier.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
+      axisSizePx: STYLE.axisSizePx,
     }
   },
   computed: {
-    ...mapState(useStyleStore, [
-      'axisSizePx',
-      'axisHalfSizePx',
-      'axisCrossBorderHalfPx',
-      'axisCrossBorderPx',
-      'axisCrossTopPx',
-      'axisCrossCursorPx',
-    ]),
     xPx(): number {
       return this.axis.coord.xPx
     },
@@ -78,6 +70,21 @@ export default defineComponent({
     },
     magnifierHalfSizePx(): number {
       return this.magnifier.sizePx / 2
+    },
+    axisHalfSizePx(): number {
+      return this.axisSizePx / 2
+    },
+    axisCrossBorderPx(): number {
+      return this.axisSizePx * 0.1
+    },
+    axisCrossBorderHalfPx(): number {
+      return this.axisCrossBorderPx * 0.5
+    },
+    axisCrossTopPx(): number {
+      return (this.axisSizePx - this.axisCrossBorderPx) / 2
+    },
+    axisCrossCursorPx(): number {
+      return this.axisSizePx * 0.7
     },
   },
   props: {
