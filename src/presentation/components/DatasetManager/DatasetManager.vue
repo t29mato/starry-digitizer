@@ -2,7 +2,7 @@
   <div>
     <h4>
       Datasets
-      <v-btn @click="datasets.addDataset" size="x-small" class="ml-2"
+      <v-btn @click="handleOnClickAddDatasetButton" size="x-small" class="ml-2"
         ><v-icon>mdi-plus</v-icon></v-btn
       >
       <v-btn
@@ -87,6 +87,9 @@ export default defineComponent({
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
       this.canvasHandler.clearMask()
       this.canvasHandler.maskMode = -1
+    },
+    handleOnClickAddDatasetButton() {
+      this.datasets.createNewDataset()
     },
   },
 })

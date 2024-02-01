@@ -1,3 +1,4 @@
+import { Dataset } from '@/domain/models/dataset/dataset'
 import { DatasetInterface, Coord } from '../../models/dataset/datasetInterface'
 
 export class DatasetRepository {
@@ -56,11 +57,17 @@ export class DatasetRepository {
     targetDataset.name = newName
   }
 
-  addDataset(dataset: DatasetInterface) {
+  createNewDataset(): void {
+    this.addDataset(
+      new Dataset(`dataset ${this.nextDatasetId}`, [], this.nextDatasetId),
+    )
+  }
+
+  addDataset(dataset: DatasetInterface): void {
     this.datasets.push(dataset)
   }
 
-  popDataset() {
+  popDataset(): void {
     if (this.datasets.length === 1) {
       return
     }

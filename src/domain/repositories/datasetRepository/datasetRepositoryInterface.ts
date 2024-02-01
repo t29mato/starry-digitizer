@@ -13,6 +13,7 @@ export interface DatasetRepositoryInterface {
   sortPlots(): void
   setActiveDataset(id: number): void
   editDatasetName(datasetId: number, newName: string): void
+  createNewDataset(): void
   addDataset(dataset: DatasetInterface): void
   popDataset(): void
   activatePlotsInRectangleArea(
