@@ -5,8 +5,8 @@
       v-if="!(axes.isAdjusting || datasets.activeDataset.plotsAreAdjusting)"
       :style="{
         position: 'absolute',
-        top: `${canvas.scaledCursor.yPx - axisCrossCursorPx}px`,
-        left: `${canvas.scaledCursor.xPx + axisCrossCursorPx}px`,
+        top: `${canvasHandler.scaledCursor.yPx - axisCrossCursorPx}px`,
+        left: `${canvasHandler.scaledCursor.xPx + axisCrossCursorPx}px`,
         'pointer-events': 'none',
       }"
     >
@@ -17,8 +17,8 @@
       v-if="!axes.isAdjusting"
       :style="{
         position: 'absolute',
-        top: `${canvas.scaledCursor.yPx + axisCrossCursorPx / 2}px`,
-        left: `${canvas.scaledCursor.xPx - axisCrossCursorPx / 2}px`,
+        top: `${canvasHandler.scaledCursor.yPx + axisCrossCursorPx / 2}px`,
+        left: `${canvasHandler.scaledCursor.xPx - axisCrossCursorPx / 2}px`,
         'pointer-events': 'none',
       }"
     >
@@ -29,8 +29,8 @@
       v-if="!axes.isAdjusting"
       :style="{
         position: 'absolute',
-        top: `${canvas.scaledCursor.yPx - axisCrossCursorPx}px`,
-        left: `${canvas.scaledCursor.xPx - axisCrossCursorPx * 2}px`,
+        top: `${canvasHandler.scaledCursor.yPx - axisCrossCursorPx}px`,
+        left: `${canvasHandler.scaledCursor.xPx - axisCrossCursorPx * 2}px`,
         'pointer-events': 'none',
       }"
     >
@@ -64,7 +64,7 @@ const guideLineBaseStyles: CSSProperties = {
 export default defineComponent({
   data() {
     return {
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
     }
   },
@@ -72,7 +72,7 @@ export default defineComponent({
     ...mapState(useStyleStore, ['axisCrossCursorPx', 'axisHalfSizePx']),
     ...mapState(useDatasetsStore, ['datasets']),
     rightLabel(): string {
-      switch (this.canvas.maskMode) {
+      switch (this.canvasHandler.maskMode) {
         case 0:
           return 'Pen'
         case 1:
@@ -80,7 +80,7 @@ export default defineComponent({
         case 2:
           return 'Eraser'
       }
-      switch (this.canvas.manualMode) {
+      switch (this.canvasHandler.manualMode) {
         case 0:
           return 'Add'
         case 1:
@@ -114,28 +114,31 @@ export default defineComponent({
     },
     isCursorGuideLinesActive(): boolean {
       //INFO: 軸定義後でプロットのいずれのモードでもないときは表示しない
-      if (this.canvas.manualMode === -1 && this.axes.y2.coordIsFilled) {
+      if (this.canvasHandler.manualMode === -1 && this.axes.y2.coordIsFilled) {
         return false
       }
 
       // //INFO: マスク操作中の場合は表示しない
-      if (this.canvas.maskMode !== -1) {
+      if (this.canvasHandler.maskMode !== -1) {
         return false
       }
 
       //INFO: EDIT, DELETEモードの場合は表示しない
-      if (this.canvas.manualMode !== -1 && this.canvas.manualMode !== 0) {
+      if (
+        this.canvasHandler.manualMode !== -1 &&
+        this.canvasHandler.manualMode !== 0
+      ) {
         return false
       }
 
       return true
     },
     guideLineColor(): string {
-      if (this.canvas.manualMode === -1) {
+      if (this.canvasHandler.manualMode === -1) {
         return '#00ff00'
       }
 
-      if (this.canvas.manualMode === 0) {
+      if (this.canvasHandler.manualMode === 0) {
         return '#ffcc00'
       }
 
@@ -146,7 +149,7 @@ export default defineComponent({
         ...guideLineBaseStyles,
         width: `${this.getImageCanvasSize().w}px`,
         height: '1px',
-        top: `${this.canvas.scaledCursor.yPx}px`,
+        top: `${this.canvasHandler.scaledCursor.yPx}px`,
         backgroundColor: this.guideLineColor,
       }
     },
@@ -156,7 +159,7 @@ export default defineComponent({
         width: '1px',
         top: '0',
         height: `${this.getImageCanvasSize().h}px`,
-        left: `${this.canvas.scaledCursor.xPx}px`,
+        left: `${this.canvasHandler.scaledCursor.xPx}px`,
         backgroundColor: this.guideLineColor,
       }
     },

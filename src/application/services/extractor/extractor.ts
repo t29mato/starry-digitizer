@@ -42,13 +42,13 @@ export class Extractor implements ExtractorInterface {
     this.updateSwatches(colorSwatches)
   }
 
-  execute(canvas: CanvasHandlerInterface): Coord[] {
+  execute(canvasHandler: CanvasHandlerInterface): Coord[] {
     return this.strategy.execute(
-      canvas.imageElement.height,
-      canvas.imageElement.width,
-      canvas.originalImageCanvasColors,
-      canvas.originalSizeMaskCanvasColors,
-      canvas.isDrawnMask,
+      canvasHandler.imageElement.height,
+      canvasHandler.imageElement.width,
+      canvasHandler.originalImageCanvasColors,
+      canvasHandler.originalSizeMaskCanvasColors,
+      canvasHandler.isDrawnMask,
       [this.targetColor.R, this.targetColor.G, this.targetColor.B],
       this.colorDistancePct,
     )

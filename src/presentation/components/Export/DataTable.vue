@@ -61,7 +61,7 @@ export default defineComponent({
   },
   data() {
     return {
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
       key: 0,
       activeColor: colors.green.lighten5,

@@ -15,7 +15,7 @@
         @click="handleOnClickResetScaleButton"
         >100%</v-btn
       >
-      <v-btn size="small" class="ml-2" @click="canvas.drawFitSizeImage"
+      <v-btn size="small" class="ml-2" @click="canvasHandler.drawFitSizeImage"
         >Fit</v-btn
       >
     </div>
@@ -33,25 +33,25 @@ export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
     }
   },
   computed: {
     showCanvasScale(): string {
-      return Math.trunc(this.canvas.scale * 100) + '%'
+      return Math.trunc(this.canvasHandler.scale * 100) + '%'
     },
   },
   methods: {
     handleOnClickScaleUpButton() {
-      this.canvas.scaleUp()
+      this.canvasHandler.scaleUp()
       this.interpolator.resizeCanvas()
     },
     handleOnClickScaleDownButton() {
-      this.canvas.scaleDown()
+      this.canvasHandler.scaleDown()
       this.interpolator.resizeCanvas()
     },
     handleOnClickResetScaleButton() {
-      this.canvas.drawOriginalSizeImage()
+      this.canvasHandler.drawOriginalSizeImage()
       this.interpolator.resizeCanvas()
     },
   },

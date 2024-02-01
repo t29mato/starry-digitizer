@@ -7,8 +7,10 @@
       top: top,
       left: left,
       transform: `scale(${magnifier.scale}) translate(-${
-        canvas.cursor.xPx - magnifierHalfSize / magnifier.scale
-      }px, -${canvas.cursor.yPx - magnifierHalfSize / magnifier.scale}px)`,
+        canvasHandler.cursor.xPx - magnifierHalfSize / magnifier.scale
+      }px, -${
+        canvasHandler.cursor.yPx - magnifierHalfSize / magnifier.scale
+      }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
       width: size,
@@ -39,7 +41,7 @@ export default defineComponent({
     return {
       interpolator: Interpolator.getInstance(),
       magnifier: Magnifier.getInstance(),
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
     }
   },
   computed: {

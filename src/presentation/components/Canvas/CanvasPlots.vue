@@ -1,7 +1,7 @@
 <template>
   <div>
     <canvas-plot
-      v-for="plot in datasets.activeDataset.scaledPlots(canvas.scale)"
+      v-for="plot in datasets.activeDataset.scaledPlots(canvasHandler.scale)"
       :key="plot.id"
       :plot="plot"
       :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
@@ -12,7 +12,7 @@
     ></canvas-plot>
     <canvas-plot
       v-for="(tempPlot, i) in datasets.activeDataset.scaledTempPlots(
-        canvas.scale,
+        canvasHandler.scale,
       )"
       :key="i"
       :plot="tempPlot"
@@ -41,7 +41,7 @@ export default defineComponent({
   },
   data() {
     return {
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
     }
   },
 

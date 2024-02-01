@@ -34,7 +34,7 @@ export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
     }
   },
   computed: {
@@ -52,7 +52,7 @@ export default defineComponent({
       return this.plot.yPx
     },
     cursor(): string | undefined {
-      const mode = this.canvas.manualMode
+      const mode = this.canvasHandler.manualMode
       if (mode === 1 || mode === 2) {
         return 'pointer'
       }
@@ -137,7 +137,7 @@ export default defineComponent({
       'clearPlot',
     ]),
     click(event: MouseEvent) {
-      switch (this.canvas.manualMode) {
+      switch (this.canvasHandler.manualMode) {
         // INFO: CanvasMain Component -> plot method
         case 0:
           return

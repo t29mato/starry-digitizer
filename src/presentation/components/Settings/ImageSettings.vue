@@ -23,7 +23,7 @@ export default defineComponent({
   data() {
     return {
       extractor: Extractor.getInstance(),
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
     }
   },
@@ -47,10 +47,10 @@ export default defineComponent({
           throw new Error('file is not string type')
         }
 
-        await this.canvas.initializeImageElement(fr.result)
-        this.canvas.drawFitSizeImage()
-        this.extractor.setSwatches(this.canvas.colorSwatches)
-        this.canvas.setUploadImageUrl(fr.result)
+        await this.canvasHandler.initializeImageElement(fr.result)
+        this.canvasHandler.drawFitSizeImage()
+        this.extractor.setSwatches(this.canvasHandler.colorSwatches)
+        this.canvasHandler.setUploadImageUrl(fr.result)
         this.axes.clearAxisCoords()
         this.clearPlots()
       } catch (e) {

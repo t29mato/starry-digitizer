@@ -56,7 +56,7 @@ export default defineComponent({
   data() {
     return {
       fontSize: 14,
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
     }
   },
@@ -71,13 +71,13 @@ export default defineComponent({
     ]),
     xPx(): number {
       if (this.axis.coord) {
-        return this.axis.coord.xPx * this.canvas.scale
+        return this.axis.coord.xPx * this.canvasHandler.scale
       }
       return -999
     },
     yPx(): number {
       if (this.axis.coord) {
-        return this.axis.coord.yPx * this.canvas.scale
+        return this.axis.coord.yPx * this.canvasHandler.scale
       }
       return -999
     },

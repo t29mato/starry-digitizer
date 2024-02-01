@@ -96,14 +96,14 @@ export class Interpolator implements InterpolatorInterface {
     this.guideCanvas.context.lineWidth = 3
     this.guideCanvas.context.strokeStyle = '#ffd700'
     this.guideCanvas.context.moveTo(
-      this.interpolatedCoordsForGuideline[0].xPx * canvas.scale,
-      this.interpolatedCoordsForGuideline[0].yPx * canvas.scale,
+      this.interpolatedCoordsForGuideline[0].xPx * canvasHandler.scale,
+      this.interpolatedCoordsForGuideline[0].yPx * canvasHandler.scale,
     )
 
     for (let i = 1; i < this.interpolatedCoordsForGuideline.length; i++) {
       this.guideCanvas.context.lineTo(
-        this.interpolatedCoordsForGuideline[i].xPx * canvas.scale,
-        this.interpolatedCoordsForGuideline[i].yPx * canvas.scale,
+        this.interpolatedCoordsForGuideline[i].xPx * canvasHandler.scale,
+        this.interpolatedCoordsForGuideline[i].yPx * canvasHandler.scale,
       )
     }
 
@@ -125,8 +125,8 @@ export class Interpolator implements InterpolatorInterface {
     //TODO: Depending on other application is not good. CanvasHandler app should be separated drawing logic and canvas entitiy ifselves
     const canvas = CanvasHandler.getInstance()
 
-    const newWidth = canvas.originalWidth * canvas.scale
-    const newHeight = canvas.originalHeight * canvas.scale
+    const newWidth = canvasHandler.originalWidth * canvasHandler.scale
+    const newHeight = canvasHandler.originalHeight * canvasHandler.scale
 
     this.guideCanvas.element.width = newWidth
     this.guideCanvas.element.height = newHeight

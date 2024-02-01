@@ -7,8 +7,10 @@
         left: `${(xPx - axisCrossBorderHalfPx) * magnifier.scale}px`,
         'pointer-events': 'none',
         transform: `scale(${magnifier.scale}) translate(-${
-          canvas.cursor.xPx - magnifierHalfSizePx / magnifier.scale
-        }px, -${canvas.cursor.yPx - magnifierHalfSizePx / magnifier.scale}px)`,
+          canvasHandler.cursor.xPx - magnifierHalfSizePx / magnifier.scale
+        }px, -${
+          canvasHandler.cursor.yPx - magnifierHalfSizePx / magnifier.scale
+        }px)`,
         'transform-origin': 'top left',
         width: `${axisCrossBorderPx}px`,
         height: `${axisSizePx}px`,
@@ -56,7 +58,7 @@ export default defineComponent({
   data() {
     return {
       magnifier: Magnifier.getInstance(),
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
     }
   },
   computed: {

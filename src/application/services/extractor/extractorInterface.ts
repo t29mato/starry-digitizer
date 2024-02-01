@@ -15,7 +15,7 @@ export interface ExtractorInterface {
   setColorPicker(color: string): void
   setSwatches(colorSwatches: string[]): void
 
-  execute(canvas: CanvasHandlerInterface): Coord[]
+  execute(canvasHandler: CanvasHandlerInterface): Coord[]
 
   get targetColor(): { R: number; G: number; B: number }
   get targetColorHex(): string

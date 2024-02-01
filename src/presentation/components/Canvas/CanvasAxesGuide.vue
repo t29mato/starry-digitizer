@@ -24,7 +24,7 @@ const axesGuideCommonStyle: CSSProperties = {
 export default defineComponent({
   data() {
     return {
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
     }
   },
@@ -43,15 +43,17 @@ export default defineComponent({
       return this.axes.pointMode === 0
     },
     isX1Y1LineVisible(): boolean {
-      return this.axes.x1.coordIsFilled || this.canvas.scaledCursor.xPx !== 0
+      return (
+        this.axes.x1.coordIsFilled || this.canvasHandler.scaledCursor.xPx !== 0
+      )
     },
     isX2Y2LineVisible(): boolean {
       return this.axes.x2y2.coordIsFilled
     },
     X1Y1HorizontalLineStyle() {
       const styleTopNum = this.axes.x1.coordIsFilled
-        ? this.axes.x1.coord.yPx * this.canvas.scale
-        : this.canvas.scaledCursor.yPx
+        ? this.axes.x1.coord.yPx * this.canvasHandler.scale
+        : this.canvasHandler.scaledCursor.yPx
       return {
         ...axesGuideCommonStyle,
         right: '0',
@@ -64,8 +66,8 @@ export default defineComponent({
     X1Y1VerticalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
       const styleLeftNum = this.axes.x1.coordIsFilled
-        ? this.axes.x1.coord.xPx * this.canvas.scale
-        : this.canvas.scaledCursor.xPx
+        ? this.axes.x1.coord.xPx * this.canvasHandler.scale
+        : this.canvasHandler.scaledCursor.xPx
       return {
         ...axesGuideCommonStyle,
         width: '1px',
@@ -79,8 +81,8 @@ export default defineComponent({
     X2Y2HorizontalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
       const styleTopNum = this.axes.x2y2.coordIsFilled
-        ? this.axes.x2y2.coord.yPx * this.canvas.scale
-        : this.canvas.scaledCursor.yPx
+        ? this.axes.x2y2.coord.yPx * this.canvasHandler.scale
+        : this.canvasHandler.scaledCursor.yPx
       return {
         ...axesGuideCommonStyle,
         right: '0',
@@ -93,8 +95,8 @@ export default defineComponent({
     X2Y2VerticalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
       const styleLeftNum = this.axes.x2y2.coordIsFilled
-        ? this.axes.x2y2.coord.xPx * this.canvas.scale
-        : this.canvas.scaledCursor.xPx
+        ? this.axes.x2y2.coord.xPx * this.canvasHandler.scale
+        : this.canvasHandler.scaledCursor.xPx
       return {
         ...axesGuideCommonStyle,
         width: '1px',

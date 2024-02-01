@@ -84,7 +84,7 @@ export default defineComponent({
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
       magnifier: Magnifier.getInstance(),
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
     }
   },
@@ -113,8 +113,8 @@ export default defineComponent({
         y: this.axes.yIsLog,
       })
       return calculator.calculateXYValues(
-        this.canvas.cursor.xPx,
-        this.canvas.cursor.yPx,
+        this.canvasHandler.cursor.xPx,
+        this.canvasHandler.cursor.yPx,
       )
     },
   },

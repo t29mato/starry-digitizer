@@ -64,7 +64,7 @@ export default defineComponent({
   components: {},
   data() {
     return {
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
@@ -93,8 +93,8 @@ export default defineComponent({
     activateDataset(id: number) {
       this.setActiveDataset(id)
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
-      this.canvas.clearMask()
-      this.canvas.maskMode = -1
+      this.canvasHandler.clearMask()
+      this.canvasHandler.maskMode = -1
     },
   },
 })

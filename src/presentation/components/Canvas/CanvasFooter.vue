@@ -48,7 +48,7 @@ export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
     }
   },
@@ -59,15 +59,15 @@ export default defineComponent({
     ...mapActions(useDatasetsStore, ['clearPlots', 'clearActivePlots']),
     clearAxes() {
       this.axes.clearAxisCoords()
-      this.canvas.setManualMode(-1)
+      this.canvasHandler.setManualMode(-1)
     },
     clearXAxis() {
       this.axes.clearXAxisCoords()
-      this.canvas.setManualMode(-1)
+      this.canvasHandler.setManualMode(-1)
     },
     clearYAxis() {
       this.axes.clearAxisCoords()
-      this.canvas.setManualMode(-1)
+      this.canvasHandler.setManualMode(-1)
     },
     handleOnClickClearPlots() {
       this.clearPlots()

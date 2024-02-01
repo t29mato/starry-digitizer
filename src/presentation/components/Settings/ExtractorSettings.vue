@@ -2,7 +2,7 @@
   <div>
     <h4 class="mb-2">Manual Extraction</h4>
     <v-btn-toggle
-      :model-value="canvas.manualMode"
+      :model-value="canvasHandler.manualMode"
       @update:model-value="changeManualMode"
       density="compact"
       class="mb-2"
@@ -112,7 +112,7 @@ export default defineComponent({
       interpolator: Interpolator.getInstance(),
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
-      canvas: CanvasHandler.getInstance(),
+      canvasHandler: CanvasHandler.getInstance(),
       axes: AxisRepositoryManager.getInstance(),
       isExtracting: false,
     }
@@ -146,10 +146,10 @@ export default defineComponent({
     changeManualMode(value: any) {
       this.inactivatePlots()
       if (value === undefined) {
-        this.canvas.setManualMode(-1)
+        this.canvasHandler.setManualMode(-1)
         return
       }
-      this.canvas.setManualMode(value)
+      this.canvasHandler.setManualMode(value)
     },
     setExtractStrategy(strategy: any) {
       switch (strategy) {
@@ -164,7 +164,7 @@ export default defineComponent({
       this.isExtracting = true
       this.axes.inactivateAxis()
       try {
-        this.setPlots(this.extractor.execute(this.canvas))
+        this.setPlots(this.extractor.execute(this.canvasHandler))
         this.sortPlots()
       } catch (e) {
         console.error('failed to extractPlots', { cause: e })
