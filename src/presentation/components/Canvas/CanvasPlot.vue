@@ -24,7 +24,7 @@ import { defineComponent } from 'vue'
 
 import { Plot } from '@/domain/models/dataset/datasetInterface'
 
-import { mapState, mapActions } from 'pinia'
+import { mapState } from 'pinia'
 import { useStyleStore } from '@/store/style'
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
@@ -154,4 +154,3 @@ export default defineComponent({
   },
 })
 </script>
-@/domain/models/dataset/datasetInterface

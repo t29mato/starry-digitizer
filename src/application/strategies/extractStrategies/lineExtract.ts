@@ -142,4 +142,12 @@ export default class LineExtract
     }
     return coords
   }
+
+  setDyPx(dyPx: number) {
+    this.dyPx = dyPx
+  }
+
+  setDxPx(dxPx: number) {
+    this.dxPx = dxPx
+  }
 }
