@@ -202,7 +202,6 @@ export class Interpolator implements InterpolatorInterface {
   }
 
   public clearPreview(): void {
-    //TODO: pinia storeとドメインリポジトリを分けて、application serviceがpiniaに依存しないようにする
     const datasets = DatasetRepositoryManager.getInstance()
 
     const activeDataset = datasets.activeDataset
