@@ -40,7 +40,6 @@ import { DatasetManager } from './DatasetManager'
 import { version } from '../../../package.json'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'
 import DataTable from '@/presentation/components/Export/DataTable.vue'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
 
 export default defineComponent({
   components: {
