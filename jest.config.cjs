@@ -14,4 +14,18 @@ module.exports = {
     '^.+\\.(t|j)s?$': 'babel-jest',
     '^.+\\.vue$': '@vue/vue3-jest',
   },
+  collectCoverageFrom: [
+    'src/domain/**/*.ts',
+    'src/application/**/*.ts',
+
+    //FIXME: jest emits parse error when evaluating vue file
+    // 'src/presentation/**/*.{vue,ts}',
+    'src/presentation/**/*.ts',
+
+    //exclude interfaces
+    '!src/**/*Interface.ts',
+
+    //exclude other unnecassary files
+    '!src/presentation/components/**/*.ts',
+  ],
 }
