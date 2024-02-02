@@ -22,10 +22,10 @@ module.exports = {
     // 'src/presentation/**/*.{vue,ts}',
     'src/presentation/**/*.ts',
 
-    //exclude interfaces
+    //INFO: exclude interfaces
     '!src/**/*Interface.ts',
 
-    //exclude other unnecassary files
-    '!src/presentation/components/**/*.ts',
+    //INFO: index.ts in the components folder are just the collections of component modules
+    '!src/presentation/components/**/index.ts',
   ],
 }
