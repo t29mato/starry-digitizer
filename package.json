@@ -24,7 +24,9 @@
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "test": "jest",
-    "coverage": "jest --coverage && browser-sync start --server \"coverage/lcov-report\"",
+    "test:coverage": "jest --coverage",
+    "coverage:report": "browser-sync start --server \"coverage/lcov-report\"",
+    "coverage": "npm run test:coverage && npm run coverage:report",
     "lint": "vue-tsc"
   },
   "dependencies": {
