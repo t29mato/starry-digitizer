@@ -71,9 +71,6 @@ export default defineComponent({
       required: false,
     },
   },
-  mounted() {
-    console.log(AxisRepositoryManager.getInstance())
-  },
   computed: {
     appVerAndBuildInfo() {
       const appVer: string = this.isProd ? `v${this.version}` : ''
