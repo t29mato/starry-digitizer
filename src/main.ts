@@ -17,14 +17,10 @@ import * as directives from 'vuetify/directives'
 import colors from 'vuetify/lib/util/colors'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
-//Pinia
-import { createPinia } from 'pinia'
-import { Interpolator } from './application/services/interpolator'
+import { Interpolator } from './application/services/interpolator/interpolator'
 
 //INFO: initialize application services
 Interpolator.getInstance().initialize()
-
-const pinia = createPinia()
 
 const vuetify = createVuetify({
   components,
@@ -49,7 +45,7 @@ const vuetify = createVuetify({
   },
 })
 
-const app = createApp(App).use(pinia).use(vuetify)
+const app = createApp(App).use(vuetify)
 app.mount('#app')
 
 if (import.meta.env.MODE === 'production') {
