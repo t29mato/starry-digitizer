@@ -18,7 +18,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "ssg-build": "cross-env VITE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vite build",
+    "app-prod-build": "cross-env VITE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vite build",
+    "app-dev-build": "cross-env VITE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vite build --mode development",
     "lib-build": "vite build -c 'vite.library.config.js'",
     "preview": "vite preview",
     "cypress:open": "cypress open",

@@ -53,7 +53,7 @@ export default defineComponent({
         url: 'https://starrydigitizer.readthedocs.io/',
       },
     ],
-    isProd: process.env.NODE_ENV === 'production',
+    isProd: import.meta.env.MODE === 'production',
   }),
   methods: {
     importPlots(plots: any) {
