@@ -7,7 +7,7 @@
       >
       <v-btn
         size="x-small"
-        @click="datasets.popDataset"
+        @click="handleOnClickPopDatasetButton"
         :disabled="datasets.datasets.length === 1"
         class="ml-2"
         ><v-icon>mdi-minus</v-icon></v-btn
@@ -90,6 +90,9 @@ export default defineComponent({
     },
     handleOnClickAddDatasetButton() {
       this.datasets.createNewDataset()
+    },
+    handleOnClickPopDatasetButton() {
+      this.datasets.popDataset()
     },
   },
 })
