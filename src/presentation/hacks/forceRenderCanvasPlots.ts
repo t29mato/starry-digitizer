@@ -2,8 +2,10 @@ import { DatasetRepositoryInterface } from '@/domain/repositories/datasetReposit
 
 //🔥HACK!! A workaround for rare cases where canvas plots are not redrawn. Do not use unless it is absolutely unavoidable
 export const forceRenderCanvasPlots = (
-  datasets: DatasetRepositoryInterface,
+  datasetRepository: DatasetRepositoryInterface,
 ) => {
-  datasets.activeDataset.addPlot(9999, 9999)
-  datasets.activeDataset.clearPlot(datasets.activeDataset.lastPlotId)
+  datasetRepository.activeDataset.addPlot(9999, 9999)
+  datasetRepository.activeDataset.clearPlot(
+    datasetRepository.activeDataset.lastPlotId,
+  )
 }

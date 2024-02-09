@@ -56,7 +56,7 @@ export default defineComponent({
     return {
       fontSize: 14,
       canvasHandler: CanvasHandler.getInstance(),
-      axes: axisRepository,
+      axisRepository,
       axisSizePx: STYLE.axisSizePx,
     }
   },
@@ -108,14 +108,14 @@ export default defineComponent({
     },
     isActive(): boolean {
       if (
-        this.axes.pointMode === 0 &&
-        this.axes.activeAxisName === 'x1' &&
+        this.axisRepository.pointMode === 0 &&
+        this.axisRepository.activeAxisName === 'x1' &&
         this.axis.name === 'y1'
       ) {
         return true
       }
 
-      return this.axes.activeAxisName === this.axis.name
+      return this.axisRepository.activeAxisName === this.axis.name
     },
   },
   methods: {},

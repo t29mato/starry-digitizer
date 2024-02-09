@@ -34,7 +34,7 @@ export default defineComponent({
     return {
       interpolator: Interpolator.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      datasets: datasetRepository,
+      datasetRepository,
       plotOpacity: STYLE.plotOpacity,
       tempPlotOpacity: STYLE.tempPlotOpacity,
       plotSizePx: STYLE.plotSizePx,
@@ -135,13 +135,13 @@ export default defineComponent({
           return
         case 1:
           if (event.ctrlKey || event.metaKey) {
-            this.datasets.activeDataset.toggleActivatedPlot(this.plot.id)
+            this.datasetRepository.activeDataset.toggleActivatedPlot(this.plot.id)
             return
           }
-          this.datasets.activeDataset.switchActivatedPlot(this.plot.id)
+          this.datasetRepository.activeDataset.switchActivatedPlot(this.plot.id)
           return
         case 2:
-          this.datasets.activeDataset.clearPlot(this.plot.id)
+          this.datasetRepository.activeDataset.clearPlot(this.plot.id)
 
           return
         default:

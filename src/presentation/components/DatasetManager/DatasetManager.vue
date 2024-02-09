@@ -8,7 +8,7 @@
       <v-btn
         size="x-small"
         @click="handleOnClickPopDatasetButton"
-        :disabled="datasets.datasets.length === 1"
+        :disabled="datasetRepository.datasets.length === 1"
         class="ml-2"
         ><v-icon>mdi-minus</v-icon></v-btn
       >
@@ -20,12 +20,14 @@
       style="outline: solid 1px gray"
     >
       <v-list-item
-        v-for="dataset in datasets.datasets"
+        v-for="dataset in datasetRepository.datasets"
         :key="dataset.id"
         class="pl-2"
         link
         @click="activateDataset(dataset.id)"
-        :class="dataset.id === datasets.activeDataset.id && 'blue lighten-4'"
+        :class="
+          dataset.id === datasetRepository.activeDataset.id && 'blue lighten-4'
+        "
       >
         <v-row>
           <v-col cols="10">
@@ -64,7 +66,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
-      datasets: datasetRepository,
+      datasetRepository,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
@@ -83,16 +85,16 @@ export default defineComponent({
   },
   methods: {
     activateDataset(id: number) {
-      this.datasets.setActiveDataset(id)
+      this.datasetRepository.setActiveDataset(id)
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
       this.canvasHandler.clearMask()
       this.canvasHandler.maskMode = -1
     },
     handleOnClickAddDatasetButton() {
-      this.datasets.createNewDataset()
+      this.datasetRepository.createNewDataset()
     },
     handleOnClickPopDatasetButton() {
-      this.datasets.popDataset()
+      this.datasetRepository.popDataset()
     },
   },
 })

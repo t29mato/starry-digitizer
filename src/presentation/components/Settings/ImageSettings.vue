@@ -23,8 +23,8 @@ export default defineComponent({
     return {
       extractor: Extractor.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      axes: axisRepository,
-      datasets: datasetRepository,
+      axisRepository,
+      datasetRepository,
     }
   },
   mounted() {
@@ -50,8 +50,8 @@ export default defineComponent({
         this.canvasHandler.drawFitSizeImage()
         this.extractor.setSwatches(this.canvasHandler.colorSwatches)
         this.canvasHandler.setUploadImageUrl(fr.result)
-        this.axes.clearAxisCoords()
-        this.datasets.activeDataset.clearPlots()
+        this.axisRepository.clearAxisCoords()
+        this.datasetRepository.activeDataset.clearPlots()
       } catch (e) {
         console.error('failed to update image', { cause: e })
       }
@@ -115,4 +115,3 @@ export default defineComponent({
   },
 })
 </script>
-@/instanceStore/repositoryStore

@@ -44,8 +44,8 @@ export default defineComponent({
   },
   computed: {
     tableData() {
-      if (this.datasets.activeDataset.plots.length > 0) {
-        return this.datasets.activeDataset.plots.map((plot: Plot) => {
+      if (this.datasetRepository.activeDataset.plots.length > 0) {
+        return this.datasetRepository.activeDataset.plots.map((plot: Plot) => {
           // @ts-ignore calculateXY methods is defined apparently
           const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
           return {
@@ -60,8 +60,8 @@ export default defineComponent({
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
-      axes: axisRepository,
-      datasets: datasetRepository,
+      axisRepository,
+      datasetRepository,
       key: 0,
       activeColor: colors.green.lighten5,
       hotTableSettings: {
@@ -78,9 +78,9 @@ export default defineComponent({
   methods: {
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxesCalculator(this.axes, {
-        x: this.axes.xIsLog,
-        y: this.axes.yIsLog,
+      const calculator = new XYAxesCalculator(this.axisRepository, {
+        x: this.axisRepository.xIsLog,
+        y: this.axisRepository.yIsLog,
       })
       return calculator.calculateXYValues(x, y)
     },

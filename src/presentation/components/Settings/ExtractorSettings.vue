@@ -113,8 +113,8 @@ export default defineComponent({
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      axes: axisRepository,
-      datasets: datasetRepository,
+      axisRepository,
+      datasetRepository,
       isExtracting: false,
     }
   },
@@ -135,7 +135,7 @@ export default defineComponent({
   },
   methods: {
     changeManualMode(value: any) {
-      this.datasets.activeDataset.inactivatePlots()
+      this.datasetRepository.activeDataset.inactivatePlots()
       if (value === undefined) {
         this.canvasHandler.setManualMode(-1)
         return
@@ -153,10 +153,10 @@ export default defineComponent({
     },
     async extractPlots() {
       this.isExtracting = true
-      this.axes.inactivateAxis()
+      this.axisRepository.inactivateAxis()
       try {
-        this.datasets.setPlots(this.extractor.execute(this.canvasHandler))
-        this.datasets.sortPlots()
+        this.datasetRepository.setPlots(this.extractor.execute(this.canvasHandler))
+        this.datasetRepository.sortPlots()
       } catch (e) {
         console.error('failed to extractPlots', { cause: e })
       } finally {
@@ -174,18 +174,18 @@ export default defineComponent({
       }
 
       //HACK: Since tempPlots are not drawn, force rendering as a temporary measure. Fundamental solution required
-      forceRenderCanvasPlots(this.datasets)
+      forceRenderCanvasPlots(this.datasetRepository)
 
       addLocalStorageData('isInterpolatorActive', String(isActive))
     },
     handleOnConfirmInterpolation() {
-      if (this.datasets.activeDataset.manuallyAddedPlotIds.length < 2) {
+      if (this.datasetRepository.activeDataset.manuallyAddedPlotIds.length < 2) {
         alert(
           'Plot 2 or more points by clicking the graph image to execute interpolation.',
         )
         return
       }
-      const activeDataset = this.datasets.activeDataset
+      const activeDataset = this.datasetRepository.activeDataset
 
       activeDataset.tempPlots.forEach((tempPlot) => {
         activeDataset.moveTempPlotToPlot(tempPlot.id)
@@ -194,7 +194,7 @@ export default defineComponent({
         activeDataset.clearPlot(plotId)
       })
 
-      this.datasets.activeDataset.switchActivatedPlot(activeDataset.lastPlotId)
+      this.datasetRepository.activeDataset.switchActivatedPlot(activeDataset.lastPlotId)
 
       this.interpolator.clearPreview()
     },
@@ -203,7 +203,7 @@ export default defineComponent({
       this.interpolator.updatePreview()
 
       //HACK: Since tempPlots are not drawn, force rendering as a temporary measure. Fundamental solution required
-      forceRenderCanvasPlots(this.datasets)
+      forceRenderCanvasPlots(this.datasetRepository)
     },
   },
 })

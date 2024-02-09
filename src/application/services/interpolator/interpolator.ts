@@ -5,7 +5,7 @@ import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
 import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
 import { getPlotsTotalDistance } from '../../utils/pointsUtils'
 import { CanvasHandler } from '../canvasHandler/canvasHandler'
-import { datasetRepository } from '@/instanceStore/repositoryStore'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export class Interpolator implements InterpolatorInterface {
   private static instance: InterpolatorInterface
@@ -174,9 +174,7 @@ export class Interpolator implements InterpolatorInterface {
   }
 
   public updatePreview(): void {
-    const datasets = datasetRepository
-
-    const activeDataset = datasets.activeDataset
+    const activeDataset = datasetRepository.activeDataset
     const anchorPlots = activeDataset.plots.filter((plot: Plot) =>
       activeDataset.manuallyAddedPlotIds.includes(plot.id),
     )
@@ -202,9 +200,7 @@ export class Interpolator implements InterpolatorInterface {
   }
 
   public clearPreview(): void {
-    const datasets = datasetRepository
-
-    const activeDataset = datasets.activeDataset
+    const activeDataset = datasetRepository.activeDataset
 
     activeDataset.tempPlots.forEach((tempPlot) => {
       activeDataset.clearTempPlot(tempPlot.id)
