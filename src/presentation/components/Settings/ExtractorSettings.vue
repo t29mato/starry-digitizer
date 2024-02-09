@@ -95,8 +95,8 @@ import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 import { forceRenderCanvasPlots } from '@/presentation/hacks/forceRenderCanvasPlots'
 
@@ -113,8 +113,8 @@ export default defineComponent({
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axes: axisRepository,
+      datasets: datasetRepository,
       isExtracting: false,
     }
   },

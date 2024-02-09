@@ -5,12 +5,11 @@ let firstInstance: DatasetRepositoryInterface
 
 describe('DatasetRepositoryManager instance returning', () => {
   beforeEach(() => {
-    firstInstance = DatasetRepositoryManager.getInstance()
+    firstInstance = datasetRepository
   })
 
   test('The instance returned by getInstance() is the same as firstInstance', () => {
-    const secondeInstance: DatasetRepositoryInterface =
-      DatasetRepositoryManager.getInstance()
+    const secondeInstance: DatasetRepositoryInterface = datasetRepository
 
     expect(secondeInstance === firstInstance).toBe(true)
   })

@@ -57,14 +57,14 @@
 import { defineComponent } from 'vue'
 
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   components: {},
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      datasets: datasetRepository,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',

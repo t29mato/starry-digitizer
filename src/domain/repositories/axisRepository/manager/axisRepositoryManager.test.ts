@@ -5,12 +5,11 @@ let firstInstance: AxisRepositoryInterface
 
 describe('AxisRepositoryManager instance returning', () => {
   beforeEach(() => {
-    firstInstance = AxisRepositoryManager.getInstance()
+    firstInstance = axisRepository
   })
 
   test('The instance returned by getInstance() is the same as firstInstance', () => {
-    const secondeInstance: AxisRepositoryInterface =
-      AxisRepositoryManager.getInstance()
+    const secondeInstance: AxisRepositoryInterface = axisRepository
 
     expect(secondeInstance === firstInstance).toBe(true)
   })

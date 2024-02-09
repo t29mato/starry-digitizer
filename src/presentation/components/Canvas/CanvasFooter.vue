@@ -39,16 +39,16 @@ import { defineComponent } from 'vue'
 
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   data() {
     return {
       interpolator: Interpolator.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axes: axisRepository,
+      datasets: datasetRepository,
     }
   },
   methods: {

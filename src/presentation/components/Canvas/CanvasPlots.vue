@@ -29,7 +29,7 @@ import CanvasPlot from '@/presentation/components/Canvas/CanvasPlot.vue'
 import { defineComponent } from 'vue'
 
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   components: {
@@ -38,7 +38,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      datasets: datasetRepository,
     }
   },
 

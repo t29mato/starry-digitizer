@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
 import CanvasAxis from '@/presentation/components/Canvas/CanvasAxis.vue'
 
 import { defineComponent } from 'vue'
@@ -20,7 +20,7 @@ export default defineComponent({
   },
   data() {
     return {
-      axes: AxisRepositoryManager.getInstance(),
+      axes: axisRepository,
     }
   },
 })

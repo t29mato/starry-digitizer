@@ -177,7 +177,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   computed: {
@@ -205,7 +205,7 @@ export default defineComponent({
   },
   data() {
     return {
-      axes: AxisRepositoryManager.getInstance(),
+      axes: axisRepository,
       x1: '0',
       x2: '1',
       y1: '0',
@@ -322,3 +322,4 @@ export default defineComponent({
   }
 }
 </style>
+@/instanceStore/repositoryStore

@@ -15,16 +15,16 @@ import { defineComponent } from 'vue'
 
 import { Extractor } from '@/application/services/extractor/extractor'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   data() {
     return {
       extractor: Extractor.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axes: axisRepository,
+      datasets: datasetRepository,
     }
   },
   mounted() {
@@ -115,3 +115,4 @@ export default defineComponent({
   },
 })
 </script>
+@/instanceStore/repositoryStore

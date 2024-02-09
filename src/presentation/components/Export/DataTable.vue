@@ -31,8 +31,8 @@ import { registerAllModules } from 'handsontable/registry'
 import { Plot } from '@/domain/models/dataset/datasetInterface'
 
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 registerAllModules()
 
@@ -60,8 +60,8 @@ export default defineComponent({
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axes: axisRepository,
+      datasets: datasetRepository,
       key: 0,
       activeColor: colors.green.lighten5,
       hotTableSettings: {

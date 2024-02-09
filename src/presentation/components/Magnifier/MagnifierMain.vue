@@ -64,8 +64,8 @@ import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
 
 import { Magnifier } from '@/application/services/magnifier/magnifier'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   components: {
@@ -84,8 +84,8 @@ export default defineComponent({
       shouldShowSettingsDialog: false,
       magnifier: Magnifier.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axes: axisRepository,
+      datasets: datasetRepository,
     }
   },
   computed: {

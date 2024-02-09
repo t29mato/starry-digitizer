@@ -50,8 +50,8 @@ import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
 
 const guideLineBaseStyles: CSSProperties = {
@@ -64,8 +64,8 @@ export default defineComponent({
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axes: axisRepository,
+      datasets: datasetRepository,
       axisSizePx: STYLE.axisSizePx,
     }
   },
@@ -181,3 +181,4 @@ export default defineComponent({
   },
 })
 </script>
+@/instanceStore/repositoryStore

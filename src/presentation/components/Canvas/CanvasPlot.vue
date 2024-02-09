@@ -26,7 +26,7 @@ import { Plot } from '@/domain/models/dataset/datasetInterface'
 
 import { Interpolator } from '@/application/services/interpolator/interpolator'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
@@ -34,7 +34,7 @@ export default defineComponent({
     return {
       interpolator: Interpolator.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      datasets: datasetRepository,
       plotOpacity: STYLE.plotOpacity,
       tempPlotOpacity: STYLE.tempPlotOpacity,
       plotSizePx: STYLE.plotSizePx,
