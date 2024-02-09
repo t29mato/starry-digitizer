@@ -31,8 +31,8 @@ import { registerAllModules } from 'handsontable/registry'
 import { Plot } from '@/domain/models/dataset/datasetInterface'
 
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 registerAllModules()
 
@@ -44,8 +44,8 @@ export default defineComponent({
   },
   computed: {
     tableData() {
-      if (this.datasets.activeDataset.plots.length > 0) {
-        return this.datasets.activeDataset.plots.map((plot: Plot) => {
+      if (this.datasetRepository.activeDataset.plots.length > 0) {
+        return this.datasetRepository.activeDataset.plots.map((plot: Plot) => {
           // @ts-ignore calculateXY methods is defined apparently
           const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
           return {
@@ -60,8 +60,8 @@ export default defineComponent({
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axisRepository,
+      datasetRepository,
       key: 0,
       activeColor: colors.green.lighten5,
       hotTableSettings: {
@@ -78,9 +78,9 @@ export default defineComponent({
   methods: {
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxesCalculator(this.axes, {
-        x: this.axes.xIsLog,
-        y: this.axes.yIsLog,
+      const calculator = new XYAxesCalculator(this.axisRepository, {
+        x: this.axisRepository.xIsLog,
+        y: this.axisRepository.yIsLog,
       })
       return calculator.calculateXYValues(x, y)
     },

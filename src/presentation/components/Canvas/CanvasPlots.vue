@@ -1,17 +1,23 @@
 <template>
   <div>
     <canvas-plot
-      v-for="plot in datasets.activeDataset.scaledPlots(canvasHandler.scale)"
+      v-for="plot in datasetRepository.activeDataset.scaledPlots(
+        canvasHandler.scale,
+      )"
       :key="plot.id"
       :plot="plot"
-      :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
-      :isVisible="datasets.activeDataset.visiblePlotIds.includes(plot.id)"
+      :isActive="
+        datasetRepository.activeDataset.activePlotIds.includes(plot.id)
+      "
+      :isVisible="
+        datasetRepository.activeDataset.visiblePlotIds.includes(plot.id)
+      "
       :isManuallyAdded="
-        datasets.activeDataset.manuallyAddedPlotIds.includes(plot.id)
+        datasetRepository.activeDataset.manuallyAddedPlotIds.includes(plot.id)
       "
     ></canvas-plot>
     <canvas-plot
-      v-for="(tempPlot, i) in datasets.activeDataset.scaledTempPlots(
+      v-for="(tempPlot, i) in datasetRepository.activeDataset.scaledTempPlots(
         canvasHandler.scale,
       )"
       :key="i"
@@ -29,7 +35,7 @@ import CanvasPlot from '@/presentation/components/Canvas/CanvasPlot.vue'
 import { defineComponent } from 'vue'
 
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   components: {
@@ -38,7 +44,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      datasetRepository,
     }
   },
 

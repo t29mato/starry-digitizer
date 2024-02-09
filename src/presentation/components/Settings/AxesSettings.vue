@@ -1,7 +1,7 @@
 <template>
   <div>
     <h4>XY Axes</h4>
-    <table class="c__axes-settings__table">
+    <table class="c__axisRepository-settings__table">
       <tbody>
         <tr>
           <td class="pl-0 pr-1">X</td>
@@ -14,7 +14,10 @@
               label="x1"
               density="compact"
             >
-              <div class="c__axes-settings__log-adjuster" v-if="xIsLog">
+              <div
+                class="c__axisRepository-settings__log-adjuster"
+                v-if="xIsLog"
+              >
                 <button
                   size="x-small"
                   @click="multiplyByTenX1"
@@ -43,7 +46,10 @@
               label="x2"
               density="compact"
             >
-              <div class="c__axes-settings__log-adjuster" v-if="xIsLog">
+              <div
+                class="c__axisRepository-settings__log-adjuster"
+                v-if="xIsLog"
+              >
                 <button
                   id="multiply-by-ten-x2"
                   size="x-small"
@@ -71,7 +77,7 @@
               hide-details
               density="compact"
             ></v-checkbox>
-            <span class="c__axes-settings__hint">Log</span>
+            <span class="c__axisRepository-settings__hint">Log</span>
           </td>
         </tr>
         <tr>
@@ -85,7 +91,10 @@
               label="y1"
               density="compact"
             >
-              <div class="c__axes-settings__log-adjuster" v-if="yIsLog">
+              <div
+                class="c__axisRepository-settings__log-adjuster"
+                v-if="yIsLog"
+              >
                 <button
                   id="multiply-by-ten-y1"
                   size="x-small"
@@ -114,7 +123,10 @@
               label="y2"
               density="compact"
             >
-              <div class="c__axes-settings__log-adjuster" v-if="yIsLog">
+              <div
+                class="c__axisRepository-settings__log-adjuster"
+                v-if="yIsLog"
+              >
                 <button
                   id="multiply-by-ten-y2"
                   size="x-small"
@@ -142,18 +154,18 @@
               density="compact"
               hide-details
             ></v-checkbox>
-            <span class="c__axes-settings__hint">Log</span>
+            <span class="c__axisRepository-settings__hint">Log</span>
           </td>
         </tr>
       </tbody>
     </table>
     <div class="mb-5">
-      <h5 class="c__axes-settings__point-mode__label">
+      <h5 class="c__axisRepository-settings__point-mode__label">
         Define the axes by the coordinates of:
       </h5>
       <v-radio-group
         row
-        v-model.number="axes.pointMode"
+        v-model.number="axisRepository.pointMode"
         inline
         color="primary"
         hide-details
@@ -162,8 +174,8 @@
         <v-radio label="4 Points" :value="1"></v-radio>
       </v-radio-group>
       <v-checkbox
-        v-if="axes.pointMode === 1"
-        v-model="axes.considerGraphTilt"
+        v-if="axisRepository.pointMode === 1"
+        v-model="axisRepository.considerGraphTilt"
         label="Consider graph tilt"
         density="compact"
         color="primary"
@@ -177,12 +189,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   computed: {
     errorMessage(): string {
-      if (this.axes.xIsLog) {
+      if (this.axisRepository.xIsLog) {
         if (this.x1 === '0' || this.x2 === '0') {
           return 'x1 or x2 should not be 0'
         }
@@ -191,7 +203,7 @@ export default defineComponent({
           return 'x1 and x2 should not be same value'
         }
       }
-      if (this.axes.yIsLog) {
+      if (this.axisRepository.yIsLog) {
         if (this.y1 === '0' || this.y2 === '0') {
           return 'y1 or y2 should not be 0'
         }
@@ -205,7 +217,7 @@ export default defineComponent({
   },
   data() {
     return {
-      axes: AxisRepositoryManager.getInstance(),
+      axisRepository,
       x1: '0',
       x2: '1',
       y1: '0',
@@ -254,31 +266,31 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.x1 = String(this.axes.x1.value)
-    this.x2 = String(this.axes.x2.value)
-    this.y1 = String(this.axes.y1.value)
-    this.y2 = String(this.axes.y2.value)
-    this.xIsLog = this.axes.xIsLog
-    this.yIsLog = this.axes.yIsLog
+    this.x1 = String(this.axisRepository.x1.value)
+    this.x2 = String(this.axisRepository.x2.value)
+    this.y1 = String(this.axisRepository.y1.value)
+    this.y2 = String(this.axisRepository.y2.value)
+    this.xIsLog = this.axisRepository.xIsLog
+    this.yIsLog = this.axisRepository.yIsLog
   },
   watch: {
     xIsLog(value: boolean) {
-      this.axes.setXIsLog(value)
+      this.axisRepository.setXIsLog(value)
     },
     yIsLog(value: boolean) {
-      this.axes.setYIsLog(value)
+      this.axisRepository.setYIsLog(value)
     },
     x1(value: string) {
-      this.axes.setX1Value(parseFloat(value))
+      this.axisRepository.setX1Value(parseFloat(value))
     },
     x2(value: string) {
-      this.axes.setX2Value(parseFloat(value))
+      this.axisRepository.setX2Value(parseFloat(value))
     },
     y1(value: string) {
-      this.axes.setY1Value(parseFloat(value))
+      this.axisRepository.setY1Value(parseFloat(value))
     },
     y2(value: string) {
-      this.axes.setY2Value(parseFloat(value))
+      this.axisRepository.setY2Value(parseFloat(value))
     },
   },
 })
@@ -286,7 +298,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .c {
-  &__axes-settings {
+  &__axisRepository-settings {
     &__table {
       margin-bottom: 20px;
     }

@@ -13,22 +13,33 @@
         :toggleSettingsDialog="toggleSettingsDialog"
       ></magnifier-settings-btn>
       <magnifier-image></magnifier-image>
-      <div v-for="plot in datasets.activeDataset.plots" :key="plot.id">
+      <div v-for="plot in datasetRepository.activeDataset.plots" :key="plot.id">
         <magnifier-plots
           :plot="plot"
           :magnifierSize="magnifier.sizePx"
-          :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
-          :isVisible="datasets.activeDataset.visiblePlotIds.includes(plot.id)"
+          :isActive="
+            datasetRepository.activeDataset.activePlotIds.includes(plot.id)
+          "
+          :isVisible="
+            datasetRepository.activeDataset.visiblePlotIds.includes(plot.id)
+          "
           :isManuallyAdded="
-            datasets.activeDataset.manuallyAddedPlotIds.includes(plot.id)
+            datasetRepository.activeDataset.manuallyAddedPlotIds.includes(
+              plot.id,
+            )
           "
         ></magnifier-plots>
       </div>
-      <div v-for="plot in datasets.activeDataset.tempPlots" :key="plot.id">
+      <div
+        v-for="plot in datasetRepository.activeDataset.tempPlots"
+        :key="plot.id"
+      >
         <magnifier-plots
           :plot="plot"
           :magnifierSize="magnifier.sizePx"
-          :isActive="datasets.activeDataset.activePlotIds.includes(plot.id)"
+          :isActive="
+            datasetRepository.activeDataset.activePlotIds.includes(plot.id)
+          "
           :isVisible="true"
           :isTemporary="true"
           :isManuallyAdded="false"
@@ -64,8 +75,8 @@ import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
 
 import { Magnifier } from '@/application/services/magnifier/magnifier'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   components: {
@@ -84,8 +95,8 @@ export default defineComponent({
       shouldShowSettingsDialog: false,
       magnifier: Magnifier.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axisRepository,
+      datasetRepository,
     }
   },
   computed: {
@@ -107,9 +118,9 @@ export default defineComponent({
       yV: string
     } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxesCalculator(this.axes, {
-        x: this.axes.xIsLog,
-        y: this.axes.yIsLog,
+      const calculator = new XYAxesCalculator(this.axisRepository, {
+        x: this.axisRepository.xIsLog,
+        y: this.axisRepository.yIsLog,
       })
       return calculator.calculateXYValues(
         this.canvasHandler.cursor.xPx,

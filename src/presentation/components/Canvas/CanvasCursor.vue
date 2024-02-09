@@ -2,7 +2,12 @@
   <div>
     <!-- INFO: right label -->
     <div
-      v-if="!(axes.isAdjusting || datasets.activeDataset.plotsAreAdjusting)"
+      v-if="
+        !(
+          axisRepository.isAdjusting ||
+          datasetRepository.activeDataset.plotsAreAdjusting
+        )
+      "
       :style="{
         position: 'absolute',
         top: `${canvasHandler.scaledCursor.yPx - axisCrossCursorPx}px`,
@@ -14,7 +19,7 @@
     </div>
     <!-- INFO: bottom label -->
     <div
-      v-if="!axes.isAdjusting"
+      v-if="!axisRepository.isAdjusting"
       :style="{
         position: 'absolute',
         top: `${canvasHandler.scaledCursor.yPx + axisCrossCursorPx / 2}px`,
@@ -26,7 +31,7 @@
     </div>
     <!-- INFO: left label -->
     <div
-      v-if="!axes.isAdjusting"
+      v-if="!axisRepository.isAdjusting"
       :style="{
         position: 'absolute',
         top: `${canvasHandler.scaledCursor.yPx - axisCrossCursorPx}px`,
@@ -50,8 +55,8 @@ import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
 
 const guideLineBaseStyles: CSSProperties = {
@@ -64,8 +69,8 @@ export default defineComponent({
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axisRepository,
+      datasetRepository,
       axisSizePx: STYLE.axisSizePx,
     }
   },
@@ -96,22 +101,25 @@ export default defineComponent({
       return ''
     },
     bottomLabel(): string {
-      if (this.axes.nextAxis?.name === 'x2y2') {
+      if (this.axisRepository.nextAxis?.name === 'x2y2') {
         return "x2'"
       }
-      if (this.axes.nextAxis?.name.includes('x')) {
-        return this.axes.nextAxis.name
+      if (this.axisRepository.nextAxis?.name.includes('x')) {
+        return this.axisRepository.nextAxis.name
       }
       return ''
     },
     leftLabel(): string {
-      if (this.axes.nextAxis?.name === 'x2y2') {
+      if (this.axisRepository.nextAxis?.name === 'x2y2') {
         return "y2'"
       }
-      if (this.axes.nextAxis?.name.includes('y')) {
-        return this.axes.nextAxis.name
+      if (this.axisRepository.nextAxis?.name.includes('y')) {
+        return this.axisRepository.nextAxis.name
       }
-      if (this.axes.nextAxis?.name === 'x1' && this.axes.pointMode === 0) {
+      if (
+        this.axisRepository.nextAxis?.name === 'x1' &&
+        this.axisRepository.pointMode === 0
+      ) {
         return 'y1'
       }
 
@@ -119,7 +127,10 @@ export default defineComponent({
     },
     isCursorGuideLinesActive(): boolean {
       //INFO: 軸定義後でプロットのいずれのモードでもないときは表示しない
-      if (this.canvasHandler.manualMode === -1 && this.axes.y2.coordIsFilled) {
+      if (
+        this.canvasHandler.manualMode === -1 &&
+        this.axisRepository.y2.coordIsFilled
+      ) {
         return false
       }
 

@@ -15,7 +15,7 @@
         @click="handleOnClickResetScaleButton"
         >100%</v-btn
       >
-      <v-btn size="small" class="ml-2" @click="canvasHandler.drawFitSizeImage"
+      <v-btn size="small" class="ml-2" @click="handleOnClickFitButton"
         >Fit</v-btn
       >
     </div>
@@ -53,6 +53,9 @@ export default defineComponent({
     handleOnClickResetScaleButton() {
       this.canvasHandler.drawOriginalSizeImage()
       this.interpolator.resizeCanvas()
+    },
+    handleOnClickFitButton() {
+      this.canvasHandler.drawFitSizeImage()
     },
   },
 })

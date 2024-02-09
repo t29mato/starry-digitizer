@@ -12,7 +12,7 @@ import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
 
 const axesGuideCommonStyle: CSSProperties = {
   position: 'absolute',
@@ -25,7 +25,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
+      axisRepository,
     }
   },
   methods: {
@@ -40,19 +40,20 @@ export default defineComponent({
   },
   computed: {
     isActive(): boolean {
-      return this.axes.pointMode === 0
+      return this.axisRepository.pointMode === 0
     },
     isX1Y1LineVisible(): boolean {
       return (
-        this.axes.x1.coordIsFilled || this.canvasHandler.scaledCursor.xPx !== 0
+        this.axisRepository.x1.coordIsFilled ||
+        this.canvasHandler.scaledCursor.xPx !== 0
       )
     },
     isX2Y2LineVisible(): boolean {
-      return this.axes.x2y2.coordIsFilled
+      return this.axisRepository.x2y2.coordIsFilled
     },
     X1Y1HorizontalLineStyle() {
-      const styleTopNum = this.axes.x1.coordIsFilled
-        ? this.axes.x1.coord.yPx * this.canvasHandler.scale
+      const styleTopNum = this.axisRepository.x1.coordIsFilled
+        ? this.axisRepository.x1.coord.yPx * this.canvasHandler.scale
         : this.canvasHandler.scaledCursor.yPx
       return {
         ...axesGuideCommonStyle,
@@ -65,8 +66,8 @@ export default defineComponent({
     },
     X1Y1VerticalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
-      const styleLeftNum = this.axes.x1.coordIsFilled
-        ? this.axes.x1.coord.xPx * this.canvasHandler.scale
+      const styleLeftNum = this.axisRepository.x1.coordIsFilled
+        ? this.axisRepository.x1.coord.xPx * this.canvasHandler.scale
         : this.canvasHandler.scaledCursor.xPx
       return {
         ...axesGuideCommonStyle,
@@ -80,8 +81,8 @@ export default defineComponent({
 
     X2Y2HorizontalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
-      const styleTopNum = this.axes.x2y2.coordIsFilled
-        ? this.axes.x2y2.coord.yPx * this.canvasHandler.scale
+      const styleTopNum = this.axisRepository.x2y2.coordIsFilled
+        ? this.axisRepository.x2y2.coord.yPx * this.canvasHandler.scale
         : this.canvasHandler.scaledCursor.yPx
       return {
         ...axesGuideCommonStyle,
@@ -94,8 +95,8 @@ export default defineComponent({
     },
     X2Y2VerticalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
-      const styleLeftNum = this.axes.x2y2.coordIsFilled
-        ? this.axes.x2y2.coord.xPx * this.canvasHandler.scale
+      const styleLeftNum = this.axisRepository.x2y2.coordIsFilled
+        ? this.axisRepository.x2y2.coord.xPx * this.canvasHandler.scale
         : this.canvasHandler.scaledCursor.xPx
       return {
         ...axesGuideCommonStyle,

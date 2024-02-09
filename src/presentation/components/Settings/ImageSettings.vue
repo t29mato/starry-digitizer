@@ -15,16 +15,16 @@ import { defineComponent } from 'vue'
 
 import { Extractor } from '@/application/services/extractor/extractor'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   data() {
     return {
       extractor: Extractor.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axisRepository,
+      datasetRepository,
     }
   },
   mounted() {
@@ -50,8 +50,8 @@ export default defineComponent({
         this.canvasHandler.drawFitSizeImage()
         this.extractor.setSwatches(this.canvasHandler.colorSwatches)
         this.canvasHandler.setUploadImageUrl(fr.result)
-        this.axes.clearAxisCoords()
-        this.datasets.activeDataset.clearPlots()
+        this.axisRepository.clearAxisCoords()
+        this.datasetRepository.activeDataset.clearPlots()
       } catch (e) {
         console.error('failed to update image', { cause: e })
       }

@@ -56,8 +56,8 @@ import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
-import { AxisRepositoryManager } from '@/domain/repositories/axisRepository/manager/axisRepositoryManager'
-import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
+import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -81,8 +81,8 @@ export default defineComponent({
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
-      axes: AxisRepositoryManager.getInstance(),
-      datasets: DatasetRepositoryManager.getInstance(),
+      axisRepository,
+      datasetRepository,
     }
   },
   async mounted() {
@@ -117,7 +117,7 @@ export default defineComponent({
       // INFO: canvas-plot element上の時は、plot edit modeになるので
       switch (this.canvasHandler.manualMode) {
         case 0:
-          this.datasets.activeDataset.addPlot(
+          this.datasetRepository.activeDataset.addPlot(
             isOnCanvasPlot
               ? (e.offsetX + parseFloat(target.style.left) - offsetPx) /
                   this.canvasHandler.scale
@@ -127,9 +127,9 @@ export default defineComponent({
                   this.canvasHandler.scale
               : e.offsetY / this.canvasHandler.scale,
           )
-          this.axes.inactivateAxis()
-          this.datasets.activeDataset.addManuallyAddedPlotId(
-            this.datasets.activeDataset.lastPlotId,
+          this.axisRepository.inactivateAxis()
+          this.datasetRepository.activeDataset.addManuallyAddedPlotId(
+            this.datasetRepository.activeDataset.lastPlotId,
           )
           return
         case 1:
@@ -144,14 +144,14 @@ export default defineComponent({
       if (isOnCanvasPlot) {
         return
       }
-      if (this.axes.nextAxis) {
-        this.axes.addAxisCoord({
+      if (this.axisRepository.nextAxis) {
+        this.axisRepository.addAxisCoord({
           xPx: (e.offsetX - offsetPx) / this.canvasHandler.scale,
           yPx: e.offsetY / this.canvasHandler.scale,
         })
-        this.datasets.activeDataset.inactivatePlots()
+        this.datasetRepository.activeDataset.inactivatePlots()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
-        if (!this.axes.nextAxis) {
+        if (!this.axisRepository.nextAxis) {
           this.canvasHandler.manualMode = 0
         }
         return
@@ -174,8 +174,8 @@ export default defineComponent({
     mouseMove(e: MouseEvent) {
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
-      this.axes.isAdjusting = false
-      this.datasets.activeDataset.plotsAreAdjusting = false
+      this.axisRepository.isAdjusting = false
+      this.datasetRepository.activeDataset.plotsAreAdjusting = false
       this.canvasHandler.setCursor({
         xPx: xPx / this.canvasHandler.scale,
         yPx: yPx / this.canvasHandler.scale,
@@ -208,7 +208,7 @@ export default defineComponent({
           { xPx: rect.endX / scale, yPx: rect.endY / scale },
         )
 
-        this.datasets.activeDataset.activatePlotsInRectangleArea(
+        this.datasetRepository.activeDataset.activatePlotsInRectangleArea(
           topLeftCoord,
           bottomRightCoord,
         )
@@ -257,19 +257,19 @@ export default defineComponent({
           return
       }
       if (
-        this.datasets.activeDataset.hasActive() &&
+        this.datasetRepository.activeDataset.hasActive() &&
         (key === 'Backspace' || key === 'Delete')
       ) {
-        this.datasets.activeDataset.clearActivePlots()
+        this.datasetRepository.activeDataset.clearActivePlots()
 
         if (this.interpolator.isActive) {
           this.interpolator.updatePreview()
         }
 
-        const lastPlotId = this.datasets.activeDataset.lastPlotId
+        const lastPlotId = this.datasetRepository.activeDataset.lastPlotId
 
         if (lastPlotId !== -1) {
-          this.datasets.activeDataset.switchActivatedPlot(lastPlotId)
+          this.datasetRepository.activeDataset.switchActivatedPlot(lastPlotId)
         }
 
         return
@@ -279,16 +279,21 @@ export default defineComponent({
         direction: this.getDirectionFromKey(key),
         distancePx: shiftKeyIsPressed ? 10 : 1,
       }
-      if (this.axes.activeAxis && this.axes.activeAxis.coord) {
-        this.axes.moveActiveAxis(vector)
-        this.canvasHandler.setCursor(this.axes.activeAxis.coord)
+      if (
+        this.axisRepository.activeAxis &&
+        this.axisRepository.activeAxis.coord
+      ) {
+        this.axisRepository.moveActiveAxis(vector)
+        this.canvasHandler.setCursor(this.axisRepository.activeAxis.coord)
       }
-      if (this.datasets.activeDataset.plotsAreActive) {
-        this.datasets.activeDataset.moveActivePlot(vector)
+      if (this.datasetRepository.activeDataset.plotsAreActive) {
+        this.datasetRepository.activeDataset.moveActivePlot(vector)
         this.interpolator.updatePreview()
         this.canvasHandler.setCursor(
-          this.datasets.activeDataset.plots.filter((plot: Plot) =>
-            this.datasets.activeDataset.activePlotIds.includes(plot.id),
+          this.datasetRepository.activeDataset.plots.filter((plot: Plot) =>
+            this.datasetRepository.activeDataset.activePlotIds.includes(
+              plot.id,
+            ),
           )[0],
         )
       }
