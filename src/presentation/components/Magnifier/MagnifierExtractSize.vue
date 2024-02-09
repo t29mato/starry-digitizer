@@ -11,6 +11,7 @@
         width: `${lineExtract.dxPx * magnifier.scale}px`,
         height: `${lineExtract.dxPx * magnifier.scale}px`,
         border: '1px dotted grey',
+        zIndex: 5,
       }"
     ></div>
     <div v-if="extractor.strategy.name === 'Symbol Extract'">
@@ -22,6 +23,7 @@
           width: `${symbolMinDiameter}px`,
           height: `${symbolMinDiameter}px`,
           border: '1px dotted grey',
+          zIndex: 5,
         }"
       ></div>
       <div
@@ -32,6 +34,7 @@
           width: `${symbolMaxDiameter}px`,
           height: `${symbolMaxDiameter}px`,
           border: '1px dotted grey',
+          zIndex: 5,
         }"
       ></div>
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-5">
+  <div class="c__magnifier mb-5">
     <div
       :style="{
         overflow: 'hidden',
@@ -49,6 +49,12 @@
       <magnifier-axes></magnifier-axes>
       <magnifier-vertical-line></magnifier-vertical-line>
       <magnifier-horizontal-line></magnifier-horizontal-line>
+      <div class="c__magnifier__white-outlines">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
     </div>
     <span>x: {{ xyValue.xV }}, y: {{ xyValue.yV }}</span>
     <magnifier-settings
@@ -146,3 +152,47 @@ export default defineComponent({
   },
 })
 </script>
+
+<style scoped lang="scss">
+$_white-outline-size: 24px;
+$_white-outline-pos-value: calc(50% - #{$_white-outline-size} - 1px);
+.c__magnifier {
+  &__white-outlines {
+    pointer-events: none;
+
+    & > div {
+      position: absolute;
+      width: $_white-outline-size;
+      height: $_white-outline-size;
+      border-color: white;
+      border-style: solid;
+      border-width: 0;
+      z-index: 3;
+
+      &:nth-child(1) {
+        top: $_white-outline-pos-value;
+        left: $_white-outline-pos-value;
+        border-width: 0 1px 1px 0;
+      }
+
+      &:nth-child(2) {
+        top: $_white-outline-pos-value;
+        right: $_white-outline-pos-value;
+        border-width: 0 0 1px 1px;
+      }
+
+      &:nth-child(3) {
+        bottom: $_white-outline-pos-value;
+        left: $_white-outline-pos-value;
+        border-width: 1px 1px 0 0;
+      }
+
+      &:nth-child(4) {
+        bottom: $_white-outline-pos-value;
+        right: $_white-outline-pos-value;
+        border-width: 1px 0 0 1px;
+      }
+    }
+  }
+}
+</style>
