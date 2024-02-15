@@ -26,13 +26,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Interpolator } from '@/application/services/interpolator/interpolator'
+import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 
 export default defineComponent({
   data() {
     return {
-      interpolator: Interpolator.getInstance(),
+      interpolator,
       canvasHandler: CanvasHandler.getInstance(),
     }
   },

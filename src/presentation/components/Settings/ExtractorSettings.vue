@@ -90,7 +90,7 @@ import ColorSettings from './ColorSettings.vue'
 import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
-import { Interpolator } from '@/application/services/interpolator/interpolator'
+import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
@@ -109,7 +109,7 @@ export default defineComponent({
   },
   data() {
     return {
-      interpolator: Interpolator.getInstance(),
+      interpolator,
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
@@ -155,7 +155,9 @@ export default defineComponent({
       this.isExtracting = true
       this.axisRepository.inactivateAxis()
       try {
-        this.datasetRepository.setPlots(this.extractor.execute(this.canvasHandler))
+        this.datasetRepository.setPlots(
+          this.extractor.execute(this.canvasHandler),
+        )
         this.datasetRepository.sortPlots()
       } catch (e) {
         console.error('failed to extractPlots', { cause: e })
@@ -179,7 +181,9 @@ export default defineComponent({
       addLocalStorageData('isInterpolatorActive', String(isActive))
     },
     handleOnConfirmInterpolation() {
-      if (this.datasetRepository.activeDataset.manuallyAddedPlotIds.length < 2) {
+      if (
+        this.datasetRepository.activeDataset.manuallyAddedPlotIds.length < 2
+      ) {
         alert(
           'Plot 2 or more points by clicking the graph image to execute interpolation.',
         )
@@ -194,7 +198,9 @@ export default defineComponent({
         activeDataset.clearPlot(plotId)
       })
 
-      this.datasetRepository.activeDataset.switchActivatedPlot(activeDataset.lastPlotId)
+      this.datasetRepository.activeDataset.switchActivatedPlot(
+        activeDataset.lastPlotId,
+      )
 
       this.interpolator.clearPreview()
     },

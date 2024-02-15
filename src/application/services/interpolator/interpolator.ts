@@ -8,18 +8,6 @@ import { CanvasHandler } from '../canvasHandler/canvasHandler'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export class Interpolator implements InterpolatorInterface {
-  private static instance: InterpolatorInterface
-
-  private constructor() {}
-
-  static getInstance(): InterpolatorInterface {
-    if (!this.instance) {
-      this.instance = new Interpolator()
-    }
-
-    return this.instance
-  }
-
   public isActive: boolean = true
   public interval: number = 10
   public interpolatedCoords: Coord[] = []

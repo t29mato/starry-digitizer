@@ -51,7 +51,7 @@ import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
 
-import { Interpolator } from '@/application/services/interpolator/interpolator'
+import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { Confirmer } from '@/application/services/confirmer/confirmer'
 import { Extractor } from '@/application/services/extractor/extractor'
@@ -77,7 +77,7 @@ export default defineComponent({
   },
   data() {
     return {
-      interpolator: Interpolator.getInstance(),
+      interpolator,
       confirmer: Confirmer.getInstance(),
       extractor: Extractor.getInstance(),
       canvasHandler: CanvasHandler.getInstance(),
