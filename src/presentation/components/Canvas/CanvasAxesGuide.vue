@@ -11,7 +11,7 @@
 import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
 
 const axesGuideCommonStyle: CSSProperties = {
@@ -24,7 +24,7 @@ const axesGuideCommonStyle: CSSProperties = {
 export default defineComponent({
   data() {
     return {
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       axisRepository,
     }
   },

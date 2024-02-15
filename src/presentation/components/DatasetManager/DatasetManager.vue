@@ -58,14 +58,14 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   components: {},
   data() {
     return {
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       datasetRepository,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],

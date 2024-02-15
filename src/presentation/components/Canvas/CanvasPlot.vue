@@ -24,16 +24,16 @@ import { defineComponent } from 'vue'
 
 import { Plot } from '@/domain/models/dataset/datasetInterface'
 
-import { Interpolator } from '@/application/services/interpolator/interpolator'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { interpolator } from '@/instanceStore/applicationServiceInstances'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
   data() {
     return {
-      interpolator: Interpolator.getInstance(),
-      canvasHandler: CanvasHandler.getInstance(),
+      interpolator,
+      canvasHandler,
       datasetRepository,
       plotOpacity: STYLE.plotOpacity,
       tempPlotOpacity: STYLE.tempPlotOpacity,
@@ -135,7 +135,9 @@ export default defineComponent({
           return
         case 1:
           if (event.ctrlKey || event.metaKey) {
-            this.datasetRepository.activeDataset.toggleActivatedPlot(this.plot.id)
+            this.datasetRepository.activeDataset.toggleActivatedPlot(
+              this.plot.id,
+            )
             return
           }
           this.datasetRepository.activeDataset.switchActivatedPlot(this.plot.id)

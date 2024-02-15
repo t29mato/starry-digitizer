@@ -30,17 +30,17 @@ import { defineComponent } from 'vue'
 
 import { Coord } from '@/domain/models/dataset/datasetInterface'
 
-import { Interpolator } from '@/application/services/interpolator/interpolator'
-import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { interpolator } from '@/instanceStore/applicationServiceInstances'
+import { magnifier } from '@/instanceStore/applicationServiceInstances'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
   data() {
     return {
-      interpolator: Interpolator.getInstance(),
-      magnifier: Magnifier.getInstance(),
-      canvasHandler: CanvasHandler.getInstance(),
+      interpolator,
+magnifier,
+      canvasHandler,
       plotSizePx: STYLE.plotSizePx,
       plotOpacity: STYLE.plotOpacity,
       tempPlotOpacity: STYLE.tempPlotOpacity,

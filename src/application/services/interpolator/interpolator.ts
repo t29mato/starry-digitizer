@@ -4,22 +4,10 @@ import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
 import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
 import { getPlotsTotalDistance } from '../../utils/pointsUtils'
-import { CanvasHandler } from '../canvasHandler/canvasHandler'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 
 export class Interpolator implements InterpolatorInterface {
-  private static instance: InterpolatorInterface
-
-  private constructor() {}
-
-  static getInstance(): InterpolatorInterface {
-    if (!this.instance) {
-      this.instance = new Interpolator()
-    }
-
-    return this.instance
-  }
-
   public isActive: boolean = true
   public interval: number = 10
   public interpolatedCoords: Coord[] = []
@@ -87,8 +75,6 @@ export class Interpolator implements InterpolatorInterface {
       throw new Error('interpolator guide canvas is not set')
     }
 
-    //TODO: Depending on other application is not good. CanvasHandler app should be separated drawing logic and canvas entitiy ifselves
-    const canvasHandler = CanvasHandler.getInstance()
     this.clearGuideCanvasContext()
 
     this.guideCanvas.context.beginPath()
@@ -121,9 +107,6 @@ export class Interpolator implements InterpolatorInterface {
   //TODO: canvas操作系は独立したapplicationとして、各serviceのcanvasを一括でそうさできたほうがいいかも
   public resizeCanvas(): void {
     if (!this.guideCanvas || !this.magnifierCanvas) return
-
-    //TODO: Depending on other application is not good. CanvasHandler app should be separated drawing logic and canvas entitiy ifselves
-    const canvasHandler = CanvasHandler.getInstance()
 
     const newWidth = canvasHandler.originalWidth * canvasHandler.scale
     const newHeight = canvasHandler.originalHeight * canvasHandler.scale

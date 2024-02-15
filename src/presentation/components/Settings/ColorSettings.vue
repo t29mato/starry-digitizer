@@ -40,14 +40,14 @@
 </template>
 
 <script lang="ts">
-import { Extractor } from '@/application/services/extractor/extractor'
+import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
   data() {
     return {
       colorDistancePctErrorMsg: '',
-      extractor: Extractor.getInstance(),
+      extractor,
     }
   },
   methods: {

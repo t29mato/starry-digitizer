@@ -34,7 +34,7 @@
 import CanvasPlot from '@/presentation/components/Canvas/CanvasPlot.vue'
 import { defineComponent } from 'vue'
 
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
@@ -43,7 +43,7 @@ export default defineComponent({
   },
   data() {
     return {
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       datasetRepository,
     }
   },

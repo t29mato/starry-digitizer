@@ -17,10 +17,10 @@ import * as directives from 'vuetify/directives'
 import colors from 'vuetify/lib/util/colors'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
-import { Interpolator } from './application/services/interpolator/interpolator'
+import { interpolator } from './instanceStore/applicationServiceInstances'
 
 //INFO: initialize application services
-Interpolator.getInstance().initialize()
+interpolator.initialize()
 
 const vuetify = createVuetify({
   components,

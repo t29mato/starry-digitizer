@@ -51,11 +51,11 @@ import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
 
-import { Interpolator } from '@/application/services/interpolator/interpolator'
+import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
-import { Confirmer } from '@/application/services/confirmer/confirmer'
-import { Extractor } from '@/application/services/extractor/extractor'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { confirmer } from '@/instanceStore/applicationServiceInstances'
+import { extractor } from '@/instanceStore/applicationServiceInstances'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -77,10 +77,10 @@ export default defineComponent({
   },
   data() {
     return {
-      interpolator: Interpolator.getInstance(),
-      confirmer: Confirmer.getInstance(),
-      extractor: Extractor.getInstance(),
-      canvasHandler: CanvasHandler.getInstance(),
+      interpolator,
+      confirmer,
+      extractor,
+      canvasHandler,
       axisRepository,
       datasetRepository,
     }

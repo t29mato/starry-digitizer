@@ -43,16 +43,16 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { Extractor } from '@/application/services/extractor/extractor'
-import { Magnifier } from '@/application/services/magnifier/magnifier'
+import { extractor } from '@/instanceStore/applicationServiceInstances'
+import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
 
 export default defineComponent({
   data() {
     return {
-      extractor: Extractor.getInstance(),
-      magnifier: Magnifier.getInstance(),
+      extractor,
+magnifier,
       lineExtract: LineExtract.instance,
       symbolExtractByArea: SymbolExtractByArea.instance,
     }

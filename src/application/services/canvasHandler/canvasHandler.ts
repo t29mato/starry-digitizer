@@ -22,18 +22,8 @@ export class CanvasHandler implements CanvasHandlerInterface {
   eraserSizePx = 30
   uploadImageUrl = ''
 
-  private static instance: CanvasHandlerInterface
-
-  private constructor() {
+  constructor() {
     this.imageElement = new Image()
-  }
-
-  static getInstance(): CanvasHandlerInterface {
-    if (!this.instance) {
-      this.instance = new CanvasHandler()
-    }
-
-    return this.instance
   }
 
   async initializeImageElement(imagePath: string) {

@@ -57,17 +57,17 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Interpolator } from '@/application/services/interpolator/interpolator'
+import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
-import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { magnifier } from '@/instanceStore/applicationServiceInstances'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 
 export default defineComponent({
   data() {
     return {
-      interpolator: Interpolator.getInstance(),
-      magnifier: Magnifier.getInstance(),
-      canvasHandler: CanvasHandler.getInstance(),
+      interpolator,
+magnifier,
+      canvasHandler,
     }
   },
   mounted() {

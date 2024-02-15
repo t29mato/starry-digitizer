@@ -45,8 +45,8 @@ import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
 import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
 import { defineComponent } from 'vue'
 
-import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { magnifier } from '@/instanceStore/applicationServiceInstances'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
@@ -56,8 +56,8 @@ export default defineComponent({
   },
   data() {
     return {
-      magnifier: Magnifier.getInstance(),
-      canvasHandler: CanvasHandler.getInstance(),
+      magnifier,
+      canvasHandler,
       axisSizePx: STYLE.axisSizePx,
     }
   },
