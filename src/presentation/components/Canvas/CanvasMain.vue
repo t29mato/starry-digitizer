@@ -53,7 +53,7 @@ import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleC
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
-import { Confirmer } from '@/application/services/confirmer/confirmer'
+import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
@@ -78,7 +78,7 @@ export default defineComponent({
   data() {
     return {
       interpolator,
-      confirmer: Confirmer.getInstance(),
+      confirmer,
       extractor,
       canvasHandler: CanvasHandler.getInstance(),
       axisRepository,

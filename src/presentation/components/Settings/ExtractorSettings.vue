@@ -92,7 +92,7 @@ import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { addLocalStorageData } from '@/application/utils/localStorageUtils'
-import { Confirmer } from '@/application/services/confirmer/confirmer'
+import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
@@ -110,7 +110,7 @@ export default defineComponent({
   data() {
     return {
       interpolator,
-      confirmer: Confirmer.getInstance(),
+      confirmer,
       extractor,
       canvasHandler: CanvasHandler.getInstance(),
       axisRepository,

@@ -20,13 +20,13 @@
 </template>
 
 <script lang="ts">
-import { Confirmer } from '@/application/services/confirmer/confirmer'
+import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
   data() {
     return {
-      confirmer: Confirmer.getInstance(),
+confirmer,
     }
   },
   methods: {
