@@ -56,6 +56,7 @@ export default defineComponent({
     },
     handleOnClickFitButton() {
       this.canvasHandler.drawFitSizeImage()
+      this.interpolator.resizeCanvas()
     },
   },
 })
