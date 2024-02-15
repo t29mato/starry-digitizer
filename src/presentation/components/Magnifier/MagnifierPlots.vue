@@ -31,7 +31,7 @@ import { defineComponent } from 'vue'
 import { Coord } from '@/domain/models/dataset/datasetInterface'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { Magnifier } from '@/application/services/magnifier/magnifier'
+import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { STYLE } from '@/constants/constants'
 
@@ -39,7 +39,7 @@ export default defineComponent({
   data() {
     return {
       interpolator,
-      magnifier: Magnifier.getInstance(),
+magnifier,
       canvasHandler,
       plotSizePx: STYLE.plotSizePx,
       plotOpacity: STYLE.plotOpacity,

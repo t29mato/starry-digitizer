@@ -9,7 +9,7 @@ describe('ConfirmerManager', () => {
     firstInstance = confirmerManager.getInstance()
   })
 
-  test('The instance returned by getInstance() is the same as firstInstance', () => {
+  test('The instance returned by  is the same as firstInstance', () => {
     const secondeInstance: ConfirmerInterface = confirmerManager.getInstance()
 
     expect(secondeInstance === firstInstance).toBe(true)

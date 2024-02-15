@@ -12,13 +12,13 @@
 </template>
 
 <script lang="ts">
-import { Magnifier } from '@/application/services/magnifier/magnifier'
+import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
   data() {
     return {
-      magnifier: Magnifier.getInstance(),
+magnifier,
     }
   },
   computed: {

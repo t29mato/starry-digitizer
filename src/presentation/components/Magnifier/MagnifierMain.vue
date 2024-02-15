@@ -79,7 +79,7 @@ import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
 import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
 
-import { Magnifier } from '@/application/services/magnifier/magnifier'
+import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
@@ -99,7 +99,7 @@ export default defineComponent({
     return {
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
-      magnifier: Magnifier.getInstance(),
+magnifier,
       canvasHandler,
       axisRepository,
       datasetRepository,
