@@ -2,7 +2,6 @@ import { CanvasHandlerInterface } from '../canvasHandler/canvasHandlerInterface'
 import { Coord } from '../../../domain/models/dataset/datasetInterface'
 import { ExtractorInterface } from './extractorInterface'
 import ExtractStrategyInterface from '../../strategies/extractStrategies/extractStrategyInterface'
-import LineExtract from '../../strategies/extractStrategies/lineExtract'
 
 export class Extractor implements ExtractorInterface {
   strategy: ExtractStrategyInterface
@@ -12,18 +11,8 @@ export class Extractor implements ExtractorInterface {
   colorDistancePct = 5
   swatches = [...Array(5)].map(() => []) as string[][]
 
-  private static instance: ExtractorInterface
-
-  private constructor(strategy: ExtractStrategyInterface) {
+  constructor(strategy: ExtractStrategyInterface) {
     this.strategy = strategy
-  }
-
-  static getInstance(): ExtractorInterface {
-    if (!this.instance) {
-      this.instance = new Extractor(LineExtract.instance)
-    }
-
-    return this.instance
   }
 
   setColorDistancePct(colorDistancePct: number): void {

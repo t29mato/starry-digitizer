@@ -13,7 +13,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Extractor } from '@/application/services/extractor/extractor'
+import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
@@ -21,7 +21,7 @@ import { datasetRepository } from '@/instanceStore/repositoryInatances'
 export default defineComponent({
   data() {
     return {
-      extractor: Extractor.getInstance(),
+      extractor,
       canvasHandler: CanvasHandler.getInstance(),
       axisRepository,
       datasetRepository,

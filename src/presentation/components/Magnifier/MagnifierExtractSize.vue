@@ -43,7 +43,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { Extractor } from '@/application/services/extractor/extractor'
+import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
@@ -51,7 +51,7 @@ import SymbolExtractByArea from '@/application/strategies/extractStrategies/symb
 export default defineComponent({
   data() {
     return {
-      extractor: Extractor.getInstance(),
+      extractor,
       magnifier: Magnifier.getInstance(),
       lineExtract: LineExtract.instance,
       symbolExtractByArea: SymbolExtractByArea.instance,
