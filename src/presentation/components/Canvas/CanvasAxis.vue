@@ -40,7 +40,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
@@ -55,7 +55,7 @@ export default defineComponent({
   data() {
     return {
       fontSize: 14,
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       axisRepository,
       axisSizePx: STYLE.axisSizePx,
     }

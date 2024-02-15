@@ -32,7 +32,7 @@ import { Coord } from '@/domain/models/dataset/datasetInterface'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
@@ -40,7 +40,7 @@ export default defineComponent({
     return {
       interpolator,
       magnifier: Magnifier.getInstance(),
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       plotSizePx: STYLE.plotSizePx,
       plotOpacity: STYLE.plotOpacity,
       tempPlotOpacity: STYLE.tempPlotOpacity,

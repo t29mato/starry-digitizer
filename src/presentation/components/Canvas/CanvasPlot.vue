@@ -25,7 +25,7 @@ import { defineComponent } from 'vue'
 import { Plot } from '@/domain/models/dataset/datasetInterface'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
 
@@ -33,7 +33,7 @@ export default defineComponent({
   data() {
     return {
       interpolator,
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       datasetRepository,
       plotOpacity: STYLE.plotOpacity,
       tempPlotOpacity: STYLE.tempPlotOpacity,

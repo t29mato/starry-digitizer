@@ -80,7 +80,7 @@ import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierE
 import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
 
 import { Magnifier } from '@/application/services/magnifier/magnifier'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -100,7 +100,7 @@ export default defineComponent({
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
       magnifier: Magnifier.getInstance(),
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       axisRepository,
       datasetRepository,
     }

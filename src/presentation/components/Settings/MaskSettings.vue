@@ -43,13 +43,13 @@
 </template>
 
 <script lang="ts">
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
   data() {
     return {
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
     }
   },
   methods: {

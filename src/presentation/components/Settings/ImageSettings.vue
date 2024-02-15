@@ -14,7 +14,7 @@
 import { defineComponent } from 'vue'
 
 import { extractor } from '@/instanceStore/applicationServiceInstances'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -22,7 +22,7 @@ export default defineComponent({
   data() {
     return {
       extractor,
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       axisRepository,
       datasetRepository,
     }

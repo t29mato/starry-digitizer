@@ -30,7 +30,7 @@ import 'handsontable/dist/handsontable.full.css'
 import { registerAllModules } from 'handsontable/registry'
 import { Plot } from '@/domain/models/dataset/datasetInterface'
 
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -59,7 +59,7 @@ export default defineComponent({
   },
   data() {
     return {
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       axisRepository,
       datasetRepository,
       key: 0,

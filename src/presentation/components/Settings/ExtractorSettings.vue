@@ -94,7 +94,7 @@ import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -112,7 +112,7 @@ export default defineComponent({
       interpolator,
       confirmer,
       extractor,
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       axisRepository,
       datasetRepository,
       isExtracting: false,

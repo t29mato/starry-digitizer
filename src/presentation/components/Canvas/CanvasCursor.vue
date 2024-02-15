@@ -54,7 +54,7 @@
 import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
@@ -68,7 +68,7 @@ const guideLineBaseStyles: CSSProperties = {
 export default defineComponent({
   data() {
     return {
-      canvasHandler: CanvasHandler.getInstance(),
+      canvasHandler,
       axisRepository,
       datasetRepository,
       axisSizePx: STYLE.axisSizePx,
