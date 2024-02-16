@@ -13,6 +13,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
+import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisRepository } from '@/instanceStore/repositoryInatances'
@@ -25,6 +26,7 @@ export default defineComponent({
       canvasHandler,
       axisRepository,
       datasetRepository,
+      interpolator,
     }
   },
   mounted() {
@@ -48,6 +50,7 @@ export default defineComponent({
 
         await this.canvasHandler.initializeImageElement(fr.result)
         this.canvasHandler.drawFitSizeImage()
+        this.interpolator.isActive && this.interpolator.clearPreview()
         this.extractor.setSwatches(this.canvasHandler.colorSwatches)
         this.canvasHandler.setUploadImageUrl(fr.result)
         this.axisRepository.clearAxisCoords()
