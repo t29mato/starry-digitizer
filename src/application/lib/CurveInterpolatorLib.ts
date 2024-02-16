@@ -1,5 +1,5 @@
 import { CurveInterpolator } from 'curve-interpolator'
-import { Coord, Plot } from '@/domains/datasetInterface'
+import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
 
 export const getInterpolatedCoordsList = ({
   plots,

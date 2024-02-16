@@ -18,21 +18,25 @@
   },
   "scripts": {
     "dev": "vite",
-    "ssg-build": "cross-env VITE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vite build",
+    "app-prod-build": "cross-env VITE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vite build",
+    "app-dev-build": "cross-env VITE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vite build --mode development",
     "lib-build": "vite build -c 'vite.library.config.js'",
     "preview": "vite preview",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "test": "jest",
+    "test:coverage": "jest --coverage",
+    "coverage:report": "browser-sync start --server \"coverage/lcov-report\"",
+    "coverage": "npm run test:coverage && npm run coverage:report",
     "lint": "vue-tsc"
   },
   "dependencies": {
     "@handsontable/vue3": "^13.1.0",
     "@mdi/font": "^7.2.96",
+    "browser-sync": "^3.0.2",
     "colorthief": "^2.4.0",
     "curve-interpolator": "^3.3.0",
     "handsontable": "^13.1.0",
-    "pinia": "^2.1.6",
     "vue": "^3.3.4",
     "vuetify": "^3.3.13"
   },

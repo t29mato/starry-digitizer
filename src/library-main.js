@@ -1,5 +1,5 @@
 // vue コンポーネントのインポート
-import Main from './components/Main.vue'
+import Main from './presentation/components/Main.vue'
 
 // Vue.use() によって実行される install 関数を定義
 export function install(Vue) {

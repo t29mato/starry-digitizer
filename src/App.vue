@@ -20,7 +20,7 @@
         </v-btn>
         <v-col class="text-center text-white" cols="12">
           {{ new Date().getFullYear() }} — <strong>StarryDigitizer</strong
-          ><span class="ml-2 mt-1">{{ version }}</span>
+          ><span class="ml-2 mt-1">{{ isProd ? version : '' }}</span>
         </v-col>
       </v-row>
     </v-footer>
@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import StarryDigitizer from '@/components/StarryDigitizer.vue'
+import StarryDigitizer from '@/presentation/components/StarryDigitizer.vue'
 
 import { version } from '../package.json'
 
@@ -53,7 +53,7 @@ export default defineComponent({
         url: 'https://starrydigitizer.readthedocs.io/',
       },
     ],
-    isProd: process.env.NODE_ENV === 'production',
+    isProd: import.meta.env.MODE === 'production',
   }),
   methods: {
     importPlots(plots: any) {
