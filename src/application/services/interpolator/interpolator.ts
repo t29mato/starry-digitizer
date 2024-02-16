@@ -189,6 +189,10 @@ export class Interpolator implements InterpolatorInterface {
       activeDataset.clearTempPlot(tempPlot.id)
     })
 
+    activeDataset.manuallyAddedPlotIds.forEach((pId) =>
+      activeDataset.clearPlot(pId),
+    )
+
     this.clearGuideCanvasContext()
     this.clearMagnifierCanvasContext()
     this.clearInterpolatedCoords()
