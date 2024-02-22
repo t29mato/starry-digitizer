@@ -99,7 +99,7 @@ export default defineComponent({
     return {
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
-magnifier,
+      magnifier,
       canvasHandler,
       axisRepository,
       datasetRepository,

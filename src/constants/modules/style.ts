@@ -5,6 +5,7 @@ export const STYLE = {
   plotSizePx: 10,
   tempPlotSizePx: 8,
   axisSizePx: 20,
+  axisOpacity: 0.5,
   plotOpacity: 0.7,
   tempPlotOpacity: 0.4,
 }
