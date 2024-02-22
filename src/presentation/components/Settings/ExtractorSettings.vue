@@ -172,7 +172,7 @@ export default defineComponent({
       if (isActive) {
         this.interpolator.updatePreview()
       } else {
-        this.interpolator.clearPreview()
+        this.interpolator.clearPreview({ anchorPointsShouldRemain: true })
       }
 
       //HACK: Since tempPlots are not drawn, force rendering as a temporary measure. Fundamental solution required
@@ -202,7 +202,7 @@ export default defineComponent({
         activeDataset.lastPlotId,
       )
 
-      this.interpolator.clearPreview()
+      this.interpolator.clearPreview({ anchorPointsShouldRemain: false })
     },
     handleOnUpdateInterpolatorInterval(value: any) {
       this.interpolator.updateInterval(parseFloat(value))

@@ -15,5 +15,9 @@ export interface InterpolatorInterface {
   setMagnifierCanvas(magnifierCanvas: HTMLCanvas): void
   updateInterval(interval: number): void
   updatePreview(): void
-  clearPreview(): void
+  clearPreview({
+    anchorPointsShouldRemain,
+  }: {
+    anchorPointsShouldRemain: boolean
+  }): void
 }
