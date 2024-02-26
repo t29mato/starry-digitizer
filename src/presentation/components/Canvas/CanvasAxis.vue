@@ -9,7 +9,6 @@
         width: `${axisCrossBorderPx}px`,
         height: `${axisSizePx}px`,
         background: isActive ? 'red' : 'dodgerblue',
-        opacity: axisOpacity,
       }"
     >
       <div
@@ -59,7 +58,6 @@ export default defineComponent({
       canvasHandler,
       axisRepository,
       axisSizePx: STYLE.axisSizePx,
-      axisOpacity: STYLE.axisOpacity,
     }
   },
   computed: {

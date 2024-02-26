@@ -49,7 +49,7 @@
       <magnifier-axes></magnifier-axes>
       <magnifier-vertical-line></magnifier-vertical-line>
       <magnifier-horizontal-line></magnifier-horizontal-line>
-      <div v-if="isWhiteOutlineVisible" class="c__magnifier__white-outlines">
+      <div class="c__magnifier__white-outlines">
         <div></div>
         <div></div>
         <div></div>
@@ -99,7 +99,7 @@ export default defineComponent({
     return {
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
-      magnifier,
+magnifier,
       canvasHandler,
       axisRepository,
       datasetRepository,
@@ -132,9 +132,6 @@ export default defineComponent({
         this.canvasHandler.cursor.xPx,
         this.canvasHandler.cursor.yPx,
       )
-    },
-    isWhiteOutlineVisible() {
-      return !this.axisRepository.isAdjusting
     },
   },
   methods: {

@@ -15,7 +15,6 @@
         width: `${axisCrossBorderPx}px`,
         height: `${axisSizePx}px`,
         background: isActive ? 'red' : 'dodgerblue',
-        opacity: axisOpacity,
       }"
     >
       <div
@@ -48,8 +47,6 @@ import { defineComponent } from 'vue'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
-
 import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
@@ -61,9 +58,7 @@ export default defineComponent({
     return {
       magnifier,
       canvasHandler,
-      axisRepository,
       axisSizePx: STYLE.axisSizePx,
-      axisOpacity: STYLE.axisOpacity,
     }
   },
   computed: {
@@ -91,23 +86,17 @@ export default defineComponent({
     axisCrossCursorPx(): number {
       return this.axisSizePx * 0.7
     },
-    isActive(): boolean {
-      if (
-        this.axisRepository.pointMode === 0 &&
-        this.axisRepository.activeAxisName === 'x1' &&
-        this.axis.name === 'y1'
-      ) {
-        return true
-      }
-
-      return this.axisRepository.activeAxisName === this.axis.name
-    },
   },
   props: {
     axis: {
       type: Object as () => AxisInterface,
       required: true,
     },
+    isActive: {
+      type: Boolean,
+      required: true,
+    },
   },
+  methods: {},
 })
 </script>
