@@ -87,7 +87,8 @@ export default defineComponent({
   },
   methods: {
     activateDataset(id: number) {
-      this.interpolator.isActive && this.interpolator.clearPreview()
+      this.interpolator.isActive &&
+        this.interpolator.clearPreview({ anchorPointsShouldRemain: false })
       this.datasetRepository.setActiveDataset(id)
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
       this.canvasHandler.clearMask()

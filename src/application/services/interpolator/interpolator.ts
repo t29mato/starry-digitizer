@@ -182,16 +182,22 @@ export class Interpolator implements InterpolatorInterface {
     })
   }
 
-  public clearPreview(): void {
+  public clearPreview({
+    anchorPointsShouldRemain,
+  }: {
+    anchorPointsShouldRemain: boolean
+  }): void {
     const activeDataset = datasetRepository.activeDataset
 
     activeDataset.tempPlots.forEach((tempPlot) => {
       activeDataset.clearTempPlot(tempPlot.id)
     })
 
-    activeDataset.manuallyAddedPlotIds.forEach((pId) =>
-      activeDataset.clearPlot(pId),
-    )
+    if (!anchorPointsShouldRemain) {
+      activeDataset.manuallyAddedPlotIds.forEach((pId) =>
+        activeDataset.clearPlot(pId),
+      )
+    }
 
     this.clearGuideCanvasContext()
     this.clearMagnifierCanvasContext()

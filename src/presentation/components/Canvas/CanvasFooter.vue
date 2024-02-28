@@ -66,7 +66,7 @@ export default defineComponent({
     },
     handleOnClickClearPlots() {
       this.datasetRepository.activeDataset.clearPlots()
-      this.interpolator.clearPreview()
+      this.interpolator.clearPreview({ anchorPointsShouldRemain: false })
     },
   },
 })
