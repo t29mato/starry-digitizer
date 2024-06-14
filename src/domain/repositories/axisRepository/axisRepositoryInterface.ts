@@ -19,6 +19,7 @@ export interface AxisRepositoryInterface {
   pointMode: number // INFO: {0: '2Points', 1: '4Points'}
   considerGraphTilt: boolean
   isAdjusting: boolean
+  isVisible: boolean
 
   get hasAtLeastOneAxis(): boolean
   get hasXAxis(): boolean

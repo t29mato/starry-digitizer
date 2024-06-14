@@ -1,5 +1,5 @@
 <template>
-  <div v-if="axis.coordIsFilled">
+  <div v-if="axis.coordIsFilled" v-show="isVisible">
     <div
       :style="{
         position: 'absolute',
@@ -49,6 +49,10 @@ export default defineComponent({
   props: {
     axis: {
       type: Object as () => AxisInterface,
+      required: true,
+    },
+    isVisible: {
+      type: Boolean,
       required: true,
     },
   },
