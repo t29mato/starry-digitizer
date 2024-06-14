@@ -7,4 +7,5 @@ export interface AxisInterface {
   initialCoord: Coord
   clearCoord(): void
   get coordIsFilled(): boolean
+  isVisible: boolean
 }

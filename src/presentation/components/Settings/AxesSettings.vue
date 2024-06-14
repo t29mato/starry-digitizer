@@ -180,6 +180,12 @@
         density="compact"
         color="primary"
       ></v-checkbox>
+      <v-checkbox
+        label="Show axes marker"
+        density="compact"
+        color="primary"
+        v-model="axisRepository.isVisible"
+      ></v-checkbox>
     </div>
 
     <p class="text-red">{{ errorMessage }}</p>
