@@ -14,6 +14,7 @@ export class AxisRepository implements AxisRepositoryInterface {
   pointMode = 0 // INFO: {0: '2Points', 1: '4Points'}
   considerGraphTilt = false
   isAdjusting = false
+  isVisible = true
 
   constructor(
     x1: AxisInterface,
