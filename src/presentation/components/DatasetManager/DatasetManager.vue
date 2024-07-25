@@ -26,7 +26,7 @@
         link
         @click="activateDataset(dataset.id)"
         :class="
-          dataset.id === datasetRepository.activeDataset.id && 'blue lighten-4'
+          dataset.id === datasetRepository.activeDataset.id && 'bg-yellow-lighten-4'
         "
       >
         <v-row>
@@ -36,7 +36,8 @@
               :placeholder="'dataset ' + dataset.id"
               hide-details
               density="compact"
-              class="mt-0 pt-0"
+              class="mt-0 pt-0 pl-2"
+              variant="underlined"
             ></v-text-field>
           </v-col>
           <v-col
