@@ -1,13 +1,21 @@
 <template>
-  <v-file-input
-    id="fileInput"
-    accept="image/*"
-    @change="onImageUploaded"
-    :clearable="false"
-    label="choose an image file"
-    hide-details
-    class="mb-5"
-  ></v-file-input>
+  <div>
+    <v-file-input
+      id="fileInput"
+      accept="image/*"
+      @change="onImageUploaded"
+      :clearable="false"
+      label="choose an image file"
+      hide-details
+      class="mb-5"
+    ></v-file-input>
+    <div
+      class="c_file-drag-area"
+      :class="{ 'is-dragged-over': fileIsDraggedOver }"
+      @dragleave="dragLeave"
+      @drop="dropFile"
+    ></div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -27,10 +35,18 @@ export default defineComponent({
       axisRepository,
       datasetRepository,
       interpolator,
+      fileIsDraggedOver: false,
     }
   },
+
   mounted() {
     document.addEventListener('paste', this.onImagePasted.bind(this))
+
+    //NOTE: Need to get dragenter event from window, because dragenter doesn't fire on the Overlaying DOM which is 'pointer-events: none'
+    window.addEventListener('dragover', (e: DragEvent) => {
+      e.preventDefault()
+      this.fileIsDraggedOver = true
+    })
   },
   beforeDestroy() {
     document.removeEventListener('paste', this.onImagePasted)
@@ -115,6 +131,39 @@ export default defineComponent({
         img.src = src
       })
     },
+    dragLeave(e: DragEvent) {
+      e.preventDefault()
+      this.fileIsDraggedOver = false
+    },
+    async dropFile(e: DragEvent) {
+      e.preventDefault()
+
+      const file = e.dataTransfer?.files[0]
+      if (!file) return
+
+      await this.updateImage(file)
+
+      this.fileIsDraggedOver = false
+    },
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.c {
+  &_file-drag-area {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+
+    &.is-dragged-over {
+      display: flex;
+      background: rgba(0, 0, 0, 0.5);
+    }
+  }
+}
+</style>
