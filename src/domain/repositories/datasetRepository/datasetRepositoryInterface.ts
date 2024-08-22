@@ -8,6 +8,7 @@ export interface DatasetRepositoryInterface {
   get activeDataset(): DatasetInterface
   get nextPlotId(): number
   get nextDatasetId(): number
+  get lastDatasetId(): number
 
   setPlots(coords: Coord[]): void
   sortPlots(): void

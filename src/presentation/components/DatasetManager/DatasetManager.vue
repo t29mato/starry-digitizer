@@ -24,9 +24,10 @@
         :key="dataset.id"
         class="pl-2"
         link
-        @click="activateDataset(dataset.id)"
+        @click="handleOnClickDataset(dataset.id)"
         :class="
-          dataset.id === datasetRepository.activeDataset.id && 'bg-yellow-lighten-4'
+          dataset.id === datasetRepository.activeDataset.id &&
+          'bg-yellow-lighten-4'
         "
       >
         <v-row>
@@ -87,6 +88,14 @@ export default defineComponent({
     },
   },
   methods: {
+    shouldContinueActivateDataset(): boolean {
+      if (this.datasetRepository.activeDataset.tempPlots.length === 0)
+        return true
+
+      return window.confirm(
+        'There are unconfirmed interpolated points. Do you want to discard them and switch to a different dataset?',
+      )
+    },
     activateDataset(id: number) {
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.setActiveDataset(id)
@@ -94,8 +103,19 @@ export default defineComponent({
       this.canvasHandler.clearMask()
       this.canvasHandler.maskMode = -1
     },
+    handleOnClickDataset(id: number) {
+      if (
+        id === this.datasetRepository.activeDatasetId ||
+        !this.shouldContinueActivateDataset()
+      )
+        return
+
+      this.activateDataset(id)
+    },
     handleOnClickAddDatasetButton() {
+      if (!this.shouldContinueActivateDataset()) return
       this.datasetRepository.createNewDataset()
+      this.activateDataset(this.datasetRepository.lastDatasetId)
     },
     handleOnClickPopDatasetButton() {
       this.datasetRepository.popDataset()

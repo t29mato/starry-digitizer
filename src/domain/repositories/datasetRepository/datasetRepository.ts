@@ -30,6 +30,10 @@ export class DatasetRepository {
     return this.datasets[this.datasets.length - 1].id + 1
   }
 
+  get lastDatasetId(): number {
+    return this.datasets[this.datasets.length - 1].id
+  }
+
   setPlots(coords: Coord[]) {
     this.activeDataset.clearPlots()
     coords.forEach((coord) => {
