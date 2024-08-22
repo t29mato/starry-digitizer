@@ -15,7 +15,7 @@ export interface DatasetRepositoryInterface {
   editDatasetName(datasetId: number, newName: string): void
   createNewDataset(): void
   addDataset(dataset: DatasetInterface): void
-  popDataset(): void
+  removeDataset(id: number): void
   activatePlotsInRectangleArea(
     topLeftCoord: Coord,
     bottomRightCoord: Coord,

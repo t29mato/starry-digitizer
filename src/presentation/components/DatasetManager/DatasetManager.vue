@@ -7,7 +7,7 @@
       >
       <v-btn
         size="x-small"
-        @click="handleOnClickPopDatasetButton"
+        @click="handleOnClickRemoveDatasetButton"
         :disabled="datasetRepository.datasets.length === 1"
         class="ml-2"
         ><v-icon>mdi-minus</v-icon></v-btn
@@ -98,9 +98,17 @@ export default defineComponent({
     handleOnClickAddDatasetButton() {
       this.datasetRepository.createNewDataset()
     },
-    handleOnClickPopDatasetButton() {
+    handleOnClickRemoveDatasetButton() {
+      if (
+        !window.confirm(
+          'Are you sure to delete this dataset? This operation is irreversible.',
+        )
+      )
+        return
       this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.popDataset()
+      this.datasetRepository.removeDataset(
+        this.datasetRepository.activeDatasetId,
+      )
     },
   },
 })

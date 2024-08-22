@@ -14,14 +14,13 @@ test('add a dataset', () => {
   expect(datasets.datasets[1].id).toBe(2)
 })
 
-test('pop a dataset', () => {
+test('remove a dataset', () => {
   const datasets = new DatasetRepository(new Dataset('dataset 1', [], 1))
   datasets.addDataset(new Dataset('dataset 2', [], datasets.nextDatasetId))
   datasets.addDataset(new Dataset('dataset 3', [], datasets.nextDatasetId))
-  datasets.addDataset(new Dataset('dataset 4', [], datasets.nextDatasetId))
-  expect(datasets.datasets[datasets.datasets.length - 1].id).toBe(4)
-  datasets.popDataset()
-  expect(datasets.datasets[datasets.datasets.length - 1].id).toBe(3)
+
+  datasets.removeDataset(3)
+  expect(datasets.activeDatasetId).toBe(1)
 })
 
 test('set plots', () => {
