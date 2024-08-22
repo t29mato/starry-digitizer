@@ -88,7 +88,7 @@ export default defineComponent({
     },
   },
   methods: {
-    shouldContinueActivateDataset(): boolean {
+    shouldContinueSwitchDataset(): boolean {
       if (this.datasetRepository.activeDataset.tempPlots.length === 0)
         return true
 
@@ -106,14 +106,14 @@ export default defineComponent({
     handleOnClickDataset(id: number) {
       if (
         id === this.datasetRepository.activeDatasetId ||
-        !this.shouldContinueActivateDataset()
+        !this.shouldContinueSwitchDataset()
       )
         return
 
       this.activateDataset(id)
     },
     handleOnClickAddDatasetButton() {
-      if (!this.shouldContinueActivateDataset()) return
+      if (!this.shouldContinueSwitchDataset()) return
       this.datasetRepository.createNewDataset()
       this.activateDataset(this.datasetRepository.lastDatasetId)
     },
