@@ -26,7 +26,8 @@
         link
         @click="activateDataset(dataset.id)"
         :class="
-          dataset.id === datasetRepository.activeDataset.id && 'bg-yellow-lighten-4'
+          dataset.id === datasetRepository.activeDataset.id &&
+          'bg-yellow-lighten-4'
         "
       >
         <v-row>
@@ -98,6 +99,7 @@ export default defineComponent({
       this.datasetRepository.createNewDataset()
     },
     handleOnClickPopDatasetButton() {
+      this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.popDataset()
     },
   },
