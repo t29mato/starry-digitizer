@@ -66,7 +66,8 @@ export default defineComponent({
 
         await this.canvasHandler.initializeImageElement(fr.result)
         this.canvasHandler.drawFitSizeImage()
-        this.interpolator.isActive && this.interpolator.clearPreview()
+        this.interpolator.isActive &&
+          this.interpolator.clearPreview({ anchorPointsShouldRemain: false })
         this.extractor.setSwatches(this.canvasHandler.colorSwatches)
         this.canvasHandler.setUploadImageUrl(fr.result)
         this.axisRepository.clearAxisCoords()
