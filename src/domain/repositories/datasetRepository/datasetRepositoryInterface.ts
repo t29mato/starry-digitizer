@@ -8,6 +8,7 @@ export interface DatasetRepositoryInterface {
   get activeDataset(): DatasetInterface
   get nextPlotId(): number
   get nextDatasetId(): number
+  get lastDatasetId(): number
 
   setPlots(coords: Coord[]): void
   sortPlots(): void
@@ -15,7 +16,7 @@ export interface DatasetRepositoryInterface {
   editDatasetName(datasetId: number, newName: string): void
   createNewDataset(): void
   addDataset(dataset: DatasetInterface): void
-  popDataset(): void
+  removeDataset(id: number): void
   activatePlotsInRectangleArea(
     topLeftCoord: Coord,
     bottomRightCoord: Coord,

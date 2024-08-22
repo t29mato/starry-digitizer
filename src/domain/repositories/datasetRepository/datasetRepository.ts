@@ -30,6 +30,10 @@ export class DatasetRepository {
     return this.datasets[this.datasets.length - 1].id + 1
   }
 
+  get lastDatasetId(): number {
+    return this.datasets[this.datasets.length - 1].id
+  }
+
   setPlots(coords: Coord[]) {
     this.activeDataset.clearPlots()
     coords.forEach((coord) => {
@@ -67,14 +71,9 @@ export class DatasetRepository {
     this.datasets.push(dataset)
   }
 
-  popDataset(): void {
-    if (this.datasets.length === 1) {
-      return
-    }
-    if (this.datasets[this.datasets.length - 1].id === this.activeDatasetId) {
-      this.setActiveDataset(this.datasets[this.datasets.length - 2].id)
-    }
-    this.datasets.pop()
+  removeDataset(id: number): void {
+    this.datasets = this.datasets.filter((dataset) => dataset.id !== id)
+    this.setActiveDataset(this.datasets[0].id)
   }
 
   activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {

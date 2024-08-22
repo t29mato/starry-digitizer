@@ -7,7 +7,7 @@
       >
       <v-btn
         size="x-small"
-        @click="handleOnClickPopDatasetButton"
+        @click="handleOnClickRemoveDatasetButton"
         :disabled="datasetRepository.datasets.length === 1"
         class="ml-2"
         ><v-icon>mdi-minus</v-icon></v-btn
@@ -24,9 +24,10 @@
         :key="dataset.id"
         class="pl-2"
         link
-        @click="activateDataset(dataset.id)"
+        @click="handleOnClickDataset(dataset.id)"
         :class="
-          dataset.id === datasetRepository.activeDataset.id && 'bg-yellow-lighten-4'
+          dataset.id === datasetRepository.activeDataset.id &&
+          'bg-yellow-lighten-4'
         "
       >
         <v-row>
@@ -87,6 +88,14 @@ export default defineComponent({
     },
   },
   methods: {
+    shouldContinueSwitchDataset(): boolean {
+      if (this.datasetRepository.activeDataset.tempPlots.length === 0)
+        return true
+
+      return window.confirm(
+        'There are unconfirmed interpolated points. Do you want to discard them and switch to a different dataset?',
+      )
+    },
     activateDataset(id: number) {
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.setActiveDataset(id)
@@ -94,11 +103,31 @@ export default defineComponent({
       this.canvasHandler.clearMask()
       this.canvasHandler.maskMode = -1
     },
-    handleOnClickAddDatasetButton() {
-      this.datasetRepository.createNewDataset()
+    handleOnClickDataset(id: number) {
+      if (
+        id === this.datasetRepository.activeDatasetId ||
+        !this.shouldContinueSwitchDataset()
+      )
+        return
+
+      this.activateDataset(id)
     },
-    handleOnClickPopDatasetButton() {
-      this.datasetRepository.popDataset()
+    handleOnClickAddDatasetButton() {
+      if (!this.shouldContinueSwitchDataset()) return
+      this.datasetRepository.createNewDataset()
+      this.activateDataset(this.datasetRepository.lastDatasetId)
+    },
+    handleOnClickRemoveDatasetButton() {
+      if (
+        !window.confirm(
+          'Are you sure to delete this dataset? This operation is irreversible.',
+        )
+      )
+        return
+      this.interpolator.isActive && this.interpolator.clearPreview()
+      this.datasetRepository.removeDataset(
+        this.datasetRepository.activeDatasetId,
+      )
     },
   },
 })
