@@ -18,7 +18,7 @@ import { defineComponent } from 'vue'
 // TODO: TSの型宣言エラーが解消できずignore いずれ再度調査
 // @ts-ignore
 import colors from 'vuetify/lib/util/colors'
-import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
+import XYAxisSetCalculator from '@/domain/services/XYAxisSetCalculator'
 
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
@@ -78,7 +78,7 @@ export default defineComponent({
   methods: {
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxesCalculator(this.axisRepository, {
+      const calculator = new XYAxisSetCalculator(this.axisRepository, {
         x: this.axisRepository.xIsLog,
         y: this.axisRepository.yIsLog,
       })

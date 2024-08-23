@@ -1,10 +1,10 @@
 import { expect } from '@jest/globals'
-import XYAxesCalculator from './XYAxesCalculator'
+import XYAxisSetCalculator from './XYAxisSetCalculator'
 import { AxisRepositoryInterface } from '../repositories/axisRepository/axisRepositoryInterface'
 import { Axis } from '../models/axis/axis'
 import { AxisRepository } from '../repositories/axisRepository/axisRepository'
 
-describe('XYAxesCalculator', () => {
+describe('XYAxisSetCalculator', () => {
   let axesMock: AxisRepositoryInterface
   beforeEach(() => {
     // Initialize mock AxisRepositoryInterface with minimal data
@@ -18,7 +18,7 @@ describe('XYAxesCalculator', () => {
   })
 
   it('should calculate XY values correctly', () => {
-    const calculator = new XYAxesCalculator(axesMock, { x: false, y: false })
+    const calculator = new XYAxisSetCalculator(axesMock, { x: false, y: false })
     const result = calculator.calculateXYValues(500, 500)
     expect(result.xV).toBe('5.5e+0')
     expect(result.yV).toBe('5.5e+0')
@@ -27,7 +27,7 @@ describe('XYAxesCalculator', () => {
   it('should calculate XY values as NaN when no coordinates provided', () => {
     // @ts-ignore
     axesMock.x1.coord = null
-    const calculator = new XYAxesCalculator(axesMock, { x: false, y: false })
+    const calculator = new XYAxisSetCalculator(axesMock, { x: false, y: false })
     const result = calculator.calculateXYValues(500, 500)
     expect(result.xV).toBe('NaN')
     expect(result.yV).toBe('NaN')
@@ -35,7 +35,7 @@ describe('XYAxesCalculator', () => {
 
   it('should calculate XY values as NaN when x1 value equals x2 value', () => {
     axesMock.x2.value = axesMock.x1.value
-    const calculator = new XYAxesCalculator(axesMock, { x: false, y: false })
+    const calculator = new XYAxisSetCalculator(axesMock, { x: false, y: false })
     const result = calculator.calculateXYValues(500, 500)
     expect(result.xV).toBe('NaN')
     expect(result.yV).toBe('NaN')
@@ -44,35 +44,35 @@ describe('XYAxesCalculator', () => {
   // Add more test cases as required
   it('should calculate XY values as NaN when y1 value equals y2 value', () => {
     axesMock.y2.value = axesMock.y1.value
-    const calculator = new XYAxesCalculator(axesMock, { x: false, y: false })
+    const calculator = new XYAxisSetCalculator(axesMock, { x: false, y: false })
     const result = calculator.calculateXYValues(500, 500)
     expect(result.xV).toBe('NaN')
     expect(result.yV).toBe('NaN')
   })
 
   it('should calculate XY values correctly with logarithmic scale on x-axis', () => {
-    const calculator = new XYAxesCalculator(axesMock, { x: true, y: false })
+    const calculator = new XYAxisSetCalculator(axesMock, { x: true, y: false })
     const result = calculator.calculateXYValues(500, 500)
     expect(result.xV).toBe('3.1623e+0')
     expect(result.yV).toBe('5.5e+0')
   })
 
   it('should calculate XY values correctly with logarithmic scale on y-axis', () => {
-    const calculator = new XYAxesCalculator(axesMock, { x: false, y: true })
+    const calculator = new XYAxisSetCalculator(axesMock, { x: false, y: true })
     const result = calculator.calculateXYValues(500, 500)
     expect(result.xV).toBe('5.5e+0')
     expect(result.yV).toBe('3.1623e+0')
   })
 
   it('should calculate XY values correctly with logarithmic scale on both axes', () => {
-    const calculator = new XYAxesCalculator(axesMock, { x: true, y: true })
+    const calculator = new XYAxisSetCalculator(axesMock, { x: true, y: true })
     const result = calculator.calculateXYValues(500, 500)
     expect(result.xV).toBe('3.1623e+0')
     expect(result.yV).toBe('3.1623e+0')
   })
 
   it('should calculate XY values with higher precision when effective digits are increased', () => {
-    const calculator = new XYAxesCalculator(axesMock, { x: false, y: false })
+    const calculator = new XYAxisSetCalculator(axesMock, { x: false, y: false })
     calculator.effectiveDigits = 6
     const result = calculator.calculateXYValues(500, 500)
     expect(result.xV).toBe('5.5e+0')
@@ -118,7 +118,7 @@ describe('XYAxesCalculator', () => {
       considerGraphTilt: false,
       isAdjusting: false,
     }
-    const calculator = new XYAxesCalculator(axesMock, { x: false, y: false })
+    const calculator = new XYAxisSetCalculator(axesMock, { x: false, y: false })
     const result = calculator.calculateXYValues(plot.xPx, plot.yPx)
     expect(result).toStrictEqual({ xV: '1.997e+2', yV: '2.035e+1' })
   })
@@ -162,7 +162,7 @@ describe('XYAxesCalculator', () => {
       considerGraphTilt: true, // This is the difference of this test case
       isAdjusting: false,
     }
-    const calculator = new XYAxesCalculator(axesMock, { x: false, y: false })
+    const calculator = new XYAxisSetCalculator(axesMock, { x: false, y: false })
     const result = calculator.calculateXYValues(plot.xPx, plot.yPx)
     expect(result).toStrictEqual({ xV: '2.01e+2', yV: '2.042e+1' })
   })

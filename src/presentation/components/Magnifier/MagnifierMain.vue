@@ -77,7 +77,7 @@ import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
-import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
+import XYAxisSetCalculator from '@/domain/services/XYAxisSetCalculator'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
@@ -99,7 +99,7 @@ export default defineComponent({
     return {
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
-magnifier,
+      magnifier,
       canvasHandler,
       axisRepository,
       datasetRepository,
@@ -124,7 +124,7 @@ magnifier,
       yV: string
     } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxesCalculator(this.axisRepository, {
+      const calculator = new XYAxisSetCalculator(this.axisRepository, {
         x: this.axisRepository.xIsLog,
         y: this.axisRepository.yIsLog,
       })
