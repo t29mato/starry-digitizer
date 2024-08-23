@@ -1,6 +1,10 @@
 <template>
   <v-app>
-    <v-main>
+    <div v-if="deviceIsSmartphone" class="c__unsupported-device-screen">
+      This application is not supported on smartphones. <br />Please access here
+      on a PC.
+    </div>
+    <v-main v-if="!deviceIsSmartphone">
       <starry-digitizer :initialGraphImagePath="'/sample_graph_curve.png'" />
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
@@ -55,6 +59,13 @@ export default defineComponent({
     ],
     isProd: import.meta.env.MODE === 'production',
   }),
+  computed: {
+    deviceIsSmartphone() {
+      const ua = navigator.userAgent.toLowerCase()
+
+      return /(iphone|android).*mobile/.test(ua)
+    },
+  },
   methods: {
     importPlots(plots: any) {
       this.plots = plots
@@ -62,3 +73,24 @@ export default defineComponent({
   },
 })
 </script>
+<style lang="scss" scoped>
+.c {
+  &__unsupported-device-screen {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: #eeeeee;
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    color: gray;
+    z-index: 1000;
+    width: 100vw;
+    max-height: 100vh;
+    font-weight: bold;
+    overflow: hidden;
+  }
+}
+</style>
