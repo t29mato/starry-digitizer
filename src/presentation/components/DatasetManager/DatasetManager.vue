@@ -15,14 +15,13 @@
     </h4>
     <v-list
       density="compact"
-      height="20vh"
-      class="overflow-y-auto mb-5 mt-1 pa-0"
-      style="outline: solid 1px gray"
+      class="mb-5 mt-1 pa-0"
+      style="min-height: 154px; outline: solid 1px gray"
     >
       <v-list-item
         v-for="dataset in datasetRepository.datasets"
         :key="dataset.id"
-        class="pl-2"
+        class="pl-2 c__dataset-item"
         link
         @click="handleOnClickDataset(dataset.id)"
         :class="
@@ -117,17 +116,22 @@ export default defineComponent({
       this.datasetRepository.createNewDataset()
       this.activateDataset(this.datasetRepository.lastDatasetId)
     },
-    handleOnClickRemoveDatasetButton() {
-      if (
-        !window.confirm(
-          'Are you sure to delete this dataset? This operation is irreversible.',
-        )
-      )
-        return
+    removeActiveDataset() {
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.removeDataset(
         this.datasetRepository.activeDatasetId,
       )
+    },
+    handleOnClickRemoveDatasetButton() {
+      //NOTE: remove active dataset without confirmation if the active dataset doesn't have data points
+      if (this.datasetRepository.activeDataset.plots.length === 0) {
+        this.removeActiveDataset()
+        return
+      }
+
+      window.confirm(
+        `Are you sure to delete '${this.datasetRepository.activeDataset.name}'? This operation is irreversible.`,
+      ) && this.removeActiveDataset()
     },
   },
 })
