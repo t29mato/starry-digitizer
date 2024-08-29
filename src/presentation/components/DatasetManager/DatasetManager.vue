@@ -116,17 +116,22 @@ export default defineComponent({
       this.datasetRepository.createNewDataset()
       this.activateDataset(this.datasetRepository.lastDatasetId)
     },
-    handleOnClickRemoveDatasetButton() {
-      if (
-        !window.confirm(
-          'Are you sure to delete this dataset? This operation is irreversible.',
-        )
-      )
-        return
+    removeActiveDataset() {
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.removeDataset(
         this.datasetRepository.activeDatasetId,
       )
+    },
+    handleOnClickRemoveDatasetButton() {
+      //NOTE: remove active dataset without confirmation if the active dataset doesn't have data points
+      if (this.datasetRepository.activeDataset.plots.length === 0) {
+        this.removeActiveDataset()
+        return
+      }
+
+      window.confirm(
+        `Are you sure to delete '${this.datasetRepository.activeDataset.name}'? This operation is irreversible.`,
+      ) && this.removeActiveDataset()
     },
   },
 })
