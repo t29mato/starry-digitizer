@@ -8,6 +8,7 @@ export type Vector = {
 }
 
 export interface XYAxisSetInterface {
+  id: number
   x1: AxisInterface
   x2: AxisInterface
   y1: AxisInterface

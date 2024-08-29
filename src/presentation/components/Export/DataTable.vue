@@ -31,7 +31,7 @@ import { registerAllModules } from 'handsontable/registry'
 import { Plot } from '@/domain/models/dataset/datasetInterface'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 registerAllModules()
@@ -60,7 +60,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler,
-      axisRepository,
+      XYAxisSetRepository,
       datasetRepository,
       key: 0,
       activeColor: colors.green.lighten5,
@@ -78,10 +78,13 @@ export default defineComponent({
   methods: {
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxisSetCalculator(this.axisRepository, {
-        x: this.axisRepository.xIsLog,
-        y: this.axisRepository.yIsLog,
-      })
+      const calculator = new XYAxisSetCalculator(
+        this.XYAxisSetRepository.activeXYAxisSet,
+        {
+          x: this.XYAxisSetRepository.activeXYAxisSet.xIsLog,
+          y: this.XYAxisSetRepository.activeXYAxisSet.yIsLog,
+        },
+      )
       return calculator.calculateXYValues(x, y)
     },
     copyData: function () {

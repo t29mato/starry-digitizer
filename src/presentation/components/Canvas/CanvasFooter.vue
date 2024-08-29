@@ -3,15 +3,15 @@
     <v-btn
       class="ml-2"
       size="small"
-      :disabled="!axisRepository.hasAtLeastOneAxis"
+      :disabled="!XYAxisSetRepository.hasAtLeastOneAxis"
       @click="clearAxes"
     >
       Clear Axes</v-btn
     >
-    <!-- <v-btn class="ml-2" small :disabled="!axisRepository.hasXAxis" @click="clearXAxis">
+    <!-- <v-btn class="ml-2" small :disabled="!XYAxisSetRepository.hasXAxis" @click="clearXAxis">
       Clear X Axis</v-btn
     > -->
-    <!-- <v-btn class="ml-2" small :disabled="!axisRepository.hasYAxis" @click="clearYAxis">
+    <!-- <v-btn class="ml-2" small :disabled="!XYAxisSetRepository.hasYAxis" @click="clearYAxis">
       Clear Y Axis</v-btn
     > -->
     <v-btn
@@ -39,7 +39,7 @@ import { defineComponent } from 'vue'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
@@ -47,21 +47,21 @@ export default defineComponent({
     return {
       interpolator,
       canvasHandler,
-      axisRepository,
+      XYAxisSetRepository,
       datasetRepository,
     }
   },
   methods: {
     clearAxes() {
-      this.axisRepository.clearAxisCoords()
+      this.XYAxisSetRepository.activeXYAxisSet.clearAxisCoords()
       this.canvasHandler.setManualMode(-1)
     },
     clearXAxis() {
-      this.axisRepository.clearXAxisCoords()
+      this.XYAxisSetRepository.activeXYAxisSet.clearXAxisCoords()
       this.canvasHandler.setManualMode(-1)
     },
     clearYAxis() {
-      this.axisRepository.clearAxisCoords()
+      this.XYAxisSetRepository.activeXYAxisSet.clearAxisCoords()
       this.canvasHandler.setManualMode(-1)
     },
     handleOnClickClearPlots() {

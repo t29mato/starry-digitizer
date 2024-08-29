@@ -1,4 +1,4 @@
-import { Vector } from '../../repositories/axisRepository/axisRepositoryInterface'
+import { Vector } from '../XYAxisSet/XYAxisSetInterface'
 
 // INFO: Coord is coordinate
 export type Coord = {

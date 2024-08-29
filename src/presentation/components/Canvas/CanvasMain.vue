@@ -45,7 +45,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { CanvasAxes, CanvasPlots, CanvasCursor, CanvasAxesGuide } from '.'
-import { Vector } from '@/domain/repositories/axisRepository/axisRepositoryInterface'
+import { Vector } from '@/domain/models/XYAxisSet/XYAxisSetInterface'
 import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
 
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
@@ -56,7 +56,7 @@ import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 // INFO: to adjust the exact position the user clicked.
@@ -81,7 +81,7 @@ export default defineComponent({
       confirmer,
       extractor,
       canvasHandler,
-      axisRepository,
+      XYAxisSetRepository,
       datasetRepository,
     }
   },
@@ -127,7 +127,7 @@ export default defineComponent({
                   this.canvasHandler.scale
               : e.offsetY / this.canvasHandler.scale,
           )
-          this.axisRepository.inactivateAxis()
+          this.XYAxisSetRepository.activeXYAxisSet.inactivateAxis()
           this.datasetRepository.activeDataset.addManuallyAddedPlotId(
             this.datasetRepository.activeDataset.lastPlotId,
           )
@@ -144,14 +144,14 @@ export default defineComponent({
       if (isOnCanvasPlot) {
         return
       }
-      if (this.axisRepository.nextAxis) {
-        this.axisRepository.addAxisCoord({
+      if (this.XYAxisSetRepository.activeXYAxisSet.nextAxis) {
+        this.XYAxisSetRepository.activeXYAxisSet.addAxisCoord({
           xPx: (e.offsetX - offsetPx) / this.canvasHandler.scale,
           yPx: e.offsetY / this.canvasHandler.scale,
         })
         this.datasetRepository.activeDataset.inactivatePlots()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
-        if (!this.axisRepository.nextAxis) {
+        if (!this.XYAxisSetRepository.activeXYAxisSet.nextAxis) {
           this.canvasHandler.manualMode = 0
         }
         return
@@ -174,7 +174,7 @@ export default defineComponent({
     mouseMove(e: MouseEvent) {
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
-      this.axisRepository.isAdjusting = false
+      this.XYAxisSetRepository.activeXYAxisSet.isAdjusting = false
       this.datasetRepository.activeDataset.plotsAreAdjusting = false
       this.canvasHandler.setCursor({
         xPx: xPx / this.canvasHandler.scale,
@@ -280,11 +280,13 @@ export default defineComponent({
         distancePx: shiftKeyIsPressed ? 10 : 1,
       }
       if (
-        this.axisRepository.activeAxis &&
-        this.axisRepository.activeAxis.coord
+        this.XYAxisSetRepository.activeXYAxisSet.activeAxis &&
+        this.XYAxisSetRepository.activeXYAxisSet.activeAxis.coord
       ) {
-        this.axisRepository.moveActiveAxis(vector)
-        this.canvasHandler.setCursor(this.axisRepository.activeAxis.coord)
+        this.XYAxisSetRepository.activeXYAxisSet.moveActiveAxis(vector)
+        this.canvasHandler.setCursor(
+          this.XYAxisSetRepository.activeXYAxisSet.activeAxis.coord,
+        )
       }
       if (this.datasetRepository.activeDataset.plotsAreActive) {
         this.datasetRepository.activeDataset.moveActivePlot(vector)

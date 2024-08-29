@@ -1,30 +1,30 @@
 <template>
   <div>
     <magnifier-axis
-      :axis="axisRepository.x1"
-      :isActive="axisRepository.activeAxisName === 'x1'"
+      :axis="XYAxisSetRepository.activeXYAxisSet.x1"
+      :isActive="XYAxisSetRepository.activeXYAxisSet.activeAxisName === 'x1'"
     ></magnifier-axis>
     <magnifier-axis
-      :axis="axisRepository.x2"
-      :isActive="axisRepository.activeAxisName === 'x2'"
+      :axis="XYAxisSetRepository.activeXYAxisSet.x2"
+      :isActive="XYAxisSetRepository.activeXYAxisSet.activeAxisName === 'x2'"
     ></magnifier-axis>
     <magnifier-axis
-      :axis="axisRepository.y1"
-      :isActive="axisRepository.activeAxisName === 'y1'"
+      :axis="XYAxisSetRepository.activeXYAxisSet.y1"
+      :isActive="XYAxisSetRepository.activeXYAxisSet.activeAxisName === 'y1'"
     ></magnifier-axis>
     <magnifier-axis
-      :axis="axisRepository.y2"
-      :isActive="axisRepository.activeAxisName === 'y2'"
+      :axis="XYAxisSetRepository.activeXYAxisSet.y2"
+      :isActive="XYAxisSetRepository.activeXYAxisSet.activeAxisName === 'y2'"
     ></magnifier-axis>
     <magnifier-axis
-      :axis="axisRepository.x2y2"
-      :isActive="axisRepository.activeAxisName === 'x2y2'"
+      :axis="XYAxisSetRepository.activeXYAxisSet.x2y2"
+      :isActive="XYAxisSetRepository.activeXYAxisSet.activeAxisName === 'x2y2'"
     ></magnifier-axis>
   </div>
 </template>
 
 <script lang="ts">
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
 import MagnifierAxis from '@/presentation/components/Magnifier/MagnifierAxis.vue'
 import { defineComponent } from 'vue'
 export default defineComponent({
@@ -33,7 +33,7 @@ export default defineComponent({
   },
   data() {
     return {
-      axisRepository,
+      XYAxisSetRepository,
     }
   },
 })

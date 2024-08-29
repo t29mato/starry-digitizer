@@ -95,7 +95,7 @@ import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 import { forceRenderCanvasPlots } from '@/presentation/hacks/forceRenderCanvasPlots'
@@ -113,7 +113,7 @@ export default defineComponent({
       confirmer,
       extractor,
       canvasHandler,
-      axisRepository,
+      XYAxisSetRepository,
       datasetRepository,
       isExtracting: false,
     }
@@ -153,7 +153,7 @@ export default defineComponent({
     },
     async extractPlots() {
       this.isExtracting = true
-      this.axisRepository.inactivateAxis()
+      this.XYAxisSetRepository.activeXYAxisSet.inactivateAxis()
       try {
         this.datasetRepository.setPlots(
           this.extractor.execute(this.canvasHandler),

@@ -4,6 +4,7 @@ import { XYAxisSetInterface, Vector } from './XYAxisSetInterface'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
 
 export class XYAxisSet implements XYAxisSetInterface {
+  id: number
   x1: AxisInterface
   x2: AxisInterface
   y1: AxisInterface
@@ -23,12 +24,14 @@ export class XYAxisSet implements XYAxisSetInterface {
     y1: AxisInterface,
     y2: AxisInterface,
     x2y2: AxisInterface,
+    id: number,
   ) {
     this.x1 = x1
     this.x2 = x2
     this.y1 = y1
     this.y2 = y2
     this.x2y2 = x2y2
+    this.id = id
   }
 
   get hasAtLeastOneAxis(): boolean {

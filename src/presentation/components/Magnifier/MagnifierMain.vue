@@ -81,7 +81,7 @@ import XYAxisSetCalculator from '@/domain/services/XYAxisSetCalculator'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
@@ -101,7 +101,7 @@ export default defineComponent({
       shouldShowSettingsDialog: false,
       magnifier,
       canvasHandler,
-      axisRepository,
+      XYAxisSetRepository,
       datasetRepository,
     }
   },
@@ -124,10 +124,13 @@ export default defineComponent({
       yV: string
     } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxisSetCalculator(this.axisRepository, {
-        x: this.axisRepository.xIsLog,
-        y: this.axisRepository.yIsLog,
-      })
+      const calculator = new XYAxisSetCalculator(
+        this.XYAxisSetRepository.activeXYAxisSet,
+        {
+          x: this.XYAxisSetRepository.activeXYAxisSet.xIsLog,
+          y: this.XYAxisSetRepository.activeXYAxisSet.yIsLog,
+        },
+      )
       return calculator.calculateXYValues(
         this.canvasHandler.cursor.xPx,
         this.canvasHandler.cursor.yPx,

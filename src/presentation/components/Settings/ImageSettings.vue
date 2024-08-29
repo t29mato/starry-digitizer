@@ -24,7 +24,7 @@ import { defineComponent } from 'vue'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
@@ -32,7 +32,7 @@ export default defineComponent({
     return {
       extractor,
       canvasHandler,
-      axisRepository,
+      XYAxisSetRepository,
       datasetRepository,
       interpolator,
       fileIsDraggedOver: false,
@@ -69,7 +69,7 @@ export default defineComponent({
         this.interpolator.isActive && this.interpolator.clearPreview()
         this.extractor.setSwatches(this.canvasHandler.colorSwatches)
         this.canvasHandler.setUploadImageUrl(fr.result)
-        this.axisRepository.clearAxisCoords()
+        this.XYAxisSetRepository.activeXYAxisSet.clearAxisCoords()
         this.datasetRepository.activeDataset.clearPlots()
       } catch (e) {
         console.error('failed to update image', { cause: e })

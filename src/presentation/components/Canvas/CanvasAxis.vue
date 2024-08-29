@@ -42,7 +42,7 @@ import { defineComponent } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
@@ -60,7 +60,7 @@ export default defineComponent({
     return {
       fontSize: 14,
       canvasHandler,
-      axisRepository,
+      XYAxisSetRepository,
       axisSizePx: STYLE.axisSizePx,
     }
   },
@@ -112,14 +112,14 @@ export default defineComponent({
     },
     isActive(): boolean {
       if (
-        this.axisRepository.pointMode === 0 &&
-        this.axisRepository.activeAxisName === 'x1' &&
+        this.XYAxisSetRepository.activeXYAxisSet.pointMode === 0 &&
+        this.XYAxisSetRepository.activeXYAxisSet.activeAxisName === 'x1' &&
         this.axis.name === 'y1'
       ) {
         return true
       }
 
-      return this.axisRepository.activeAxisName === this.axis.name
+      return this.XYAxisSetRepository.activeXYAxisSet === this.axis.name
     },
   },
   methods: {},
