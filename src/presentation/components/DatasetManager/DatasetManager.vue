@@ -15,14 +15,13 @@
     </h4>
     <v-list
       density="compact"
-      height="20vh"
-      class="overflow-y-auto mb-5 mt-1 pa-0"
-      style="outline: solid 1px gray"
+      class="mb-5 mt-1 pa-0"
+      style="min-height: 154px; outline: solid 1px gray"
     >
       <v-list-item
         v-for="dataset in datasetRepository.datasets"
         :key="dataset.id"
-        class="pl-2"
+        class="pl-2 c__dataset-item"
         link
         @click="handleOnClickDataset(dataset.id)"
         :class="
