@@ -6,7 +6,7 @@
           <td class="pl-0 pr-1">X</td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="x1Axis.value"
+              v-model.number="x1Axis.value"
               id="x1-value"
               type="number"
               hide-details
@@ -38,7 +38,7 @@
           </td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="x2Axis.value"
+              v-model.number="x2Axis.value"
               id="x2-value"
               type="number"
               hide-details
@@ -83,7 +83,7 @@
           <td class="pl-0 pr-1">Y</td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="y1Axis.value"
+              v-model.number="y1Axis.value"
               id="y1-value"
               type="number"
               hide-details
@@ -115,7 +115,7 @@
           </td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="y2Axis.value"
+              v-model.number="y2Axis.value"
               id="y2-value"
               type="number"
               hide-details
