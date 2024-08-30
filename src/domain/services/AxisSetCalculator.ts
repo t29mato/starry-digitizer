@@ -1,5 +1,5 @@
 //INFO: implementing this class because this calculation logics hand XY values over to the dataset domain, using the states of AxisSet domain (handling multiple domain models)
-import { AxisSetInterface } from '../models/axisSet/axisSetInterface'
+import { AxisSetInterface } from '../models/axisSet/axisSetInterface
 
 export default class AxisSetCalculator {
   // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
