@@ -1,25 +1,30 @@
 <template>
-  <div class="d-flex justify-end">
-    <div></div>
-    <div class="ml-2">
-      <v-btn size="small" @click="handleOnClickScaleDownButton"
-        ><v-icon>mdi-minus</v-icon></v-btn
-      >
-      <v-btn size="small" class="ml-2" @click="handleOnClickScaleUpButton"
-        ><v-icon>mdi-plus</v-icon></v-btn
-      >
-      <v-btn
-        id="reset-canvas-scale"
-        size="small"
-        class="ml-2"
-        @click="handleOnClickResetScaleButton"
-        >100%</v-btn
-      >
-      <v-btn size="small" class="ml-2" @click="handleOnClickFitButton"
-        >Fit</v-btn
-      >
+  <div class="d-flex justify-space-between align-center">
+    <div class="c__current-dataset-and-axis">
+      Dataset: <span>{{ datasetRepository.activeDataset.name }}</span> / XY
+      Axes: <span>{{ axisSetRepository.activeAxisSet.name }}</span>
     </div>
-    <span class="ma-1">{{ showCanvasScale }}</span>
+    <div class="d-flex justify-end">
+      <div class="ml-2">
+        <v-btn size="small" @click="handleOnClickScaleDownButton"
+          ><v-icon>mdi-minus</v-icon></v-btn
+        >
+        <v-btn size="small" class="ml-2" @click="handleOnClickScaleUpButton"
+          ><v-icon>mdi-plus</v-icon></v-btn
+        >
+        <v-btn
+          id="reset-canvas-scale"
+          size="small"
+          class="ml-2"
+          @click="handleOnClickResetScaleButton"
+          >100%</v-btn
+        >
+        <v-btn size="small" class="ml-2" @click="handleOnClickFitButton"
+          >Fit</v-btn
+        >
+      </div>
+      <span class="ma-1">{{ showCanvasScale }}</span>
+    </div>
   </div>
 </template>
 
@@ -28,12 +33,16 @@ import { defineComponent } from 'vue'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   data() {
     return {
       interpolator,
       canvasHandler,
+      axisSetRepository,
+      datasetRepository,
     }
   },
   computed: {
@@ -61,3 +70,16 @@ export default defineComponent({
   },
 })
 </script>
+<style lang="scss" scoped>
+.c {
+  &__current-dataset-and-axis {
+    font-size: 0.9rem;
+    color: rgb(73, 73, 73);
+    margin-right: 40px;
+
+    span {
+      font-weight: bold;
+    }
+  }
+}
+</style>
