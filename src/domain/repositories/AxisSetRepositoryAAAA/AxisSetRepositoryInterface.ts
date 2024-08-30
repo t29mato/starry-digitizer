@@ -1,4 +1,4 @@
-import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
+import { AxisSetInterface } from '@/domain/models/AxisSetAAA/axisSetInterface'
 
 export interface AxisSetRepositoryInterface {
   axisSets: AxisSetInterface[]
