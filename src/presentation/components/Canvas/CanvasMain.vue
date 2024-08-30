@@ -45,7 +45,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { CanvasAxisSet, CanvasPlots, CanvasCursor, CanvasAxisSetGuide } from '.'
-import { Vector } from '@/domain/models/AxisSet/AxisSetInterface'
+import { Vector } from '@/domain/models/axisSet/axisSetInterface'
 import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
 
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'

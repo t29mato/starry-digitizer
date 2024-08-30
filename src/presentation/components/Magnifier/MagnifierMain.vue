@@ -77,7 +77,7 @@ import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
-import AxisSetCalculator from '@/domain/services/AxisSetCalculator'
+import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'

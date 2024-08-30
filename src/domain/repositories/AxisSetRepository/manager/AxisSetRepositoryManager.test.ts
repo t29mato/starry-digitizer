@@ -1,5 +1,5 @@
-import { AxisSetRepositoryInterface } from '../AxisSetRepositoryInterface'
-import { AxisSetRepositoryManager } from './AxisSetRepositoryManager'
+import { AxisSetRepositoryInterface } from '../axisSetRepositoryInterface'
+import { AxisSetRepositoryManager } from './axisSetRepositoryManager'
 
 const manager = new AxisSetRepositoryManager()
 let firstInstance: AxisSetRepositoryInterface

@@ -1,6 +1,6 @@
 import { Axis } from '@/domain/models/axis/axis'
-import { AxisSetRepository } from '../AxisSetRepository'
-import { AxisSetRepositoryInterface } from '../AxisSetRepositoryInterface'
+import { AxisSetRepository } from '../axisSetRepository'
+import { AxisSetRepositoryInterface } from '../axisSetRepositoryInterface'
 import { InstanceManager } from '@/general/instanceManager/instanceManager'
 import { RepositoryManagerInterface } from '../../repositoryManagerInterface'
 import { AxisSet } from '@/domain/models/axisSet/axisSet'
