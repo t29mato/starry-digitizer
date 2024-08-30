@@ -69,11 +69,7 @@ export default defineComponent({
   },
   methods: {
     activateAxisSet(id: number) {
-      this.interpolator.isActive && this.interpolator.clearPreview()
       this.axisSetRepository.setActiveAxisSet(id)
-      // INFO: データセットが変えた時はマスクをクリアすることが多いので。
-      this.canvasHandler.clearMask()
-      this.canvasHandler.maskMode = -1
     },
     handleOnClickAxisSet(id: number) {
       if (id === this.axisSetRepository.activeAxisSetId) return
@@ -85,7 +81,6 @@ export default defineComponent({
       this.activateAxisSet(this.axisSetRepository.lastAxisSetId)
     },
     removeActiveAxisSet() {
-      this.interpolator.isActive && this.interpolator.clearPreview()
       this.axisSetRepository.removeAxisSet(
         this.axisSetRepository.activeAxisSetId,
       )
