@@ -6,7 +6,7 @@
       :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
       @click="clearAxisSet"
     >
-      Clear AxisSet</v-btn
+      Clear XY Axes</v-btn
     >
     <!-- <v-btn class="ml-2" small :disabled="!axisSetRepository.activeAxisSet.hasXAxis" @click="clearXAxis">
       Clear X Axis</v-btn

@@ -69,10 +69,25 @@ export default defineComponent({
       sortOrders: ['ascending', 'descending'],
     }
   },
+  computed: {
+    allAxisCoordsAreFilled() {
+      return (
+        this.axisSetRepository.activeAxisSet.hasXAxis &&
+        this.axisSetRepository.activeAxisSet.hasYAxis
+      )
+    },
+  },
   methods: {
     activateAxisSet(id: number) {
       this.axisSetRepository.setActiveAxisSet(id)
       this.datasetRepository.activeDataset.setAxisSetId(id)
+
+      //NOTE: If axis coords are not calibrated, change manualMode for calibration. Otherwise automatically set to ADD mode
+      if (this.axisSetRepository.activeAxisSet.nextAxis) {
+        this.canvasHandler.manualMode = -1
+      } else {
+        this.canvasHandler.manualMode = 0
+      }
     },
     handleOnClickAxisSet(id: number) {
       if (id === this.axisSetRepository.activeAxisSetId) return
