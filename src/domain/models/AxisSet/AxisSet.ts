@@ -1,9 +1,9 @@
 //TODO: move Coord type from datasetInterface to other shared type definition
 import { Coord } from '@/domain/models/dataset/datasetInterface'
-import { XYAxisSetInterface, Vector } from './XYAxisSetInterface'
+import { AxisSetInterface, Vector } from './AxisSetInterface'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
 
-export class XYAxisSet implements XYAxisSetInterface {
+export class AxisSet implements AxisSetInterface {
   id: number
   x1: AxisInterface
   x2: AxisInterface
@@ -51,7 +51,7 @@ export class XYAxisSet implements XYAxisSetInterface {
     return this.y1.coordIsFilled || this.y2.coordIsFilled
   }
 
-  get hasOnlyX1Y1Axes(): boolean {
+  get hasOnlyX1Y1AxisSet(): boolean {
     return (
       this.x1.coordIsFilled &&
       this.y1.coordIsFilled &&
@@ -79,7 +79,7 @@ export class XYAxisSet implements XYAxisSetInterface {
 
   get nextAxis(): AxisInterface | null {
     //INFO: 以下の条件の時はx2,y2を同時に定義するモードに入る
-    if (this.pointMode === 0 && this.hasOnlyX1Y1Axes) {
+    if (this.pointMode === 0 && this.hasOnlyX1Y1AxisSet) {
       return this.x2y2
     }
 
@@ -163,7 +163,7 @@ export class XYAxisSet implements XYAxisSetInterface {
 
   addAxisCoord(coord: Coord) {
     if (!this.nextAxis) {
-      throw new Error('The axes already filled.')
+      throw new Error('The axisSet already filled.')
     }
 
     this.activeAxisName = this.nextAxis.name

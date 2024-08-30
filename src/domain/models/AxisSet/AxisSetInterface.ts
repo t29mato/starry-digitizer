@@ -7,7 +7,7 @@ export type Vector = {
   distancePx: number
 }
 
-export interface XYAxisSetInterface {
+export interface AxisSetInterface {
   id: number
   x1: AxisInterface
   x2: AxisInterface

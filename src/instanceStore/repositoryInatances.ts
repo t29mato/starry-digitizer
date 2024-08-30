@@ -1,6 +1,6 @@
-import { XYAxisSetRepositoryManager } from '@/domain/repositories/XYAxisSetRepository/manager/XYAxisSetRepositoryManager'
+import { AxisSetRepositoryManager } from '@/domain/repositories/AxisSetRepository/manager/AxisSetRepositoryManager'
 import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export const datasetRepository = new DatasetRepositoryManager().getInstance()
-export const XYAxisSetRepository =
-  new XYAxisSetRepositoryManager().getInstance()
+export const AxisSetRepository =
+  new AxisSetRepositoryManager().getInstance()

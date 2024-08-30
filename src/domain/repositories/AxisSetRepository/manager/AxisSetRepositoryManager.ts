@@ -1,17 +1,17 @@
 import { Axis } from '@/domain/models/axis/axis'
-import { XYAxisSetRepository } from '../XYAxisSetRepository'
-import { XYAxisSetRepositoryInterface } from '../XYAxisSetRepositoryInterface'
+import { AxisSetRepository } from '../AxisSetRepository'
+import { AxisSetRepositoryInterface } from '../AxisSetRepositoryInterface'
 import { InstanceManager } from '@/general/instanceManager/instanceManager'
 import { RepositoryManagerInterface } from '../../repositoryManagerInterface'
-import { XYAxisSet } from '@/domain/models/XYAxisSet/XYAxisSet'
+import { AxisSet } from '@/domain/models/AxisSet/AxisSet'
 
-export class XYAxisSetRepositoryManager
-  extends InstanceManager<XYAxisSetRepositoryInterface>
-  implements RepositoryManagerInterface<XYAxisSetRepositoryInterface>
+export class AxisSetRepositoryManager
+  extends InstanceManager<AxisSetRepositoryInterface>
+  implements RepositoryManagerInterface<AxisSetRepositoryInterface>
 {
   private instanceCreator = () => {
-    return new XYAxisSetRepository(
-      new XYAxisSet(
+    return new AxisSetRepository(
+      new AxisSet(
         new Axis('x1', 0),
         new Axis('x2', 1),
         new Axis('y1', 0),

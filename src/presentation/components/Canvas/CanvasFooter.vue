@@ -3,15 +3,15 @@
     <v-btn
       class="ml-2"
       size="small"
-      :disabled="!XYAxisSetRepository.hasAtLeastOneAxis"
-      @click="clearAxes"
+      :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
+      @click="clearAxisSet"
     >
-      Clear Axes</v-btn
+      Clear AxisSet</v-btn
     >
-    <!-- <v-btn class="ml-2" small :disabled="!XYAxisSetRepository.hasXAxis" @click="clearXAxis">
+    <!-- <v-btn class="ml-2" small :disabled="!axisSetRepository.activeAxisSet.hasXAxis" @click="clearXAxis">
       Clear X Axis</v-btn
     > -->
-    <!-- <v-btn class="ml-2" small :disabled="!XYAxisSetRepository.hasYAxis" @click="clearYAxis">
+    <!-- <v-btn class="ml-2" small :disabled="!axisSetRepository.activeAxisSet.hasYAxis" @click="clearYAxis">
       Clear Y Axis</v-btn
     > -->
     <v-btn
@@ -39,7 +39,7 @@ import { defineComponent } from 'vue'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
@@ -47,21 +47,21 @@ export default defineComponent({
     return {
       interpolator,
       canvasHandler,
-      XYAxisSetRepository,
+      axisSetRepository: AxisSetRepository,
       datasetRepository,
     }
   },
   methods: {
-    clearAxes() {
-      this.XYAxisSetRepository.activeXYAxisSet.clearAxisCoords()
+    clearAxisSet() {
+      this.axisSetRepository.activeAxisSet.clearAxisCoords()
       this.canvasHandler.setManualMode(-1)
     },
     clearXAxis() {
-      this.XYAxisSetRepository.activeXYAxisSet.clearXAxisCoords()
+      this.axisSetRepository.activeAxisSet.clearXAxisCoords()
       this.canvasHandler.setManualMode(-1)
     },
     clearYAxis() {
-      this.XYAxisSetRepository.activeXYAxisSet.clearAxisCoords()
+      this.axisSetRepository.activeAxisSet.clearAxisCoords()
       this.canvasHandler.setManualMode(-1)
     },
     handleOnClickClearPlots() {

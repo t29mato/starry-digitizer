@@ -1,54 +1,51 @@
-//INFO: implementing this class because this calculation logics hand XY values over to the dataset domain, using the states of XYAxisSet domain (handling multiple domain models)
-import { XYAxisSetInterface } from '../models/XYAxisSet/XYAxisSetInterface'
+//INFO: implementing this class because this calculation logics hand XY values over to the dataset domain, using the states of AxisSet domain (handling multiple domain models)
+import { AxisSetInterface } from '../models/AxisSet/AxisSetInterface'
 
-export default class XYAxisSetCalculator {
+export default class AxisSetCalculator {
   // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
   effectiveDigits: number = 4
 
-  #XYAxisSet: XYAxisSetInterface
+  #axisSet: AxisSetInterface
   #isLog: { x: boolean; y: boolean }
-  constructor(
-    XYAxisSet: XYAxisSetInterface,
-    isLog: { x: boolean; y: boolean },
-  ) {
-    this.#XYAxisSet = XYAxisSet
+  constructor(axisSet: AxisSetInterface, isLog: { x: boolean; y: boolean }) {
+    this.#axisSet = axisSet
     this.#isLog = isLog
   }
   calculateXYValues(xt: number, yt: number): { xV: string; yV: string } {
     if (
       !(
-        this.#XYAxisSet.x1.coord &&
-        this.#XYAxisSet.x2.coord &&
-        this.#XYAxisSet.y1.coord &&
-        this.#XYAxisSet.y2.coord
+        this.#axisSet.x1.coord &&
+        this.#axisSet.x2.coord &&
+        this.#axisSet.y1.coord &&
+        this.#axisSet.y2.coord
       )
     ) {
       return { xV: 'NaN', yV: 'NaN' }
     }
     if (
-      this.#XYAxisSet.x1.value === this.#XYAxisSet.x2.value ||
-      this.#XYAxisSet.y1.value === this.#XYAxisSet.y2.value
+      this.#axisSet.x1.value === this.#axisSet.x2.value ||
+      this.#axisSet.y1.value === this.#axisSet.y2.value
     ) {
       return { xV: 'NaN', yV: 'NaN' }
     }
 
     const [xa, ya, xb, yb, a, b, xc, yc, xd, yd, c, d] = [
-      this.#XYAxisSet.x1.coord.xPx,
-      this.#XYAxisSet.x1.coord.yPx,
-      this.#XYAxisSet.x2.coord.xPx,
-      this.#XYAxisSet.x2.coord.yPx,
-      this.#XYAxisSet.x1.value,
-      this.#XYAxisSet.x2.value,
-      this.#XYAxisSet.y1.coord.xPx,
-      this.#XYAxisSet.y1.coord.yPx,
-      this.#XYAxisSet.y2.coord.xPx,
-      this.#XYAxisSet.y2.coord.yPx,
-      this.#XYAxisSet.y1.value,
-      this.#XYAxisSet.y2.value,
+      this.#axisSet.x1.coord.xPx,
+      this.#axisSet.x1.coord.yPx,
+      this.#axisSet.x2.coord.xPx,
+      this.#axisSet.x2.coord.yPx,
+      this.#axisSet.x1.value,
+      this.#axisSet.x2.value,
+      this.#axisSet.y1.coord.xPx,
+      this.#axisSet.y1.coord.yPx,
+      this.#axisSet.y2.coord.xPx,
+      this.#axisSet.y2.coord.yPx,
+      this.#axisSet.y1.value,
+      this.#axisSet.y2.value,
     ]
     let xp = xt
     let yq = yt
-    if (this.#XYAxisSet.considerGraphTilt) {
+    if (this.#axisSet.considerGraphTilt) {
       const xab = xb - xa
       const yab = yb - ya
       const xcd = xd - xc
@@ -73,12 +70,12 @@ export default class XYAxisSetCalculator {
         )
       : ((yq - yc) / (yd - yc)) * (d - c) + c
     const xEffectiveDigits = this.calculateEffectiveDigits(
-      this.#XYAxisSet.x2.value,
-      this.#XYAxisSet.x1.value,
+      this.#axisSet.x2.value,
+      this.#axisSet.x1.value,
     )
     const yEffectiveDigits = this.calculateEffectiveDigits(
-      this.#XYAxisSet.y2.value,
-      this.#XYAxisSet.y1.value,
+      this.#axisSet.y2.value,
+      this.#axisSet.y1.value,
     )
     const xPrecised = parseFloat(xV.toPrecision(xEffectiveDigits))
     const yPrecised = parseFloat(yV.toPrecision(yEffectiveDigits))

@@ -46,7 +46,7 @@
         ></magnifier-plots>
       </div>
       <magnifier-extract-size></magnifier-extract-size>
-      <magnifier-axes></magnifier-axes>
+      <magnifier-axis-set></magnifier-axis-set>
       <magnifier-vertical-line></magnifier-vertical-line>
       <magnifier-horizontal-line></magnifier-horizontal-line>
       <div class="c__magnifier__white-outlines">
@@ -72,16 +72,16 @@ import { defineComponent } from 'vue'
 import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
-import MagnifierAxes from './MagnifierAxes.vue'
+import MagnifierAxisSet from './MagnifierAxisSet.vue'
 import MagnifierPlots from './MagnifierPlots.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
-import XYAxisSetCalculator from '@/domain/services/XYAxisSetCalculator'
+import AxisSetCalculator from '@/domain/services/AxisSetCalculator'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
@@ -89,7 +89,7 @@ export default defineComponent({
     MagnifierVerticalLine,
     MagnifierHorizontalLine,
     MagnifierImage,
-    MagnifierAxes,
+    MagnifierAxisSet,
     MagnifierPlots,
     MagnifierSettings,
     MagnifierSettingsBtn,
@@ -101,7 +101,7 @@ export default defineComponent({
       shouldShowSettingsDialog: false,
       magnifier,
       canvasHandler,
-      XYAxisSetRepository,
+      axisSetRepository: AxisSetRepository,
       datasetRepository,
     }
   },
@@ -124,11 +124,11 @@ export default defineComponent({
       yV: string
     } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxisSetCalculator(
-        this.XYAxisSetRepository.activeXYAxisSet,
+      const calculator = new AxisSetCalculator(
+        this.axisSetRepository.activeAxisSet,
         {
-          x: this.XYAxisSetRepository.activeXYAxisSet.xIsLog,
-          y: this.XYAxisSetRepository.activeXYAxisSet.yIsLog,
+          x: this.axisSetRepository.activeAxisSet.xIsLog,
+          y: this.axisSetRepository.activeAxisSet.yIsLog,
         },
       )
       return calculator.calculateXYValues(

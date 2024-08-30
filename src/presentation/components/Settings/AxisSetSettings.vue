@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h4>XY Axes</h4>
-    <table class="c__XYAxisSetRepository-settings__table">
+    <h4>XY AxisSet</h4>
+    <table class="c__AxisSetRepository-settings__table">
       <tbody>
         <tr>
           <td class="pl-0 pr-1">X</td>
@@ -15,7 +15,7 @@
               density="compact"
             >
               <div
-                class="c__XYAxisSetRepository-settings__log-adjuster"
+                class="c__AxisSetRepository-settings__log-adjuster"
                 v-if="xIsLog"
               >
                 <button
@@ -47,7 +47,7 @@
               density="compact"
             >
               <div
-                class="c__XYAxisSetRepository-settings__log-adjuster"
+                class="c__AxisSetRepository-settings__log-adjuster"
                 v-if="xIsLog"
               >
                 <button
@@ -77,7 +77,7 @@
               hide-details
               density="compact"
             ></v-checkbox>
-            <span class="c__XYAxisSetRepository-settings__hint">Log</span>
+            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
         </tr>
         <tr>
@@ -92,7 +92,7 @@
               density="compact"
             >
               <div
-                class="c__XYAxisSetRepository-settings__log-adjuster"
+                class="c__AxisSetRepository-settings__log-adjuster"
                 v-if="yIsLog"
               >
                 <button
@@ -124,7 +124,7 @@
               density="compact"
             >
               <div
-                class="c__XYAxisSetRepository-settings__log-adjuster"
+                class="c__AxisSetRepository-settings__log-adjuster"
                 v-if="yIsLog"
               >
                 <button
@@ -154,18 +154,18 @@
               density="compact"
               hide-details
             ></v-checkbox>
-            <span class="c__XYAxisSetRepository-settings__hint">Log</span>
+            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
         </tr>
       </tbody>
     </table>
     <div class="mb-5">
-      <h5 class="c__XYAxisSetRepository-settings__point-mode__label">
-        Define the axes by the coordinates of:
+      <h5 class="c__AxisSetRepository-settings__point-mode__label">
+        Define the axisSet by the coordinates of:
       </h5>
       <v-radio-group
         row
-        v-model.number="XYAxisSetRepository.activeXYAxisSet.pointMode"
+        v-model.number="axisSetRepository.activeAxisSet.pointMode"
         inline
         color="primary"
         hide-details
@@ -174,17 +174,17 @@
         <v-radio label="4 Points" :value="1"></v-radio>
       </v-radio-group>
       <v-checkbox
-        v-if="XYAxisSetRepository.activeXYAxisSet.pointMode === 1"
-        v-model="XYAxisSetRepository.activeXYAxisSet.considerGraphTilt"
+        v-if="axisSetRepository.activeAxisSet.pointMode === 1"
+        v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
         label="Consider graph tilt"
         density="compact"
         color="primary"
       ></v-checkbox>
       <v-checkbox
-        label="Show axes marker"
+        label="Show axisSet marker"
         density="compact"
         color="primary"
-        v-model="XYAxisSetRepository.activeXYAxisSet.isVisible"
+        v-model="axisSetRepository.activeAxisSet.isVisible"
       ></v-checkbox>
     </div>
 
@@ -195,12 +195,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   computed: {
     errorMessage(): string {
-      if (this.XYAxisSetRepository.activeXYAxisSet.xIsLog) {
+      if (this.axisSetRepository.activeAxisSet.xIsLog) {
         if (this.x1 === '0' || this.x2 === '0') {
           return 'x1 or x2 should not be 0'
         }
@@ -209,7 +209,7 @@ export default defineComponent({
           return 'x1 and x2 should not be same value'
         }
       }
-      if (this.XYAxisSetRepository.activeXYAxisSet.yIsLog) {
+      if (this.axisSetRepository.activeAxisSet.yIsLog) {
         if (this.y1 === '0' || this.y2 === '0') {
           return 'y1 or y2 should not be 0'
         }
@@ -223,7 +223,7 @@ export default defineComponent({
   },
   data() {
     return {
-      XYAxisSetRepository,
+      axisSetRepository: AxisSetRepository,
       x1: '0',
       x2: '1',
       y1: '0',
@@ -272,31 +272,31 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.x1 = String(this.XYAxisSetRepository.activeXYAxisSet.x1.value)
-    this.x2 = String(this.XYAxisSetRepository.activeXYAxisSet.x2.value)
-    this.y1 = String(this.XYAxisSetRepository.activeXYAxisSet.y1.value)
-    this.y2 = String(this.XYAxisSetRepository.activeXYAxisSet.y2.value)
-    this.xIsLog = this.XYAxisSetRepository.activeXYAxisSet.xIsLog
-    this.yIsLog = this.XYAxisSetRepository.activeXYAxisSet.yIsLog
+    this.x1 = String(this.axisSetRepository.activeAxisSet.x1.value)
+    this.x2 = String(this.axisSetRepository.activeAxisSet.x2.value)
+    this.y1 = String(this.axisSetRepository.activeAxisSet.y1.value)
+    this.y2 = String(this.axisSetRepository.activeAxisSet.y2.value)
+    this.xIsLog = this.axisSetRepository.activeAxisSet.xIsLog
+    this.yIsLog = this.axisSetRepository.activeAxisSet.yIsLog
   },
   watch: {
     xIsLog(value: boolean) {
-      this.XYAxisSetRepository.activeXYAxisSet.setXIsLog(value)
+      this.axisSetRepository.activeAxisSet.setXIsLog(value)
     },
     yIsLog(value: boolean) {
-      this.XYAxisSetRepository.activeXYAxisSet.setYIsLog(value)
+      this.axisSetRepository.activeAxisSet.setYIsLog(value)
     },
     x1(value: string) {
-      this.XYAxisSetRepository.activeXYAxisSet.setX1Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setX1Value(parseFloat(value))
     },
     x2(value: string) {
-      this.XYAxisSetRepository.activeXYAxisSet.setX2Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setX2Value(parseFloat(value))
     },
     y1(value: string) {
-      this.XYAxisSetRepository.activeXYAxisSet.setY1Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setY1Value(parseFloat(value))
     },
     y2(value: string) {
-      this.XYAxisSetRepository.activeXYAxisSet.setY2Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setY2Value(parseFloat(value))
     },
   },
 })
@@ -304,7 +304,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .c {
-  &__XYAxisSetRepository-settings {
+  &__AxisSetRepository-settings {
     &__table {
       margin-bottom: 20px;
     }

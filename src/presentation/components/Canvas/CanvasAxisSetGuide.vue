@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isActive" class="axes-guide">
+  <div v-if="isActive" class="axisSet-guide">
     <div v-if="isX1Y1LineVisible" :style="X1Y1HorizontalLineStyle"></div>
     <div v-if="isX1Y1LineVisible" :style="X1Y1VerticalLineStyle"></div>
     <div v-if="isX2Y2LineVisible" :style="X2Y2HorizontalLineStyle"></div>
@@ -12,9 +12,9 @@ import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { XYAxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
 
-const axesGuideCommonStyle: CSSProperties = {
+const axisSetGuideCommonStyle: CSSProperties = {
   position: 'absolute',
   backgroundColor: '#00ff00',
   opacity: '0.8',
@@ -25,7 +25,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler,
-      XYAxisSetRepository,
+      axisSetRepository: AxisSetRepository,
     }
   },
   methods: {
@@ -40,25 +40,24 @@ export default defineComponent({
   },
   computed: {
     isActive(): boolean {
-      return this.XYAxisSetRepository.activeXYAxisSet.pointMode === 0
+      return this.axisSetRepository.activeAxisSet.pointMode === 0
     },
     isX1Y1LineVisible(): boolean {
       return (
-        this.XYAxisSetRepository.activeXYAxisSet.x1.coordIsFilled ||
+        this.axisSetRepository.activeAxisSet.x1.coordIsFilled ||
         this.canvasHandler.scaledCursor.xPx !== 0
       )
     },
     isX2Y2LineVisible(): boolean {
-      return this.XYAxisSetRepository.activeXYAxisSet.x2y2.coordIsFilled
+      return this.axisSetRepository.activeAxisSet.x2y2.coordIsFilled
     },
     X1Y1HorizontalLineStyle() {
-      const styleTopNum = this.XYAxisSetRepository.activeXYAxisSet.x1
-        .coordIsFilled
-        ? this.XYAxisSetRepository.activeXYAxisSet.x1.coord.yPx *
+      const styleTopNum = this.axisSetRepository.activeAxisSet.x1.coordIsFilled
+        ? this.axisSetRepository.activeAxisSet.x1.coord.yPx *
           this.canvasHandler.scale
         : this.canvasHandler.scaledCursor.yPx
       return {
-        ...axesGuideCommonStyle,
+        ...axisSetGuideCommonStyle,
         right: '0',
         left: '0',
         width: `${this.getImageCanvasSize().w}px`,
@@ -68,13 +67,12 @@ export default defineComponent({
     },
     X1Y1VerticalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
-      const styleLeftNum = this.XYAxisSetRepository.activeXYAxisSet.x1
-        .coordIsFilled
-        ? this.XYAxisSetRepository.activeXYAxisSet.x1.coord.xPx *
+      const styleLeftNum = this.axisSetRepository.activeAxisSet.x1.coordIsFilled
+        ? this.axisSetRepository.activeAxisSet.x1.coord.xPx *
           this.canvasHandler.scale
         : this.canvasHandler.scaledCursor.xPx
       return {
-        ...axesGuideCommonStyle,
+        ...axisSetGuideCommonStyle,
         width: '1px',
         height: `${this.getImageCanvasSize().h}px`,
         top: '0',
@@ -85,13 +83,13 @@ export default defineComponent({
 
     X2Y2HorizontalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
-      const styleTopNum = this.XYAxisSetRepository.activeXYAxisSet.x2y2
+      const styleTopNum = this.axisSetRepository.activeAxisSet.x2y2
         .coordIsFilled
-        ? this.XYAxisSetRepository.activeXYAxisSet.x2y2.coord.yPx *
+        ? this.axisSetRepository.activeAxisSet.x2y2.coord.yPx *
           this.canvasHandler.scale
         : this.canvasHandler.scaledCursor.yPx
       return {
-        ...axesGuideCommonStyle,
+        ...axisSetGuideCommonStyle,
         right: '0',
         left: '0',
         width: `${this.getImageCanvasSize().w}px`,
@@ -101,13 +99,13 @@ export default defineComponent({
     },
     X2Y2VerticalLineStyle(): CSSProperties {
       //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
-      const styleLeftNum = this.XYAxisSetRepository.activeXYAxisSet.x2y2
+      const styleLeftNum = this.axisSetRepository.activeAxisSet.x2y2
         .coordIsFilled
-        ? this.XYAxisSetRepository.activeXYAxisSet.x2y2.coord.xPx *
+        ? this.axisSetRepository.activeAxisSet.x2y2.coord.xPx *
           this.canvasHandler.scale
         : this.canvasHandler.scaledCursor.xPx
       return {
-        ...axesGuideCommonStyle,
+        ...axisSetGuideCommonStyle,
         width: '1px',
         height: `${this.getImageCanvasSize().h}px`,
         top: '0',
