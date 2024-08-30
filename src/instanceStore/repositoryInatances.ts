@@ -2,5 +2,4 @@ import { AxisSetRepositoryManager } from '@/domain/repositories/AxisSetRepositor
 import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 
 export const datasetRepository = new DatasetRepositoryManager().getInstance()
-export const AxisSetRepository =
-  new AxisSetRepositoryManager().getInstance()
+export const axisSetRepository = new AxisSetRepositoryManager().getInstance()

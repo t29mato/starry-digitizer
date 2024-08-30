@@ -15,7 +15,7 @@ beforeEach(() => {
   y1 = new Axis('y1', 0)
   y2 = new Axis('y2', 1)
   x2y2 = new Axis('x2y2', -1)
-  axisSet = new AxisSet(x1, x2, y1, y2, x2y2, 1)
+  axisSet = new AxisSet(x1, x2, y1, y2, x2y2, 1, 'XY Axes 1')
 })
 
 describe('4 points setting mode', () => {

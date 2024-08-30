@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h4>XY AxisSet</h4>
     <table class="c__AxisSetRepository-settings__table">
       <tbody>
         <tr>
@@ -161,7 +160,7 @@
     </table>
     <div class="mb-5">
       <h5 class="c__AxisSetRepository-settings__point-mode__label">
-        Define the axisSet by the coordinates of:
+        Define the axes by the coordinates of:
       </h5>
       <v-radio-group
         row
@@ -181,7 +180,7 @@
         color="primary"
       ></v-checkbox>
       <v-checkbox
-        label="Show axisSet marker"
+        label="Show axes marker"
         density="compact"
         color="primary"
         v-model="axisSetRepository.activeAxisSet.isVisible"
@@ -195,7 +194,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   computed: {
@@ -223,7 +222,7 @@ export default defineComponent({
   },
   data() {
     return {
-      axisSetRepository: AxisSetRepository,
+      axisSetRepository,
       x1: '0',
       x2: '1',
       y1: '0',

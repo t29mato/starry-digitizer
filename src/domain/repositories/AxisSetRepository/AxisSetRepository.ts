@@ -1,5 +1,7 @@
 import { AxisSetInterface } from '@/domain/models/AxisSet/AxisSetInterface'
 import { AxisSetRepositoryInterface } from './AxisSetRepositoryInterface'
+import { AxisSet } from '@/domain/models/AxisSet/AxisSet'
+import { Axis } from '@/domain/models/axis/axis'
 
 export class AxisSetRepository implements AxisSetRepositoryInterface {
   axisSets: AxisSetInterface[]
@@ -18,5 +20,43 @@ export class AxisSetRepository implements AxisSetRepositoryInterface {
     }
 
     return targetAxisSet
+  }
+
+  get nextAxisSetId(): number {
+    if (this.axisSets.length === 0) {
+      return 1
+    }
+    return this.axisSets[this.axisSets.length - 1].id + 1
+  }
+
+  get lastAxisSetId(): number {
+    return this.axisSets[this.axisSets.length - 1].id
+  }
+
+  setActiveAxisSet(id: number): void {
+    this.activeAxisSetId = id
+  }
+
+  createNewAxisSet(): void {
+    this.addAxisSet(
+      new AxisSet(
+        new Axis('x1', 0),
+        new Axis('x2', 1),
+        new Axis('y1', 0),
+        new Axis('y2', 1),
+        new Axis('x2y2', -1),
+        this.nextAxisSetId,
+        `XY Axes ${this.nextAxisSetId}`,
+      ),
+    )
+  }
+
+  addAxisSet(axisSet: AxisSetInterface): void {
+    this.axisSets.push(axisSet)
+  }
+
+  removeAxisSet(id: number): void {
+    this.axisSets = this.axisSets.filter((axisSet) => axisSet.id !== id)
+    this.setActiveAxisSet(this.axisSets[0].id)
   }
 }

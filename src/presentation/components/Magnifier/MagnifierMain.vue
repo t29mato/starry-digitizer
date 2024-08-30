@@ -81,7 +81,7 @@ import AxisSetCalculator from '@/domain/services/AxisSetCalculator'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
@@ -101,7 +101,7 @@ export default defineComponent({
       shouldShowSettingsDialog: false,
       magnifier,
       canvasHandler,
-      axisSetRepository: AxisSetRepository,
+      axisSetRepository,
       datasetRepository,
     }
   },

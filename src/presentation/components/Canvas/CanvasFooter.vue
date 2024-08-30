@@ -39,7 +39,7 @@ import { defineComponent } from 'vue'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
@@ -47,7 +47,7 @@ export default defineComponent({
     return {
       interpolator,
       canvasHandler,
-      axisSetRepository: AxisSetRepository,
+      axisSetRepository,
       datasetRepository,
     }
   },

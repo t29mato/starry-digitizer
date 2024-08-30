@@ -1,7 +1,7 @@
 <template>
   <div>
     <h4>
-      Datasets
+      Dataset List
       <v-btn @click="handleOnClickAddDatasetButton" size="x-small" class="ml-2"
         ><v-icon>mdi-plus</v-icon></v-btn
       >

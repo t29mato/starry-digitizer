@@ -5,6 +5,7 @@ import { AxisInterface } from '@/domain/models/axis/axisInterface'
 
 export class AxisSet implements AxisSetInterface {
   id: number
+  name: string
   x1: AxisInterface
   x2: AxisInterface
   y1: AxisInterface
@@ -25,6 +26,7 @@ export class AxisSet implements AxisSetInterface {
     y2: AxisInterface,
     x2y2: AxisInterface,
     id: number,
+    name: string,
   ) {
     this.x1 = x1
     this.x2 = x2
@@ -32,6 +34,7 @@ export class AxisSet implements AxisSetInterface {
     this.y2 = y2
     this.x2y2 = x2y2
     this.id = id
+    this.name = name
   }
 
   get hasAtLeastOneAxis(): boolean {

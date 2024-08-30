@@ -15,6 +15,7 @@ describe('AxisSetCalculator', () => {
       new Axis('y2', 10, { xPx: 0, yPx: 0 }),
       new Axis('x1y1', -1, { xPx: 0, yPx: 0 }),
       1,
+      'XY Axes 1',
     )
   })
 

@@ -9,6 +9,7 @@ export type Vector = {
 
 export interface AxisSetInterface {
   id: number
+  name: string
   x1: AxisInterface
   x2: AxisInterface
   y1: AxisInterface

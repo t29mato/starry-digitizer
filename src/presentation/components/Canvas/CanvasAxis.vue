@@ -42,7 +42,7 @@ import { defineComponent } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
-import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
 
 export default defineComponent({
@@ -60,7 +60,7 @@ export default defineComponent({
     return {
       fontSize: 14,
       canvasHandler,
-      axisSetRepository: AxisSetRepository,
+      axisSetRepository,
       axisSizePx: STYLE.axisSizePx,
     }
   },

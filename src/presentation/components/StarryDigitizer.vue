@@ -3,7 +3,8 @@
     <div class="c__wrapper">
       <div class="c__left-sidebar">
         <image-settings></image-settings>
-        <axisSet-settings></axisSet-settings>
+        <axis-set-manager></axis-set-manager>
+        <axis-set-settings></axis-set-settings>
         <dataset-manager
           :exportBtnText="exportBtnText"
           :exportBtnClick="exportBtnClick"
@@ -37,6 +38,7 @@ import { MagnifierMain } from '@/presentation/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
 import { AxisSetSettings, ExtractorSettings, ImageSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
+import { AxisSetManager } from './AxisSetManager'
 import { version } from '../../../package.json'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'
 import DataTable from '@/presentation/components/Export/DataTable.vue'
@@ -48,6 +50,7 @@ export default defineComponent({
     CanvasHeader,
     CanvasMain,
     CanvasFooter,
+    AxisSetManager,
     AxisSetSettings,
     DatasetManager,
     ExtractorSettings,

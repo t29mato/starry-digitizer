@@ -12,7 +12,7 @@ import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 
 const axisSetGuideCommonStyle: CSSProperties = {
   position: 'absolute',
@@ -25,7 +25,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler,
-      axisSetRepository: AxisSetRepository,
+      axisSetRepository,
     }
   },
   methods: {

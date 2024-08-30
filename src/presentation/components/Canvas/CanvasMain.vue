@@ -56,7 +56,7 @@ import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 // INFO: to adjust the exact position the user clicked.
@@ -81,7 +81,7 @@ export default defineComponent({
       confirmer,
       extractor,
       canvasHandler,
-      axisSetRepository: AxisSetRepository,
+      axisSetRepository,
       datasetRepository,
     }
   },

@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import MagnifierAxis from '@/presentation/components/Magnifier/MagnifierAxis.vue'
 import { defineComponent } from 'vue'
 export default defineComponent({
@@ -33,7 +33,7 @@ export default defineComponent({
   },
   data() {
     return {
-      axisSetRepository: AxisSetRepository,
+      axisSetRepository,
     }
   },
 })

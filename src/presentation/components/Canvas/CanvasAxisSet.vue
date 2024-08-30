@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import CanvasAxis from '@/presentation/components/Canvas/CanvasAxis.vue'
 
 import { defineComponent } from 'vue'
@@ -35,7 +35,7 @@ export default defineComponent({
   },
   data() {
     return {
-      axisSetRepository: AxisSetRepository,
+      axisSetRepository,
     }
   },
 })

@@ -55,7 +55,7 @@ import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { AxisSetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
 
@@ -69,7 +69,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler,
-      axisSetRepository: AxisSetRepository,
+      axisSetRepository,
       datasetRepository,
       axisSizePx: STYLE.axisSizePx,
     }

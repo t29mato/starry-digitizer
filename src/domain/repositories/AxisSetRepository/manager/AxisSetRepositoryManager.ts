@@ -18,6 +18,7 @@ export class AxisSetRepositoryManager
         new Axis('y2', 1),
         new Axis('x2y2', -1),
         1,
+        'XY Axes 1',
       ),
     )
   }
