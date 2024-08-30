@@ -53,6 +53,7 @@ import { defineComponent } from 'vue'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   components: {},
@@ -61,6 +62,7 @@ export default defineComponent({
       canvasHandler,
       interpolator,
       axisSetRepository,
+      datasetRepository,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
@@ -70,6 +72,7 @@ export default defineComponent({
   methods: {
     activateAxisSet(id: number) {
       this.axisSetRepository.setActiveAxisSet(id)
+      this.datasetRepository.activeDataset.setAxisSetId(id)
     },
     handleOnClickAxisSet(id: number) {
       if (id === this.axisSetRepository.activeAxisSetId) return

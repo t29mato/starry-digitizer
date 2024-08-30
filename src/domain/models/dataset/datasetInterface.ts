@@ -22,6 +22,7 @@ export interface DatasetInterface {
   plotsAreAdjusting: boolean
   tempPlots: Plots
   activePlotIds: number[]
+  axisSetId: number
   /**
    * INFO: Confirm interpolation: Delay finalization until user confirms via window.confirm.
    * If canceled, manual points are restored. Temporarily hides manual points during preview
@@ -63,4 +64,5 @@ export interface DatasetInterface {
   plotsSortedByYDescending(): Plots
   plotsSortedByIdAscending(): Plots
   plotsSortedByIdDescending(): Plots
+  setAxisSetId(id: number): void
 }

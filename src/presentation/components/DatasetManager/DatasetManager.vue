@@ -62,6 +62,7 @@ import { defineComponent } from 'vue'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   components: {},
@@ -74,6 +75,7 @@ export default defineComponent({
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
       sortOrders: ['ascending', 'descending'],
+      axisSetRepository,
     }
   },
   props: {
@@ -98,6 +100,9 @@ export default defineComponent({
     activateDataset(id: number) {
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.setActiveDataset(id)
+      this.axisSetRepository.setActiveAxisSet(
+        this.datasetRepository.activeDataset.axisSetId,
+      )
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
       this.canvasHandler.clearMask()
       this.canvasHandler.maskMode = -1
