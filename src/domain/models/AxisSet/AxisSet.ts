@@ -1,6 +1,6 @@
 //TODO: move Coord type from datasetInterface to other shared type definition
 import { Coord } from '@/domain/models/dataset/datasetInterface'
-import { AxisSetInterface, Vector } from './AxisSetInterface'
+import { AxisSetInterface, Vector } from './axisSetInterface'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
 
 export class AxisSet implements AxisSetInterface {

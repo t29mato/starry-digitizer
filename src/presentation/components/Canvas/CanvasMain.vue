@@ -330,3 +330,5 @@ export default defineComponent({
   }
 }
 </style>
+@/domain/models/axisSet/AxisSetInterface
+@/domain/models/axisSet/axisSetInterface

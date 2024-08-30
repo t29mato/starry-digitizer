@@ -1,5 +1,5 @@
 import { expect } from '@jest/globals'
-import { AxisSet } from './AxisSet'
+import { AxisSet } from './axisSet'
 import { Axis } from '../axis/axis'
 import { AxisInterface } from '../axis/axisInterface'
 

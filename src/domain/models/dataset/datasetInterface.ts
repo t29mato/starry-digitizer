@@ -1,4 +1,4 @@
-import { Vector } from '../AxisSet/AxisSetInterface'
+import { Vector } from '../axisSet/axisSetInterface'
 
 // INFO: Coord is coordinate
 export type Coord = {

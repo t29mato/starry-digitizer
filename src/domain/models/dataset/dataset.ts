@@ -1,4 +1,4 @@
-import { Vector } from '../AxisSet/AxisSetInterface'
+import { Vector } from '../axisSet/axisSetInterface'
 import { DatasetInterface, Plots, Plot, Coord } from './datasetInterface'
 
 export class Dataset implements DatasetInterface {

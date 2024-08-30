@@ -1,6 +1,6 @@
-import { AxisSetInterface } from '@/domain/models/AxisSet/AxisSetInterface'
-import { AxisSetRepositoryInterface } from './AxisSetRepositoryInterface'
-import { AxisSet } from '@/domain/models/AxisSet/AxisSet'
+import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
+import { AxisSetRepositoryInterface } from './axisSetRepositoryInterface'
+import { AxisSet } from '@/domain/models/axisSet/axisSet'
 import { Axis } from '@/domain/models/axis/axis'
 
 export class AxisSetRepository implements AxisSetRepositoryInterface {

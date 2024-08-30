@@ -1,8 +1,8 @@
 import { expect } from '@jest/globals'
-import AxisSetCalculator from './AxisSetCalculator'
+import AxisSetCalculator from './axisSetCalculator'
 import { Axis } from '../models/axis/axis'
-import { AxisSet } from '../models/AxisSet/AxisSet'
-import { AxisSetInterface } from '../models/AxisSet/AxisSetInterface'
+import { AxisSet } from '../models/axisSet/axisSet'
+import { AxisSetInterface } from '../models/axisSet/axisSetInterface'
 
 describe('AxisSetCalculator', () => {
   let axisSetMock: AxisSetInterface
