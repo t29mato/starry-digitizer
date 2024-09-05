@@ -31,6 +31,7 @@ export interface DatasetInterface {
   visiblePlotIds: number[]
   manuallyAddedPlotIds: number[]
   get nextPlotId(): number
+  get nextTempPlotId(): number
   get lastPlotId(): number
   get plotsAreActive(): boolean
   scaledPlots(scale: number): Plots

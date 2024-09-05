@@ -118,7 +118,13 @@ export default defineComponent({
     },
     handleOnClickAddDatasetButton() {
       if (!this.shouldContinueSwitchDataset()) return
+
       this.datasetRepository.createNewDataset()
+
+      this.datasetRepository.lastDataset.setAxisSetId(
+        this.axisSetRepository.activeAxisSetId,
+      )
+
       this.activateDataset(this.datasetRepository.lastDatasetId)
     },
     removeActiveDataset() {
