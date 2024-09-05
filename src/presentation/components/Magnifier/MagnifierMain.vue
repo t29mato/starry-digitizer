@@ -99,7 +99,7 @@ export default defineComponent({
     return {
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
-magnifier,
+      magnifier,
       canvasHandler,
       axisRepository,
       datasetRepository,
@@ -125,8 +125,8 @@ magnifier,
     } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
       const calculator = new XYAxesCalculator(this.axisRepository, {
-        x: this.axisRepository.xIsLog,
-        y: this.axisRepository.yIsLog,
+        x: this.axisRepository.xIsLogScale,
+        y: this.axisRepository.yIsLogScale,
       })
       return calculator.calculateXYValues(
         this.canvasHandler.cursor.xPx,
