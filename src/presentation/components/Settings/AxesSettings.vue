@@ -16,7 +16,7 @@
             >
               <div
                 class="c__axisRepository-settings__log-adjuster"
-                v-if="xIsLog"
+                v-if="xIsLogScale"
               >
                 <button
                   size="x-small"
@@ -48,7 +48,7 @@
             >
               <div
                 class="c__axisRepository-settings__log-adjuster"
-                v-if="xIsLog"
+                v-if="xIsLogScale"
               >
                 <button
                   id="multiply-by-ten-x2"
@@ -72,7 +72,7 @@
           <td>
             <v-checkbox
               color="primary"
-              v-model="xIsLog"
+              v-model="xIsLogScale"
               id="x-is-log"
               hide-details
               density="compact"
@@ -93,7 +93,7 @@
             >
               <div
                 class="c__axisRepository-settings__log-adjuster"
-                v-if="yIsLog"
+                v-if="yIsLogScale"
               >
                 <button
                   id="multiply-by-ten-y1"
@@ -125,7 +125,7 @@
             >
               <div
                 class="c__axisRepository-settings__log-adjuster"
-                v-if="yIsLog"
+                v-if="yIsLogScale"
               >
                 <button
                   id="multiply-by-ten-y2"
@@ -149,7 +149,7 @@
           <td>
             <v-checkbox
               color="primary"
-              v-model="yIsLog"
+              v-model="yIsLogScale"
               id="y-is-log"
               density="compact"
               hide-details
@@ -200,7 +200,7 @@ import { axisRepository } from '@/instanceStore/repositoryInatances'
 export default defineComponent({
   computed: {
     errorMessage(): string {
-      if (this.axisRepository.xIsLog) {
+      if (this.axisRepository.xIsLogScale) {
         if (this.x1 === '0' || this.x2 === '0') {
           return 'x1 or x2 should not be 0'
         }
@@ -209,7 +209,7 @@ export default defineComponent({
           return 'x1 and x2 should not be same value'
         }
       }
-      if (this.axisRepository.yIsLog) {
+      if (this.axisRepository.yIsLogScale) {
         if (this.y1 === '0' || this.y2 === '0') {
           return 'y1 or y2 should not be 0'
         }
@@ -228,8 +228,8 @@ export default defineComponent({
       x2: '1',
       y1: '0',
       y2: '1',
-      xIsLog: false,
-      yIsLog: false,
+      xIsLogScale: false,
+      yIsLogScale: false,
     }
   },
 
@@ -276,15 +276,15 @@ export default defineComponent({
     this.x2 = String(this.axisRepository.x2.value)
     this.y1 = String(this.axisRepository.y1.value)
     this.y2 = String(this.axisRepository.y2.value)
-    this.xIsLog = this.axisRepository.xIsLog
-    this.yIsLog = this.axisRepository.yIsLog
+    this.xIsLogScale = this.axisRepository.xIsLogScale
+    this.yIsLogScale = this.axisRepository.yIsLogScale
   },
   watch: {
-    xIsLog(value: boolean) {
-      this.axisRepository.setXIsLog(value)
+    xIsLogScale(value: boolean) {
+      this.axisRepository.setXIsLogScale(value)
     },
-    yIsLog(value: boolean) {
-      this.axisRepository.setYIsLog(value)
+    yIsLogScale(value: boolean) {
+      this.axisRepository.setYIsLogScale(value)
     },
     x1(value: string) {
       this.axisRepository.setX1Value(parseFloat(value))
