@@ -1,10 +1,10 @@
 <template>
-  <div class="d-flex justify-space-between align-center">
+  <div class="d-flex justify-space-between align-center flex-wrap">
     <div class="c__current-dataset-and-axis">
       Dataset: <span>{{ datasetRepository.activeDataset.name }}</span> / XY
       Axes: <span>{{ axisSetRepository.activeAxisSet.name }}</span>
     </div>
-    <div class="d-flex justify-end">
+    <div class="d-flex justify-end mt-1" style="margin-left: auto">
       <div class="ml-2">
         <v-btn size="small" @click="handleOnClickScaleDownButton"
           ><v-icon>mdi-minus</v-icon></v-btn
