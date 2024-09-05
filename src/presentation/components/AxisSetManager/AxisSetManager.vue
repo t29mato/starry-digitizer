@@ -111,12 +111,15 @@ export default defineComponent({
           return dataset.axisSetId === targetAxisSet.id
         })
 
-      //NOTE: If the axis to be removed is the first axis, apply the second axis as alternative; otherwise, apply the first axis.
-      const firstAxisSet = this.axisSetRepository.axisSets[0]
+      const targetAxisSetIndex =
+        this.axisSetRepository.axisSets.indexOf(targetAxisSet)
+      const previousAxisSet =
+        this.axisSetRepository.axisSets[targetAxisSetIndex - 1]
+
       const alternativeAxisSet =
-        targetAxisSet.id === firstAxisSet.id
+        targetAxisSetIndex === 0
           ? this.axisSetRepository.axisSets[1]
-          : firstAxisSet
+          : previousAxisSet || this.axisSetRepository.axisSets[0]
 
       if (!targetAxisSet.atLeastOneCoordOrValueIsChanged) {
         this.removeActiveAxisSet()
@@ -135,6 +138,8 @@ export default defineComponent({
       datasetsConnectedToTargetAxisSet.forEach((dataset) => {
         dataset.setAxisSetId(alternativeAxisSet.id)
       })
+
+      this.axisSetRepository.setActiveAxisSet(alternativeAxisSet.id)
 
       if (alternativeAxisSet.nextAxis) {
         this.canvasHandler.manualMode = -1
