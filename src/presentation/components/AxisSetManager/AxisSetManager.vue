@@ -104,6 +104,7 @@ export default defineComponent({
       )
     },
     handleOnClickRemoveAxisSetButton() {
+      //TODO: Move these logics to domain service and add test...
       const targetAxisSet = this.axisSetRepository.activeAxisSet
 
       const datasetsConnectedToTargetAxisSet =
