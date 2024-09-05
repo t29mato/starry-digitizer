@@ -26,6 +26,7 @@ export interface AxisSetInterface {
   get hasAtLeastOneAxis(): boolean
   get hasXAxis(): boolean
   get hasYAxis(): boolean
+  get atLeastOneCoordOrValueIsChanged(): boolean
   get activeAxis(): AxisInterface | null
   get nextAxis(): AxisInterface | null
   moveActiveAxis(vector: Vector): void

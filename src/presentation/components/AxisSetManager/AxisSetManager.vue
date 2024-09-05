@@ -105,19 +105,42 @@ export default defineComponent({
     },
     handleOnClickRemoveAxisSetButton() {
       const targetAxisSet = this.axisSetRepository.activeAxisSet
-      //NOTE: Show message and end the operation if tried to remove the first dataset
-      if (targetAxisSet.id === 1) {
-        alert(
-          `${targetAxisSet.name} cannot be removed because it is applied to the new dataset by default.`,
-        )
-        return
+
+      const datasetsConnectedToTargetAxisSet =
+        this.datasetRepository.datasets.filter((dataset) => {
+          return dataset.axisSetId === targetAxisSet.id
+        })
+
+      //NOTE: If the axis to be removed is the first axis, apply the second axis as alternative; otherwise, apply the first axis.
+      const firstAxisSet = this.axisSetRepository.axisSets[0]
+      const alternativeAxisSet =
+        targetAxisSet.id === firstAxisSet.id
+          ? this.axisSetRepository.axisSets[1]
+          : firstAxisSet
+
+      if (!targetAxisSet.atLeastOneCoordOrValueIsChanged) {
+        this.removeActiveAxisSet()
+      } else {
+        window.confirm(
+          `Are you sure to remove '${
+            this.axisSetRepository.activeAxisSet.name
+          }'? After the removal, '${
+            alternativeAxisSet.name
+          }' will be applied to the following datasets: ${datasetsConnectedToTargetAxisSet
+            .map((dataset) => dataset.name)
+            .toString()}`,
+        ) && this.removeActiveAxisSet()
       }
 
-      window.confirm(
-        `Are you sure to delete '${this.axisSetRepository.activeAxisSet.name}'? This operation is irreversible.`,
-      ) && this.removeActiveAxisSet()
+      datasetsConnectedToTargetAxisSet.forEach((dataset) => {
+        dataset.setAxisSetId(alternativeAxisSet.id)
+      })
 
-      this.datasetRepository.activeDataset.setAxisSetId(1)
+      if (alternativeAxisSet.nextAxis) {
+        this.canvasHandler.manualMode = -1
+      } else {
+        this.canvasHandler.manualMode = 0
+      }
     },
   },
 })

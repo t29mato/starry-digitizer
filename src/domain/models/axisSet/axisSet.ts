@@ -63,6 +63,19 @@ export class AxisSet implements AxisSetInterface {
     )
   }
 
+  get atLeastOneCoordOrValueIsChanged(): boolean {
+    return (
+      this.x1.coordIsFilled ||
+      this.x2.coordIsFilled ||
+      this.y1.coordIsFilled ||
+      this.y2.coordIsFilled ||
+      this.x1.value !== 0 ||
+      this.x2.value !== 1 ||
+      this.y1.value !== 0 ||
+      this.y2.value !== 1
+    )
+  }
+
   get activeAxis(): AxisInterface | null {
     switch (this.activeAxisName) {
       case 'x1':
