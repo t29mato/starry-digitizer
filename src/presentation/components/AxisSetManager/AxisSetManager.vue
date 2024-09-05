@@ -104,6 +104,12 @@ export default defineComponent({
       )
     },
     handleOnClickRemoveAxisSetButton() {
+      if (this.axisSetRepository.activeAxisSetId === 1) {
+        alert(
+          'The axis cannot be removed because it is applied to the new dataset by default.',
+        )
+        return
+      }
       window.confirm(
         `Are you sure to delete '${this.axisSetRepository.activeAxisSet.name}'? This operation is irreversible.`,
       ) && this.removeActiveAxisSet()
