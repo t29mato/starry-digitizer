@@ -79,8 +79,8 @@ export default defineComponent({
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
       const calculator = new XYAxesCalculator(this.axisRepository, {
-        x: this.axisRepository.xIsLog,
-        y: this.axisRepository.yIsLog,
+        x: this.axisRepository.xIsLogScale,
+        y: this.axisRepository.yIsLogScale,
       })
       return calculator.calculateXYValues(x, y)
     },
