@@ -6,10 +6,13 @@ export default class AxisSetCalculator {
   effectiveDigits: number = 4
 
   #axisSet: AxisSetInterface
-  #isLog: { x: boolean; y: boolean }
-  constructor(axisSet: AxisSetInterface, isLog: { x: boolean; y: boolean }) {
+  #isLogScale: { x: boolean; y: boolean }
+  constructor(
+    axisSet: AxisSetInterface,
+    isLogScale: { x: boolean; y: boolean },
+  ) {
     this.#axisSet = axisSet
-    this.#isLog = isLog
+    this.#isLogScale = isLogScale
   }
   calculateXYValues(xt: number, yt: number): { xV: string; yV: string } {
     if (
@@ -55,14 +58,14 @@ export default class AxisSetCalculator {
       xp = xa + r * xab
       yq = yc + s * ycd
     }
-    const xV = this.#isLog.x
+    const xV = this.#isLogScale.x
       ? Math.pow(
           10,
           ((xp - xa) / (xb - xa)) * (Math.log10(b) - Math.log10(a)) +
             Math.log10(a),
         )
       : ((xp - xa) / (xb - xa)) * (b - a) + a
-    const yV = this.#isLog.y
+    const yV = this.#isLogScale.y
       ? Math.pow(
           10,
           ((yq - yc) / (yd - yc)) * (Math.log10(d) - Math.log10(c)) +

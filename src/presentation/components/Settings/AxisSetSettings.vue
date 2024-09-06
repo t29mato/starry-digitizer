@@ -15,7 +15,7 @@
             >
               <div
                 class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.xIsLog"
+                v-if="axisSetRepository.activeAxisSet.xIsLogScale"
               >
                 <button
                   size="x-small"
@@ -47,7 +47,7 @@
             >
               <div
                 class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.xIsLog"
+                v-if="axisSetRepository.activeAxisSet.xIsLogScale"
               >
                 <button
                   id="multiply-by-ten-x2"
@@ -71,7 +71,7 @@
           <td>
             <v-checkbox
               color="primary"
-              v-model="axisSetRepository.activeAxisSet.xIsLog"
+              v-model="axisSetRepository.activeAxisSet.xIsLogScale"
               id="x-is-log"
               hide-details
               density="compact"
@@ -92,7 +92,7 @@
             >
               <div
                 class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.yIsLog"
+                v-if="axisSetRepository.activeAxisSet.yIsLogScale"
               >
                 <button
                   id="multiply-by-ten-y1"
@@ -124,7 +124,7 @@
             >
               <div
                 class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.yIsLog"
+                v-if="axisSetRepository.activeAxisSet.yIsLogScale"
               >
                 <button
                   id="multiply-by-ten-y2"
@@ -148,7 +148,7 @@
           <td>
             <v-checkbox
               color="primary"
-              v-model="axisSetRepository.activeAxisSet.yIsLog"
+              v-model="axisSetRepository.activeAxisSet.yIsLogScale"
               id="y-is-log"
               density="compact"
               hide-details
@@ -199,7 +199,7 @@ import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 export default defineComponent({
   computed: {
     errorMessage(): string {
-      if (this.axisSetRepository.activeAxisSet.xIsLog) {
+      if (this.axisSetRepository.activeAxisSet.xIsLogScale) {
         if (this.x1Axis.value === 0 || this.x2Axis.value === 0) {
           return 'x1 or x2 should not be 0'
         }
@@ -208,7 +208,7 @@ export default defineComponent({
           return 'x1 and x2 should not be same value'
         }
       }
-      if (this.axisSetRepository.activeAxisSet.yIsLog) {
+      if (this.axisSetRepository.activeAxisSet.yIsLogScale) {
         if (this.y1Axis.value === 0 || this.y2Axis.value === 0) {
           return 'y1 or y2 should not be 0'
         }

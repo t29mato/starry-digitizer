@@ -15,8 +15,8 @@ export interface AxisSetInterface {
   y1: AxisInterface
   y2: AxisInterface
   x2y2: AxisInterface
-  xIsLog: boolean
-  yIsLog: boolean
+  xIsLogScale: boolean
+  yIsLogScale: boolean
   activeAxisName: string
   pointMode: number // INFO: {0: '2Points', 1: '4Points'}
   considerGraphTilt: boolean
@@ -39,6 +39,6 @@ export interface AxisSetInterface {
   setX2Value(value: number): void
   setY1Value(value: number): void
   setY2Value(value: number): void
-  setXIsLog(value: boolean): void
-  setYIsLog(value: boolean): void
+  setXIsLogScale(value: boolean): void
+  setYIsLogScale(value: boolean): void
 }

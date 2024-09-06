@@ -127,8 +127,8 @@ export default defineComponent({
       const calculator = new AxisSetCalculator(
         this.axisSetRepository.activeAxisSet,
         {
-          x: this.axisSetRepository.activeAxisSet.xIsLog,
-          y: this.axisSetRepository.activeAxisSet.yIsLog,
+          x: this.axisSetRepository.activeAxisSet.xIsLogScale,
+          y: this.axisSetRepository.activeAxisSet.yIsLogScale,
         },
       )
       return calculator.calculateXYValues(

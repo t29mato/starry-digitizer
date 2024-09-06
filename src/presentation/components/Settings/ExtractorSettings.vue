@@ -172,7 +172,22 @@ export default defineComponent({
       if (isActive) {
         this.interpolator.updatePreview()
       } else {
+        //NOTE: A temporary workaround to ensure that data points remain after turning off the interpolation function. A redesign is essential.
+        const dataset = this.datasetRepository.activeDataset
+        const addedPlotIds: number[] = []
+        dataset.plots
+          .filter((p) => dataset.manuallyAddedPlotIds.includes(p.id))
+          .forEach((p) => {
+            dataset.addPlot(p.xPx, p.yPx)
+            addedPlotIds.push(dataset.lastPlotId)
+          })
+
         this.interpolator.clearPreview()
+
+        //NOTE: A temporary workaround to ensure that data points remain after turning off the interpolation function. A redesign is essential.
+        addedPlotIds.forEach((pId) => {
+          dataset.addManuallyAddedPlotId(pId)
+        })
       }
 
       //HACK: Since tempPlots are not drawn, force rendering as a temporary measure. Fundamental solution required

@@ -27,6 +27,8 @@ import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
+import { VALID_IMAGE_TYPES } from '@/presentation/constants'
+
 export default defineComponent({
   data() {
     return {
@@ -55,7 +57,11 @@ export default defineComponent({
     async updateImage(file: File) {
       try {
         if (!this.isValidFileType(file.type)) {
-          alert('Please upload jpg / png image file.')
+          alert(
+            `Please upload an image in one of the following formats: ${VALID_IMAGE_TYPES.flatMap(
+              (type) => type.extensions,
+            ).join(',')}`,
+          )
           return
         }
 
@@ -112,8 +118,10 @@ export default defineComponent({
       }
       this.updateImage(imageFile)
     },
-    isValidFileType(fileType: String) {
-      return fileType === 'image/jpeg' || fileType === 'image/png'
+    isValidFileType(fileType: string) {
+      return VALID_IMAGE_TYPES.map(
+        (imgTypeData) => imgTypeData.fileType,
+      ).includes(fileType)
     },
     readFile(file: File): Promise<FileReader> {
       return new Promise((resolve, reject) => {

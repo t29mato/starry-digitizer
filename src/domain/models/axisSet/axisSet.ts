@@ -11,8 +11,8 @@ export class AxisSet implements AxisSetInterface {
   y1: AxisInterface
   y2: AxisInterface
   x2y2: AxisInterface //x2, y2を同時調整するために使う仮想軸
-  xIsLog = false
-  yIsLog = false
+  xIsLogScale = false
+  yIsLogScale = false
   activeAxisName = ''
   pointMode = 0 // INFO: {0: '2Points', 1: '4Points'}
   considerGraphTilt = false
@@ -223,11 +223,11 @@ export class AxisSet implements AxisSetInterface {
     this.y2.value = value
   }
 
-  setXIsLog(value: boolean): void {
-    this.xIsLog = value
+  setXIsLogScale(value: boolean): void {
+    this.xIsLogScale = value
   }
 
-  setYIsLog(value: boolean): void {
-    this.yIsLog = value
+  setYIsLogScale(value: boolean): void {
+    this.yIsLogScale = value
   }
 }
