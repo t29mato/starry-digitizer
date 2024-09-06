@@ -1,6 +1,6 @@
 //NOTE: Add any information about StarryDigitizer configurations which is necassary to reconstruct the application states here.
 export interface configDataScheme {
-  version: '0.1.0'
+  schemeVersion: '0.1.0'
   figure: {
     scale: number
   }

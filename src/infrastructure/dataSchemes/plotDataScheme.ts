@@ -2,7 +2,7 @@
 //NOTE: Do not include any data which depends on StarryDigitizer app(e.g. setting axis by 2 points or 4 points etc...)
 
 export interface PlotDataScheme {
-  version: '0.1.0'
+  schemeVersion: '0.1.0'
   axisSets: {
     id: number
     name: string

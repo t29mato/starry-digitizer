@@ -1,5 +1,5 @@
 export interface pixelDataScheme {
-  version: '0.1.0'
+  schemeVersion: '0.1.0'
   axisSets: {
     id: number
     xAxis: {
