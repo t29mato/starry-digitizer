@@ -28,7 +28,7 @@ import 'handsontable/dist/handsontable.full.css'
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
-import { Plot } from '@/domain/models/dataset/datasetInterface'
+import { Point } from '@/domain/models/dataset/datasetInterface'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
@@ -44,15 +44,17 @@ export default defineComponent({
   },
   computed: {
     tableData() {
-      if (this.datasetRepository.activeDataset.plots.length > 0) {
-        return this.datasetRepository.activeDataset.plots.map((plot: Plot) => {
-          // @ts-ignore calculateXY methods is defined apparently
-          const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
-          return {
-            X: xV,
-            Y: yV,
-          }
-        })
+      if (this.datasetRepository.activeDataset.points.length > 0) {
+        return this.datasetRepository.activeDataset.points.map(
+          (point: Point) => {
+            // @ts-ignore calculateXY methods is defined apparently
+            const { xV, yV } = this.calculateXY(point.xPx, point.yPx)
+            return {
+              X: xV,
+              Y: yV,
+            }
+          },
+        )
       }
       return [{ X: null, Y: null }]
     },

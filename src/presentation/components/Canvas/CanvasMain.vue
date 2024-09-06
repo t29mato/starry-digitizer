@@ -37,16 +37,16 @@
     ></canvas>
     <canvas-axis-set-guide></canvas-axis-set-guide>
     <canvas-axis-set></canvas-axis-set>
-    <canvas-plots></canvas-plots>
+    <canvas-points></canvas-points>
     <canvas-cursor></canvas-cursor>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { CanvasAxisSet, CanvasPlots, CanvasCursor, CanvasAxisSetGuide } from '.'
+import { CanvasAxisSet, CanvasPoints, CanvasCursor, CanvasAxisSetGuide } from '.'
 import { Vector } from '@/domain/models/axisSet/axisSetInterface'
-import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
+import { Coord, Point } from '@/domain/models/dataset/datasetInterface'
 
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
@@ -65,7 +65,7 @@ const offsetPx = 1
 export default defineComponent({
   components: {
     CanvasAxisSet,
-    CanvasPlots,
+    CanvasPoints,
     CanvasCursor,
     CanvasAxisSetGuide,
   },
@@ -106,42 +106,42 @@ export default defineComponent({
     }
   },
   methods: {
-    // REFACTOR: modeに応じてplotなりpickColorなりを呼び出す形に変更する
-    plot(e: MouseEvent): void {
+    // REFACTOR: modeに応じてpointなりpickColorなりを呼び出す形に変更する
+    point(e: MouseEvent): void {
       // IFNO: マスク描画モード中につき
       if (this.canvasHandler.isDrawingMask) {
         return
       }
       const target = e.target as HTMLElement
-      const isOnCanvasPlot = target.className === 'canvas-plot'
-      // INFO: canvas-plot element上の時は、plot edit modeになるので
+      const isOnCanvasPoint = target.className === 'canvas-point'
+      // INFO: canvas-point element上の時は、point edit modeになるので
       switch (this.canvasHandler.manualMode) {
         case 0:
-          this.datasetRepository.activeDataset.addPlot(
-            isOnCanvasPlot
+          this.datasetRepository.activeDataset.addPoint(
+            isOnCanvasPoint
               ? (e.offsetX + parseFloat(target.style.left) - offsetPx) /
                   this.canvasHandler.scale
               : (e.offsetX - offsetPx) / this.canvasHandler.scale,
-            isOnCanvasPlot
+            isOnCanvasPoint
               ? (e.offsetY + parseFloat(target.style.top)) /
                   this.canvasHandler.scale
               : e.offsetY / this.canvasHandler.scale,
           )
           this.axisSetRepository.activeAxisSet.inactivateAxis()
-          this.datasetRepository.activeDataset.addManuallyAddedPlotId(
-            this.datasetRepository.activeDataset.lastPlotId,
+          this.datasetRepository.activeDataset.addManuallyAddedPointId(
+            this.datasetRepository.activeDataset.lastPointId,
           )
           return
         case 1:
-          // INFO: CanvasPlot Component -> Click method
+          // INFO: CanvasPoint Component -> Click method
           return
         case 2:
-          // INFO: CanvasPlot Component -> Click method
+          // INFO: CanvasPoint Component -> Click method
           return
         default:
           break
       }
-      if (isOnCanvasPlot) {
+      if (isOnCanvasPoint) {
         return
       }
       if (this.axisSetRepository.activeAxisSet.nextAxis) {
@@ -149,7 +149,7 @@ export default defineComponent({
           xPx: (e.offsetX - offsetPx) / this.canvasHandler.scale,
           yPx: e.offsetY / this.canvasHandler.scale,
         })
-        this.datasetRepository.activeDataset.inactivatePlots()
+        this.datasetRepository.activeDataset.inactivatePoints()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
         if (!this.axisSetRepository.activeAxisSet.nextAxis) {
           this.canvasHandler.manualMode = 0
@@ -160,7 +160,7 @@ export default defineComponent({
     click(e: MouseEvent): void {
       if (this.confirmer.isActive) return
 
-      this.plot(e)
+      this.point(e)
 
       if (this.interpolator.isActive) {
         this.interpolator.updatePreview()
@@ -175,7 +175,7 @@ export default defineComponent({
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
       this.axisSetRepository.activeAxisSet.isAdjusting = false
-      this.datasetRepository.activeDataset.plotsAreAdjusting = false
+      this.datasetRepository.activeDataset.pointsAreAdjusting = false
       this.canvasHandler.setCursor({
         xPx: xPx / this.canvasHandler.scale,
         yPx: yPx / this.canvasHandler.scale,
@@ -198,7 +198,7 @@ export default defineComponent({
 
       this.canvasHandler.mouseUp()
 
-      // INFO: EDITモードの場合にplotの複数選択を行う
+      // INFO: EDITモードの場合にpointの複数選択を行う
       if (this.canvasHandler.manualMode === 1) {
         const rect = this.canvasHandler.rectangle
         const scale = this.canvasHandler.scale
@@ -208,7 +208,7 @@ export default defineComponent({
           { xPx: rect.endX / scale, yPx: rect.endY / scale },
         )
 
-        this.datasetRepository.activeDataset.activatePlotsInRectangleArea(
+        this.datasetRepository.activeDataset.activatePointsInRectangleArea(
           topLeftCoord,
           bottomRightCoord,
         )
@@ -260,16 +260,16 @@ export default defineComponent({
         this.datasetRepository.activeDataset.hasActive() &&
         (key === 'Backspace' || key === 'Delete')
       ) {
-        this.datasetRepository.activeDataset.clearActivePlots()
+        this.datasetRepository.activeDataset.clearActivePoints()
 
         if (this.interpolator.isActive) {
           this.interpolator.updatePreview()
         }
 
-        const lastPlotId = this.datasetRepository.activeDataset.lastPlotId
+        const lastPointId = this.datasetRepository.activeDataset.lastPointId
 
-        if (lastPlotId !== -1) {
-          this.datasetRepository.activeDataset.switchActivatedPlot(lastPlotId)
+        if (lastPointId !== -1) {
+          this.datasetRepository.activeDataset.switchActivatedPoint(lastPointId)
         }
 
         return
@@ -288,13 +288,13 @@ export default defineComponent({
           this.axisSetRepository.activeAxisSet.activeAxis.coord,
         )
       }
-      if (this.datasetRepository.activeDataset.plotsAreActive) {
-        this.datasetRepository.activeDataset.moveActivePlot(vector)
+      if (this.datasetRepository.activeDataset.pointsAreActive) {
+        this.datasetRepository.activeDataset.moveActivePoint(vector)
         this.interpolator.updatePreview()
         this.canvasHandler.setCursor(
-          this.datasetRepository.activeDataset.plots.filter((plot: Plot) =>
-            this.datasetRepository.activeDataset.activePlotIds.includes(
-              plot.id,
+          this.datasetRepository.activeDataset.points.filter((point: Point) =>
+            this.datasetRepository.activeDataset.activePointIds.includes(
+              point.id,
             ),
           )[0],
         )

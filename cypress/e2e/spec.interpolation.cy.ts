@@ -16,7 +16,7 @@ describe('template spec', () => {
       .click(150, 220)
       .click(250, 150)
 
-    cy.get('.canvas-plot').should('have.length', 18)
+    cy.get('.canvas-point').should('have.length', 18)
   })
 
   it('asserts that interpolation on/off settings are remained after reload (localStorage feature)', () => {
@@ -38,7 +38,7 @@ describe('template spec', () => {
 
   //   cy.get('button#confirm-interpolation').click()
 
-  //   cy.get('.canvas-plot').should('have.length', 15)
+  //   cy.get('.canvas-point').should('have.length', 15)
   // })
 
   // it('asserts that there are 13 points when interval is 15', () => {
@@ -51,7 +51,7 @@ describe('template spec', () => {
   //     .click(150, 220)
   //     .click(250, 150)
 
-  //   cy.get('.canvas-plot').should('have.length', 13)
+  //   cy.get('.canvas-point').should('have.length', 13)
   // })
 
   // it('asserts that there are 3 points when interpolation is disabled', () => {
@@ -64,6 +64,6 @@ describe('template spec', () => {
   //     .click(150, 220)
   //     .click(250, 150)
 
-  //   cy.get('.canvas-plot').should('have.length', 3)
+  //   cy.get('.canvas-point').should('have.length', 3)
   // })
 })

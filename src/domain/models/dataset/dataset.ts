@@ -1,265 +1,265 @@
 import { Vector } from '../axisSet/axisSetInterface'
-import { DatasetInterface, Plots, Plot, Coord } from './datasetInterface'
+import { DatasetInterface, Points, Point, Coord } from './datasetInterface'
 
 export class Dataset implements DatasetInterface {
   name: string
-  plots: Plots
+  points: Points
   id: number
-  tempPlots: Plots = []
-  activePlotIds: number[] = []
-  visiblePlotIds: number[] = []
-  manuallyAddedPlotIds: number[] = []
+  tempPoints: Points = []
+  activePointIds: number[] = []
+  visiblePointIds: number[] = []
+  manuallyAddedPointIds: number[] = []
   axisSetId: number = 1
 
-  plotsAreAdjusting = false
-  constructor(name: string, plots: Plots, id: number) {
+  pointsAreAdjusting = false
+  constructor(name: string, points: Points, id: number) {
     this.name = name
-    this.plots = plots
+    this.points = points
     this.id = id
   }
 
-  scaledPlots(scale: number): Plots {
-    return this.plots.map((plot) => {
+  scaledPoints(scale: number): Points {
+    return this.points.map((point) => {
       return {
-        id: plot.id,
-        xPx: plot.xPx * scale,
-        yPx: plot.yPx * scale,
+        id: point.id,
+        xPx: point.xPx * scale,
+        yPx: point.yPx * scale,
       }
     })
   }
 
-  scaledTempPlots(scale: number): Plots {
-    return this.tempPlots.map((plot) => {
+  scaledTempPoints(scale: number): Points {
+    return this.tempPoints.map((point) => {
       return {
-        id: plot.id,
-        xPx: plot.xPx * scale,
-        yPx: plot.yPx * scale,
+        id: point.id,
+        xPx: point.xPx * scale,
+        yPx: point.yPx * scale,
       }
     })
   }
 
-  get plotsAreActive(): boolean {
-    return this.activePlotIds.length > 0
+  get pointsAreActive(): boolean {
+    return this.activePointIds.length > 0
   }
 
-  addPlot(xPx: number, yPx: number) {
-    this.activePlotIds.length = 0
-    this.activePlotIds.push(this.nextPlotId)
-    this.visiblePlotIds.push(this.nextPlotId)
-    this.plots.push({
-      id: this.nextPlotId,
+  addPoint(xPx: number, yPx: number) {
+    this.activePointIds.length = 0
+    this.activePointIds.push(this.nextPointId)
+    this.visiblePointIds.push(this.nextPointId)
+    this.points.push({
+      id: this.nextPointId,
       xPx,
       yPx,
     })
   }
 
-  get nextPlotId(): number {
-    if (this.plots.length === 0) {
+  get nextPointId(): number {
+    if (this.points.length === 0) {
       return 1
     }
-    const biggestId = Math.max(...this.plots.map((plot) => plot.id))
+    const biggestId = Math.max(...this.points.map((point) => point.id))
     return biggestId + 1
   }
 
-  get lastPlotId(): number {
-    const lastPlot = this.plots[this.plots.length - 1]
+  get lastPointId(): number {
+    const lastPoint = this.points[this.points.length - 1]
 
-    if (!lastPlot) return -1
+    if (!lastPoint) return -1
 
-    return lastPlot.id
+    return lastPoint.id
   }
 
-  switchActivatedPlot(id: number) {
-    this.activePlotIds.length = 0
-    this.activePlotIds.push(id)
+  switchActivatedPoint(id: number) {
+    this.activePointIds.length = 0
+    this.activePointIds.push(id)
   }
 
-  addActivatedPlot(id: number) {
-    this.activePlotIds.push(id)
+  addActivatedPoint(id: number) {
+    this.activePointIds.push(id)
   }
 
-  //INFO クリックされたplotがactiveな場合はinactiveにし、そうでない場合はactive状態に追加する
-  toggleActivatedPlot(toggledId: number) {
-    if (this.activePlotIds.includes(toggledId)) {
-      const activePlotIds = this.activePlotIds.filter((id) => {
+  //INFO クリックされたpointがactiveな場合はinactiveにし、そうでない場合はactive状態に追加する
+  toggleActivatedPoint(toggledId: number) {
+    if (this.activePointIds.includes(toggledId)) {
+      const activePointIds = this.activePointIds.filter((id) => {
         return id !== toggledId
       })
-      this.activePlotIds.length = 0
-      this.activePlotIds.push(...activePlotIds)
+      this.activePointIds.length = 0
+      this.activePointIds.push(...activePointIds)
       return
     }
 
-    this.addActivatedPlot(toggledId)
+    this.addActivatedPoint(toggledId)
   }
 
-  clearPlot(id: number) {
-    this.plots = this.plots.filter((plot) => {
-      return id !== plot.id
+  clearPoint(id: number) {
+    this.points = this.points.filter((point) => {
+      return id !== point.id
     })
-    this.activePlotIds.length = 0
+    this.activePointIds.length = 0
 
-    this.removeVisiblePlotId(id)
-    this.removeManuallyAddedPlotId(id)
+    this.removeVisiblePointId(id)
+    this.removeManuallyAddedPointId(id)
   }
 
-  clearPlots() {
-    this.plots.forEach((plot) => this.clearPlot(plot.id))
+  clearPoints() {
+    this.points.forEach((point) => this.clearPoint(point.id))
   }
 
-  inactivatePlots() {
-    this.activePlotIds = []
+  inactivatePoints() {
+    this.activePointIds = []
   }
 
-  clearActivePlots() {
-    this.plots = this.plots.filter((plot) => {
-      return !this.activePlotIds.includes(plot.id)
+  clearActivePoints() {
+    this.points = this.points.filter((point) => {
+      return !this.activePointIds.includes(point.id)
     })
-    this.activePlotIds.length = 0
+    this.activePointIds.length = 0
   }
 
   hasActive(): boolean {
-    return this.activePlotIds.length > 0
+    return this.activePointIds.length > 0
   }
 
-  moveActivePlot(vector: Vector) {
-    const ids = this.activePlotIds
-    this.plotsAreAdjusting = true
+  moveActivePoint(vector: Vector) {
+    const ids = this.activePointIds
+    this.pointsAreAdjusting = true
     switch (vector.direction) {
       case 'up':
-        this.plots
-          .filter((plot) => ids.includes(plot.id))
-          .map((plot) => (plot.yPx -= vector.distancePx))
+        this.points
+          .filter((point) => ids.includes(point.id))
+          .map((point) => (point.yPx -= vector.distancePx))
         break
       case 'right':
-        this.plots
-          .filter((plot) => ids.includes(plot.id))
-          .map((plot) => (plot.xPx += vector.distancePx))
+        this.points
+          .filter((point) => ids.includes(point.id))
+          .map((point) => (point.xPx += vector.distancePx))
         break
       case 'down':
-        this.plots
-          .filter((plot) => ids.includes(plot.id))
-          .map((plot) => (plot.yPx += vector.distancePx))
+        this.points
+          .filter((point) => ids.includes(point.id))
+          .map((point) => (point.yPx += vector.distancePx))
         break
       case 'left':
-        this.plots
-          .filter((plot) => ids.includes(plot.id))
-          .map((plot) => (plot.xPx -= vector.distancePx))
+        this.points
+          .filter((point) => ids.includes(point.id))
+          .map((point) => (point.xPx -= vector.distancePx))
         break
     }
   }
 
-  addTempPlot(xPx: number, yPx: number) {
-    this.tempPlots.push({
-      id: this.nextTempPlotId,
+  addTempPoint(xPx: number, yPx: number) {
+    this.tempPoints.push({
+      id: this.nextTempPointId,
       xPx,
       yPx,
     })
   }
 
-  get nextTempPlotId(): number {
-    if (this.tempPlots.length === 0) {
+  get nextTempPointId(): number {
+    if (this.tempPoints.length === 0) {
       return 1
     }
-    const biggestId = Math.max(...this.tempPlots.map((plot) => plot.id))
+    const biggestId = Math.max(...this.tempPoints.map((point) => point.id))
     return biggestId + 1
   }
 
-  clearTempPlot(id: number) {
-    this.tempPlots = this.tempPlots.filter((tempPlot) => tempPlot.id !== id)
+  clearTempPoint(id: number) {
+    this.tempPoints = this.tempPoints.filter((tempPoint) => tempPoint.id !== id)
   }
 
-  addVisiblePlotId(id: number): void {
-    if (this.visiblePlotIds.includes(id)) return
-    this.visiblePlotIds.push(id)
+  addVisiblePointId(id: number): void {
+    if (this.visiblePointIds.includes(id)) return
+    this.visiblePointIds.push(id)
   }
 
-  removeVisiblePlotId(id: number): void {
-    this.visiblePlotIds = this.visiblePlotIds.filter((pId) => pId !== id)
+  removeVisiblePointId(id: number): void {
+    this.visiblePointIds = this.visiblePointIds.filter((pId) => pId !== id)
   }
 
-  addManuallyAddedPlotId(id: number): void {
-    if (this.manuallyAddedPlotIds.includes(id)) return
-    this.manuallyAddedPlotIds.push(id)
+  addManuallyAddedPointId(id: number): void {
+    if (this.manuallyAddedPointIds.includes(id)) return
+    this.manuallyAddedPointIds.push(id)
   }
 
-  removeManuallyAddedPlotId(id: number): void {
-    this.manuallyAddedPlotIds = this.manuallyAddedPlotIds.filter(
+  removeManuallyAddedPointId(id: number): void {
+    this.manuallyAddedPointIds = this.manuallyAddedPointIds.filter(
       (pId) => pId !== id,
     )
   }
 
-  get manuallyAddedPlots(): Plots {
-    return this.plots.filter((plot) =>
-      this.manuallyAddedPlotIds.includes(plot.id),
+  get manuallyAddedPoints(): Points {
+    return this.points.filter((point) =>
+      this.manuallyAddedPointIds.includes(point.id),
     )
   }
 
-  activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
-    this.inactivatePlots()
+  activatePointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
+    this.inactivatePoints()
 
-    const plotsToActivate = this.plotsInRectangleArea(
+    const pointsToActivate = this.pointsInRectangleArea(
       topLeftCoord,
       bottomRightCoord,
     )
-    plotsToActivate.forEach((plot: Plot) => {
-      this.addActivatedPlot(plot.id)
+    pointsToActivate.forEach((point: Point) => {
+      this.addActivatedPoint(point.id)
     })
   }
 
-  moveTempPlotToPlot(tempPlotId: number): void {
-    const tempPlot = this.tempPlots.find(
-      (tempPlot) => tempPlot.id === tempPlotId,
+  moveTempPointToPoint(tempPointId: number): void {
+    const tempPoint = this.tempPoints.find(
+      (tempPoint) => tempPoint.id === tempPointId,
     )
 
-    if (!tempPlot) return
+    if (!tempPoint) return
 
-    this.addPlot(tempPlot.xPx, tempPlot.yPx)
-    this.clearTempPlot(tempPlotId)
+    this.addPoint(tempPoint.xPx, tempPoint.yPx)
+    this.clearTempPoint(tempPointId)
   }
 
-  plotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Plots {
-    return this.plots.filter((plot: Plot) => {
+  pointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Points {
+    return this.points.filter((point: Point) => {
       return (
-        plot.xPx >= topLeftCoord.xPx &&
-        plot.xPx <= bottomRightCoord.xPx &&
-        plot.yPx >= topLeftCoord.yPx &&
-        plot.yPx <= bottomRightCoord.yPx
+        point.xPx >= topLeftCoord.xPx &&
+        point.xPx <= bottomRightCoord.xPx &&
+        point.yPx >= topLeftCoord.yPx &&
+        point.yPx <= bottomRightCoord.yPx
       )
     })
   }
 
-  plotsSortedByXAscending(): Plots {
-    return this.plots.sort((a, b) => {
+  pointsSortedByXAscending(): Points {
+    return this.points.sort((a, b) => {
       return a.xPx - b.xPx
     })
   }
 
-  plotsSortedByXDescending(): Plots {
-    return this.plots.sort((a, b) => {
+  pointsSortedByXDescending(): Points {
+    return this.points.sort((a, b) => {
       return b.xPx - a.xPx
     })
   }
 
-  plotsSortedByYAscending(): Plots {
-    return this.plots.sort((a, b) => {
+  pointsSortedByYAscending(): Points {
+    return this.points.sort((a, b) => {
       return a.yPx - b.yPx
     })
   }
 
-  plotsSortedByYDescending(): Plots {
-    return this.plots.sort((a, b) => {
+  pointsSortedByYDescending(): Points {
+    return this.points.sort((a, b) => {
       return b.yPx - a.yPx
     })
   }
 
-  plotsSortedByIdAscending(): Plots {
-    return this.plots.sort((a, b) => {
+  pointsSortedByIdAscending(): Points {
+    return this.points.sort((a, b) => {
       return a.id - b.id
     })
   }
 
-  plotsSortedByIdDescending(): Plots {
-    return this.plots.sort((a, b) => {
+  pointsSortedByIdDescending(): Points {
+    return this.points.sort((a, b) => {
       return b.id - a.id
     })
   }

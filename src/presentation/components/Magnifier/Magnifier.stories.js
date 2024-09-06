@@ -15,9 +15,9 @@ export default {
     canvasScale: {
       defaultValue: 1,
     },
-    plots: {},
+    points: {},
     shouldShowPoints: {},
-    plotSizePx: {
+    pointSizePx: {
       defaultValue: 5,
     },
     axisSetSizePx: {
@@ -38,31 +38,31 @@ const Template = (args, { argTypes }) => ({
   template: '<magnifier v-bind="$props" />',
 })
 
-export const Plots = Template.bind({})
-Plots.args = {
+export const Points = Template.bind({})
+Points.args = {
   canvasCursor: {
     xPx: 210,
     yPx: 210,
   },
   shouldShowPoints: true,
-  plots: [
+  points: [
     { id: 0, xPx: 210, yPx: 200 },
     { id: 1, xPx: 220, yPx: 220 },
   ],
 }
 
-export const PlotsActive = Template.bind({})
-PlotsActive.args = {
+export const PointsActive = Template.bind({})
+PointsActive.args = {
   canvasCursor: {
     xPx: 210,
     yPx: 210,
   },
   shouldShowPoints: true,
-  plots: [
+  points: [
     { id: 0, xPx: 210, yPx: 200 },
     { id: 1, xPx: 220, yPx: 220 },
   ],
-  movingPlotId: 1,
+  movingPointId: 1,
 }
 
 export const AxisSet = Template.bind({})

@@ -46,7 +46,7 @@
             :class="`dataset-count-${dataset.id}`"
           >
             <span class="align-self-center">
-              {{ dataset.plots.length }}
+              {{ dataset.points.length }}
             </span>
           </v-col>
         </v-row>
@@ -90,7 +90,7 @@ export default defineComponent({
   },
   methods: {
     shouldContinueSwitchDataset(): boolean {
-      if (this.datasetRepository.activeDataset.tempPlots.length === 0)
+      if (this.datasetRepository.activeDataset.tempPoints.length === 0)
         return true
 
       return window.confirm(
@@ -135,7 +135,7 @@ export default defineComponent({
     },
     handleOnClickRemoveDatasetButton() {
       //NOTE: remove active dataset without confirmation if the active dataset doesn't have data points
-      if (this.datasetRepository.activeDataset.plots.length === 0) {
+      if (this.datasetRepository.activeDataset.points.length === 0) {
         this.removeActiveDataset()
         return
       }
