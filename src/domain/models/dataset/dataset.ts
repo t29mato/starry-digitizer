@@ -1,4 +1,4 @@
-import { Vector } from '../../repositories/axisRepository/axisRepositoryInterface'
+import { Vector } from '../axisSet/axisSetInterface'
 import { DatasetInterface, Plots, Plot, Coord } from './datasetInterface'
 
 export class Dataset implements DatasetInterface {
@@ -9,6 +9,7 @@ export class Dataset implements DatasetInterface {
   activePlotIds: number[] = []
   visiblePlotIds: number[] = []
   manuallyAddedPlotIds: number[] = []
+  axisSetId: number = 1
 
   plotsAreAdjusting = false
   constructor(name: string, plots: Plots, id: number) {
@@ -261,5 +262,9 @@ export class Dataset implements DatasetInterface {
     return this.plots.sort((a, b) => {
       return b.id - a.id
     })
+  }
+
+  setAxisSetId(id: number): void {
+    this.axisSetId = id
   }
 }

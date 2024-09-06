@@ -1,7 +1,7 @@
 <template>
   <div>
     <h4>
-      Datasets
+      Dataset List
       <v-btn @click="handleOnClickAddDatasetButton" size="x-small" class="ml-2"
         ><v-icon>mdi-plus</v-icon></v-btn
       >
@@ -62,6 +62,7 @@ import { defineComponent } from 'vue'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   components: {},
@@ -74,6 +75,7 @@ export default defineComponent({
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
       sortOrders: ['ascending', 'descending'],
+      axisSetRepository,
     }
   },
   props: {
@@ -98,6 +100,9 @@ export default defineComponent({
     activateDataset(id: number) {
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.setActiveDataset(id)
+      this.axisSetRepository.setActiveAxisSet(
+        this.datasetRepository.activeDataset.axisSetId,
+      )
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
       this.canvasHandler.clearMask()
       this.canvasHandler.maskMode = -1
@@ -113,7 +118,13 @@ export default defineComponent({
     },
     handleOnClickAddDatasetButton() {
       if (!this.shouldContinueSwitchDataset()) return
+
       this.datasetRepository.createNewDataset()
+
+      this.datasetRepository.lastDataset.setAxisSetId(
+        this.axisSetRepository.activeAxisSetId,
+      )
+
       this.activateDataset(this.datasetRepository.lastDatasetId)
     },
     removeActiveDataset() {

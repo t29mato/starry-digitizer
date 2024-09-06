@@ -34,6 +34,18 @@ export class DatasetRepository {
     return this.datasets[this.datasets.length - 1].id
   }
 
+  get lastDataset(): Dataset {
+    const targetDataset = this.datasets.find(
+      (dataset) => dataset.id === this.lastDatasetId,
+    )
+    if (!targetDataset) {
+      throw new Error(
+        'Unexpected Error: There are no dataset matched with the lastDatasetId',
+      )
+    }
+    return targetDataset
+  }
+
   setPlots(coords: Coord[]) {
     this.activeDataset.clearPlots()
     coords.forEach((coord) => {

@@ -20,7 +20,7 @@ export default {
     plotSizePx: {
       defaultValue: 5,
     },
-    axesSizePx: {
+    axisSetSizePx: {
       defaultValue: 8,
     },
     xyValue: {
@@ -65,13 +65,13 @@ PlotsActive.args = {
   movingPlotId: 1,
 }
 
-export const Axes = Template.bind({})
-Axes.args = {
+export const AxisSet = Template.bind({})
+AxisSet.args = {
   canvasCursor: {
     xPx: 48,
     yPx: 380,
   },
-  axes: [
+  axisSet: [
     { xPx: 48, yPx: 380 },
     { xPx: 348, yPx: 380 },
     { xPx: 48, yPx: 380 },
@@ -79,13 +79,13 @@ Axes.args = {
   shouldShowPoints: false,
 }
 
-export const AxesActive = Template.bind({})
-AxesActive.args = {
+export const AxisSetActive = Template.bind({})
+AxisSetActive.args = {
   canvasCursor: {
     xPx: 48,
     yPx: 380,
   },
-  axes: [
+  axisSet: [
     { xPx: 48, yPx: 380 },
     { xPx: 348, yPx: 380 },
     { xPx: 48, yPx: 380 },

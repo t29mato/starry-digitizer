@@ -66,7 +66,7 @@ export default defineComponent({
   data() {
     return {
       interpolator,
-magnifier,
+      magnifier,
       canvasHandler,
     }
   },

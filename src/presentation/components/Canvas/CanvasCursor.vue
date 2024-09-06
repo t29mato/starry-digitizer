@@ -4,7 +4,7 @@
     <div
       v-if="
         !(
-          axisRepository.isAdjusting ||
+          axisSetRepository.activeAxisSet.isAdjusting ||
           datasetRepository.activeDataset.plotsAreAdjusting
         )
       "
@@ -19,7 +19,7 @@
     </div>
     <!-- INFO: bottom label -->
     <div
-      v-if="!axisRepository.isAdjusting"
+      v-if="!axisSetRepository.activeAxisSet.isAdjusting"
       :style="{
         position: 'absolute',
         top: `${canvasHandler.scaledCursor.yPx + axisCrossCursorPx / 2}px`,
@@ -31,7 +31,7 @@
     </div>
     <!-- INFO: left label -->
     <div
-      v-if="!axisRepository.isAdjusting"
+      v-if="!axisSetRepository.activeAxisSet.isAdjusting"
       :style="{
         position: 'absolute',
         top: `${canvasHandler.scaledCursor.yPx - axisCrossCursorPx}px`,
@@ -55,7 +55,7 @@ import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { STYLE } from '@/constants/constants'
 
@@ -69,7 +69,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler,
-      axisRepository,
+      axisSetRepository,
       datasetRepository,
       axisSizePx: STYLE.axisSizePx,
     }
@@ -101,24 +101,24 @@ export default defineComponent({
       return ''
     },
     bottomLabel(): string {
-      if (this.axisRepository.nextAxis?.name === 'x2y2') {
+      if (this.axisSetRepository.activeAxisSet.nextAxis?.name === 'x2y2') {
         return "x2'"
       }
-      if (this.axisRepository.nextAxis?.name.includes('x')) {
-        return this.axisRepository.nextAxis.name
+      if (this.axisSetRepository.activeAxisSet.nextAxis?.name.includes('x')) {
+        return this.axisSetRepository.activeAxisSet.nextAxis.name
       }
       return ''
     },
     leftLabel(): string {
-      if (this.axisRepository.nextAxis?.name === 'x2y2') {
+      if (this.axisSetRepository.activeAxisSet.nextAxis?.name === 'x2y2') {
         return "y2'"
       }
-      if (this.axisRepository.nextAxis?.name.includes('y')) {
-        return this.axisRepository.nextAxis.name
+      if (this.axisSetRepository.activeAxisSet.nextAxis?.name.includes('y')) {
+        return this.axisSetRepository.activeAxisSet.nextAxis.name
       }
       if (
-        this.axisRepository.nextAxis?.name === 'x1' &&
-        this.axisRepository.pointMode === 0
+        this.axisSetRepository.activeAxisSet.nextAxis?.name === 'x1' &&
+        this.axisSetRepository.activeAxisSet.pointMode === 0
       ) {
         return 'y1'
       }
@@ -129,7 +129,7 @@ export default defineComponent({
       //INFO: 軸定義後でプロットのいずれのモードでもないときは表示しない
       if (
         this.canvasHandler.manualMode === -1 &&
-        this.axisRepository.y2.coordIsFilled
+        this.axisSetRepository.activeAxisSet.y2.coordIsFilled
       ) {
         return false
       }

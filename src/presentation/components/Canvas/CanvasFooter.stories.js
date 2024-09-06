@@ -16,7 +16,7 @@ export default {
         { id: 1, xPx: 220, yPx: 220 },
       ],
     },
-    axes: {
+    axisSet: {
       defaultValue: [
         { xPx: 48, yPx: 380 },
         { xPx: 348, yPx: 380 },
