@@ -5,7 +5,7 @@
       v-if="
         !(
           axisSetRepository.activeAxisSet.isAdjusting ||
-          datasetRepository.activeDataset.plotsAreAdjusting
+          datasetRepository.activeDataset.pointsAreAdjusting
         )
       "
       :style="{

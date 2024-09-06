@@ -17,18 +17,18 @@
     <v-btn
       size="small"
       class="ml-2"
-      :disabled="datasetRepository.activeDataset.plots.length === 0"
-      @click="handleOnClickClearPlots"
+      :disabled="datasetRepository.activeDataset.points.length === 0"
+      @click="handleOnClickClearPoints"
       >Clear Points</v-btn
     >
     <v-btn
       size="small"
       class="ml-2"
       :disabled="
-        datasetRepository.activeDataset.plots.length === 0 ||
-        !datasetRepository.activeDataset.nextPlotId
+        datasetRepository.activeDataset.points.length === 0 ||
+        !datasetRepository.activeDataset.nextPointId
       "
-      @click="datasetRepository.activeDataset.clearActivePlots"
+      @click="datasetRepository.activeDataset.clearActivePoints"
       >Clear Active Point</v-btn
     >
   </div>
@@ -64,8 +64,8 @@ export default defineComponent({
       this.axisSetRepository.activeAxisSet.clearAxisCoords()
       this.canvasHandler.setManualMode(-1)
     },
-    handleOnClickClearPlots() {
-      this.datasetRepository.activeDataset.clearPlots()
+    handleOnClickClearPoints() {
+      this.datasetRepository.activeDataset.clearPoints()
       this.interpolator.clearPreview()
     },
   },

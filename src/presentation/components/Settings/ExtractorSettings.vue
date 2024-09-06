@@ -69,7 +69,7 @@
     <div class="text-right mb-4">
       <v-btn
         :loading="isExtracting"
-        @click="extractPlots"
+        @click="extractPoints"
         color="primary"
         size="small"
         >Run</v-btn
@@ -98,7 +98,7 @@ import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
-import { forceRenderCanvasPlots } from '@/presentation/hacks/forceRenderCanvasPlots'
+import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
 
 export default defineComponent({
   components: {
@@ -135,7 +135,7 @@ export default defineComponent({
   },
   methods: {
     changeManualMode(value: any) {
-      this.datasetRepository.activeDataset.inactivatePlots()
+      this.datasetRepository.activeDataset.inactivatePoints()
       if (value === undefined) {
         this.canvasHandler.setManualMode(-1)
         return
@@ -151,16 +151,16 @@ export default defineComponent({
           this.extractor.setStrategy(LineExtract.instance)
       }
     },
-    async extractPlots() {
+    async extractPoints() {
       this.isExtracting = true
       this.axisSetRepository.activeAxisSet.inactivateAxis()
       try {
-        this.datasetRepository.setPlots(
+        this.datasetRepository.setPoints(
           this.extractor.execute(this.canvasHandler),
         )
-        this.datasetRepository.sortPlots()
+        this.datasetRepository.sortPoints()
       } catch (e) {
-        console.error('failed to extractPlots', { cause: e })
+        console.error('failed to extractPoints', { cause: e })
       } finally {
         this.isExtracting = false
       }
@@ -174,47 +174,47 @@ export default defineComponent({
       } else {
         //NOTE: A temporary workaround to ensure that data points remain after turning off the interpolation function. A redesign is essential.
         const dataset = this.datasetRepository.activeDataset
-        const addedPlotIds: number[] = []
-        dataset.plots
-          .filter((p) => dataset.manuallyAddedPlotIds.includes(p.id))
+        const addedPointIds: number[] = []
+        dataset.points
+          .filter((p) => dataset.manuallyAddedPointIds.includes(p.id))
           .forEach((p) => {
-            dataset.addPlot(p.xPx, p.yPx)
-            addedPlotIds.push(dataset.lastPlotId)
+            dataset.addPoint(p.xPx, p.yPx)
+            addedPointIds.push(dataset.lastPointId)
           })
 
         this.interpolator.clearPreview()
 
         //NOTE: A temporary workaround to ensure that data points remain after turning off the interpolation function. A redesign is essential.
-        addedPlotIds.forEach((pId) => {
-          dataset.addManuallyAddedPlotId(pId)
+        addedPointIds.forEach((pId) => {
+          dataset.addManuallyAddedPointId(pId)
         })
       }
 
-      //HACK: Since tempPlots are not drawn, force rendering as a temporary measure. Fundamental solution required
-      forceRenderCanvasPlots(this.datasetRepository)
+      //HACK: Since tempPoints are not drawn, force rendering as a temporary measure. Fundamental solution required
+      forceRenderCanvasPoints(this.datasetRepository)
 
       addLocalStorageData('isInterpolatorActive', String(isActive))
     },
     handleOnConfirmInterpolation() {
       if (
-        this.datasetRepository.activeDataset.manuallyAddedPlotIds.length < 2
+        this.datasetRepository.activeDataset.manuallyAddedPointIds.length < 2
       ) {
         alert(
-          'Plot 2 or more points by clicking the graph image to execute interpolation.',
+          'Point 2 or more points by clicking the graph image to execute interpolation.',
         )
         return
       }
       const activeDataset = this.datasetRepository.activeDataset
 
-      activeDataset.tempPlots.forEach((tempPlot) => {
-        activeDataset.moveTempPlotToPlot(tempPlot.id)
+      activeDataset.tempPoints.forEach((tempPoint) => {
+        activeDataset.moveTempPointToPoint(tempPoint.id)
       })
-      activeDataset.manuallyAddedPlotIds.forEach((plotId) => {
-        activeDataset.clearPlot(plotId)
+      activeDataset.manuallyAddedPointIds.forEach((pointId) => {
+        activeDataset.clearPoint(pointId)
       })
 
-      this.datasetRepository.activeDataset.switchActivatedPlot(
-        activeDataset.lastPlotId,
+      this.datasetRepository.activeDataset.switchActivatedPoint(
+        activeDataset.lastPointId,
       )
 
       this.interpolator.clearPreview()
@@ -223,8 +223,8 @@ export default defineComponent({
       this.interpolator.updateInterval(parseFloat(value))
       this.interpolator.updatePreview()
 
-      //HACK: Since tempPlots are not drawn, force rendering as a temporary measure. Fundamental solution required
-      forceRenderCanvasPlots(this.datasetRepository)
+      //HACK: Since tempPoints are not drawn, force rendering as a temporary measure. Fundamental solution required
+      forceRenderCanvasPoints(this.datasetRepository)
     },
   },
 })

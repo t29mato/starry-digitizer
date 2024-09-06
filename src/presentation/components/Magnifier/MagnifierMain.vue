@@ -13,37 +13,40 @@
         :toggleSettingsDialog="toggleSettingsDialog"
       ></magnifier-settings-btn>
       <magnifier-image></magnifier-image>
-      <div v-for="plot in datasetRepository.activeDataset.plots" :key="plot.id">
-        <magnifier-plots
-          :plot="plot"
+      <div
+        v-for="point in datasetRepository.activeDataset.points"
+        :key="point.id"
+      >
+        <magnifier-points
+          :point="point"
           :magnifierSize="magnifier.sizePx"
           :isActive="
-            datasetRepository.activeDataset.activePlotIds.includes(plot.id)
+            datasetRepository.activeDataset.activePointIds.includes(point.id)
           "
           :isVisible="
-            datasetRepository.activeDataset.visiblePlotIds.includes(plot.id)
+            datasetRepository.activeDataset.visiblePointIds.includes(point.id)
           "
           :isManuallyAdded="
-            datasetRepository.activeDataset.manuallyAddedPlotIds.includes(
-              plot.id,
+            datasetRepository.activeDataset.manuallyAddedPointIds.includes(
+              point.id,
             )
           "
-        ></magnifier-plots>
+        ></magnifier-points>
       </div>
       <div
-        v-for="plot in datasetRepository.activeDataset.tempPlots"
-        :key="plot.id"
+        v-for="point in datasetRepository.activeDataset.tempPoints"
+        :key="point.id"
       >
-        <magnifier-plots
-          :plot="plot"
+        <magnifier-points
+          :point="point"
           :magnifierSize="magnifier.sizePx"
           :isActive="
-            datasetRepository.activeDataset.activePlotIds.includes(plot.id)
+            datasetRepository.activeDataset.activePointIds.includes(point.id)
           "
           :isVisible="true"
           :isTemporary="true"
           :isManuallyAdded="false"
-        ></magnifier-plots>
+        ></magnifier-points>
       </div>
       <magnifier-extract-size></magnifier-extract-size>
       <magnifier-axis-set></magnifier-axis-set>
@@ -73,7 +76,7 @@ import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
 import MagnifierAxisSet from './MagnifierAxisSet.vue'
-import MagnifierPlots from './MagnifierPlots.vue'
+import MagnifierPoints from './MagnifierPoints.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
@@ -90,7 +93,7 @@ export default defineComponent({
     MagnifierHorizontalLine,
     MagnifierImage,
     MagnifierAxisSet,
-    MagnifierPlots,
+    MagnifierPoints,
     MagnifierSettings,
     MagnifierSettingsBtn,
     MagnifierExtractSize,

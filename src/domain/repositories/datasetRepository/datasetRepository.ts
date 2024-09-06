@@ -19,8 +19,8 @@ export class DatasetRepository {
     return targetDataset
   }
 
-  get nextPlotId(): number {
-    return this.activeDataset.nextPlotId
+  get nextPointId(): number {
+    return this.activeDataset.nextPointId
   }
 
   get nextDatasetId(): number {
@@ -46,15 +46,15 @@ export class DatasetRepository {
     return targetDataset
   }
 
-  setPlots(coords: Coord[]) {
-    this.activeDataset.clearPlots()
+  setPoints(coords: Coord[]) {
+    this.activeDataset.clearPoints()
     coords.forEach((coord) => {
-      this.activeDataset.addPlot(coord.xPx, coord.yPx)
+      this.activeDataset.addPoint(coord.xPx, coord.yPx)
     })
   }
 
-  sortPlots() {
-    this.activeDataset.plots.sort((a, b) => {
+  sortPoints() {
+    this.activeDataset.points.sort((a, b) => {
       return a.xPx - b.xPx
     })
   }
@@ -88,8 +88,8 @@ export class DatasetRepository {
     this.setActiveDataset(this.datasets[0].id)
   }
 
-  activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
-    this.activeDataset.activatePlotsInRectangleArea(
+  activatePointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
+    this.activeDataset.activatePointsInRectangleArea(
       topLeftCoord,
       bottomRightCoord,
     )

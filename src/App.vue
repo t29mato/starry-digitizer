@@ -45,7 +45,7 @@ export default defineComponent({
   },
 
   data: () => ({
-    plots: [],
+    points: [],
     version,
     links: [
       {
@@ -67,8 +67,8 @@ export default defineComponent({
     },
   },
   methods: {
-    importPlots(plots: any) {
-      this.plots = plots
+    importPoints(points: any) {
+      this.points = points
     },
   },
 })

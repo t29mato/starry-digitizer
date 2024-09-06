@@ -76,7 +76,7 @@ export default defineComponent({
         this.extractor.setSwatches(this.canvasHandler.colorSwatches)
         this.canvasHandler.setUploadImageUrl(fr.result)
         this.axisSetRepository.activeAxisSet.clearAxisCoords()
-        this.datasetRepository.activeDataset.clearPlots()
+        this.datasetRepository.activeDataset.clearPoints()
       } catch (e) {
         console.error('failed to update image', { cause: e })
       }

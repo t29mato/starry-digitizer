@@ -5,65 +5,65 @@ export type Coord = {
   xPx: number
   yPx: number
 }
-export type Plot = {
+export type Point = {
   id: number
   xPx: number
   yPx: number
 }
 
-export type Plots = Plot[]
+export type Points = Point[]
 
-export type PlotValue = { xV: string; yV: string } & Plot
+export type PointValue = { xV: string; yV: string } & Point
 
 export interface DatasetInterface {
   name: string
-  plots: Plots
+  points: Points
   id: number
-  plotsAreAdjusting: boolean
-  tempPlots: Plots
-  activePlotIds: number[]
+  pointsAreAdjusting: boolean
+  tempPoints: Points
+  activePointIds: number[]
   axisSetId: number
   /**
    * INFO: Confirm interpolation: Delay finalization until user confirms via window.confirm.
    * If canceled, manual points are restored. Temporarily hides manual points during preview
-   * by using 'visiblePlotIds' state.
+   * by using 'visiblePointIds' state.
    */
-  visiblePlotIds: number[]
-  manuallyAddedPlotIds: number[]
-  get nextPlotId(): number
-  get nextTempPlotId(): number
-  get lastPlotId(): number
-  get plotsAreActive(): boolean
-  scaledPlots(scale: number): Plots
-  scaledTempPlots(scale: number): Plots
-  addPlot(xPx: number, yPx: number): void
-  addTempPlot(xPx: number, yPx: number): void
-  moveActivePlot(vector: Vector): void
-  switchActivatedPlot(id: number): void
-  addActivatedPlot(id: number): void
+  visiblePointIds: number[]
+  manuallyAddedPointIds: number[]
+  get nextPointId(): number
+  get nextTempPointId(): number
+  get lastPointId(): number
+  get pointsAreActive(): boolean
+  scaledPoints(scale: number): Points
+  scaledTempPoints(scale: number): Points
+  addPoint(xPx: number, yPx: number): void
+  addTempPoint(xPx: number, yPx: number): void
+  moveActivePoint(vector: Vector): void
+  switchActivatedPoint(id: number): void
+  addActivatedPoint(id: number): void
   hasActive(): boolean
-  toggleActivatedPlot(toggledId: number): void
-  clearPlot(id: number): void
-  clearTempPlot(id: number): void
-  clearPlots(): void
-  inactivatePlots(): void
-  clearActivePlots(): void
-  addVisiblePlotId(id: number): void
-  removeVisiblePlotId(id: number): void
-  addManuallyAddedPlotId(id: number): void
-  removeManuallyAddedPlotId(id: number): void
-  get manuallyAddedPlots(): Plots
-  moveTempPlotToPlot(tempPlotId: number): void
-  plotsSortedByXAscending(): Plots
-  activatePlotsInRectangleArea(
+  toggleActivatedPoint(toggledId: number): void
+  clearPoint(id: number): void
+  clearTempPoint(id: number): void
+  clearPoints(): void
+  inactivatePoints(): void
+  clearActivePoints(): void
+  addVisiblePointId(id: number): void
+  removeVisiblePointId(id: number): void
+  addManuallyAddedPointId(id: number): void
+  removeManuallyAddedPointId(id: number): void
+  get manuallyAddedPoints(): Points
+  moveTempPointToPoint(tempPointId: number): void
+  pointsSortedByXAscending(): Points
+  activatePointsInRectangleArea(
     topLeftCoord: Coord,
     bottomRightCoord: Coord,
   ): void
-  plotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Plots
-  plotsSortedByXDescending(): Plots
-  plotsSortedByYAscending(): Plots
-  plotsSortedByYDescending(): Plots
-  plotsSortedByIdAscending(): Plots
-  plotsSortedByIdDescending(): Plots
+  pointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Points
+  pointsSortedByXDescending(): Points
+  pointsSortedByYAscending(): Points
+  pointsSortedByYDescending(): Points
+  pointsSortedByIdAscending(): Points
+  pointsSortedByIdDescending(): Points
   setAxisSetId(id: number): void
 }

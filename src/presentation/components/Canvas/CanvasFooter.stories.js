@@ -4,13 +4,13 @@ export default {
   title: 'components/Canvas/Footer',
   component: CanvasFooter,
   argTypes: {
-    plotIsActive: {
+    pointIsActive: {
       defaultValue: true,
     },
     shouldShowPoints: {
       defaultValue: true,
     },
-    plots: {
+    points: {
       defaultValue: [
         { id: 0, xPx: 210, yPx: 200 },
         { id: 1, xPx: 220, yPx: 220 },
@@ -26,14 +26,14 @@ export default {
     clearAxisCoords: {
       action: 'clearAxisCoords',
     },
-    clearPlots: {
-      action: 'clearPlots',
+    clearPoints: {
+      action: 'clearPoints',
     },
-    clearActivePlots: {
-      action: 'clearActivePlots',
+    clearActivePoints: {
+      action: 'clearActivePoints',
     },
-    switchShowPlots: {
-      action: 'switchShowPlots',
+    switchShowPoints: {
+      action: 'switchShowPoints',
     },
     clearMask: {
       action: 'clearMask',
