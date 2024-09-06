@@ -2,7 +2,7 @@ export interface pixelDataScheme {
   schemeVersion: '0.1.0'
   axisSets: {
     id: number
-    xAxis: {
+    axisX: {
       coord1: {
         xPx: number
         yPx: number
@@ -12,7 +12,7 @@ export interface pixelDataScheme {
         yPx: number
       }
     }
-    yAxis: {
+    axisY: {
       coord1: {
         xPx: number
         yPx: number

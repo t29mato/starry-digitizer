@@ -6,7 +6,7 @@ export interface PlotDataScheme {
   axisSets: {
     id: number
     name: string
-    xAxis: {
+    axisX: {
       value1: number
       value2: number
       scale: 'linear' | 'log'
@@ -14,7 +14,7 @@ export interface PlotDataScheme {
       // property: string
       // unit: string
     }
-    yAxis: {
+    axisY: {
       value1: number
       value2: number
       scale: 'linear' | 'log'
