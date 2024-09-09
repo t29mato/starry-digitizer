@@ -195,6 +195,7 @@
 import { defineComponent } from 'vue'
 
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 
 export default defineComponent({
   computed: {
@@ -242,6 +243,10 @@ export default defineComponent({
         y1: '',
         y2: '',
       },
+      axesToDisplayValAsExponential: [] as {
+        axisSetId: number
+        axisName: 'x1' | 'x2' | 'y1' | 'y2'
+      }[],
     }
   },
   created() {
@@ -273,19 +278,64 @@ export default defineComponent({
       }
       return (value * 0.1).toPrecision(1)
     },
+    isExponentialFormat(value: string): boolean {
+      return value.includes('e+') && typeof parseFloat(value) === 'number'
+    },
+    updateAxesToDisplayValAsExponential(
+      axisName: 'x1' | 'x2' | 'y1' | 'y2',
+      value: string,
+    ): void {
+      if (this.isExponentialFormat(value)) {
+        this.axesToDisplayValAsExponential.push({
+          axisSetId: this.axisSetRepository.activeAxisSetId,
+          axisName,
+        })
+      } else {
+        this.axesToDisplayValAsExponential =
+          this.axesToDisplayValAsExponential.filter(
+            (axis) =>
+              !(
+                axis.axisSetId === this.axisSetRepository.activeAxisSetId &&
+                axis.axisName === axisName
+              ),
+          )
+      }
+    },
+    setAxisSetValuesToDisplayValues(axisSet: AxisSetInterface): void {
+      const axisNames = ['x1', 'x2', 'y1', 'y2'] as const
+
+      axisNames.forEach((axisName) => {
+        const displayKey = axisName as keyof typeof this.displayVal
+        const axisValue = axisSet[axisName].value
+
+        // Exponential表示の条件に基づき、表示値を設定
+        this.displayVal[displayKey] = this.axesToDisplayValAsExponential.find(
+          (axis) => axis.axisSetId === axisSet.id && axis.axisName === axisName,
+        )
+          ? axisValue.toPrecision(1)
+          : String(axisValue)
+      })
+    },
   },
   watch: {
     'displayVal.x1'(value: string) {
+      this.updateAxesToDisplayValAsExponential('x1', value)
       this.axisSetRepository.activeAxisSet.setX1Value(parseFloat(value))
     },
     'displayVal.x2'(value: string) {
+      this.updateAxesToDisplayValAsExponential('x2', value)
       this.axisSetRepository.activeAxisSet.setX2Value(parseFloat(value))
     },
     'displayVal.y1'(value: string) {
+      this.updateAxesToDisplayValAsExponential('y1', value)
       this.axisSetRepository.activeAxisSet.setY1Value(parseFloat(value))
     },
     'displayVal.y2'(value: string) {
+      this.updateAxesToDisplayValAsExponential('y2', value)
       this.axisSetRepository.activeAxisSet.setY2Value(parseFloat(value))
+    },
+    'axisSetRepository.activeAxisSet'(axisSet: AxisSetInterface) {
+      this.setAxisSetValuesToDisplayValues(axisSet)
     },
   },
 })
