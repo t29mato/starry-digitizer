@@ -6,7 +6,7 @@
           <td class="pl-0 pr-1">X</td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model.number="x1Axis.value"
+              v-model="displayVal.x1"
               id="x1-value"
               type="number"
               hide-details
@@ -19,7 +19,7 @@
               >
                 <button
                   size="x-small"
-                  @click="multiplyByTenX1"
+                  @click="updateDisplayValMultipliedByTen('x1')"
                   id="multiply-by-ten-x1"
                   icon
                 >
@@ -28,7 +28,7 @@
                 <button
                   id="divide-by-ten-x1"
                   size="x-small"
-                  @click="divideByTenX1"
+                  @click="updateDisplayValDividedByTen('x1')"
                   icon
                 >
                   /10
@@ -38,7 +38,7 @@
           </td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model.number="x2Axis.value"
+              v-model="displayVal.x2"
               id="x2-value"
               type="number"
               hide-details
@@ -52,7 +52,7 @@
                 <button
                   id="multiply-by-ten-x2"
                   size="x-small"
-                  @click="multiplyByTenX2"
+                  @click="updateDisplayValMultipliedByTen('x2')"
                   icon
                 >
                   x10
@@ -60,7 +60,7 @@
                 <button
                   id="divide-by-ten-x2"
                   size="x-small"
-                  @click="divideByTenX2"
+                  @click="updateDisplayValDividedByTen('x2')"
                   icon
                 >
                   /10
@@ -83,7 +83,7 @@
           <td class="pl-0 pr-1">Y</td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model.number="y1Axis.value"
+              v-model="displayVal.y1"
               id="y1-value"
               type="number"
               hide-details
@@ -97,7 +97,7 @@
                 <button
                   id="multiply-by-ten-y1"
                   size="x-small"
-                  @click="multiplyByTenY1"
+                  @click="updateDisplayValMultipliedByTen('y1')"
                   icon
                 >
                   x10
@@ -105,7 +105,7 @@
                 <button
                   id="divide-by-ten-y1"
                   size="x-small"
-                  @click="divideByTenY1"
+                  @click="updateDisplayValDividedByTen('y1')"
                   icon
                 >
                   /10
@@ -115,7 +115,7 @@
           </td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model.number="y2Axis.value"
+              v-model="displayVal.y2"
               id="y2-value"
               type="number"
               hide-details
@@ -129,7 +129,7 @@
                 <button
                   id="multiply-by-ten-y2"
                   size="x-small"
-                  @click="multiplyByTenY2"
+                  @click="updateDisplayValMultipliedByTen('y2')"
                   icon
                 >
                   x10
@@ -137,7 +137,7 @@
                 <button
                   id="divide-by-ten-y2"
                   size="x-small"
-                  @click="divideByTenY2"
+                  @click="updateDisplayValDividedByTen('y2')"
                   icon
                 >
                   /10
@@ -235,45 +235,57 @@ export default defineComponent({
   data() {
     return {
       axisSetRepository,
+      //NOTE: initialize axis values as string because it sometimes is displayed like '1e+10'
+      displayVal: {
+        x1: '',
+        x2: '',
+        y1: '',
+        y2: '',
+      },
     }
   },
-
+  created() {
+    this.displayVal.x1 = String(this.x1Axis.value)
+    this.displayVal.x2 = String(this.x2Axis.value)
+    this.displayVal.y1 = String(this.y1Axis.value)
+    this.displayVal.y2 = String(this.y2Axis.value)
+  },
   methods: {
-    multiplyByTenX1() {
-      this.x1Axis.value = this.multiplyByTen(this.x1Axis.value)
+    updateDisplayValMultipliedByTen(axisName: 'x1' | 'x2' | 'y1' | 'y2'): void {
+      this.displayVal[axisName] = this.getDisplayValMultipliedByTen(
+        parseFloat(this.displayVal[axisName]),
+      )
     },
-    divideByTenX1() {
-      this.x1Axis.value = this.divideByTen(this.x1Axis.value)
+    updateDisplayValDividedByTen(axisName: 'x1' | 'x2' | 'y1' | 'y2'): void {
+      this.displayVal[axisName] = this.getDisplayValDividedByTen(
+        parseFloat(this.displayVal[axisName]),
+      )
     },
-    multiplyByTenX2() {
-      this.x2Axis.value = this.multiplyByTen(this.x2Axis.value)
-    },
-    divideByTenX2() {
-      this.x2Axis.value = this.divideByTen(this.x2Axis.value)
-    },
-    multiplyByTenY1() {
-      this.y1Axis.value = this.multiplyByTen(this.y1Axis.value)
-    },
-    divideByTenY1() {
-      this.y1Axis.value = this.divideByTen(this.y1Axis.value)
-    },
-    multiplyByTenY2() {
-      this.y2Axis.value = this.multiplyByTen(this.y2Axis.value)
-    },
-    divideByTenY2() {
-      this.y2Axis.value = this.divideByTen(this.y2Axis.value)
-    },
-    multiplyByTen(value: number) {
+    getDisplayValMultipliedByTen(value: number): string {
       if (value === 0) {
-        return 1
+        return '1'
       }
-      return value * 10
+      return (value * 10).toPrecision(1)
     },
-    divideByTen(value: number) {
+    getDisplayValDividedByTen(value: number): string {
       if (value === 0) {
-        return 0.1
+        return '0.1'
       }
-      return value * 0.1
+      return (value * 0.1).toPrecision(1)
+    },
+  },
+  watch: {
+    'displayVal.x1'(value: string) {
+      this.axisSetRepository.activeAxisSet.setX1Value(parseFloat(value))
+    },
+    'displayVal.x2'(value: string) {
+      this.axisSetRepository.activeAxisSet.setX2Value(parseFloat(value))
+    },
+    'displayVal.y1'(value: string) {
+      this.axisSetRepository.activeAxisSet.setY1Value(parseFloat(value))
+    },
+    'displayVal.y2'(value: string) {
+      this.axisSetRepository.activeAxisSet.setY2Value(parseFloat(value))
     },
   },
 })
