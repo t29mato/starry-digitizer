@@ -1,5 +1,6 @@
 export interface pixelDataScheme {
   schemeVersion: '0.1.0'
+  imageWidthPx: number
   axisSets: {
     id: number
     axisX: {
