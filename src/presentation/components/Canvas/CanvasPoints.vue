@@ -1,37 +1,37 @@
 <template>
   <div>
-    <canvas-plot
-      v-for="plot in datasetRepository.activeDataset.scaledPlots(
+    <canvas-point
+      v-for="point in datasetRepository.activeDataset.scaledPoints(
         canvasHandler.scale,
       )"
-      :key="plot.id"
-      :plot="plot"
+      :key="point.id"
+      :point="point"
       :isActive="
-        datasetRepository.activeDataset.activePlotIds.includes(plot.id)
+        datasetRepository.activeDataset.activePointIds.includes(point.id)
       "
       :isVisible="
-        datasetRepository.activeDataset.visiblePlotIds.includes(plot.id)
+        datasetRepository.activeDataset.visiblePointIds.includes(point.id)
       "
       :isManuallyAdded="
-        datasetRepository.activeDataset.manuallyAddedPlotIds.includes(plot.id)
+        datasetRepository.activeDataset.manuallyAddedPointIds.includes(point.id)
       "
-    ></canvas-plot>
-    <canvas-plot
-      v-for="(tempPlot, i) in datasetRepository.activeDataset.scaledTempPlots(
+    ></canvas-point>
+    <canvas-point
+      v-for="(tempPoint, i) in datasetRepository.activeDataset.scaledTempPoints(
         canvasHandler.scale,
       )"
       :key="i"
-      :plot="tempPlot"
+      :point="tempPoint"
       :isActive="false"
       :isVisible="true"
       :isTemporary="true"
       :isManuallyAdded="false"
-    ></canvas-plot>
+    ></canvas-point>
   </div>
 </template>
 
 <script lang="ts">
-import CanvasPlot from '@/presentation/components/Canvas/CanvasPlot.vue'
+import CanvasPoint from '@/presentation/components/Canvas/CanvasPoint.vue'
 import { defineComponent } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
@@ -39,7 +39,7 @@ import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   components: {
-    CanvasPlot,
+    CanvasPoint,
   },
   data() {
     return {

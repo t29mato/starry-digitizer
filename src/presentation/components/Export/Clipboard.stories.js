@@ -4,16 +4,16 @@ export default {
   title: 'Components/Export/Clipboard',
   component: Clipboard,
   argTypes: {
-    switchActivatedPlot: {
-      action: 'switchActivatedPlot',
+    switchActivatedPoint: {
+      action: 'switchActivatedPoint',
     },
-    calculatedPlots: {
+    calculatedPoints: {
       defaultValue: [
         { id: 0, xPx: 210, yPx: 200, xV: 210, yV: 200 },
         { id: 1, xPx: 220, yPx: 220, xV: 220, yV: 220 },
       ],
     },
-    movingPlotId: {
+    movingPointId: {
       defaultValue: 1,
     },
   },

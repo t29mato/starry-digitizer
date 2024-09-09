@@ -18,7 +18,7 @@ import { defineComponent } from 'vue'
 // TODO: TSの型宣言エラーが解消できずignore いずれ再度調査
 // @ts-ignore
 import colors from 'vuetify/lib/util/colors'
-import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
+import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
@@ -28,10 +28,10 @@ import 'handsontable/dist/handsontable.full.css'
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
-import { Plot } from '@/domain/models/dataset/datasetInterface'
+import { Point } from '@/domain/models/dataset/datasetInterface'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 registerAllModules()
@@ -44,15 +44,17 @@ export default defineComponent({
   },
   computed: {
     tableData() {
-      if (this.datasetRepository.activeDataset.plots.length > 0) {
-        return this.datasetRepository.activeDataset.plots.map((plot: Plot) => {
-          // @ts-ignore calculateXY methods is defined apparently
-          const { xV, yV } = this.calculateXY(plot.xPx, plot.yPx)
-          return {
-            X: xV,
-            Y: yV,
-          }
-        })
+      if (this.datasetRepository.activeDataset.points.length > 0) {
+        return this.datasetRepository.activeDataset.points.map(
+          (point: Point) => {
+            // @ts-ignore calculateXY methods is defined apparently
+            const { xV, yV } = this.calculateXY(point.xPx, point.yPx)
+            return {
+              X: xV,
+              Y: yV,
+            }
+          },
+        )
       }
       return [{ X: null, Y: null }]
     },
@@ -60,7 +62,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler,
-      axisRepository,
+      axisSetRepository,
       datasetRepository,
       key: 0,
       activeColor: colors.green.lighten5,
@@ -78,10 +80,13 @@ export default defineComponent({
   methods: {
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxesCalculator(this.axisRepository, {
-        x: this.axisRepository.xIsLogScale,
-        y: this.axisRepository.yIsLogScale,
-      })
+      const calculator = new AxisSetCalculator(
+        this.axisSetRepository.activeAxisSet,
+        {
+          x: this.axisSetRepository.activeAxisSet.xIsLogScale,
+          y: this.axisSetRepository.activeAxisSet.yIsLogScale,
+        },
+      )
       return calculator.calculateXYValues(x, y)
     },
     copyData: function () {
@@ -106,10 +111,11 @@ export default defineComponent({
       // @ts-ignore key is defined apparently
       this.key++
     },
-    axes() {
+    axisSet() {
       // @ts-ignore key is defined apparently
       this.key++
     },
   },
 })
 </script>
+@/domain/services/axisSetCalculator @/domain/services/axisSetCalculator

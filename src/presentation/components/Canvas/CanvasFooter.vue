@@ -3,32 +3,32 @@
     <v-btn
       class="ml-2"
       size="small"
-      :disabled="!axisRepository.hasAtLeastOneAxis"
-      @click="clearAxes"
+      :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
+      @click="clearAxisSet"
     >
-      Clear Axes</v-btn
+      Clear XY Axes</v-btn
     >
-    <!-- <v-btn class="ml-2" small :disabled="!axisRepository.hasXAxis" @click="clearXAxis">
+    <!-- <v-btn class="ml-2" small :disabled="!axisSetRepository.activeAxisSet.hasXAxis" @click="clearXAxis">
       Clear X Axis</v-btn
     > -->
-    <!-- <v-btn class="ml-2" small :disabled="!axisRepository.hasYAxis" @click="clearYAxis">
+    <!-- <v-btn class="ml-2" small :disabled="!axisSetRepository.activeAxisSet.hasYAxis" @click="clearYAxis">
       Clear Y Axis</v-btn
     > -->
     <v-btn
       size="small"
       class="ml-2"
-      :disabled="datasetRepository.activeDataset.plots.length === 0"
-      @click="handleOnClickClearPlots"
+      :disabled="datasetRepository.activeDataset.points.length === 0"
+      @click="handleOnClickClearPoints"
       >Clear Points</v-btn
     >
     <v-btn
       size="small"
       class="ml-2"
       :disabled="
-        datasetRepository.activeDataset.plots.length === 0 ||
-        !datasetRepository.activeDataset.nextPlotId
+        datasetRepository.activeDataset.points.length === 0 ||
+        !datasetRepository.activeDataset.nextPointId
       "
-      @click="datasetRepository.activeDataset.clearActivePlots"
+      @click="datasetRepository.activeDataset.clearActivePoints"
       >Clear Active Point</v-btn
     >
   </div>
@@ -39,7 +39,7 @@ import { defineComponent } from 'vue'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
@@ -47,25 +47,25 @@ export default defineComponent({
     return {
       interpolator,
       canvasHandler,
-      axisRepository,
+      axisSetRepository,
       datasetRepository,
     }
   },
   methods: {
-    clearAxes() {
-      this.axisRepository.clearAxisCoords()
+    clearAxisSet() {
+      this.axisSetRepository.activeAxisSet.clearAxisCoords()
       this.canvasHandler.setManualMode(-1)
     },
     clearXAxis() {
-      this.axisRepository.clearXAxisCoords()
+      this.axisSetRepository.activeAxisSet.clearXAxisCoords()
       this.canvasHandler.setManualMode(-1)
     },
     clearYAxis() {
-      this.axisRepository.clearAxisCoords()
+      this.axisSetRepository.activeAxisSet.clearAxisCoords()
       this.canvasHandler.setManualMode(-1)
     },
-    handleOnClickClearPlots() {
-      this.datasetRepository.activeDataset.clearPlots()
+    handleOnClickClearPoints() {
+      this.datasetRepository.activeDataset.clearPoints()
       this.interpolator.clearPreview()
     },
   },

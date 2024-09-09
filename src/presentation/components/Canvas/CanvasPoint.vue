@@ -1,6 +1,6 @@
 <template>
   <div
-    class="canvas-plot"
+    class="canvas-point"
     :style="{
       position: 'absolute',
       top: top,
@@ -22,7 +22,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Plot } from '@/domain/models/dataset/datasetInterface'
+import { Point } from '@/domain/models/dataset/datasetInterface'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
@@ -35,18 +35,18 @@ export default defineComponent({
       interpolator,
       canvasHandler,
       datasetRepository,
-      plotOpacity: STYLE.plotOpacity,
-      tempPlotOpacity: STYLE.tempPlotOpacity,
-      plotSizePx: STYLE.plotSizePx,
-      tempPlotSizePx: STYLE.tempPlotSizePx,
+      pointOpacity: STYLE.pointOpacity,
+      tempPointOpacity: STYLE.tempPointOpacity,
+      pointSizePx: STYLE.pointSizePx,
+      tempPointSizePx: STYLE.tempPointSizePx,
     }
   },
   computed: {
     xPx(): number {
-      return this.plot.xPx
+      return this.point.xPx
     },
     yPx(): number {
-      return this.plot.yPx
+      return this.point.yPx
     },
     cursor(): string | undefined {
       const mode = this.canvasHandler.manualMode
@@ -56,7 +56,7 @@ export default defineComponent({
       return undefined
     },
     opacity() {
-      return this.isTemporary ? this.tempPlotOpacity : this.plotOpacity
+      return this.isTemporary ? this.tempPointOpacity : this.pointOpacity
     },
     backgroundColor() {
       if (this.isActive) {
@@ -70,7 +70,7 @@ export default defineComponent({
       return '#1e90ff'
     },
     borderRadius(): string {
-      //TODO: 本来はinterpolatorのanchor pointsであるべきものを、暫定的にplotで表現しているので、最終的にここは消したい
+      //TODO: 本来はinterpolatorのanchor pointsであるべきものを、暫定的にpointで表現しているので、最終的にここは消したい
 
       if (this.isManuallyAdded && this.interpolator.isActive) {
         return '0'
@@ -80,24 +80,24 @@ export default defineComponent({
     },
     size(): string {
       if (this.isTemporary) {
-        return this.tempPlotSizePx + 'px'
+        return this.tempPointSizePx + 'px'
       }
 
-      return this.plotSizePx + 'px'
+      return this.pointSizePx + 'px'
     },
     top(): string {
       if (this.isTemporary) {
-        return this.yPx - this.tempPlotSizePx / 2 + 'px'
+        return this.yPx - this.tempPointSizePx / 2 + 'px'
       }
 
-      return this.yPx - this.plotSizePx / 2 + 'px'
+      return this.yPx - this.pointSizePx / 2 + 'px'
     },
     left(): string {
       if (this.isTemporary) {
-        return this.xPx - this.tempPlotSizePx / 2 + 'px'
+        return this.xPx - this.tempPointSizePx / 2 + 'px'
       }
 
-      return this.xPx - this.plotSizePx / 2 + 'px'
+      return this.xPx - this.pointSizePx / 2 + 'px'
     },
     zIndex(): string {
       if (this.isTemporary) {
@@ -108,8 +108,8 @@ export default defineComponent({
     },
   },
   props: {
-    plot: {
-      type: Object as () => Plot,
+    point: {
+      type: Object as () => Point,
       required: true,
     },
     isActive: {
@@ -130,20 +130,22 @@ export default defineComponent({
   methods: {
     click(event: MouseEvent) {
       switch (this.canvasHandler.manualMode) {
-        // INFO: CanvasMain Component -> plot method
+        // INFO: CanvasMain Component -> point method
         case 0:
           return
         case 1:
           if (event.ctrlKey || event.metaKey) {
-            this.datasetRepository.activeDataset.toggleActivatedPlot(
-              this.plot.id,
+            this.datasetRepository.activeDataset.toggleActivatedPoint(
+              this.point.id,
             )
             return
           }
-          this.datasetRepository.activeDataset.switchActivatedPlot(this.plot.id)
+          this.datasetRepository.activeDataset.switchActivatedPoint(
+            this.point.id,
+          )
           return
         case 2:
-          this.datasetRepository.activeDataset.clearPlot(this.plot.id)
+          this.datasetRepository.activeDataset.clearPoint(this.point.id)
 
           return
         default:

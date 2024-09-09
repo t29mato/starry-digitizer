@@ -23,15 +23,15 @@ test('remove a dataset', () => {
   expect(datasets.activeDatasetId).toBe(1)
 })
 
-test('set plots', () => {
+test('set points', () => {
   const datasets = new DatasetRepository(new Dataset('dataset 1', [], 1))
   datasets.addDataset(new Dataset('dataset 2', [], datasets.nextDatasetId))
-  datasets.setPlots([{ xPx: 1, yPx: 1 }])
-  expect(datasets.activeDataset.plots).toStrictEqual([
+  datasets.setPoints([{ xPx: 1, yPx: 1 }])
+  expect(datasets.activeDataset.points).toStrictEqual([
     { id: 1, xPx: 1, yPx: 1 },
   ])
-  datasets.setPlots([{ xPx: 2, yPx: 2 }])
-  expect(datasets.activeDataset.plots).toStrictEqual([
+  datasets.setPoints([{ xPx: 2, yPx: 2 }])
+  expect(datasets.activeDataset.points).toStrictEqual([
     { id: 1, xPx: 2, yPx: 2 },
   ])
 })

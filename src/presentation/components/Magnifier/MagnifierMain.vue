@@ -13,40 +13,43 @@
         :toggleSettingsDialog="toggleSettingsDialog"
       ></magnifier-settings-btn>
       <magnifier-image></magnifier-image>
-      <div v-for="plot in datasetRepository.activeDataset.plots" :key="plot.id">
-        <magnifier-plots
-          :plot="plot"
+      <div
+        v-for="point in datasetRepository.activeDataset.points"
+        :key="point.id"
+      >
+        <magnifier-points
+          :point="point"
           :magnifierSize="magnifier.sizePx"
           :isActive="
-            datasetRepository.activeDataset.activePlotIds.includes(plot.id)
+            datasetRepository.activeDataset.activePointIds.includes(point.id)
           "
           :isVisible="
-            datasetRepository.activeDataset.visiblePlotIds.includes(plot.id)
+            datasetRepository.activeDataset.visiblePointIds.includes(point.id)
           "
           :isManuallyAdded="
-            datasetRepository.activeDataset.manuallyAddedPlotIds.includes(
-              plot.id,
+            datasetRepository.activeDataset.manuallyAddedPointIds.includes(
+              point.id,
             )
           "
-        ></magnifier-plots>
+        ></magnifier-points>
       </div>
       <div
-        v-for="plot in datasetRepository.activeDataset.tempPlots"
-        :key="plot.id"
+        v-for="point in datasetRepository.activeDataset.tempPoints"
+        :key="point.id"
       >
-        <magnifier-plots
-          :plot="plot"
+        <magnifier-points
+          :point="point"
           :magnifierSize="magnifier.sizePx"
           :isActive="
-            datasetRepository.activeDataset.activePlotIds.includes(plot.id)
+            datasetRepository.activeDataset.activePointIds.includes(point.id)
           "
           :isVisible="true"
           :isTemporary="true"
           :isManuallyAdded="false"
-        ></magnifier-plots>
+        ></magnifier-points>
       </div>
       <magnifier-extract-size></magnifier-extract-size>
-      <magnifier-axes></magnifier-axes>
+      <magnifier-axis-set></magnifier-axis-set>
       <magnifier-vertical-line></magnifier-vertical-line>
       <magnifier-horizontal-line></magnifier-horizontal-line>
       <div class="c__magnifier__white-outlines">
@@ -72,16 +75,16 @@ import { defineComponent } from 'vue'
 import MagnifierVerticalLine from './MagnifierVerticalLine.vue'
 import MagnifierHorizontalLine from './MagnifierHorizontalLine.vue'
 import MagnifierImage from './MagnifierImage.vue'
-import MagnifierAxes from './MagnifierAxes.vue'
-import MagnifierPlots from './MagnifierPlots.vue'
+import MagnifierAxisSet from './MagnifierAxisSet.vue'
+import MagnifierPoints from './MagnifierPoints.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
-import XYAxesCalculator from '@/domain/services/XYAxesCalculator'
+import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
@@ -89,8 +92,8 @@ export default defineComponent({
     MagnifierVerticalLine,
     MagnifierHorizontalLine,
     MagnifierImage,
-    MagnifierAxes,
-    MagnifierPlots,
+    MagnifierAxisSet,
+    MagnifierPoints,
     MagnifierSettings,
     MagnifierSettingsBtn,
     MagnifierExtractSize,
@@ -101,7 +104,7 @@ export default defineComponent({
       shouldShowSettingsDialog: false,
       magnifier,
       canvasHandler,
-      axisRepository,
+      axisSetRepository,
       datasetRepository,
     }
   },
@@ -124,10 +127,13 @@ export default defineComponent({
       yV: string
     } {
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new XYAxesCalculator(this.axisRepository, {
-        x: this.axisRepository.xIsLogScale,
-        y: this.axisRepository.yIsLogScale,
-      })
+      const calculator = new AxisSetCalculator(
+        this.axisSetRepository.activeAxisSet,
+        {
+          x: this.axisSetRepository.activeAxisSet.xIsLogScale,
+          y: this.axisSetRepository.activeAxisSet.yIsLogScale,
+        },
+      )
       return calculator.calculateXYValues(
         this.canvasHandler.cursor.xPx,
         this.canvasHandler.cursor.yPx,
@@ -196,3 +202,4 @@ $_white-outline-pos-value: calc(50% - #{$_white-outline-size} - 1px);
   }
 }
 </style>
+@/domain/services/axisSetCalculator

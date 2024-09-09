@@ -1,9 +1,9 @@
-import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
+import { Coord, Point } from '@/domain/models/dataset/datasetInterface'
 import { InterpolatorInterface } from './interpolatorInterface'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
 import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
-import { getPlotsTotalDistance } from '../../utils/pointsUtils'
+import { getPointsTotalDistance } from '../../utils/pointsUtils'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 
@@ -46,23 +46,23 @@ export class Interpolator implements InterpolatorInterface {
     )
   }
 
-  private setInterpolatedCoords(anchorPlots: Plot[]) {
-    const manualPlotsTotalDistance = getPlotsTotalDistance(anchorPlots)
+  private setInterpolatedCoords(anchorPoints: Point[]) {
+    const manualPointsTotalDistance = getPointsTotalDistance(anchorPoints)
 
     const segments = Math.max(
       Math.floor(
-        manualPlotsTotalDistance / (this.interval * Math.sqrt(2)), //INFO: intervalが10の時、点同士の間隔がおよそ16pxになるようにした比例式
+        manualPointsTotalDistance / (this.interval * Math.sqrt(2)), //INFO: intervalが10の時、点同士の間隔がおよそ16pxになるようにした比例式
       ),
       1,
     )
 
     const guidelineSegments = Math.max(
-      Math.floor(manualPlotsTotalDistance / 4), //INFO: 補助線は常に高精度の曲線にする
+      Math.floor(manualPointsTotalDistance / 4), //INFO: 補助線は常に高精度の曲線にする
       1,
     )
 
     const [interpCoords, interpForGuidelineCoords] = getInterpolatedCoordsList({
-      plots: anchorPlots,
+      points: anchorPoints,
       segmentsList: [segments, guidelineSegments],
     })
 
@@ -158,39 +158,39 @@ export class Interpolator implements InterpolatorInterface {
 
   public updatePreview(): void {
     const activeDataset = datasetRepository.activeDataset
-    const anchorPlots = activeDataset.plots.filter((plot: Plot) =>
-      activeDataset.manuallyAddedPlotIds.includes(plot.id),
+    const anchorPoints = activeDataset.points.filter((point: Point) =>
+      activeDataset.manuallyAddedPointIds.includes(point.id),
     )
 
     this.clearGuideCanvasContext()
     this.clearMagnifierCanvasContext()
 
-    activeDataset.tempPlots.forEach((tempPlot) => {
-      activeDataset.clearTempPlot(tempPlot.id)
+    activeDataset.tempPoints.forEach((tempPoint) => {
+      activeDataset.clearTempPoint(tempPoint.id)
     })
 
-    if (anchorPlots.length <= 1) {
+    if (anchorPoints.length <= 1) {
       return
     }
 
-    this.setInterpolatedCoords(anchorPlots)
+    this.setInterpolatedCoords(anchorPoints)
 
     this.drawInterpolationLineOnGuideCanvas()
 
     this.interpolatedCoords.forEach((coord: Coord) => {
-      activeDataset.addTempPlot(coord.xPx, coord.yPx)
+      activeDataset.addTempPoint(coord.xPx, coord.yPx)
     })
   }
 
   public clearPreview(): void {
     const activeDataset = datasetRepository.activeDataset
 
-    activeDataset.tempPlots.forEach((tempPlot) => {
-      activeDataset.clearTempPlot(tempPlot.id)
+    activeDataset.tempPoints.forEach((tempPoint) => {
+      activeDataset.clearTempPoint(tempPoint.id)
     })
 
-    activeDataset.manuallyAddedPlotIds.forEach((pId) =>
-      activeDataset.clearPlot(pId),
+    activeDataset.manuallyAddedPointIds.forEach((pId) =>
+      activeDataset.clearPoint(pId),
     )
 
     this.clearGuideCanvasContext()

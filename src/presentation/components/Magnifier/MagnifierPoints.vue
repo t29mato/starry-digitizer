@@ -1,7 +1,7 @@
 <template>
   <!-- INFO: プロットデータ -->
   <div
-    class="magnifier-plots"
+    class="magnifier-points"
     :style="{
       position: 'absolute',
       top: top,
@@ -39,29 +39,29 @@ export default defineComponent({
   data() {
     return {
       interpolator,
-magnifier,
+      magnifier,
       canvasHandler,
-      plotSizePx: STYLE.plotSizePx,
-      plotOpacity: STYLE.plotOpacity,
-      tempPlotOpacity: STYLE.tempPlotOpacity,
-      tempPlotSizePx: STYLE.tempPlotSizePx,
+      pointSizePx: STYLE.pointSizePx,
+      pointOpacity: STYLE.pointOpacity,
+      tempPointOpacity: STYLE.tempPointOpacity,
+      tempPointSizePx: STYLE.tempPointSizePx,
     }
   },
   computed: {
-    plotHalfSize(): number {
-      return this.plotSizePx / 2
+    pointHalfSize(): number {
+      return this.pointSizePx / 2
     },
     magnifierHalfSize(): number {
       return this.magnifierSize / 2
     },
     xPx(): number {
-      return this.plot.xPx
+      return this.point.xPx
     },
     yPx(): number {
-      return this.plot.yPx
+      return this.point.yPx
     },
     opacity() {
-      return this.isTemporary ? this.tempPlotOpacity : this.plotOpacity
+      return this.isTemporary ? this.tempPointOpacity : this.pointOpacity
     },
     backgroundColor() {
       if (this.isActive) {
@@ -75,7 +75,7 @@ magnifier,
       return '#1e90ff'
     },
     borderRadius(): string {
-      //TODO: 本来はinterpolatorのanchor pointsであるべきものを、暫定的にplotで表現しているので、最終的にここは消したい
+      //TODO: 本来はinterpolatorのanchor pointsであるべきものを、暫定的にpointで表現しているので、最終的にここは消したい
 
       if (this.isManuallyAdded && this.interpolator.isActive) {
         return '0'
@@ -85,28 +85,28 @@ magnifier,
     },
     size(): string {
       if (this.isTemporary) {
-        return this.tempPlotSizePx + 'px'
+        return this.tempPointSizePx + 'px'
       }
 
-      return this.plotSizePx + 'px'
+      return this.pointSizePx + 'px'
     },
     top(): string {
       if (this.isTemporary) {
         return (
-          (this.yPx - this.tempPlotSizePx / 2) * this.magnifier.scale + 'px'
+          (this.yPx - this.tempPointSizePx / 2) * this.magnifier.scale + 'px'
         )
       }
 
-      return (this.yPx - this.plotSizePx / 2) * this.magnifier.scale + 'px'
+      return (this.yPx - this.pointSizePx / 2) * this.magnifier.scale + 'px'
     },
     left(): string {
       if (this.isTemporary) {
         return (
-          (this.xPx - this.tempPlotSizePx / 2) * this.magnifier.scale + 'px'
+          (this.xPx - this.tempPointSizePx / 2) * this.magnifier.scale + 'px'
         )
       }
 
-      return (this.xPx - this.plotSizePx / 2) * this.magnifier.scale + 'px'
+      return (this.xPx - this.pointSizePx / 2) * this.magnifier.scale + 'px'
     },
     zIndex(): string {
       if (this.isTemporary) {
@@ -117,7 +117,7 @@ magnifier,
     },
   },
   props: {
-    plot: {
+    point: {
       type: Object as () => Coord,
       required: true,
     },

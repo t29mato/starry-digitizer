@@ -1,16 +1,19 @@
 import { CurveInterpolator } from 'curve-interpolator'
-import { Coord, Plot } from '@/domain/models/dataset/datasetInterface'
+import { Coord, Point } from '@/domain/models/dataset/datasetInterface'
 
 export const getInterpolatedCoordsList = ({
-  plots,
+  points,
   segmentsList,
 }: {
-  plots: Plot[]
+  points: Point[]
   segmentsList: number[]
 }): Coord[][] => {
-  const points = plots.map((plot) => [plot.xPx, plot.yPx])
+  const pointsConvertedToArr = points.map((point) => [point.xPx, point.yPx])
 
-  const interp = new CurveInterpolator(points, { tension: 0.2, alpha: 0.5 })
+  const interp = new CurveInterpolator(pointsConvertedToArr, {
+    tension: 0.2,
+    alpha: 0.5,
+  })
 
   return segmentsList.map((segments: number) => {
     return interp

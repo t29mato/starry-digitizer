@@ -19,8 +19,8 @@ export class DatasetRepository {
     return targetDataset
   }
 
-  get nextPlotId(): number {
-    return this.activeDataset.nextPlotId
+  get nextPointId(): number {
+    return this.activeDataset.nextPointId
   }
 
   get nextDatasetId(): number {
@@ -34,15 +34,27 @@ export class DatasetRepository {
     return this.datasets[this.datasets.length - 1].id
   }
 
-  setPlots(coords: Coord[]) {
-    this.activeDataset.clearPlots()
+  get lastDataset(): Dataset {
+    const targetDataset = this.datasets.find(
+      (dataset) => dataset.id === this.lastDatasetId,
+    )
+    if (!targetDataset) {
+      throw new Error(
+        'Unexpected Error: There are no dataset matched with the lastDatasetId',
+      )
+    }
+    return targetDataset
+  }
+
+  setPoints(coords: Coord[]) {
+    this.activeDataset.clearPoints()
     coords.forEach((coord) => {
-      this.activeDataset.addPlot(coord.xPx, coord.yPx)
+      this.activeDataset.addPoint(coord.xPx, coord.yPx)
     })
   }
 
-  sortPlots() {
-    this.activeDataset.plots.sort((a, b) => {
+  sortPoints() {
+    this.activeDataset.points.sort((a, b) => {
       return a.xPx - b.xPx
     })
   }
@@ -76,8 +88,8 @@ export class DatasetRepository {
     this.setActiveDataset(this.datasets[0].id)
   }
 
-  activatePlotsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
-    this.activeDataset.activatePlotsInRectangleArea(
+  activatePointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
+    this.activeDataset.activatePointsInRectangleArea(
       topLeftCoord,
       bottomRightCoord,
     )
