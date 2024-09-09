@@ -1,6 +1,6 @@
+//NOTE: This pixel data is relative to its image file's original size
 export interface pixelDataScheme {
   schemeVersion: '0.1.0'
-  imageWidthPx: number
   axisSets: {
     id: number
     axisX: {
