@@ -44,7 +44,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { CanvasAxisSet, CanvasPoints, CanvasCursor, CanvasAxisSetGuide } from '.'
+import {
+  CanvasAxisSet,
+  CanvasPoints,
+  CanvasCursor,
+  CanvasAxisSetGuide,
+} from '.'
 import { Vector } from '@/domain/models/axisSet/axisSetInterface'
 import { Coord, Point } from '@/domain/models/dataset/datasetInterface'
 
@@ -290,7 +295,7 @@ export default defineComponent({
       }
       if (this.datasetRepository.activeDataset.pointsAreActive) {
         this.datasetRepository.activeDataset.moveActivePoint(vector)
-        this.interpolator.updatePreview()
+        this.interpolator.isActive && this.interpolator.updatePreview()
         this.canvasHandler.setCursor(
           this.datasetRepository.activeDataset.points.filter((point: Point) =>
             this.datasetRepository.activeDataset.activePointIds.includes(
