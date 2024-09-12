@@ -1,6 +1,6 @@
 <template>
   <div>
-    <table class="c__AxisSetRepository-settings__table">
+    <table>
       <tbody>
         <tr>
           <td class="pl-0 pr-1">X</td>
@@ -158,6 +158,7 @@
         </tr>
       </tbody>
     </table>
+    <p class="text-red mb-5">{{ errorMessage }}</p>
     <div class="mb-5">
       <h5 class="c__AxisSetRepository-settings__point-mode__label">
         Define the axes by the coordinates of:
@@ -186,8 +187,6 @@
         v-model="axisSetRepository.activeAxisSet.isVisible"
       ></v-checkbox>
     </div>
-
-    <p class="text-red">{{ errorMessage }}</p>
   </div>
 </template>
 
@@ -344,10 +343,6 @@ export default defineComponent({
 <style lang="scss" scoped>
 .c {
   &__AxisSetRepository-settings {
-    &__table {
-      margin-bottom: 20px;
-    }
-
     &__hint {
       display: block;
       font-size: 0.75rem;
