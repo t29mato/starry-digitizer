@@ -20,7 +20,7 @@ test('remove a dataset', () => {
   datasets.addDataset(new Dataset('dataset 3', [], datasets.nextDatasetId))
 
   datasets.removeDataset(3)
-  expect(datasets.activeDatasetId).toBe(1)
+  expect(datasets.activeDatasetId).toBe(2)
 })
 
 test('set points', () => {

@@ -84,8 +84,13 @@ export class DatasetRepository {
   }
 
   removeDataset(id: number): void {
+    const datasetIndex = this.datasets.findIndex((dataset) => dataset.id === id)
     this.datasets = this.datasets.filter((dataset) => dataset.id !== id)
-    this.setActiveDataset(this.datasets[0].id)
+    this.setActiveDataset(
+      this.datasets[datasetIndex - 1]
+        ? this.datasets[datasetIndex - 1].id
+        : this.datasets[0].id,
+    )
   }
 
   activatePointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
