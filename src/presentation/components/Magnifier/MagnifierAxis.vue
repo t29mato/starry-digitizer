@@ -58,7 +58,7 @@ export default defineComponent({
     return {
       magnifier,
       canvasHandler,
-      axisSizePx: STYLE.axisSizePx,
+      axisSizePx: STYLE.AXIS_SIZE_PX,
     }
   },
   computed: {

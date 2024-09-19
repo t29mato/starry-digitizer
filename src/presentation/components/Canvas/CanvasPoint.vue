@@ -35,10 +35,10 @@ export default defineComponent({
       interpolator,
       canvasHandler,
       datasetRepository,
-      pointOpacity: STYLE.pointOpacity,
-      tempPointOpacity: STYLE.tempPointOpacity,
-      pointSizePx: STYLE.pointSizePx,
-      tempPointSizePx: STYLE.tempPointSizePx,
+      pointOpacity: STYLE.POINT_OPACITY,
+      tempPointOpacity: STYLE.TEMP_POINT_OPACITY,
+      pointSizePx: STYLE.POINT_SIZE_PX,
+      tempPointSizePx: STYLE.TEMP_POINT_SIZE_PX,
     }
   },
   computed: {

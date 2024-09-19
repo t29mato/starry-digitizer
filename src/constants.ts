@@ -1,11 +1,11 @@
 export const LOCAL_STORAGE_GLOBAL_KEY = 'starryDigitizer'
 
 export const STYLE = {
-  pointSizePx: 10,
-  tempPointSizePx: 8,
-  axisSizePx: 20,
-  pointOpacity: 0.7,
-  tempPointOpacity: 0.4,
+  POINT_SIZE_PX: 10,
+  TEMP_POINT_SIZE_PX: 8,
+  AXIS_SIZE_PX: 20,
+  POINT_OPACITY: 0.7,
+  TEMP_POINT_OPACITY: 0.4,
 } as const
 
 export const POINT_MODE = {

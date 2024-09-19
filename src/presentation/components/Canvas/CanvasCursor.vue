@@ -71,7 +71,7 @@ export default defineComponent({
       canvasHandler,
       axisSetRepository,
       datasetRepository,
-      axisSizePx: STYLE.axisSizePx,
+      axisSizePx: STYLE.AXIS_SIZE_PX,
     }
   },
   computed: {

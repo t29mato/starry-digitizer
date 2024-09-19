@@ -61,7 +61,7 @@ export default defineComponent({
       fontSize: 14,
       canvasHandler,
       axisSetRepository,
-      axisSizePx: STYLE.axisSizePx,
+      axisSizePx: STYLE.AXIS_SIZE_PX,
     }
   },
   computed: {
