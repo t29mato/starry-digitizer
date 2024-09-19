@@ -18,7 +18,7 @@ export interface AxisSetInterface {
   xIsLogScale: boolean
   yIsLogScale: boolean
   activeAxisName: string
-  pointMode: number // INFO: {0: '2Points', 1: '4Points'}
+  pointMode: number
   considerGraphTilt: boolean
   isAdjusting: boolean
   isVisible: boolean

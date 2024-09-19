@@ -170,11 +170,19 @@
         color="primary"
         hide-details
       >
-        <v-radio label="2 Points" :value="0"></v-radio>
-        <v-radio label="4 Points" :value="1"></v-radio>
+        <v-radio
+          label="2 Points"
+          :value="0"
+          :disabled="twoPointsRadioIsDisabled"
+        ></v-radio>
+        <v-radio
+          label="4 Points"
+          :value="1"
+          :disabled="fourPointsRadioIsDisabled"
+        ></v-radio>
       </v-radio-group>
       <v-checkbox
-        v-if="axisSetRepository.activeAxisSet.pointMode === 1"
+        v-if="pointModeIsFourPoints"
         v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
         label="Consider graph tilt"
         density="compact"
@@ -195,6 +203,7 @@ import { defineComponent } from 'vue'
 
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
+import { POINT_MODE } from '@/constants'
 
 export default defineComponent({
   computed: {
@@ -230,6 +239,26 @@ export default defineComponent({
     },
     y2Axis() {
       return this.axisSetRepository.activeAxisSet.y2
+    },
+    twoPointsRadioIsDisabled() {
+      const activeAxisSet = this.axisSetRepository.activeAxisSet
+      return (
+        activeAxisSet.pointMode === POINT_MODE.FOUR_POINTS &&
+        activeAxisSet.hasAtLeastOneAxis
+      )
+    },
+    fourPointsRadioIsDisabled() {
+      const activeAxisSet = this.axisSetRepository.activeAxisSet
+      return (
+        activeAxisSet.pointMode === POINT_MODE.TWO_POINTS &&
+        activeAxisSet.hasAtLeastOneAxis
+      )
+    },
+    pointModeIsFourPoints() {
+      return (
+        this.axisSetRepository.activeAxisSet.pointMode ===
+        POINT_MODE.FOUR_POINTS
+      )
     },
   },
   data() {
@@ -335,6 +364,11 @@ export default defineComponent({
     },
     'axisSetRepository.activeAxisSet'(axisSet: AxisSetInterface) {
       this.setAxisSetValuesToDisplayValues(axisSet)
+    },
+    'axisSetRepository.activeAxisSet.pointMode'(newPointMode: number) {
+      if (newPointMode === POINT_MODE.TWO_POINTS) {
+        this.axisSetRepository.activeAxisSet.considerGraphTilt = false
+      }
     },
   },
 })

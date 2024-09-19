@@ -2,6 +2,7 @@ import { expect } from '@jest/globals'
 import { AxisSet } from './axisSet'
 import { Axis } from '../axis/axis'
 import { AxisInterface } from '../axis/axisInterface'
+import { POINT_MODE } from '../../../constants'
 
 let x1: AxisInterface
 let x2: AxisInterface
@@ -20,7 +21,7 @@ beforeEach(() => {
 
 describe('4 points setting mode', () => {
   beforeEach(() => {
-    axisSet.pointMode = 1
+    axisSet.pointMode = POINT_MODE.FOUR_POINTS
   })
   test('it has at least one axis', () => {
     expect(axisSet.hasAtLeastOneAxis).toBe(false)
@@ -112,7 +113,7 @@ describe('4 points setting mode', () => {
 
 describe('2 points setting mode', () => {
   beforeEach(() => {
-    axisSet.pointMode = 0
+    axisSet.pointMode = POINT_MODE.TWO_POINTS
   })
   test('set axisSet', () => {
     axisSet.addAxisCoord({ xPx: 100, yPx: 100 }) // x1, y1
