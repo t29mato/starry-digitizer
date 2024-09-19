@@ -109,9 +109,9 @@ export default defineComponent({
       const targetAxisSet = this.axisSetRepository.activeAxisSet
 
       const datasetsConnectedToTargetAxisSet =
-        this.datasetRepository.datasets.filter((dataset) => {
-          return dataset.axisSetId === targetAxisSet.id
-        })
+        this.datasetRepository.datasets.filter(
+          (dataset) => dataset.axisSetId === targetAxisSet.id,
+        )
 
       const targetAxisSetIndex =
         this.axisSetRepository.axisSets.indexOf(targetAxisSet)
@@ -123,19 +123,22 @@ export default defineComponent({
           ? this.axisSetRepository.axisSets[1]
           : previousAxisSet || this.axisSetRepository.axisSets[0]
 
-      if (!targetAxisSet.atLeastOneCoordOrValueIsChanged) {
-        this.removeActiveAxisSet()
-      } else {
-        window.confirm(
-          `Are you sure to remove '${
-            this.axisSetRepository.activeAxisSet.name
-          }'? After the removal, '${
-            alternativeAxisSet.name
-          }' will be applied to the following datasets: ${datasetsConnectedToTargetAxisSet
-            .map((dataset) => dataset.name)
-            .toString()}`,
-        ) && this.removeActiveAxisSet()
+      // Early return if the user cancels the confirmation dialog
+      if (targetAxisSet.atLeastOneCoordOrValueIsChanged) {
+        const confirmMessage = `Are you sure to remove '${
+          this.axisSetRepository.activeAxisSet.name
+        }'? After the removal, '${
+          alternativeAxisSet.name
+        }' will be applied to the following datasets: ${datasetsConnectedToTargetAxisSet
+          .map((dataset) => dataset.name)
+          .toString()}`
+
+        if (!window.confirm(confirmMessage)) {
+          return
+        }
       }
+
+      this.removeActiveAxisSet()
 
       datasetsConnectedToTargetAxisSet.forEach((dataset) => {
         dataset.setAxisSetId(alternativeAxisSet.id)
