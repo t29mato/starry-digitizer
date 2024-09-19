@@ -3,7 +3,7 @@ import ColorThief from 'colorthief'
 import { CanvasHandlerInterface } from './canvasHandlerInterface'
 import { Coord } from '../../../domain/models/dataset/datasetInterface'
 import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
-import { MANUAL_MODE } from '@/constants'
+import { MANUAL_MODE, MASK_MODE } from '@/constants'
 const colorThief = new ColorThief()
 
 export class CanvasHandler implements CanvasHandlerInterface {
@@ -17,7 +17,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
     endX: 0,
     endY: 0,
   }
-  maskMode = -1
+  maskMode: number = MASK_MODE.UNSET
   manualMode: number = MANUAL_MODE.UNSET
   penToolSizePx = 50
   eraserSizePx = 30
@@ -58,9 +58,9 @@ export class CanvasHandler implements CanvasHandlerInterface {
 
   get isDrawingMask(): boolean {
     switch (this.maskMode) {
-      case 0:
-      case 1:
-      case 2:
+      case MASK_MODE.PEN:
+      case MASK_MODE.BOX:
+      case MASK_MODE.ERASER:
         return true
       default:
         return false
@@ -81,13 +81,13 @@ export class CanvasHandler implements CanvasHandlerInterface {
 
   mouseDragInMaskMode(xPx: number, yPx: number) {
     switch (this.maskMode) {
-      case 0:
+      case MASK_MODE.PEN:
         this.drawPenMask(xPx, yPx, this.penToolSizePx)
         break
-      case 1: // INFO: マウスドラッグ中は選択範囲を仮描画
+      case MASK_MODE.BOX: // INFO: マウスドラッグ中は選択範囲を仮描画
         this.drawDraggedArea()
         break
-      case 2:
+      case MASK_MODE.ERASER:
         this.drawEraserMask(xPx, yPx, this.eraserSizePx)
         break
       default:
@@ -105,7 +105,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
       return
     }
 
-    if (this.maskMode !== -1) {
+    if (this.maskMode !== MASK_MODE.UNSET) {
       this.mouseDragInMaskMode(xPx, yPx)
       return
     }
@@ -114,7 +114,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
   mouseUp() {
     this.clearTempMask()
 
-    if (this.maskMode === 1) {
+    if (this.maskMode === MASK_MODE.BOX) {
       this.drawBoxMask()
     }
   }

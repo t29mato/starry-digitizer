@@ -19,3 +19,10 @@ export const MANUAL_MODE = {
   EDIT: 1,
   DELETE: 2,
 } as const
+
+export const MASK_MODE = {
+  UNSET: -1,
+  PEN: 0,
+  BOX: 1,
+  ERASER: 2,
+}
