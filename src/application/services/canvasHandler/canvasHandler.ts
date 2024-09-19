@@ -3,6 +3,7 @@ import ColorThief from 'colorthief'
 import { CanvasHandlerInterface } from './canvasHandlerInterface'
 import { Coord } from '../../../domain/models/dataset/datasetInterface'
 import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
+import { MANUAL_MODE } from '@/constants'
 const colorThief = new ColorThief()
 
 export class CanvasHandler implements CanvasHandlerInterface {
@@ -17,7 +18,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
     endY: 0,
   }
   maskMode = -1
-  manualMode = -1 // INFO: {0: add, 1: Edit, 2: Delete}
+  manualMode: number = MANUAL_MODE.UNSET
   penToolSizePx = 50
   eraserSizePx = 30
   uploadImageUrl = ''
@@ -72,7 +73,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
   }
 
   mouseDragInManualMode() {
-    if (this.manualMode === 1) {
+    if (this.manualMode === MANUAL_MODE.EDIT) {
       //INFO: only in EDIT mode
       this.drawDraggedArea()
     }
@@ -99,7 +100,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
     this.rectangle.endY = yPx
 
     //INFO: 現在のモードがmanual modeかmask modeかで処理を分岐
-    if (this.manualMode !== -1) {
+    if (this.manualMode !== MANUAL_MODE.UNSET) {
       this.mouseDragInManualMode()
       return
     }
@@ -379,7 +380,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
 
   setMaskMode(mode: number) {
     this.maskMode = mode
-    this.manualMode = -1
+    this.manualMode = MANUAL_MODE.UNSET
   }
 
   setPenToolSizePx(size: number) {
