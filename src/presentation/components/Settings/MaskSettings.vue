@@ -22,7 +22,7 @@
       Clear
     </v-btn>
     <v-text-field
-      v-if="canvasHandler.maskMode === 0"
+      v-if="maskModeIsPen"
       :model-value="canvasHandler.penToolSizePx"
       @change="onChangePenToolSizePx"
       type="number"
@@ -31,7 +31,7 @@
       density="compact"
     ></v-text-field>
     <v-text-field
-      v-if="canvasHandler.maskMode === 2"
+      v-if="maskModeIsEraser"
       :model-value="canvasHandler.eraserSizePx"
       @change="onChangeEraserSizePx"
       type="number"
@@ -43,6 +43,7 @@
 </template>
 
 <script lang="ts">
+import { MASK_MODE } from '@/constants'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { defineComponent } from 'vue'
 
@@ -51,6 +52,14 @@ export default defineComponent({
     return {
       canvasHandler,
     }
+  },
+  computed: {
+    maskModeIsPen() {
+      return this.canvasHandler.maskMode === MASK_MODE.PEN
+    },
+    maskModeIsEraser() {
+      return this.canvasHandler.maskMode === MASK_MODE.ERASER
+    },
   },
   methods: {
     onChangePenToolSizePx(event: Event) {
@@ -73,8 +82,8 @@ export default defineComponent({
     clearMask() {
       this.canvasHandler.clearMask()
       // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
-      if (this.canvasHandler.maskMode === 2) {
-        this.canvasHandler.maskMode = -1
+      if (this.canvasHandler.maskMode === MASK_MODE.ERASER) {
+        this.canvasHandler.maskMode = MASK_MODE.UNSET
       }
     },
   },

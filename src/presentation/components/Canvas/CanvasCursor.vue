@@ -57,7 +57,7 @@ import { CSSProperties } from 'vue'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
-import { POINT_MODE, STYLE } from '@/constants'
+import { MANUAL_MODE, MASK_MODE, POINT_MODE, STYLE } from '@/constants'
 
 const guideLineBaseStyles: CSSProperties = {
   position: 'absolute',
@@ -83,19 +83,19 @@ export default defineComponent({
     },
     rightLabel(): string {
       switch (this.canvasHandler.maskMode) {
-        case 0:
+        case MASK_MODE.PEN:
           return 'Pen'
-        case 1:
+        case MASK_MODE.BOX:
           return 'Box'
-        case 2:
+        case MASK_MODE.ERASER:
           return 'Eraser'
       }
       switch (this.canvasHandler.manualMode) {
-        case 0:
+        case MANUAL_MODE.ADD:
           return 'Add'
-        case 1:
+        case MANUAL_MODE.EDIT:
           return 'Edit'
-        case 2:
+        case MANUAL_MODE.DELETE:
           return 'Delete'
       }
       return ''
@@ -128,21 +128,21 @@ export default defineComponent({
     isCursorGuideLinesActive(): boolean {
       //INFO: 軸定義後でプロットのいずれのモードでもないときは表示しない
       if (
-        this.canvasHandler.manualMode === -1 &&
+        this.canvasHandler.manualMode === MANUAL_MODE.UNSET &&
         this.axisSetRepository.activeAxisSet.y2.coordIsFilled
       ) {
         return false
       }
 
       // //INFO: マスク操作中の場合は表示しない
-      if (this.canvasHandler.maskMode !== -1) {
+      if (this.canvasHandler.maskMode !== MASK_MODE.UNSET) {
         return false
       }
 
       //INFO: EDIT, DELETEモードの場合は表示しない
       if (
-        this.canvasHandler.manualMode !== -1 &&
-        this.canvasHandler.manualMode !== 0
+        this.canvasHandler.manualMode !== MANUAL_MODE.UNSET &&
+        this.canvasHandler.manualMode !== MANUAL_MODE.ADD
       ) {
         return false
       }
@@ -150,11 +150,11 @@ export default defineComponent({
       return true
     },
     guideLineColor(): string {
-      if (this.canvasHandler.manualMode === -1) {
+      if (this.canvasHandler.manualMode === MANUAL_MODE.UNSET) {
         return '#00ff00'
       }
 
-      if (this.canvasHandler.manualMode === 0) {
+      if (this.canvasHandler.manualMode === MANUAL_MODE.ADD) {
         return '#ffcc00'
       }
 

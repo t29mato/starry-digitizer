@@ -54,6 +54,7 @@ import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { MANUAL_MODE } from '@/constants'
 
 export default defineComponent({
   components: {},
@@ -84,9 +85,9 @@ export default defineComponent({
 
       //NOTE: If axis coords are not calibrated, change manualMode for calibration. Otherwise automatically set to ADD mode
       if (this.axisSetRepository.activeAxisSet.nextAxis) {
-        this.canvasHandler.manualMode = -1
+        this.canvasHandler.manualMode = MANUAL_MODE.UNSET
       } else {
-        this.canvasHandler.manualMode = 0
+        this.canvasHandler.manualMode = MANUAL_MODE.ADD
       }
     },
     handleOnClickAxisSet(id: number) {
@@ -143,9 +144,9 @@ export default defineComponent({
       this.axisSetRepository.setActiveAxisSet(alternativeAxisSet.id)
 
       if (alternativeAxisSet.nextAxis) {
-        this.canvasHandler.manualMode = -1
+        this.canvasHandler.manualMode = MANUAL_MODE.UNSET
       } else {
-        this.canvasHandler.manualMode = 0
+        this.canvasHandler.manualMode = MANUAL_MODE.ADD
       }
     },
   },

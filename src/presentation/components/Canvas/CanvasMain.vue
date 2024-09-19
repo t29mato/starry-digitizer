@@ -63,6 +63,7 @@ import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { MANUAL_MODE } from '@/constants'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -157,7 +158,7 @@ export default defineComponent({
         this.datasetRepository.activeDataset.inactivatePoints()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
         if (!this.axisSetRepository.activeAxisSet.nextAxis) {
-          this.canvasHandler.manualMode = 0
+          this.canvasHandler.manualMode = MANUAL_MODE.ADD
         }
         return
       }
