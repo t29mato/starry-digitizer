@@ -1,6 +1,8 @@
+import { SemanticVersion } from '@/@types/types'
+
 //NOTE: Add any information about StarryDigitizer configurations which is necassary to reconstruct the application states here.
-export interface configDataScheme {
-  schemeVersion: '0.1.0'
+export interface configDataSchema {
+  schemaVersion: SemanticVersion
   figure: {
     scale: number
   }
