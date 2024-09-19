@@ -57,7 +57,7 @@ import { CSSProperties } from 'vue'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
-import { STYLE } from '@/constants/constants'
+import { POINT_MODE, STYLE } from '@/constants'
 
 const guideLineBaseStyles: CSSProperties = {
   position: 'absolute',
@@ -118,7 +118,7 @@ export default defineComponent({
       }
       if (
         this.axisSetRepository.activeAxisSet.nextAxis?.name === 'x1' &&
-        this.axisSetRepository.activeAxisSet.pointMode === 0
+        this.axisSetRepository.activeAxisSet.pointMode === POINT_MODE.TWO_POINTS
       ) {
         return 'y1'
       }

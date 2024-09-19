@@ -182,7 +182,7 @@
         ></v-radio>
       </v-radio-group>
       <v-checkbox
-        v-if="axisSetRepository.activeAxisSet.pointMode === 1"
+        v-if="pointModeIsFourPoints"
         v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
         label="Consider graph tilt"
         density="compact"
@@ -203,6 +203,7 @@ import { defineComponent } from 'vue'
 
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
+import { POINT_MODE } from '@/constants'
 
 export default defineComponent({
   computed: {
@@ -241,11 +242,23 @@ export default defineComponent({
     },
     twoPointsRadioIsDisabled() {
       const activeAxisSet = this.axisSetRepository.activeAxisSet
-      return activeAxisSet.pointMode === 1 && activeAxisSet.hasAtLeastOneAxis
+      return (
+        activeAxisSet.pointMode === POINT_MODE.FOUR_POINTS &&
+        activeAxisSet.hasAtLeastOneAxis
+      )
     },
     fourPointsRadioIsDisabled() {
       const activeAxisSet = this.axisSetRepository.activeAxisSet
-      return activeAxisSet.pointMode === 0 && activeAxisSet.hasAtLeastOneAxis
+      return (
+        activeAxisSet.pointMode === POINT_MODE.TWO_POINTS &&
+        activeAxisSet.hasAtLeastOneAxis
+      )
+    },
+    pointModeIsFourPoints() {
+      return (
+        this.axisSetRepository.activeAxisSet.pointMode ===
+        POINT_MODE.FOUR_POINTS
+      )
     },
   },
   data() {
@@ -353,7 +366,7 @@ export default defineComponent({
       this.setAxisSetValuesToDisplayValues(axisSet)
     },
     'axisSetRepository.activeAxisSet.pointMode'(newPointMode: number) {
-      if (newPointMode === 0) {
+      if (newPointMode === POINT_MODE.TWO_POINTS) {
         this.axisSetRepository.activeAxisSet.considerGraphTilt = false
       }
     },

@@ -27,7 +27,7 @@ import { Point } from '@/domain/models/dataset/datasetInterface'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
-import { STYLE } from '@/constants/constants'
+import { STYLE } from '@/constants'
 
 export default defineComponent({
   data() {

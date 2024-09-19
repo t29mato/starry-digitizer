@@ -47,7 +47,7 @@ import { defineComponent } from 'vue'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { STYLE } from '@/constants/constants'
+import { STYLE } from '@/constants'
 
 export default defineComponent({
   components: {

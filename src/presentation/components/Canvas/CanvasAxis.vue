@@ -43,7 +43,7 @@ import { defineComponent } from 'vue'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { STYLE } from '@/constants/constants'
+import { POINT_MODE, STYLE } from '@/constants'
 
 export default defineComponent({
   props: {
@@ -112,7 +112,8 @@ export default defineComponent({
     },
     isActive(): boolean {
       if (
-        this.axisSetRepository.activeAxisSet.pointMode === 0 &&
+        this.axisSetRepository.activeAxisSet.pointMode ===
+          POINT_MODE.TWO_POINTS &&
         this.axisSetRepository.activeAxisSet.activeAxisName === 'x1' &&
         this.axis.name === 'y1'
       ) {

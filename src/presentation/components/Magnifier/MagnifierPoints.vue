@@ -33,7 +33,7 @@ import { Coord } from '@/domain/models/dataset/datasetInterface'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { STYLE } from '@/constants/constants'
+import { STYLE } from '@/constants'
 
 export default defineComponent({
   data() {
