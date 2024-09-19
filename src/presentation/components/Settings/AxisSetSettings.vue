@@ -170,8 +170,16 @@
         color="primary"
         hide-details
       >
-        <v-radio label="2 Points" :value="0"></v-radio>
-        <v-radio label="4 Points" :value="1"></v-radio>
+        <v-radio
+          label="2 Points"
+          :value="0"
+          :disabled="twoPointsRadioIsDisabled"
+        ></v-radio>
+        <v-radio
+          label="4 Points"
+          :value="1"
+          :disabled="fourPointsRadioIsDisabled"
+        ></v-radio>
       </v-radio-group>
       <v-checkbox
         v-if="axisSetRepository.activeAxisSet.pointMode === 1"
@@ -230,6 +238,14 @@ export default defineComponent({
     },
     y2Axis() {
       return this.axisSetRepository.activeAxisSet.y2
+    },
+    twoPointsRadioIsDisabled() {
+      const activeAxisSet = this.axisSetRepository.activeAxisSet
+      return activeAxisSet.pointMode === 1 && activeAxisSet.hasAtLeastOneAxis
+    },
+    fourPointsRadioIsDisabled() {
+      const activeAxisSet = this.axisSetRepository.activeAxisSet
+      return activeAxisSet.pointMode === 0 && activeAxisSet.hasAtLeastOneAxis
     },
   },
   data() {
@@ -335,6 +351,11 @@ export default defineComponent({
     },
     'axisSetRepository.activeAxisSet'(axisSet: AxisSetInterface) {
       this.setAxisSetValuesToDisplayValues(axisSet)
+    },
+    'axisSetRepository.activeAxisSet.pointMode'(newPointMode: number) {
+      if (newPointMode === 0) {
+        this.axisSetRepository.activeAxisSet.considerGraphTilt = false
+      }
     },
   },
 })
