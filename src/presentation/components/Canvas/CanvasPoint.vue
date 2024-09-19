@@ -27,7 +27,7 @@ import { Point } from '@/domain/models/dataset/datasetInterface'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
-import { STYLE } from '@/constants/constants'
+import { STYLE } from '@/constants'
 
 export default defineComponent({
   data() {
@@ -35,10 +35,10 @@ export default defineComponent({
       interpolator,
       canvasHandler,
       datasetRepository,
-      pointOpacity: STYLE.pointOpacity,
-      tempPointOpacity: STYLE.tempPointOpacity,
-      pointSizePx: STYLE.pointSizePx,
-      tempPointSizePx: STYLE.tempPointSizePx,
+      pointOpacity: STYLE.POINT_OPACITY,
+      tempPointOpacity: STYLE.TEMP_POINT_OPACITY,
+      pointSizePx: STYLE.POINT_SIZE_PX,
+      tempPointSizePx: STYLE.TEMP_POINT_SIZE_PX,
     }
   },
   computed: {

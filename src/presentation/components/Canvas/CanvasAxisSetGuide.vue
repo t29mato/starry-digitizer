@@ -13,6 +13,7 @@ import { CSSProperties } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { POINT_MODE } from '@/constants'
 
 const axisSetGuideCommonStyle: CSSProperties = {
   position: 'absolute',
@@ -40,7 +41,9 @@ export default defineComponent({
   },
   computed: {
     isActive(): boolean {
-      return this.axisSetRepository.activeAxisSet.pointMode === 0
+      return (
+        this.axisSetRepository.activeAxisSet.pointMode === POINT_MODE.TWO_POINTS
+      )
     },
     isX1Y1LineVisible(): boolean {
       return (
