@@ -2,7 +2,6 @@ import { AxisSetRepository } from '../axisSetRepository'
 import { AxisSetRepositoryInterface } from '../axisSetRepositoryInterface'
 import { InstanceManager } from '@/general/instanceManager/instanceManager'
 import { RepositoryManagerInterface } from '../../repositoryManagerInterface'
-import { AxisSet } from '@/domain/models/axisSet/axisSet'
 
 export class AxisSetRepositoryManager
   extends InstanceManager<AxisSetRepositoryInterface>
