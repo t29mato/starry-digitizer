@@ -17,3 +17,8 @@ export type Point = {
   xPx: number
   yPx: number
 }
+
+export type XYValue = {
+  x: number,
+  y: number
+}
