@@ -1,3 +1,4 @@
+import { ManualMode, MaskMode } from '@/@types/types'
 import { Coord } from '@/domain/models/dataset/datasetInterface'
 
 export interface CanvasHandlerInterface {
@@ -5,8 +6,8 @@ export interface CanvasHandlerInterface {
   imageElement: HTMLImageElement
   scale: number
   cursor: Coord
-  manualMode: number
-  maskMode: number
+  manualMode: ManualMode
+  maskMode: MaskMode
   rectangle: {
     startX: number
     startY: number
