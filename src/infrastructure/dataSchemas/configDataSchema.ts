@@ -6,12 +6,12 @@ export interface ConfigDataSchema {
   figure: {
     scale: number
   }
-  axisSets: {
+  axisSets: Array<{
     id: number
     pointMode: PointMode
     isVisible: boolean
     shouldConsiderGraphTilt: boolean
-  }[]
+  }>
   interpolator: {
     isActive: boolean
     interval: number
