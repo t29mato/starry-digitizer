@@ -5,6 +5,7 @@ import { SemanticVersion } from '@/@types/types'
 //TODO: move definition of type Coord to more global directoly (e.g. @types)
 import { Coord } from '@/domain/models/dataset/datasetInterface'
 
+//NOTE: Other interfaces have a prefix 'Interface' but this one doesn't have: It is intentional, mainly because this interface is kind of special one to just define data schema literally
 export interface PlotDataSchema {
   schemaVersion: SemanticVersion
   axisSets: Array<{
@@ -26,7 +27,8 @@ export interface PlotDataSchema {
       value: number
       coord: Coord
     }
-    xScale: 'linear' | 'log' //TODO: create type AxisScale: 'linear' | 'log'
+    //TODO: create type AxisScale: 'linear' | 'log'
+    xScale: 'linear' | 'log'
     yScale: 'linear' | 'log'
   }>
   datasets: Array<{

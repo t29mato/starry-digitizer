@@ -1,6 +1,7 @@
 import { PointMode, SemanticVersion } from '@/@types/types'
 
 //NOTE: Add any information about StarryDigitizer configurations which is necassary to reconstruct the application states here.
+//NOTE: Other interfaces have a prefix 'Interface' but this one doesn't have: It is intentional, mainly because this interface is kind of special one to just define data schema literally
 export interface ConfigDataSchema {
   schemaVersion: SemanticVersion
   figure: {
