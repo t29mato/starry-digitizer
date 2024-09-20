@@ -7,7 +7,13 @@ export type PointMode = typeof POINT_MODE[keyof typeof POINT_MODE]
 //e.g. 1.2.0 is described as [1, 2, 0]
 export type SemanticVersion = [number, number, number]
 
-export type PointValue = {
-  x: number,
-  y: number
+// INFO: Coord is coordinate
+export type Coord = {
+  xPx: number
+  yPx: number
+}
+export type Point = {
+  id: number
+  xPx: number
+  yPx: number
 }

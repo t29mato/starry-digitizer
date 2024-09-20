@@ -7,8 +7,18 @@ export class AxisSetRepository implements AxisSetRepositoryInterface {
   axisSets: AxisSetInterface[]
   activeAxisSetId = 1
 
-  constructor(axisSet: AxisSetInterface) {
-    this.axisSets = [axisSet]
+  constructor() {
+    this.axisSets = [
+      new AxisSet(
+        new Axis('x1', 0),
+        new Axis('x2', 1),
+        new Axis('y1', 0),
+        new Axis('y2', 1),
+        new Axis('x2y2', -1),
+        1,
+        'XY Axes 1',
+      ),
+    ]
   }
 
   get activeAxisSet(): AxisSetInterface {

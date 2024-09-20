@@ -1,6 +1,5 @@
-import { Coord } from '../dataset/datasetInterface'
 import { AxisInterface } from '../axis/axisInterface'
-import { PointMode } from '@/@types/types'
+import { Coord, PointMode } from '@/@types/types'
 
 // TODO: VectorはDatasetInterfaceでも利用しており共通Typeの場所を用意するべきか検討する
 export type Vector = {

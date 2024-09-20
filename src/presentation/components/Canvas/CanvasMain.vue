@@ -51,7 +51,7 @@ import {
   CanvasAxisSetGuide,
 } from '.'
 import { Vector } from '@/domain/models/axisSet/axisSetInterface'
-import { Coord, Point } from '@/domain/models/dataset/datasetInterface'
+import { Coord, Point } from '@/@types/types'
 
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'

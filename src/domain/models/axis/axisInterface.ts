@@ -1,4 +1,4 @@
-import { Coord } from '../dataset/datasetInterface'
+import { Coord } from '@/@types/types'
 
 export interface AxisInterface {
   name: string
