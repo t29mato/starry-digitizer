@@ -1,4 +1,4 @@
-import { SemanticVersion } from '@/@types/types'
+import { PointMode, SemanticVersion } from '@/@types/types'
 
 //NOTE: Add any information about StarryDigitizer configurations which is necassary to reconstruct the application states here.
 export interface configDataSchema {
@@ -8,7 +8,7 @@ export interface configDataSchema {
   }
   axisSets: {
     id: number
-    pointMode: 0 | 1
+    pointMode: PointMode
     isVisible: boolean
     shouldConsiderGraphTilt: boolean
   }[]
