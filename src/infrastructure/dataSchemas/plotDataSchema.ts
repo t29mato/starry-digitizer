@@ -1,7 +1,7 @@
 //NOTE: Includes the actual data collected from a figure: axis values, axis scale, data point values and so
 //NOTE: Do not include any data which depends on StarryDigitizer app(e.g. setting axis by 2 points or 4 points etc...)
 
-import { SemanticVersion } from '@/@types/types'
+import { PointValue, SemanticVersion } from '@/@types/types'
 //TODO: move definition of type Coord to more global directoly (e.g. @types)
 import { Coord } from '@/domain/models/dataset/datasetInterface'
 
@@ -36,7 +36,7 @@ export interface PlotDataSchema {
     name: string
     axisSetId: number
     points: Array<{
-      value: number
+      value: PointValue
       coord: Coord
     }>
   }>
