@@ -4,6 +4,7 @@ import { CanvasHandlerInterface } from './canvasHandlerInterface'
 import { Coord } from '../../../domain/models/dataset/datasetInterface'
 import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
 import { MANUAL_MODE, MASK_MODE } from '@/constants'
+import { ManualMode, MaskMode } from '@/@types/types'
 const colorThief = new ColorThief()
 
 export class CanvasHandler implements CanvasHandlerInterface {
@@ -17,8 +18,8 @@ export class CanvasHandler implements CanvasHandlerInterface {
     endX: 0,
     endY: 0,
   }
-  maskMode: number = MASK_MODE.UNSET
-  manualMode: number = MANUAL_MODE.UNSET
+  maskMode: MaskMode = MASK_MODE.UNSET
+  manualMode: ManualMode = MANUAL_MODE.UNSET
   penToolSizePx = 50
   eraserSizePx = 30
   uploadImageUrl = ''
@@ -373,12 +374,12 @@ export class CanvasHandler implements CanvasHandlerInterface {
     this.cursor = coord
   }
 
-  setManualMode(mode: number) {
+  setManualMode(mode: ManualMode) {
     this.manualMode = mode
-    this.maskMode = -1
+    this.maskMode = MASK_MODE.UNSET
   }
 
-  setMaskMode(mode: number) {
+  setMaskMode(mode: MaskMode) {
     this.maskMode = mode
     this.manualMode = MANUAL_MODE.UNSET
   }
