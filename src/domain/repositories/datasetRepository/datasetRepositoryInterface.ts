@@ -1,5 +1,5 @@
 import { DatasetInterface } from '@/domain/models/dataset/datasetInterface'
-import { Coord } from '@/domain/models/dataset/datasetInterface'
+import { Coord } from '@/@types/types'
 
 export interface DatasetRepositoryInterface {
   datasets: DatasetInterface[]

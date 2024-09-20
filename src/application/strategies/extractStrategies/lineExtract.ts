@@ -1,6 +1,6 @@
 import ExtractStrategyInterface from './extractStrategyInterface'
 import { ExtractParent } from './extractParent'
-import { Coord } from '@/domain/models/dataset/datasetInterface'
+import { Coord } from '@/@types/types'
 
 export default class LineExtract
   extends ExtractParent

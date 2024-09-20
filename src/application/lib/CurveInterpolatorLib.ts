@@ -1,5 +1,5 @@
+import { Coord, Point } from '@/@types/types'
 import { CurveInterpolator } from 'curve-interpolator'
-import { Coord, Point } from '@/domain/models/dataset/datasetInterface'
 
 export const getInterpolatedCoordsList = ({
   points,

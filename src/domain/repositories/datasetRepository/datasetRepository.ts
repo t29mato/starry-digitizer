@@ -1,6 +1,7 @@
 import { Dataset } from '@/domain/models/dataset/dataset'
-import { DatasetInterface, Coord } from '../../models/dataset/datasetInterface'
+import { DatasetInterface } from '../../models/dataset/datasetInterface'
 import { DatasetRepositoryInterface } from './datasetRepositoryInterface'
+import { Coord } from '@/@types/types'
 
 export class DatasetRepository implements DatasetRepositoryInterface {
   datasets: DatasetInterface[]

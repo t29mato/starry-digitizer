@@ -28,7 +28,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Coord } from '@/domain/models/dataset/datasetInterface'
+import { Coord } from '@/@types/types'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { magnifier } from '@/instanceStore/applicationServiceInstances'

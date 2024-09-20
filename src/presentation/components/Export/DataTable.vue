@@ -28,8 +28,7 @@ import 'handsontable/dist/handsontable.full.css'
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
-import { Point } from '@/domain/models/dataset/datasetInterface'
-
+import { Point } from '@/@types/types'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'

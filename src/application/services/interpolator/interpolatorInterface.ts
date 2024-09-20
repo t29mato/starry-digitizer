@@ -1,4 +1,4 @@
-import { Coord } from '@/domain/models/dataset/datasetInterface'
+import { Coord } from '@/@types/types'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 
 export interface InterpolatorInterface {
