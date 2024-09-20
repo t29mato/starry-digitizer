@@ -1,24 +1,25 @@
+import { Coord, Point } from '@/@types/types'
 import { Vector } from '../axisSet/axisSetInterface'
-import { DatasetInterface, Points, Point, Coord } from './datasetInterface'
+import { DatasetInterface } from './datasetInterface'
 
 export class Dataset implements DatasetInterface {
   name: string
-  points: Points
+  points: Point[]
   id: number
-  tempPoints: Points = []
+  tempPoints: Point[] = []
   activePointIds: number[] = []
   visiblePointIds: number[] = []
   manuallyAddedPointIds: number[] = []
   axisSetId: number = 1
 
   pointsAreAdjusting = false
-  constructor(name: string, points: Points, id: number) {
+  constructor(name: string, points: Point[], id: number) {
     this.name = name
     this.points = points
     this.id = id
   }
 
-  scaledPoints(scale: number): Points {
+  scaledPoints(scale: number): Point[] {
     return this.points.map((point) => {
       return {
         id: point.id,
@@ -28,7 +29,7 @@ export class Dataset implements DatasetInterface {
     })
   }
 
-  scaledTempPoints(scale: number): Points {
+  scaledTempPoints(scale: number): Point[] {
     return this.tempPoints.map((point) => {
       return {
         id: point.id,
@@ -188,7 +189,7 @@ export class Dataset implements DatasetInterface {
     )
   }
 
-  get manuallyAddedPoints(): Points {
+  get manuallyAddedPoints(): Point[] {
     return this.points.filter((point) =>
       this.manuallyAddedPointIds.includes(point.id),
     )
@@ -217,7 +218,7 @@ export class Dataset implements DatasetInterface {
     this.clearTempPoint(tempPointId)
   }
 
-  pointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Points {
+  pointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Point[] {
     return this.points.filter((point: Point) => {
       return (
         point.xPx >= topLeftCoord.xPx &&
@@ -228,37 +229,37 @@ export class Dataset implements DatasetInterface {
     })
   }
 
-  pointsSortedByXAscending(): Points {
+  pointsSortedByXAscending(): Point[] {
     return this.points.sort((a, b) => {
       return a.xPx - b.xPx
     })
   }
 
-  pointsSortedByXDescending(): Points {
+  pointsSortedByXDescending(): Point[] {
     return this.points.sort((a, b) => {
       return b.xPx - a.xPx
     })
   }
 
-  pointsSortedByYAscending(): Points {
+  pointsSortedByYAscending(): Point[] {
     return this.points.sort((a, b) => {
       return a.yPx - b.yPx
     })
   }
 
-  pointsSortedByYDescending(): Points {
+  pointsSortedByYDescending(): Point[] {
     return this.points.sort((a, b) => {
       return b.yPx - a.yPx
     })
   }
 
-  pointsSortedByIdAscending(): Points {
+  pointsSortedByIdAscending(): Point[] {
     return this.points.sort((a, b) => {
       return a.id - b.id
     })
   }
 
-  pointsSortedByIdDescending(): Points {
+  pointsSortedByIdDescending(): Point[] {
     return this.points.sort((a, b) => {
       return b.id - a.id
     })

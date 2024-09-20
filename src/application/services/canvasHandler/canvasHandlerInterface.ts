@@ -1,12 +1,13 @@
-import { Coord } from '@/domain/models/dataset/datasetInterface'
+import { ManualMode, MaskMode } from '@/@types/types'
+import { Coord } from '@/@types/types'
 
 export interface CanvasHandlerInterface {
   isDrawnMask: boolean
   imageElement: HTMLImageElement
   scale: number
   cursor: Coord
-  manualMode: number
-  maskMode: number
+  manualMode: ManualMode
+  maskMode: MaskMode
   rectangle: {
     startX: number
     startY: number

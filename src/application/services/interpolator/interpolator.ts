@@ -1,4 +1,3 @@
-import { Coord, Point } from '@/domain/models/dataset/datasetInterface'
 import { InterpolatorInterface } from './interpolatorInterface'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
@@ -6,6 +5,7 @@ import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
 import { getPointsTotalDistance } from '../../utils/pointsUtils'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { Coord, Point } from '@/@types/types'
 
 export class Interpolator implements InterpolatorInterface {
   public isActive: boolean = true

@@ -1,7 +1,8 @@
 import { CanvasHandlerInterface } from '../canvasHandler/canvasHandlerInterface'
-import { Coord } from '../../../domain/models/dataset/datasetInterface'
+
 import { ExtractorInterface } from './extractorInterface'
 import ExtractStrategyInterface from '../../strategies/extractStrategies/extractStrategyInterface'
+import { Coord } from '@/@types/types'
 
 export class Extractor implements ExtractorInterface {
   strategy: ExtractStrategyInterface

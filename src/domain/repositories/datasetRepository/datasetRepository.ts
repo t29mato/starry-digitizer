@@ -1,12 +1,14 @@
 import { Dataset } from '@/domain/models/dataset/dataset'
-import { DatasetInterface, Coord } from '../../models/dataset/datasetInterface'
+import { DatasetInterface } from '../../models/dataset/datasetInterface'
+import { DatasetRepositoryInterface } from './datasetRepositoryInterface'
+import { Coord } from '@/@types/types'
 
-export class DatasetRepository {
+export class DatasetRepository implements DatasetRepositoryInterface {
   datasets: DatasetInterface[]
   activeDatasetId = 1
 
-  constructor(dataset: DatasetInterface) {
-    this.datasets = [dataset]
+  constructor() {
+    this.datasets = [new Dataset('dataset 1', [], 1)]
   }
 
   get activeDataset(): DatasetInterface {
