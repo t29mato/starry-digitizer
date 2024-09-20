@@ -1,4 +1,3 @@
-import { Dataset } from '@/domain/models/dataset/dataset'
 import { DatasetInterface } from '@/domain/models/dataset/datasetInterface'
 import { Coord } from '@/domain/models/dataset/datasetInterface'
 
@@ -10,7 +9,7 @@ export interface DatasetRepositoryInterface {
   get nextPointId(): number
   get nextDatasetId(): number
   get lastDatasetId(): number
-  get lastDataset(): Dataset
+  get lastDataset(): DatasetInterface
 
   setPoints(coords: Coord[]): void
   sortPoints(): void
