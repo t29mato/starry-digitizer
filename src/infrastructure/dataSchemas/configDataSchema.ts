@@ -1,7 +1,7 @@
 import { PointMode, SemanticVersion } from '@/@types/types'
 
 //NOTE: Add any information about StarryDigitizer configurations which is necassary to reconstruct the application states here.
-export interface configDataSchema {
+export interface ConfigDataSchema {
   schemaVersion: SemanticVersion
   figure: {
     scale: number

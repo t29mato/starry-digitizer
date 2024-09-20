@@ -1,10 +1,10 @@
 import { SemanticVersion } from '@/@types/types'
-import { configDataSchema } from './configDataSchema'
+import { ConfigDataSchema } from './configDataSchema'
 import { PlotDataSchema } from './plotDataSchema'
 
-export interface allDataSchema {
+export interface AllDataSchema {
   appVersion: SemanticVersion
   plotImageBase64: string
   plotData: PlotDataSchema
-  configData: configDataSchema
+  configData: ConfigDataSchema
 }
