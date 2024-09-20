@@ -1,5 +1,5 @@
 import { ManualMode, MaskMode } from '@/@types/types'
-import { Coord } from '@/domain/models/dataset/datasetInterface'
+import { Coord } from '@/@types/types'
 
 export interface CanvasHandlerInterface {
   isDrawnMask: boolean

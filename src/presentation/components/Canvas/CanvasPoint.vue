@@ -22,7 +22,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { Point } from '@/domain/models/dataset/datasetInterface'
+import { Point } from '@/@types/types'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'

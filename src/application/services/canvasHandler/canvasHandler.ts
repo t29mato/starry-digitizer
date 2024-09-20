@@ -1,10 +1,10 @@
 //TODO: Separate into multiple apps based on feature (so far, multiple features related to canvas are gethered at this class but it is not ideal)
 import ColorThief from 'colorthief'
 import { CanvasHandlerInterface } from './canvasHandlerInterface'
-import { Coord } from '../../../domain/models/dataset/datasetInterface'
+
 import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
 import { MANUAL_MODE, MASK_MODE } from '@/constants'
-import { ManualMode, MaskMode } from '@/@types/types'
+import { Coord, ManualMode, MaskMode } from '@/@types/types'
 const colorThief = new ColorThief()
 
 export class CanvasHandler implements CanvasHandlerInterface {

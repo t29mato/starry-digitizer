@@ -1,15 +1,5 @@
+import { Coord, Point } from '@/@types/types'
 import { Vector } from '../axisSet/axisSetInterface'
-
-// INFO: Coord is coordinate
-export type Coord = {
-  xPx: number
-  yPx: number
-}
-export type Point = {
-  id: number
-  xPx: number
-  yPx: number
-}
 
 export type Points = Point[]
 
