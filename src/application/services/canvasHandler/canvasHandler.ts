@@ -376,7 +376,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
 
   setManualMode(mode: ManualMode) {
     this.manualMode = mode
-    this.maskMode = -1
+    this.maskMode = MASK_MODE.UNSET
   }
 
   setMaskMode(mode: MaskMode) {
