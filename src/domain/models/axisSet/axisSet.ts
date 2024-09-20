@@ -3,6 +3,7 @@ import { Coord } from '@/domain/models/dataset/datasetInterface'
 import { AxisSetInterface, Vector } from './axisSetInterface'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
 import { POINT_MODE } from '@/constants'
+import { PointMode } from '@/@types/types'
 
 export class AxisSet implements AxisSetInterface {
   id: number
@@ -15,7 +16,7 @@ export class AxisSet implements AxisSetInterface {
   xIsLogScale = false
   yIsLogScale = false
   activeAxisName = ''
-  pointMode = POINT_MODE.TWO_POINTS
+  pointMode: PointMode = POINT_MODE.TWO_POINTS
   considerGraphTilt = false
   isAdjusting = false
   isVisible = true
