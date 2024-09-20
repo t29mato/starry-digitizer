@@ -44,7 +44,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { CanvasAxisSet, CanvasPoints, CanvasCursor, CanvasAxisSetGuide } from '.'
+import {
+  CanvasAxisSet,
+  CanvasPoints,
+  CanvasCursor,
+  CanvasAxisSetGuide,
+} from '.'
 import { Vector } from '@/domain/models/axisSet/axisSetInterface'
 import { Coord, Point } from '@/domain/models/dataset/datasetInterface'
 
@@ -58,6 +63,7 @@ import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { MANUAL_MODE } from '@/constants'
 
 // INFO: to adjust the exact position the user clicked.
 const offsetPx = 1
@@ -152,7 +158,7 @@ export default defineComponent({
         this.datasetRepository.activeDataset.inactivatePoints()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
         if (!this.axisSetRepository.activeAxisSet.nextAxis) {
-          this.canvasHandler.manualMode = 0
+          this.canvasHandler.manualMode = MANUAL_MODE.ADD
         }
         return
       }
@@ -290,7 +296,7 @@ export default defineComponent({
       }
       if (this.datasetRepository.activeDataset.pointsAreActive) {
         this.datasetRepository.activeDataset.moveActivePoint(vector)
-        this.interpolator.updatePreview()
+        this.interpolator.isActive && this.interpolator.updatePreview()
         this.canvasHandler.setCursor(
           this.datasetRepository.activeDataset.points.filter((point: Point) =>
             this.datasetRepository.activeDataset.activePointIds.includes(

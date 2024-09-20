@@ -1,4 +1,4 @@
-import { LOCAL_STORAGE_GLOBAL_KEY } from '@/constants/constants'
+import { LOCAL_STORAGE_GLOBAL_KEY } from '@/constants'
 
 //TODO: どうテストする？
 

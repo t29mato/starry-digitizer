@@ -157,6 +157,11 @@ export class Interpolator implements InterpolatorInterface {
   }
 
   public updatePreview(): void {
+    if (!this.isActive) {
+      throw new Error(
+        'interpolator.updatePreview was called but interpolator is not activated',
+      )
+    }
     const activeDataset = datasetRepository.activeDataset
     const anchorPoints = activeDataset.points.filter((point: Point) =>
       activeDataset.manuallyAddedPointIds.includes(point.id),

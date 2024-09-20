@@ -27,7 +27,7 @@ import { Point } from '@/domain/models/dataset/datasetInterface'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
-import { STYLE } from '@/constants/constants'
+import { MANUAL_MODE, STYLE } from '@/constants'
 
 export default defineComponent({
   data() {
@@ -35,10 +35,10 @@ export default defineComponent({
       interpolator,
       canvasHandler,
       datasetRepository,
-      pointOpacity: STYLE.pointOpacity,
-      tempPointOpacity: STYLE.tempPointOpacity,
-      pointSizePx: STYLE.pointSizePx,
-      tempPointSizePx: STYLE.tempPointSizePx,
+      pointOpacity: STYLE.POINT_OPACITY,
+      tempPointOpacity: STYLE.TEMP_POINT_OPACITY,
+      pointSizePx: STYLE.POINT_SIZE_PX,
+      tempPointSizePx: STYLE.TEMP_POINT_SIZE_PX,
     }
   },
   computed: {
@@ -50,7 +50,7 @@ export default defineComponent({
     },
     cursor(): string | undefined {
       const mode = this.canvasHandler.manualMode
-      if (mode === 1 || mode === 2) {
+      if (mode === MANUAL_MODE.EDIT || mode === MANUAL_MODE.DELETE) {
         return 'pointer'
       }
       return undefined
@@ -131,9 +131,9 @@ export default defineComponent({
     click(event: MouseEvent) {
       switch (this.canvasHandler.manualMode) {
         // INFO: CanvasMain Component -> point method
-        case 0:
+        case MANUAL_MODE.ADD:
           return
-        case 1:
+        case MANUAL_MODE.EDIT:
           if (event.ctrlKey || event.metaKey) {
             this.datasetRepository.activeDataset.toggleActivatedPoint(
               this.point.id,
@@ -144,7 +144,7 @@ export default defineComponent({
             this.point.id,
           )
           return
-        case 2:
+        case MANUAL_MODE.DELETE:
           this.datasetRepository.activeDataset.clearPoint(this.point.id)
 
           return

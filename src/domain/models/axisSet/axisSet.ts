@@ -2,6 +2,7 @@
 import { Coord } from '@/domain/models/dataset/datasetInterface'
 import { AxisSetInterface, Vector } from './axisSetInterface'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
+import { POINT_MODE } from '@/constants'
 
 export class AxisSet implements AxisSetInterface {
   id: number
@@ -14,7 +15,7 @@ export class AxisSet implements AxisSetInterface {
   xIsLogScale = false
   yIsLogScale = false
   activeAxisName = ''
-  pointMode = 0 // INFO: {0: '2Points', 1: '4Points'}
+  pointMode = POINT_MODE.TWO_POINTS
   considerGraphTilt = false
   isAdjusting = false
   isVisible = true
@@ -95,7 +96,7 @@ export class AxisSet implements AxisSetInterface {
 
   get nextAxis(): AxisInterface | null {
     //INFO: 以下の条件の時はx2,y2を同時に定義するモードに入る
-    if (this.pointMode === 0 && this.hasOnlyX1Y1AxisSet) {
+    if (this.pointMode === POINT_MODE.TWO_POINTS && this.hasOnlyX1Y1AxisSet) {
       return this.x2y2
     }
 
@@ -185,7 +186,10 @@ export class AxisSet implements AxisSetInterface {
     this.activeAxisName = this.nextAxis.name
 
     //INFO: a. 2点定義モードで、、x1を定義する時は同時にy1を定義して終了する
-    if (this.activeAxisName === 'x1' && this.pointMode === 0) {
+    if (
+      this.activeAxisName === 'x1' &&
+      this.pointMode === POINT_MODE.TWO_POINTS
+    ) {
       this.x1.coord = Object.assign(coord)
       this.y1.coord = Object.assign(coord)
       return

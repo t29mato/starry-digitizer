@@ -63,6 +63,7 @@ import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { MASK_MODE } from '@/constants'
 
 export default defineComponent({
   components: {},
@@ -105,7 +106,7 @@ export default defineComponent({
       )
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
       this.canvasHandler.clearMask()
-      this.canvasHandler.maskMode = -1
+      this.canvasHandler.maskMode = MASK_MODE.UNSET
     },
     handleOnClickDataset(id: number) {
       if (
