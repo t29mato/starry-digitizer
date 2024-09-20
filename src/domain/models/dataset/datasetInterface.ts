@@ -13,8 +13,6 @@ export type Point = {
 
 export type Points = Point[]
 
-export type PointValue = { xV: string; yV: string } & Point
-
 export interface DatasetInterface {
   name: string
   points: Points
