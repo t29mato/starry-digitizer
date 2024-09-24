@@ -29,8 +29,8 @@ jobs:
       - name: Jest Coverage Report
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
-          check-coverage-only-changed-files: true
-          compare-to-branch: main
+          coverage-file: ./coverage/report.json
+          base-coverage-file: ./coverage/main/report.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           test-script: npm run test:coverage
   Deploy-Preview:
