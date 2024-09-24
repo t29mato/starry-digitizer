@@ -215,3 +215,35 @@ test('pointsAreActive should return true when there are active points', () => {
   dataset.switchActivatedPoint(1)
   expect(dataset.pointsAreActive).toBe(true)
 })
+test('toggleActivatedPoint should activate the point if it is not already active', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+  dataset.addPoint(1, 1)
+  dataset.toggleActivatedPoint(1)
+  expect(dataset.activePointIds).toEqual([1])
+})
+
+test('toggleActivatedPoint should deactivate the point if it is already active', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+  dataset.addPoint(1, 1)
+  dataset.switchActivatedPoint(1)
+  dataset.toggleActivatedPoint(1)
+  expect(dataset.activePointIds).toEqual([])
+})
+
+test('toggleActivatedPoint should activate the point if it is not already active and deactivate other active points', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+  dataset.addPoint(1, 1)
+  dataset.addPoint(2, 2)
+  dataset.switchActivatedPoint(1)
+  dataset.toggleActivatedPoint(2)
+  expect(dataset.activePointIds).toEqual([2])
+})
+
+test('toggleActivatedPoint should deactivate the point if it is already active and activate other points', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+  dataset.addPoint(1, 1)
+  dataset.addPoint(2, 2)
+  dataset.switchActivatedPoint(1)
+  dataset.toggleActivatedPoint(1)
+  expect(dataset.activePointIds).toEqual([2])
+})
