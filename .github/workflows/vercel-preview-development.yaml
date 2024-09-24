@@ -24,8 +24,6 @@ jobs:
         run: yarn
       - name: Static code analysis
         run: yarn lint
-      - name: Unit test
-        run: yarn test
       - name: Jest Coverage Report
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
