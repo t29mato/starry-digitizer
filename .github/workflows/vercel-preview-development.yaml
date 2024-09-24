@@ -29,8 +29,8 @@ jobs:
       - name: Jest Coverage Report
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
-          coverage-file: report.json
-          base-coverage-file: report.json
+          coverage-file: coverage/report.json
+          base-coverage-file: coverage/report.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           test-script: npm run test:coverage
           package-manager: yarn
