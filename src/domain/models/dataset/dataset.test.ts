@@ -186,3 +186,32 @@ test('scale empty points', () => {
 
   expect(scaledPoints).toEqual([])
 })
+test('scale temp points', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+  dataset.addTempPoint(1, 1)
+  dataset.addTempPoint(2, 2)
+  dataset.addTempPoint(3, 3)
+  const scaledTempPoints = dataset.scaledTempPoints(2)
+  expect(scaledTempPoints).toEqual([
+    { id: 1, xPx: 2, yPx: 2 },
+    { id: 2, xPx: 4, yPx: 4 },
+    { id: 3, xPx: 6, yPx: 6 },
+  ])
+})
+
+test('scale empty temp points', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+  const scaledTempPoints = dataset.scaledTempPoints(2)
+  expect(scaledTempPoints).toEqual([])
+})
+test('pointsAreActive should return false when there are no active points', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+  expect(dataset.pointsAreActive).toBe(false)
+})
+
+test('pointsAreActive should return true when there are active points', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+  dataset.addPoint(1, 1)
+  dataset.switchActivatedPoint(1)
+  expect(dataset.pointsAreActive).toBe(true)
+})
