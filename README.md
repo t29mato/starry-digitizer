@@ -1,3 +1,6 @@
+[![codecov](https://codecov.io/gh/t29mato/starry-digitizer/graph/badge.svg?token=96EJTIFL79)](https://codecov.io/gh/t29mato/starry-digitizer)
+
+
 ## Why Starry?
 
 StarryDigitizer was originally developed as part of the web system of [Starrydata project](https://starrydata.org/),
