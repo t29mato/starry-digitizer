@@ -158,3 +158,31 @@ test('move points', () => {
     yPx: 10,
   })
 })
+
+test('scale points', () => {
+  const dataset = new Dataset(
+    'dataset 1',
+    [
+      { id: 1, xPx: 1, yPx: 1 },
+      { id: 2, xPx: 2, yPx: 2 },
+      { id: 3, xPx: 3, yPx: 3 },
+    ],
+    1,
+  )
+
+  const scaledPoints = dataset.scaledPoints(2)
+
+  expect(scaledPoints).toEqual([
+    { id: 1, xPx: 2, yPx: 2 },
+    { id: 2, xPx: 4, yPx: 4 },
+    { id: 3, xPx: 6, yPx: 6 },
+  ])
+})
+
+test('scale empty points', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+
+  const scaledPoints = dataset.scaledPoints(2)
+
+  expect(scaledPoints).toEqual([])
+})
