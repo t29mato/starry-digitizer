@@ -30,7 +30,7 @@ jobs:
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          test-script: npm run test:coverage
+          test-script: npm run ci:coverage
           package-manager: yarn
   Deploy-Preview:
     runs-on: ubuntu-latest

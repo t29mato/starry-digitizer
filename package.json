@@ -25,7 +25,8 @@
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "test": "jest",
-    "test:coverage": "npm run test -- --coverage --silent --testLocationInResults --ci --json --outputFile=\"report.json\"",
+    "test:coverage": "jest --coverage",
+    "ci:coverage": "npm run test -- --coverage --silent --testLocationInResults --ci --json --outputFile=\"report.json\"",
     "coverage:report": "browser-sync start --server \"coverage/lcov-report\"",
     "coverage": "npm run test:coverage && npm run coverage:report",
     "lint": "vue-tsc"
