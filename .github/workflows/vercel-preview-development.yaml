@@ -20,7 +20,7 @@ jobs:
       - name: Install npm packages
         run: yarn
       - name: Static code analysis
-        run: yarn lints
+        run: yarn lint
       - name: Unit test
         run: yarn test
       - name: coverage
