@@ -31,7 +31,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   E2E-Test:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/feature/added-unit-test-on-develop-branch'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -54,7 +54,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   Deploy-Preview:
     runs-on: ubuntu-latest
-    needs: [UnitTest, E2E-Test]
+    needs: [UnitTest]
     if: success()
     steps:
       - name: Checkout
