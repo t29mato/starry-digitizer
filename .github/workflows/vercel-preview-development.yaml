@@ -31,7 +31,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   E2E-Test:
     runs-on: ubuntu-latest
-    if: github.base_ref == 'develop'
+    if: github.base_ref == 'main' # https://github.com/t29mato/starry-digitizer/issues/211
     steps:
       - name: Checkout
         uses: actions/checkout@v2
