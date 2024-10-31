@@ -28,7 +28,7 @@
     "test:coverage": "jest --coverage",
     "coverage:report": "browser-sync start --server \"coverage/lcov-report\"",
     "coverage": "npm run test:coverage && npm run coverage:report",
-    "lint": "eslint -c .eslintrc.cjs src --ext .js,.ts && vue-tsc"
+    "lint": "eslint src --ext .js,.ts,.vue && vue-tsc"
   },
   "dependencies": {
     "@handsontable/vue3": "^13.1.0",
