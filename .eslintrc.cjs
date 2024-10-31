@@ -27,5 +27,7 @@ module.exports = {
     ],
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': ['error'],
+    complexity: ['error', { max: 10 }],
   },
+  ignorePatterns: ['**/*.test.ts', '**/*.test.js'],
 }
