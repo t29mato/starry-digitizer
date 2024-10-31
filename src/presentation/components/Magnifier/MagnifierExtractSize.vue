@@ -52,7 +52,7 @@ export default defineComponent({
   data() {
     return {
       extractor,
-magnifier,
+      magnifier,
       lineExtract: LineExtract.instance,
       symbolExtractByArea: SymbolExtractByArea.instance,
     }
