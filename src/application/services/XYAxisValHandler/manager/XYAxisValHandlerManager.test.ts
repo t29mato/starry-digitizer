@@ -1,23 +1,23 @@
-import { XYInputHandlerInterface } from '../XYInputHandlerInterface'
-import { XYInputHandlerManager } from './XYInputHandlerManager'
+import { XYAxisValHandlerInterface } from '../XYAxisValHandlerInterface'
+import { XYAxisValHandlerManager } from './XYAxisValHandlerManager'
 
-const XYInputHandlerManager = new XYInputHandlerManager()
-let firstInstance: XYInputHandlerInterface
+const XYAxisValHandlerManager = new XYAxisValHandlerManager()
+let firstInstance: XYAxisValHandlerInterface
 
-describe('XYInputHandlerManager', () => {
+describe('XYAxisValHandlerManager', () => {
   beforeEach(() => {
-    firstInstance = XYInputHandlerManager.getInstance()
+    firstInstance = XYAxisValHandlerManager.getInstance()
   })
 
   test('The instance returned by getInstance() is the same as firstInstance', () => {
-    const secondeInstance: XYInputHandlerInterface = XYInputHandlerManager.getInstance()
+    const secondeInstance: XYAxisValHandlerInterface = XYAxisValHandlerManager.getInstance()
 
     expect(secondeInstance === firstInstance).toBe(true)
   })
 
   test('The instance returned by getNewInstance() is NOT the same as firstInstance', () => {
-    const secondeInstance: XYInputHandlerInterface =
-      XYInputHandlerManager.getNewInstance()
+    const secondeInstance: XYAxisValHandlerInterface =
+      XYAxisValHandlerManager.getNewInstance()
 
     expect(secondeInstance === firstInstance).toBe(false)
   })

@@ -1,8 +1,8 @@
 import { InstanceManager } from '@/general/instanceManager/instanceManager'
-import { XYInputHandlerInterface } from '../XYInputHandlerInterface'
+import { XYAxisValHandlerInterface } from '../XYAxisValHandlerInterface'
 import { XYAxisValHandler } from '../XYAxisValHandler'
 
-export class XYInputHandlerManager extends InstanceManager<XYInputHandlerInterface> {
+export class XYAxisValHandlerManager extends InstanceManager<XYAxisValHandlerInterface> {
   private instanceCreator = () => {
     return new XYAxisValHandler()
   }
