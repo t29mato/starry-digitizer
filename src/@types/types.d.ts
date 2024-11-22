@@ -14,3 +14,10 @@ export type Point = {
   xPx: number
   yPx: number
 }
+
+export type XYValueInputFormat =
+  | 'decimal'
+  | 'scientificNotification'
+  | 'powerNotification'
+
+export type AxisName = 'x1' | 'x2' | 'y1' | 'y2'

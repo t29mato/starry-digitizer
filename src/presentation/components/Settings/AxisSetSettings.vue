@@ -6,7 +6,7 @@
           <td class="pl-0 pr-1">X</td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="displayVal.x1"
+              v-model="displayedVal.x1"
               id="x1-value"
               type="number"
               hide-details
@@ -19,7 +19,7 @@
               >
                 <button
                   size="x-small"
-                  @click="updateDisplayValMultipliedByTen('x1')"
+                  @click="updateDisplayedValMultipliedByTen('x1')"
                   id="multiply-by-ten-x1"
                   icon
                 >
@@ -28,7 +28,7 @@
                 <button
                   id="divide-by-ten-x1"
                   size="x-small"
-                  @click="updateDisplayValDividedByTen('x1')"
+                  @click="updateDisplayedValDividedByTen('x1')"
                   icon
                 >
                   /10
@@ -38,7 +38,7 @@
           </td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="displayVal.x2"
+              v-model="displayedVal.x2"
               id="x2-value"
               type="number"
               hide-details
@@ -52,7 +52,7 @@
                 <button
                   id="multiply-by-ten-x2"
                   size="x-small"
-                  @click="updateDisplayValMultipliedByTen('x2')"
+                  @click="updateDisplayedValMultipliedByTen('x2')"
                   icon
                 >
                   x10
@@ -60,7 +60,7 @@
                 <button
                   id="divide-by-ten-x2"
                   size="x-small"
-                  @click="updateDisplayValDividedByTen('x2')"
+                  @click="updateDisplayedValDividedByTen('x2')"
                   icon
                 >
                   /10
@@ -83,7 +83,7 @@
           <td class="pl-0 pr-1">Y</td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="displayVal.y1"
+              v-model="displayedVal.y1"
               id="y1-value"
               type="number"
               hide-details
@@ -97,7 +97,7 @@
                 <button
                   id="multiply-by-ten-y1"
                   size="x-small"
-                  @click="updateDisplayValMultipliedByTen('y1')"
+                  @click="updateDisplayedValMultipliedByTen('y1')"
                   icon
                 >
                   x10
@@ -105,7 +105,7 @@
                 <button
                   id="divide-by-ten-y1"
                   size="x-small"
-                  @click="updateDisplayValDividedByTen('y1')"
+                  @click="updateDisplayedValDividedByTen('y1')"
                   icon
                 >
                   /10
@@ -115,7 +115,7 @@
           </td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="displayVal.y2"
+              v-model="displayedVal.y2"
               id="y2-value"
               type="number"
               hide-details
@@ -129,7 +129,7 @@
                 <button
                   id="multiply-by-ten-y2"
                   size="x-small"
-                  @click="updateDisplayValMultipliedByTen('y2')"
+                  @click="updateDisplayedValMultipliedByTen('y2')"
                   icon
                 >
                   x10
@@ -137,7 +137,7 @@
                 <button
                   id="divide-by-ten-y2"
                   size="x-small"
-                  @click="updateDisplayValDividedByTen('y2')"
+                  @click="updateDisplayedValDividedByTen('y2')"
                   icon
                 >
                   /10
@@ -204,6 +204,7 @@ import { defineComponent } from 'vue'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { POINT_MODE } from '@/constants'
+import { AxisName, XYValueInputFormat } from '@/@types/types'
 
 export default defineComponent({
   computed: {
@@ -265,42 +266,46 @@ export default defineComponent({
     return {
       axisSetRepository,
       //NOTE: initialize axis values as string because it sometimes is displayed like '1e+10'
-      displayVal: {
+      displayedVal: {
         x1: '',
         x2: '',
         y1: '',
         y2: '',
       },
-      axesToDisplayValAsExponential: [] as {
+      //TODO: define settings in the presentation layer in different place for exporting data(should not define in vue file)
+      XYInputFormatSettingsByAxisSet: [] as {
         axisSetId: number
-        axisName: 'x1' | 'x2' | 'y1' | 'y2'
+        formatX1: XYValueInputFormat
+        formatX2: XYValueInputFormat
+        formatY1: XYValueInputFormat
+        formatY2: XYValueInputFormat
       }[],
     }
   },
   created() {
-    this.displayVal.x1 = String(this.x1Axis.value)
-    this.displayVal.x2 = String(this.x2Axis.value)
-    this.displayVal.y1 = String(this.y1Axis.value)
-    this.displayVal.y2 = String(this.y2Axis.value)
+    this.displayedVal.x1 = String(this.x1Axis.value)
+    this.displayedVal.x2 = String(this.x2Axis.value)
+    this.displayedVal.y1 = String(this.y1Axis.value)
+    this.displayedVal.y2 = String(this.y2Axis.value)
   },
   methods: {
-    updateDisplayValMultipliedByTen(axisName: 'x1' | 'x2' | 'y1' | 'y2'): void {
-      this.displayVal[axisName] = this.getDisplayValMultipliedByTen(
-        parseFloat(this.displayVal[axisName]),
+    updateDisplayedValMultipliedByTen(axisName: AxisName): void {
+      this.displayedVal[axisName] = this.getDisplayedValMultipliedByTen(
+        parseFloat(this.displayedVal[axisName]),
       )
     },
-    updateDisplayValDividedByTen(axisName: 'x1' | 'x2' | 'y1' | 'y2'): void {
-      this.displayVal[axisName] = this.getDisplayValDividedByTen(
-        parseFloat(this.displayVal[axisName]),
+    updateDisplayedValDividedByTen(axisName: AxisName): void {
+      this.displayedVal[axisName] = this.getDisplayedValDividedByTen(
+        parseFloat(this.displayedVal[axisName]),
       )
     },
-    getDisplayValMultipliedByTen(value: number): string {
+    getDisplayedValMultipliedByTen(value: number): string {
       if (value === 0) {
         return '1'
       }
       return (value * 10).toPrecision(1)
     },
-    getDisplayValDividedByTen(value: number): string {
+    getDisplayedValDividedByTen(value: number): string {
       if (value === 0) {
         return '0.1'
       }
@@ -309,61 +314,35 @@ export default defineComponent({
     isExponentialFormat(value: string): boolean {
       return value.includes('e+') && typeof parseFloat(value) === 'number'
     },
-    updateAxesToDisplayValAsExponential(
-      axisName: 'x1' | 'x2' | 'y1' | 'y2',
-      value: string,
-    ): void {
-      if (this.isExponentialFormat(value)) {
-        this.axesToDisplayValAsExponential.push({
-          axisSetId: this.axisSetRepository.activeAxisSetId,
-          axisName,
-        })
-      } else {
-        this.axesToDisplayValAsExponential =
-          this.axesToDisplayValAsExponential.filter(
-            (axis) =>
-              !(
-                axis.axisSetId === this.axisSetRepository.activeAxisSetId &&
-                axis.axisName === axisName
-              ),
-          )
-      }
-    },
-    setAxisSetValuesToDisplayValues(axisSet: AxisSetInterface): void {
-      const axisNames = ['x1', 'x2', 'y1', 'y2'] as const
-
-      axisNames.forEach((axisName) => {
-        const displayKey = axisName as keyof typeof this.displayVal
-        const axisValue = axisSet[axisName].value
-
-        // Exponential表示の条件に基づき、表示値を設定
-        this.displayVal[displayKey] = this.axesToDisplayValAsExponential.find(
-          (axis) => axis.axisSetId === axisSet.id && axis.axisName === axisName,
-        )
-          ? axisValue.toPrecision(1)
-          : String(axisValue)
-      })
-    },
+    setXYInputFormatSettingsByAxisSet({
+      axisSetId,
+      axisName,
+      value,
+    }: {
+      axisSetId: number
+      axisName: AxisName
+      displayedValue: string
+    }) {},
   },
   watch: {
-    'displayVal.x1'(value: string) {
-      this.updateAxesToDisplayValAsExponential('x1', value)
+    'displayedVal.x1'(value: string) {
+      this.updateAxesToDisplayedValAsExponential('x1', value)
       this.axisSetRepository.activeAxisSet.setX1Value(parseFloat(value))
     },
-    'displayVal.x2'(value: string) {
-      this.updateAxesToDisplayValAsExponential('x2', value)
+    'displayedVal.x2'(value: string) {
+      this.updateAxesToDisplayedValAsExponential('x2', value)
       this.axisSetRepository.activeAxisSet.setX2Value(parseFloat(value))
     },
-    'displayVal.y1'(value: string) {
-      this.updateAxesToDisplayValAsExponential('y1', value)
+    'displayedVal.y1'(value: string) {
+      this.updateAxesToDisplayedValAsExponential('y1', value)
       this.axisSetRepository.activeAxisSet.setY1Value(parseFloat(value))
     },
-    'displayVal.y2'(value: string) {
-      this.updateAxesToDisplayValAsExponential('y2', value)
+    'displayedVal.y2'(value: string) {
+      this.updateAxesToDisplayedValAsExponential('y2', value)
       this.axisSetRepository.activeAxisSet.setY2Value(parseFloat(value))
     },
     'axisSetRepository.activeAxisSet'(axisSet: AxisSetInterface) {
-      this.setAxisSetValuesToDisplayValues(axisSet)
+      this.setAxisSetValuesToDisplayedValues(axisSet)
     },
     'axisSetRepository.activeAxisSet.pointMode'(newPointMode: number) {
       if (newPointMode === POINT_MODE.TWO_POINTS) {
