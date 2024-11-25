@@ -8,20 +8,27 @@ const isPowerNotation = (str: string): boolean => {
   return /^-?\d+\^\d+$/.test(str)
 }
 
-const convertScientificNotationToNumber = (
+const convertScientificNotationToDecimal = (
   scientificNotation: string,
 ): number => {
   return parseFloat(scientificNotation)
 }
 
-const convertPowerNotationToNumber = (powerNotation: string): number => {
+const convertPowerNotationToDecimal = (powerNotation: string): number => {
   const [base, exponent] = powerNotation.split('^').map(Number)
   return Math.pow(base, exponent)
 }
 
-export {
+const isConvertibleToDecimal = (str: string) => {
+  // 正規表現で小数または整数を表現
+  const decimalRegex = /^[+-]?\d+(\.\d+)?$/
+  return decimalRegex.test(str.trim())
+}
+
+export const MathUtils = {
   isScientificNotation,
   isPowerNotation,
-  convertScientificNotationToNumber,
-  convertPowerNotationToNumber,
+  convertScientificNotationToDecimal,
+  convertPowerNotationToDecimal,
+  isConvertibleToDecimal,
 }

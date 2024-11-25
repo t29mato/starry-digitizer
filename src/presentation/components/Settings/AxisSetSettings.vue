@@ -289,40 +289,28 @@ export default defineComponent({
     this.displayedVal.y2 = String(this.y2Axis.value)
   },
   methods: {
-    updateDisplayedValMultipliedByTen(axisName: AxisName): void {
-      this.displayedVal[axisName] = this.getDisplayedValMultipliedByTen(
-        parseFloat(this.displayedVal[axisName]),
-      )
-    },
-    updateDisplayedValDividedByTen(axisName: AxisName): void {
-      this.displayedVal[axisName] = this.getDisplayedValDividedByTen(
-        parseFloat(this.displayedVal[axisName]),
-      )
-    },
-    getDisplayedValMultipliedByTen(value: number): string {
-      if (value === 0) {
-        return '1'
-      }
-      return (value * 10).toPrecision(1)
-    },
-    getDisplayedValDividedByTen(value: number): string {
-      if (value === 0) {
-        return '0.1'
-      }
-      return (value * 0.1).toPrecision(1)
-    },
-    isExponentialFormat(value: string): boolean {
-      return value.includes('e+') && typeof parseFloat(value) === 'number'
-    },
-    setXYInputFormatSettingsByAxisSet({
-      axisSetId,
-      axisName,
-      value,
-    }: {
-      axisSetId: number
-      axisName: AxisName
-      displayedValue: string
-    }) {},
+    // updateDisplayedValMultipliedByTen(axisName: AxisName): void {
+    //   this.displayedVal[axisName] = this.getDisplayedValMultipliedByTen(
+    //     parseFloat(this.displayedVal[axisName]),
+    //   )
+    // },
+    // updateDisplayedValDividedByTen(axisName: AxisName): void {
+    //   this.displayedVal[axisName] = this.getDisplayedValDividedByTen(
+    //     parseFloat(this.displayedVal[axisName]),
+    //   )
+    // },
+    // getDisplayedValMultipliedByTen(value: number): string {
+    //   if (value === 0) {
+    //     return '1'
+    //   }
+    //   return (value * 10).toPrecision(1)
+    // },
+    // getDisplayedValDividedByTen(value: number): string {
+    //   if (value === 0) {
+    //     return '0.1'
+    //   }
+    //   return (value * 0.1).toPrecision(1)
+    // },
   },
   watch: {
     'displayedVal.x1'(value: string) {
