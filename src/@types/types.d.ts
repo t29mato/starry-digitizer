@@ -15,7 +15,7 @@ export type Point = {
   yPx: number
 }
 
-export type AxisName = 'x1' | 'x2' | 'y1' | 'y2'
+export type AxisKey = 'x1' | 'x2' | 'y1' | 'y2'
 
 export type AxisValFormat =
   | 'scientificNotation'
@@ -23,18 +23,26 @@ export type AxisValFormat =
   | 'decimal'
   | 'invalidFormat'
 
-export type AxisValState = {
+export type AxisValFormatState = {
   axisSetId: number
-  displayedVal: {
-    x1: string
-    x2: string
-    y1: string
-    y2: string
-  }
   displayedFormat: {
     x1: AxisValFormat
     x2: AxisValFormat
     y1: AxisValFormat
     y2: AxisValFormat
   }
+}
+
+export type AxisValues = {
+  x1: number
+  x2: number
+  y1: number
+  y2: number
+}
+
+export type AxisValuesInput = {
+  x1: string
+  x2: string
+  y1: string
+  y2: string
 }

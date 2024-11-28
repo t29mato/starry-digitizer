@@ -19,16 +19,26 @@ const convertPowerNotationToDecimal = (powerNotation: string): number => {
   return Math.pow(base, exponent)
 }
 
+const convertDecimalToScientificNotation = (num: number) => {
+  return num.toExponential()
+}
+
 const isConvertibleToDecimal = (str: string) => {
   // 正規表現で小数または整数を表現
   const decimalRegex = /^[+-]?\d+(\.\d+)?$/
   return decimalRegex.test(str.trim())
 }
 
+// const convertPowerNotationToNumber(powerNotation: string): number = () => {}
+// const convertNumberToPowerNotation(num: number): string = () => {}
+// const convertScientificNotationToNumber(scientificNotation: string): number = () => {}
+// const convertNumberToScientificNotation(num: number): string = () => {}
+
 export const MathUtils = {
   isScientificNotation,
   isPowerNotation,
   convertScientificNotationToDecimal,
   convertPowerNotationToDecimal,
+  convertDecimalToScientificNotation,
   isConvertibleToDecimal,
 }

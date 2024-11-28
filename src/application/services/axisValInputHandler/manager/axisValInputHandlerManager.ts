@@ -1,10 +1,10 @@
 import { InstanceManager } from '@/general/instanceManager/instanceManager'
-import { XYAxisValHandlerInterface } from '../XYAxisValHandlerInterface'
-import { XYAxisValHandler } from '../XYAxisValHandler'
+import { AxisValInputHandlerInterface } from '../AxisValInputHandlerInterface'
+import { AxisValInputHandler } from '../AxisValInputHandler'
 
-export class XYAxisValHandlerManager extends InstanceManager<XYAxisValHandlerInterface> {
+export class AxisValInputHandlerManager extends InstanceManager<AxisValInputHandlerInterface> {
   private instanceCreator = () => {
-    return new XYAxisValHandler()
+    return new AxisValInputHandler()
   }
 
   public getInstance() {

@@ -204,7 +204,8 @@ import { defineComponent } from 'vue'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { POINT_MODE } from '@/constants'
-import { AxisName, XYValueInputFormat } from '@/@types/types'
+import { axisValHandler } from '@/instanceStore/applicationServiceInstances'
+import { AxisName } from '@/@types/types'
 
 export default defineComponent({
   computed: {
@@ -265,6 +266,7 @@ export default defineComponent({
   data() {
     return {
       axisSetRepository,
+      axisValHandler,
       //NOTE: initialize axis values as string because it sometimes is displayed like '1e+10'
       displayedVal: {
         x1: '',
@@ -272,14 +274,6 @@ export default defineComponent({
         y1: '',
         y2: '',
       },
-      //TODO: define settings in the presentation layer in different place for exporting data(should not define in vue file)
-      XYInputFormatSettingsByAxisSet: [] as {
-        axisSetId: number
-        formatX1: XYValueInputFormat
-        formatX2: XYValueInputFormat
-        formatY1: XYValueInputFormat
-        formatY2: XYValueInputFormat
-      }[],
     }
   },
   created() {
@@ -311,22 +305,75 @@ export default defineComponent({
     //   }
     //   return (value * 0.1).toPrecision(1)
     // },
+    handleOnChangeDisplayedValue({
+      axisSetId,
+      axisName,
+      displayedVal,
+    }: {
+      axisSetId: number
+      axisName: AxisName
+      displayedVal: string
+    }) {
+      const format = this.axisValHandler.getAxisValFormat(displayedVal)
+
+      if (format === 'invalidFormat') {
+        throw new Error(`Axis value is invalid format`)
+      }
+
+      this.axisValHandler.setAxisValFormatState({
+        axisSetId,
+        axisName,
+        displayedVal,
+        format,
+      })
+    },
+    setAxisSetValuesToDisplayValues(axisSet: AxisSetInterface): void {
+      const axisNames = ['x1', 'x2', 'y1', 'y2'] as const
+
+      axisNames.forEach((axisName) => {
+        const displayKey = axisName as keyof typeof this.displayVal
+        const axisValue = axisSet[axisName].value
+
+        // Exponential表示の条件に基づき、表示値を設定
+        this.displayVal[displayKey] = this.axesToDisplayValAsExponential.find(
+          (axis) => axis.axisSetId === axisSet.id && axis.axisName === axisName,
+        )
+          ? axisValue.toPrecision(1)
+          : String(axisValue)
+      })
+    },
   },
   watch: {
     'displayedVal.x1'(value: string) {
-      this.updateAxesToDisplayedValAsExponential('x1', value)
+      this.handleOnChangeDisplayedValue({
+        axisSetId: this.axisSetRepository.activeAxisSet.id,
+        axisName: 'x1',
+        displayedVal: value,
+      })
       this.axisSetRepository.activeAxisSet.setX1Value(parseFloat(value))
     },
     'displayedVal.x2'(value: string) {
-      this.updateAxesToDisplayedValAsExponential('x2', value)
+      this.handleOnChangeDisplayedValue({
+        axisSetId: this.axisSetRepository.activeAxisSet.id,
+        axisName: 'x2',
+        displayedVal: value,
+      })
       this.axisSetRepository.activeAxisSet.setX2Value(parseFloat(value))
     },
     'displayedVal.y1'(value: string) {
-      this.updateAxesToDisplayedValAsExponential('y1', value)
+      this.handleOnChangeDisplayedValue({
+        axisSetId: this.axisSetRepository.activeAxisSet.id,
+        axisName: 'y1',
+        displayedVal: value,
+      })
       this.axisSetRepository.activeAxisSet.setY1Value(parseFloat(value))
     },
     'displayedVal.y2'(value: string) {
-      this.updateAxesToDisplayedValAsExponential('y2', value)
+      this.handleOnChangeDisplayedValue({
+        axisSetId: this.axisSetRepository.activeAxisSet.id,
+        axisName: 'y2',
+        displayedVal: value,
+      })
       this.axisSetRepository.activeAxisSet.setY2Value(parseFloat(value))
     },
     'axisSetRepository.activeAxisSet'(axisSet: AxisSetInterface) {
