@@ -1,13 +1,11 @@
 import { InstanceManager } from '@/general/instanceManager/instanceManager'
-import { AxisSetRepositoryManager } from '@/domain/repositories/axisSetRepository/manager/axisSetRepositoryManager'
 import { AxisValInputHandler } from '../axisValInputHandler'
 import { AxisValInputHandlerInterface } from '../axisValInputHandlerInterface'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 
 export class AxisValInputHandlerManager extends InstanceManager<AxisValInputHandlerInterface> {
   private instanceCreator = () => {
-    return new AxisValInputHandler(
-      new AxisSetRepositoryManager().getNewInstance(),
-    )
+    return new AxisValInputHandler(axisSetRepository)
   }
 
   public getInstance() {

@@ -24,11 +24,11 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
 
   convertAxisValueToDecimal(inputVal: string): number {
     if (MathUtils.isScientificNotation(inputVal)) {
-      return MathUtils.convertPowerNotationToDecimal(inputVal)
+      return MathUtils.convertScientificNotationToDecimal(inputVal)
     }
 
     if (MathUtils.isPowerNotation(inputVal)) {
-      return MathUtils.convertScientificNotationToDecimal(inputVal)
+      return MathUtils.convertPowerNotationToDecimal(inputVal)
     }
 
     if (MathUtils.isConvertibleToDecimal(inputVal)) {
@@ -50,14 +50,11 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
     })
   }
 
-  setConvertedAxisValToActiveAxisSet(axisKey: AxisKey): void {
-    const inputAxisVal = this.activeAxisSetInputValues[axisKey]
-
-    if (!inputAxisVal) {
-      throw new Error('Unexpected error: input axis val has not been found')
-    }
+  setConvertedAxisValToAxisSet(axisSetId: number, axisKey: AxisKey): void {
+    const inputAxisVal = this.getAxisSetInputValues(axisSetId)[axisKey]
 
     const convertedAxisValue = this.convertAxisValueToDecimal(inputAxisVal)
+    // console.log(this.axisSetRepository.activeAxisSetId)
     this.axisSetRepository.activeAxisSet[axisKey].value = convertedAxisValue
   }
 }
