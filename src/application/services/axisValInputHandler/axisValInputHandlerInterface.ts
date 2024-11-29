@@ -10,4 +10,13 @@ export interface AxisValInputHandlerInterface {
   convertAxisValueToDecimal(inputVal: string): number
   setInputValue(axisSetId: number, axisKey: AxisKey, inpuVal: string): void
   setConvertedAxisValToAxisSet(axisSetId: number, axisKey: AxisKey): void
+
+  validateInputValues(axisSetId: number): void
+  getValidationStatus(axisSetId: number): {
+    isInvalidInputValue: boolean
+    isXLogScaleAndSameValue: boolean
+    isXLogScaleAndZero: boolean
+    isYLogScaleAndSameValue: boolean
+    isYLogScaleAndZero: boolean
+  }
 }

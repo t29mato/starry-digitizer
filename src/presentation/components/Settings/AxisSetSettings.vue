@@ -13,6 +13,8 @@
             onInputAxisVal('x1', val)
           }
         "
+        @focus="onFocusInput"
+        @blur="onBlurInput('x1')"
       >
         <div
           class="c__axis-set-settings__log-adjuster"
@@ -47,6 +49,8 @@
             onInputAxisVal('x2', val)
           }
         "
+        @focus="onFocusInput"
+        @blur="onBlurInput('x2')"
       >
         <div
           class="c__axis-set-settings__log-adjuster"
@@ -94,6 +98,8 @@
             onInputAxisVal('y1', val)
           }
         "
+        @focus="onFocusInput"
+        @blur="onBlurInput('y1')"
       >
         <div
           class="c__axis-set-settings__log-adjuster"
@@ -128,6 +134,8 @@
             onInputAxisVal('y2', val)
           }
         "
+        @focus="onFocusInput"
+        @blur="onBlurInput('y2')"
       >
         <div
           class="c__axis-set-settings__log-adjuster"
@@ -163,7 +171,12 @@
       </td>
     </div>
 
-    <p class="text-red mb-5">{{ errorMessage }}</p>
+    <div v-if="shouldShowErrorMessage">
+      <p v-for="errMsg in errorMessages" :key="errMsg" class="text-red mb-5">
+        {{ errMsg }}
+      </p>
+    </div>
+
     <div class="mb-5">
       <h5 class="c__axis-set-settings__point-mode__label">
         Define the axes by the coordinates of:
@@ -213,27 +226,27 @@ import { AxisKey } from '@/@types/types'
 
 export default defineComponent({
   computed: {
-    errorMessage(): string {
-      if (this.axisSetRepository.activeAxisSet.xIsLogScale) {
-        if (this.x1Axis.value === 0 || this.x2Axis.value === 0) {
-          return 'x1 or x2 should not be 0'
-        }
-      } else {
-        if (this.x1Axis.value === this.x2Axis.value) {
-          return 'x1 and x2 should not be same value'
-        }
-      }
-      if (this.axisSetRepository.activeAxisSet.yIsLogScale) {
-        if (this.y1Axis.value === 0 || this.y2Axis.value === 0) {
-          return 'y1 or y2 should not be 0'
-        }
-      } else {
-        if (this.y1Axis.value === this.y2Axis.value) {
-          return 'y1 and y2 should not be same value'
-        }
-      }
-      return ''
-    },
+    // errorMessage(): string {
+    //   if (this.axisSetRepository.activeAxisSet.xIsLogScale) {
+    //     if (this.x1Axis.value === 0 || this.x2Axis.value === 0) {
+    //       return 'x1 or x2 should not be 0'
+    //     }
+    //   } else {
+    //     if (this.x1Axis.value === this.x2Axis.value) {
+    //       return 'x1 and x2 should not be same value'
+    //     }
+    //   }
+    //   if (this.axisSetRepository.activeAxisSet.yIsLogScale) {
+    //     if (this.y1Axis.value === 0 || this.y2Axis.value === 0) {
+    //       return 'y1 or y2 should not be 0'
+    //     }
+    //   } else {
+    //     if (this.y1Axis.value === this.y2Axis.value) {
+    //       return 'y1 and y2 should not be same value'
+    //     }
+    //   }
+    //   return ''
+    // },
     x1Axis() {
       return this.axisSetRepository.activeAxisSet.x1
     },
@@ -277,18 +290,44 @@ export default defineComponent({
         y1: '0',
         y2: '0',
       },
+      errorMessages: [] as string[],
+      shouldShowErrorMessage: false,
     }
   },
   created() {},
   methods: {
     onInputAxisVal(axisKey: AxisKey, val: string) {
-      const activeAxisSetId = this.axisSetRepository.activeAxisSetId
-      this.axisValInputHandler.setInputValue(activeAxisSetId, axisKey, val)
+      this.errorMessages = []
 
-      this.axisValInputHandler.setConvertedAxisValToAxisSet(
-        activeAxisSetId,
-        axisKey,
-      )
+      try {
+        const activeAxisSetId = this.axisSetRepository.activeAxisSetId
+        this.axisValInputHandler.setInputValue(activeAxisSetId, axisKey, val)
+
+        this.axisValInputHandler.setConvertedAxisValToAxisSet(
+          activeAxisSetId,
+          axisKey,
+        )
+      } catch (error: unknown) {
+        this.errorMessages.push((error as Error)?.message || 'Unexpected error')
+        console.warn(error)
+      }
+    },
+    onFocusInput() {
+      this.shouldShowErrorMessage = false
+    },
+    onBlurInput(axisKey: AxisKey) {
+      //NOTE: only if input value is '', convert it to '0' and will not show an error message
+      if (this.axisValuesDisplayed[axisKey] === '') {
+        this.axisValuesDisplayed[axisKey] = '0'
+        return
+      }
+
+      const activeAxisSetId = this.axisSetRepository.activeAxisSetId
+      this.axisValInputHandler.validateInputValues(activeAxisSetId)
+      console.log(this.axisValInputHandler.getValidationStatus(activeAxisSetId))
+
+      //NOTE: To show error messages when a user blurred input tag for comfortability
+      this.shouldShowErrorMessage = true
     },
     updateDisplayedValMultipliedByTen(axisName: AxisKey): void {
       // this.axisValInputHandler.activeAxisSetInputValues[axisName] = this.getDisplayedValMultipliedByTen(

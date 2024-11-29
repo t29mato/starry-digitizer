@@ -6,6 +6,16 @@ import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetReposit
 export class AxisValInputHandler implements AxisValInputHandlerInterface {
   axisSetRepository: AxisSetRepositoryInterface
   inputValues: Map<number, AxisValuesInput> = new Map()
+  validationStatus: Record<
+    number,
+    {
+      isInvalidInputValue: boolean
+      isXLogScaleAndSameValue: boolean
+      isXLogScaleAndZero: boolean
+      isYLogScaleAndSameValue: boolean
+      isYLogScaleAndZero: boolean
+    }
+  > = {}
 
   constructor(axisSetRepository: AxisSetRepositoryInterface) {
     this.axisSetRepository = axisSetRepository
@@ -54,7 +64,55 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
     const inputAxisVal = this.getAxisSetInputValues(axisSetId)[axisKey]
 
     const convertedAxisValue = this.convertAxisValueToDecimal(inputAxisVal)
-    // console.log(this.axisSetRepository.activeAxisSetId)
     this.axisSetRepository.activeAxisSet[axisKey].value = convertedAxisValue
+  }
+
+  validateInputValues(axisSetId: number): void {
+    const axisSet = this.axisSetRepository.activeAxisSet
+    const inputValues = this.getAxisSetInputValues(axisSetId)
+
+    const isInvalidInputValue = Object.values(inputValues).some((value) => {
+      try {
+        this.convertAxisValueToDecimal(value)
+        return false
+      } catch {
+        return true
+      }
+    })
+
+    const isXLogScaleAndSameValue =
+      axisSet.xIsLogScale && inputValues.x1 === inputValues.x2
+    const isXLogScaleAndZero =
+      axisSet.xIsLogScale && (inputValues.x1 === '0' || inputValues.x2 === '0')
+    const isYLogScaleAndSameValue =
+      axisSet.yIsLogScale && inputValues.y1 === inputValues.y2
+    const isYLogScaleAndZero =
+      axisSet.yIsLogScale && (inputValues.y1 === '0' || inputValues.y2 === '0')
+
+    this.validationStatus[axisSetId] = {
+      isInvalidInputValue,
+      isXLogScaleAndSameValue,
+      isXLogScaleAndZero,
+      isYLogScaleAndSameValue,
+      isYLogScaleAndZero,
+    }
+  }
+
+  getValidationStatus(axisSetId: number): {
+    isInvalidInputValue: boolean
+    isXLogScaleAndSameValue: boolean
+    isXLogScaleAndZero: boolean
+    isYLogScaleAndSameValue: boolean
+    isYLogScaleAndZero: boolean
+  } {
+    return (
+      this.validationStatus[axisSetId] || {
+        isInvalidInputValue: false,
+        isXLogScaleAndSameValue: false,
+        isXLogScaleAndZero: false,
+        isYLogScaleAndSameValue: false,
+        isYLogScaleAndZero: false,
+      }
+    )
   }
 }
