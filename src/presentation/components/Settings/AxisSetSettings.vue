@@ -6,12 +6,17 @@
           <td class="pl-0 pr-1">X</td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="displayedVal.x1"
+              :model-value="axisValuesDisplayed.x1"
               id="x1-value"
               type="number"
               hide-details
               label="x1"
               density="compact"
+              @update:model-value="
+                (val: string) => {
+                  onInputAxisVal('x1', val)
+                }
+              "
             >
               <div
                 class="c__AxisSetRepository-settings__log-adjuster"
@@ -38,12 +43,17 @@
           </td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="displayedVal.x2"
+              :model-value="axisValuesDisplayed.x2"
               id="x2-value"
               type="number"
               hide-details
               label="x2"
               density="compact"
+              @update:model-value="
+                (val: string) => {
+                  onInputAxisVal('x2', val)
+                }
+              "
             >
               <div
                 class="c__AxisSetRepository-settings__log-adjuster"
@@ -71,7 +81,7 @@
           <td>
             <v-checkbox
               color="primary"
-              v-model="axisSetRepository.activeAxisSet.xIsLogScale"
+              :model-value="axisSetRepository.activeAxisSet.xIsLogScale"
               id="x-is-log"
               hide-details
               density="compact"
@@ -83,12 +93,17 @@
           <td class="pl-0 pr-1">Y</td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="displayedVal.y1"
+              :model-value="axisValuesDisplayed.y1"
               id="y1-value"
               type="number"
               hide-details
               label="y1"
               density="compact"
+              @update:model-value="
+                (val: string) => {
+                  onInputAxisVal('y1', val)
+                }
+              "
             >
               <div
                 class="c__AxisSetRepository-settings__log-adjuster"
@@ -115,12 +130,17 @@
           </td>
           <td class="pl-0 pr-1">
             <v-text-field
-              v-model="displayedVal.y2"
+              v-model="axisValuesDisplayed.y2"
               id="y2-value"
               type="number"
               hide-details
               label="y2"
               density="compact"
+              @update:model-value="
+                (val: string) => {
+                  onInputAxisVal('y2', val)
+                }
+              "
             >
               <div
                 class="c__AxisSetRepository-settings__log-adjuster"
@@ -202,10 +222,9 @@
 import { defineComponent } from 'vue'
 
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { POINT_MODE } from '@/constants'
-import { axisValHandler } from '@/instanceStore/applicationServiceInstances'
-import { AxisName } from '@/@types/types'
+import { axisValInputHandler } from '@/instanceStore/applicationServiceInstances'
+import { AxisKey } from '@/@types/types'
 
 export default defineComponent({
   computed: {
@@ -266,118 +285,40 @@ export default defineComponent({
   data() {
     return {
       axisSetRepository,
-      axisValHandler,
-      //NOTE: initialize axis values as string because it sometimes is displayed like '1e+10'
-      displayedVal: {
-        x1: '',
-        x2: '',
-        y1: '',
-        y2: '',
+      axisValInputHandler,
+      axisValuesDisplayed: {
+        x1: '0',
+        x2: '0',
+        y1: '0',
+        y2: '0',
       },
     }
   },
-  created() {
-    this.displayedVal.x1 = String(this.x1Axis.value)
-    this.displayedVal.x2 = String(this.x2Axis.value)
-    this.displayedVal.y1 = String(this.y1Axis.value)
-    this.displayedVal.y2 = String(this.y2Axis.value)
-  },
+  created() {},
   methods: {
-    // updateDisplayedValMultipliedByTen(axisName: AxisName): void {
-    //   this.displayedVal[axisName] = this.getDisplayedValMultipliedByTen(
-    //     parseFloat(this.displayedVal[axisName]),
-    //   )
-    // },
-    // updateDisplayedValDividedByTen(axisName: AxisName): void {
-    //   this.displayedVal[axisName] = this.getDisplayedValDividedByTen(
-    //     parseFloat(this.displayedVal[axisName]),
-    //   )
-    // },
-    // getDisplayedValMultipliedByTen(value: number): string {
-    //   if (value === 0) {
-    //     return '1'
-    //   }
-    //   return (value * 10).toPrecision(1)
-    // },
-    // getDisplayedValDividedByTen(value: number): string {
-    //   if (value === 0) {
-    //     return '0.1'
-    //   }
-    //   return (value * 0.1).toPrecision(1)
-    // },
-    handleOnChangeDisplayedValue({
-      axisSetId,
-      axisName,
-      displayedVal,
-    }: {
-      axisSetId: number
-      axisName: AxisName
-      displayedVal: string
-    }) {
-      const format = this.axisValHandler.getAxisValFormat(displayedVal)
-
-      if (format === 'invalidFormat') {
-        throw new Error(`Axis value is invalid format`)
-      }
-
-      this.axisValHandler.setAxisValFormatState({
-        axisSetId,
-        axisName,
-        displayedVal,
-        format,
-      })
+    onInputAxisVal(axisKey: AxisKey, val: string) {
+      this.axisValInputHandler.setInputValue(
+        this.axisSetRepository.activeAxisSetId,
+        axisKey,
+        val,
+      )
     },
-    setAxisSetValuesToDisplayValues(axisSet: AxisSetInterface): void {
-      const axisNames = ['x1', 'x2', 'y1', 'y2'] as const
-
-      axisNames.forEach((axisName) => {
-        const displayKey = axisName as keyof typeof this.displayVal
-        const axisValue = axisSet[axisName].value
-
-        // Exponential表示の条件に基づき、表示値を設定
-        this.displayVal[displayKey] = this.axesToDisplayValAsExponential.find(
-          (axis) => axis.axisSetId === axisSet.id && axis.axisName === axisName,
-        )
-          ? axisValue.toPrecision(1)
-          : String(axisValue)
-      })
+    updateDisplayedValMultipliedByTen(axisName: AxisKey): void {
+      // this.axisValInputHandler.activeAxisSetInputValues[axisName] = this.getDisplayedValMultipliedByTen(
+      //   parseFloat(this.axisValInputHandler.activeAxisSetInputValues[axisName]),
+      // )
+    },
+    updateDisplayedValDividedByTen(axisName: AxisKey): void {
+      // this.axisValInputHandler.activeAxisSetInputValues[axisName] = this.getDisplayedValDividedByTen(
+      //   parseFloat(this.axisValInputHandler.activeAxisSetInputValues[axisName]),
+      // )
     },
   },
   watch: {
-    'displayedVal.x1'(value: string) {
-      this.handleOnChangeDisplayedValue({
-        axisSetId: this.axisSetRepository.activeAxisSet.id,
-        axisName: 'x1',
-        displayedVal: value,
-      })
-      this.axisSetRepository.activeAxisSet.setX1Value(parseFloat(value))
-    },
-    'displayedVal.x2'(value: string) {
-      this.handleOnChangeDisplayedValue({
-        axisSetId: this.axisSetRepository.activeAxisSet.id,
-        axisName: 'x2',
-        displayedVal: value,
-      })
-      this.axisSetRepository.activeAxisSet.setX2Value(parseFloat(value))
-    },
-    'displayedVal.y1'(value: string) {
-      this.handleOnChangeDisplayedValue({
-        axisSetId: this.axisSetRepository.activeAxisSet.id,
-        axisName: 'y1',
-        displayedVal: value,
-      })
-      this.axisSetRepository.activeAxisSet.setY1Value(parseFloat(value))
-    },
-    'displayedVal.y2'(value: string) {
-      this.handleOnChangeDisplayedValue({
-        axisSetId: this.axisSetRepository.activeAxisSet.id,
-        axisName: 'y2',
-        displayedVal: value,
-      })
-      this.axisSetRepository.activeAxisSet.setY2Value(parseFloat(value))
-    },
-    'axisSetRepository.activeAxisSet'(axisSet: AxisSetInterface) {
-      this.setAxisSetValuesToDisplayedValues(axisSet)
+    'axisSetRepository.activeAxisSetId'() {
+      this.axisValuesDisplayed = this.axisValInputHandler.getAxisSetInputValues(
+        this.axisSetRepository.activeAxisSetId,
+      )
     },
     'axisSetRepository.activeAxisSet.pointMode'(newPointMode: number) {
       if (newPointMode === POINT_MODE.TWO_POINTS) {

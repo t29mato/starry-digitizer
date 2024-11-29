@@ -19,10 +19,6 @@ const convertPowerNotationToDecimal = (powerNotation: string): number => {
   return Math.pow(base, exponent)
 }
 
-const convertDecimalToScientificNotation = (num: number) => {
-  return num.toExponential()
-}
-
 const isConvertibleToDecimal = (str: string) => {
   // 正規表現で小数または整数を表現
   const decimalRegex = /^[+-]?\d+(\.\d+)?$/
@@ -39,6 +35,6 @@ export const MathUtils = {
   isPowerNotation,
   convertScientificNotationToDecimal,
   convertPowerNotationToDecimal,
-  convertDecimalToScientificNotation,
+
   isConvertibleToDecimal,
 }

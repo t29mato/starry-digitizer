@@ -5,9 +5,9 @@ export interface AxisValInputHandlerInterface {
   axisSetRepository: AxisSetRepositoryInterface
   inputValues: Map<number, AxisValuesInput>
 
+  getAxisSetInputValues(axisSetId: number): AxisValuesInput
+
   convertAxisValueToDecimal(inputVal: string): number
-
   setInputValue(axisSetId: number, axisKey: AxisKey, inpuVal: string): void
-
   setConvertedAxisValToActiveAxisSet(axisKey: AxisKey): void
 }
