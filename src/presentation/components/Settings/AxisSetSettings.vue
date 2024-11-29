@@ -1,186 +1,171 @@
 <template>
-  <div>
-    <table>
-      <tbody>
-        <tr>
-          <td class="pl-0 pr-1">X</td>
-          <td class="pl-0 pr-1">
-            <v-text-field
-              :model-value="axisValuesDisplayed.x1"
-              id="x1-value"
-              type="number"
-              hide-details
-              label="x1"
-              density="compact"
-              @update:model-value="
-                (val: string) => {
-                  onInputAxisVal('x1', val)
-                }
-              "
-            >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.xIsLogScale"
-              >
-                <button
-                  size="x-small"
-                  @click="updateDisplayedValMultipliedByTen('x1')"
-                  id="multiply-by-ten-x1"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-x1"
-                  size="x-small"
-                  @click="updateDisplayedValDividedByTen('x1')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
-            </v-text-field>
-          </td>
-          <td class="pl-0 pr-1">
-            <v-text-field
-              :model-value="axisValuesDisplayed.x2"
-              id="x2-value"
-              type="number"
-              hide-details
-              label="x2"
-              density="compact"
-              @update:model-value="
-                (val: string) => {
-                  onInputAxisVal('x2', val)
-                }
-              "
-            >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.xIsLogScale"
-              >
-                <button
-                  id="multiply-by-ten-x2"
-                  size="x-small"
-                  @click="updateDisplayedValMultipliedByTen('x2')"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-x2"
-                  size="x-small"
-                  @click="updateDisplayedValDividedByTen('x2')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
-            </v-text-field>
-          </td>
-          <td>
-            <v-checkbox
-              color="primary"
-              :model-value="axisSetRepository.activeAxisSet.xIsLogScale"
-              id="x-is-log"
-              hide-details
-              density="compact"
-            ></v-checkbox>
-            <span class="c__AxisSetRepository-settings__hint">Log</span>
-          </td>
-        </tr>
-        <tr>
-          <td class="pl-0 pr-1">Y</td>
-          <td class="pl-0 pr-1">
-            <v-text-field
-              :model-value="axisValuesDisplayed.y1"
-              id="y1-value"
-              type="number"
-              hide-details
-              label="y1"
-              density="compact"
-              @update:model-value="
-                (val: string) => {
-                  onInputAxisVal('y1', val)
-                }
-              "
-            >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.yIsLogScale"
-              >
-                <button
-                  id="multiply-by-ten-y1"
-                  size="x-small"
-                  @click="updateDisplayedValMultipliedByTen('y1')"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-y1"
-                  size="x-small"
-                  @click="updateDisplayedValDividedByTen('y1')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
-            </v-text-field>
-          </td>
-          <td class="pl-0 pr-1">
-            <v-text-field
-              v-model="axisValuesDisplayed.y2"
-              id="y2-value"
-              type="number"
-              hide-details
-              label="y2"
-              density="compact"
-              @update:model-value="
-                (val: string) => {
-                  onInputAxisVal('y2', val)
-                }
-              "
-            >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.yIsLogScale"
-              >
-                <button
-                  id="multiply-by-ten-y2"
-                  size="x-small"
-                  @click="updateDisplayedValMultipliedByTen('y2')"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-y2"
-                  size="x-small"
-                  @click="updateDisplayedValDividedByTen('y2')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
-            </v-text-field>
-          </td>
-          <td>
-            <v-checkbox
-              color="primary"
-              v-model="axisSetRepository.activeAxisSet.yIsLogScale"
-              id="y-is-log"
-              density="compact"
-              hide-details
-            ></v-checkbox>
-            <span class="c__AxisSetRepository-settings__hint">Log</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="c__axis-set-settings">
+    <div class="c__axis-set-settings__x">
+      <p>X</p>
+      <v-text-field
+        v-model="axisValuesDisplayed.x1"
+        id="x1-value"
+        hide-details
+        label="x1"
+        density="compact"
+        @update:model-value="
+          (val: string) => {
+            onInputAxisVal('x1', val)
+          }
+        "
+      >
+        <div
+          class="c__axis-set-settings__log-adjuster"
+          v-if="axisSetRepository.activeAxisSet.xIsLogScale"
+        >
+          <button
+            size="x-small"
+            @click="updateDisplayedValMultipliedByTen('x1')"
+            id="multiply-by-ten-x1"
+            icon
+          >
+            x10
+          </button>
+          <button
+            id="divide-by-ten-x1"
+            size="x-small"
+            @click="updateDisplayedValDividedByTen('x1')"
+            icon
+          >
+            /10
+          </button>
+        </div>
+      </v-text-field>
+      <v-text-field
+        v-model="axisValuesDisplayed.x2"
+        id="x2-value"
+        hide-details
+        label="x2"
+        density="compact"
+        @update:model-value="
+          (val: string) => {
+            onInputAxisVal('x2', val)
+          }
+        "
+      >
+        <div
+          class="c__axis-set-settings__log-adjuster"
+          v-if="axisSetRepository.activeAxisSet.xIsLogScale"
+        >
+          <button
+            id="multiply-by-ten-x2"
+            size="x-small"
+            @click="updateDisplayedValMultipliedByTen('x2')"
+            icon
+          >
+            x10
+          </button>
+          <button
+            id="divide-by-ten-x2"
+            size="x-small"
+            @click="updateDisplayedValDividedByTen('x2')"
+            icon
+          >
+            /10
+          </button>
+        </div>
+      </v-text-field>
+      <div>
+        <v-checkbox
+          color="primary"
+          v-model="axisSetRepository.activeAxisSet.xIsLogScale"
+          id="x-is-log"
+          hide-details
+          density="compact"
+        ></v-checkbox>
+        <span class="c__axis-set-settings__hint">Log</span>
+      </div>
+    </div>
+    <div class="c__axis-set-settings__y">
+      <p>Y</p>
+      <v-text-field
+        v-model="axisValuesDisplayed.y1"
+        id="y1-value"
+        hide-details
+        label="y1"
+        density="compact"
+        @update:model-value="
+          (val: string) => {
+            onInputAxisVal('y1', val)
+          }
+        "
+      >
+        <div
+          class="c__axis-set-settings__log-adjuster"
+          v-if="axisSetRepository.activeAxisSet.yIsLogScale"
+        >
+          <button
+            id="multiply-by-ten-y1"
+            size="x-small"
+            @click="updateDisplayedValMultipliedByTen('y1')"
+            icon
+          >
+            x10
+          </button>
+          <button
+            id="divide-by-ten-y1"
+            size="x-small"
+            @click="updateDisplayedValDividedByTen('y1')"
+            icon
+          >
+            /10
+          </button>
+        </div>
+      </v-text-field>
+      <v-text-field
+        v-model="axisValuesDisplayed.y2"
+        id="y2-value"
+        hide-details
+        label="y2"
+        density="compact"
+        @update:model-value="
+          (val: string) => {
+            onInputAxisVal('y2', val)
+          }
+        "
+      >
+        <div
+          class="c__axis-set-settings__log-adjuster"
+          v-if="axisSetRepository.activeAxisSet.yIsLogScale"
+        >
+          <button
+            id="multiply-by-ten-y2"
+            size="x-small"
+            @click="updateDisplayedValMultipliedByTen('y2')"
+            icon
+          >
+            x10
+          </button>
+          <button
+            id="divide-by-ten-y2"
+            size="x-small"
+            @click="updateDisplayedValDividedByTen('y2')"
+            icon
+          >
+            /10
+          </button>
+        </div>
+      </v-text-field>
+      <td>
+        <v-checkbox
+          color="primary"
+          v-model="axisSetRepository.activeAxisSet.yIsLogScale"
+          id="y-is-log"
+          density="compact"
+          hide-details
+        ></v-checkbox>
+        <span class="c__axis-set-settings__hint">Log</span>
+      </td>
+    </div>
+
     <p class="text-red mb-5">{{ errorMessage }}</p>
     <div class="mb-5">
-      <h5 class="c__AxisSetRepository-settings__point-mode__label">
+      <h5 class="c__axis-set-settings__point-mode__label">
         Define the axes by the coordinates of:
       </h5>
       <v-radio-group
@@ -297,10 +282,12 @@ export default defineComponent({
   created() {},
   methods: {
     onInputAxisVal(axisKey: AxisKey, val: string) {
-      this.axisValInputHandler.setInputValue(
-        this.axisSetRepository.activeAxisSetId,
+      const activeAxisSetId = this.axisSetRepository.activeAxisSetId
+      this.axisValInputHandler.setInputValue(activeAxisSetId, axisKey, val)
+
+      this.axisValInputHandler.setConvertedAxisValToAxisSet(
+        activeAxisSetId,
         axisKey,
-        val,
       )
     },
     updateDisplayedValMultipliedByTen(axisName: AxisKey): void {
@@ -316,9 +303,16 @@ export default defineComponent({
   },
   watch: {
     'axisSetRepository.activeAxisSetId'() {
-      this.axisValuesDisplayed = this.axisValInputHandler.getAxisSetInputValues(
+      const { x1, x2, y1, y2 } = this.axisValInputHandler.getAxisSetInputValues(
         this.axisSetRepository.activeAxisSetId,
       )
+
+      this.axisValuesDisplayed.x1 = x1
+      this.axisValuesDisplayed.x2 = x2
+      this.axisValuesDisplayed.y1 = y1
+      this.axisValuesDisplayed.y2 = y2
+
+      // console.log(this.axisSetRepository.activeAxisSet)
     },
     'axisSetRepository.activeAxisSet.pointMode'(newPointMode: number) {
       if (newPointMode === POINT_MODE.TWO_POINTS) {
@@ -331,7 +325,13 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .c {
-  &__AxisSetRepository-settings {
+  &__axis-set-settings {
+    &__x,
+    &__y {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
     &__hint {
       display: block;
       font-size: 0.75rem;
