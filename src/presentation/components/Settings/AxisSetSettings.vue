@@ -21,6 +21,7 @@
           v-if="axisSetRepository.activeAxisSet.xIsLogScale"
         >
           <button
+            v-if="canMultiplyAndDivideByTen('x1')"
             size="x-small"
             @click="updateDisplayedValMultipliedByTen('x1')"
             id="multiply-by-ten-x1"
@@ -29,6 +30,7 @@
             x10
           </button>
           <button
+            v-if="canMultiplyAndDivideByTen('x1')"
             id="divide-by-ten-x1"
             size="x-small"
             @click="updateDisplayedValDividedByTen('x1')"
@@ -57,6 +59,7 @@
           v-if="axisSetRepository.activeAxisSet.xIsLogScale"
         >
           <button
+            v-if="canMultiplyAndDivideByTen('x2')"
             id="multiply-by-ten-x2"
             size="x-small"
             @click="updateDisplayedValMultipliedByTen('x2')"
@@ -65,6 +68,7 @@
             x10
           </button>
           <button
+            v-if="canMultiplyAndDivideByTen('x2')"
             id="divide-by-ten-x2"
             size="x-small"
             @click="updateDisplayedValDividedByTen('x2')"
@@ -106,6 +110,7 @@
           v-if="axisSetRepository.activeAxisSet.yIsLogScale"
         >
           <button
+            v-if="canMultiplyAndDivideByTen('y1')"
             id="multiply-by-ten-y1"
             size="x-small"
             @click="updateDisplayedValMultipliedByTen('y1')"
@@ -114,6 +119,7 @@
             x10
           </button>
           <button
+            v-if="canMultiplyAndDivideByTen('y1')"
             id="divide-by-ten-y1"
             size="x-small"
             @click="updateDisplayedValDividedByTen('y1')"
@@ -142,6 +148,7 @@
           v-if="axisSetRepository.activeAxisSet.yIsLogScale"
         >
           <button
+            v-if="canMultiplyAndDivideByTen('y2')"
             id="multiply-by-ten-y2"
             size="x-small"
             @click="updateDisplayedValMultipliedByTen('y2')"
@@ -150,6 +157,7 @@
             x10
           </button>
           <button
+            v-if="canMultiplyAndDivideByTen('y2')"
             id="divide-by-ten-y2"
             size="x-small"
             @click="updateDisplayedValDividedByTen('y2')"
@@ -226,27 +234,18 @@ import { AxisKey } from '@/@types/types'
 
 export default defineComponent({
   computed: {
-    // errorMessage(): string {
-    //   if (this.axisSetRepository.activeAxisSet.xIsLogScale) {
-    //     if (this.x1Axis.value === 0 || this.x2Axis.value === 0) {
-    //       return 'x1 or x2 should not be 0'
-    //     }
-    //   } else {
-    //     if (this.x1Axis.value === this.x2Axis.value) {
-    //       return 'x1 and x2 should not be same value'
-    //     }
-    //   }
-    //   if (this.axisSetRepository.activeAxisSet.yIsLogScale) {
-    //     if (this.y1Axis.value === 0 || this.y2Axis.value === 0) {
-    //       return 'y1 or y2 should not be 0'
-    //     }
-    //   } else {
-    //     if (this.y1Axis.value === this.y2Axis.value) {
-    //       return 'y1 and y2 should not be same value'
-    //     }
-    //   }
-    //   return ''
-    // },
+    axisValuesDisplayed() {
+      return (
+        this.axisValInputHandler.inputValues.get(
+          this.axisSetRepository.activeAxisSetId,
+        ) || {
+          x1: '0',
+          x2: '0',
+          y1: '0',
+          y2: '0',
+        }
+      )
+    },
     x1Axis() {
       return this.axisSetRepository.activeAxisSet.x1
     },
@@ -284,12 +283,6 @@ export default defineComponent({
     return {
       axisSetRepository,
       axisValInputHandler,
-      axisValuesDisplayed: {
-        x1: '0',
-        x2: '0',
-        y1: '0',
-        y2: '0',
-      },
       errorMessages: [] as string[],
       shouldShowErrorMessage: false,
     }
@@ -308,8 +301,7 @@ export default defineComponent({
           axisKey,
         )
       } catch (error: unknown) {
-        this.errorMessages.push((error as Error)?.message || 'Unexpected error')
-        console.warn(error)
+        console.error(error)
       }
     },
     onFocusInput() {
@@ -324,17 +316,57 @@ export default defineComponent({
 
       const activeAxisSetId = this.axisSetRepository.activeAxisSetId
       this.axisValInputHandler.validateInputValues(activeAxisSetId)
-      console.log(this.axisValInputHandler.getValidationStatus(activeAxisSetId))
 
       //NOTE: To show error messages when a user blurred input tag for comfortability
       this.shouldShowErrorMessage = true
     },
-    updateDisplayedValMultipliedByTen(axisName: AxisKey): void {
+    canMultiplyAndDivideByTen(axisKey: AxisKey) {
+      const inputVal = this.axisValInputHandler.getAxisSetInputValues(
+        this.axisSetRepository.activeAxisSetId,
+      )[axisKey]
+
+      const inputValFormat =
+        this.axisValInputHandler.getInputValueFormat(inputVal)
+
+      return (
+        inputValFormat === 'decimal' || inputValFormat === 'scientificNotation'
+      )
+    },
+    updateDisplayedValMultipliedByTen(axisKey: AxisKey): void {
+      //TODO Refactor
+      const activeAxisSetId = this.axisSetRepository.activeAxisSetId
+      const inputVal =
+        this.axisValInputHandler.getAxisSetInputValues(activeAxisSetId)[axisKey]
+
+      const inputValFormat =
+        this.axisValInputHandler.getInputValueFormat(inputVal)
+
+      if (inputValFormat === 'scientificNotation') {
+        return
+      }
+
+      if (inputValFormat === 'decimal') {
+        console.log('aaa')
+        const newVal = String(parseFloat(inputVal) * 10)
+        this.axisValuesDisplayed[axisKey] = newVal
+
+        this.axisValInputHandler.setInputValue(activeAxisSetId, axisKey, newVal)
+        this.axisValInputHandler.setConvertedAxisValToAxisSet(
+          activeAxisSetId,
+          axisKey,
+        )
+        return
+      }
+
+      throw new Error(
+        'input value must be decimal or schientificNotation to be multiplied by ten',
+      )
+
       // this.axisValInputHandler.activeAxisSetInputValues[axisName] = this.getDisplayedValMultipliedByTen(
       //   parseFloat(this.axisValInputHandler.activeAxisSetInputValues[axisName]),
       // )
     },
-    updateDisplayedValDividedByTen(axisName: AxisKey): void {
+    updateDisplayedValDividedByTen(axisKey: AxisKey): void {
       // this.axisValInputHandler.activeAxisSetInputValues[axisName] = this.getDisplayedValDividedByTen(
       //   parseFloat(this.axisValInputHandler.activeAxisSetInputValues[axisName]),
       // )

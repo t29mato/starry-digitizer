@@ -1,4 +1,4 @@
-import { AxisKey, AxisValuesInput } from '@/@types/types'
+import { AxisKey, AxisValFormat, AxisValuesInput } from '@/@types/types'
 import { AxisValInputHandlerInterface } from './axisValInputHandlerInterface'
 import { MathUtils } from '@/application/utils/MathUtils'
 import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
@@ -9,7 +9,12 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
   validationStatus: Record<
     number,
     {
-      isInvalidInputValue: boolean
+      isInvalidInputFormat: {
+        x1: boolean
+        x2: boolean
+        y1: boolean
+        y2: boolean
+      }
       isXLogScaleAndSameValue: boolean
       isXLogScaleAndZero: boolean
       isYLogScaleAndSameValue: boolean
@@ -32,20 +37,37 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
     )
   }
 
-  convertAxisValueToDecimal(inputVal: string): number {
+  getInputValueFormat(inputVal: string): AxisValFormat {
     if (MathUtils.isScientificNotation(inputVal)) {
-      return MathUtils.convertScientificNotationToDecimal(inputVal)
+      return 'scientificNotation'
     }
 
     if (MathUtils.isPowerNotation(inputVal)) {
-      return MathUtils.convertPowerNotationToDecimal(inputVal)
+      return 'powerNotation'
     }
 
     if (MathUtils.isConvertibleToDecimal(inputVal)) {
-      return parseFloat(inputVal)
+      return 'decimal'
     }
 
-    throw new Error('Axis value is in the invalid format')
+    return 'invalidFormat'
+  }
+
+  convertAxisValueToDecimal(inputVal: string): number {
+    const inputValFormat = this.getInputValueFormat(inputVal)
+
+    switch (inputValFormat) {
+      case 'powerNotation':
+        return MathUtils.convertPowerNotationToDecimal(inputVal)
+      case 'scientificNotation':
+        return MathUtils.convertScientificNotationToDecimal(inputVal)
+      case 'decimal':
+        return parseFloat(inputVal)
+      case 'invalidFormat':
+        return NaN
+      default:
+        return NaN
+    }
   }
 
   setInputValue(axisSetId: number, axisKey: AxisKey, inpuVal: string): void {
@@ -69,28 +91,22 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
 
   validateInputValues(axisSetId: number): void {
     const axisSet = this.axisSetRepository.activeAxisSet
-    const inputValues = this.getAxisSetInputValues(axisSetId)
+    const { x1, x2, y1, y2 } = this.getAxisSetInputValues(axisSetId)
 
-    const isInvalidInputValue = Object.values(inputValues).some((value) => {
-      try {
-        this.convertAxisValueToDecimal(value)
-        return false
-      } catch {
-        return true
-      }
-    })
+    const isInvalidInputFormat = {
+      x1: this.getInputValueFormat(x1) === 'invalidFormat',
+      x2: this.getInputValueFormat(x2) === 'invalidFormat',
+      y1: this.getInputValueFormat(y1) === 'invalidFormat',
+      y2: this.getInputValueFormat(y2) === 'invalidFormat',
+    }
 
-    const isXLogScaleAndSameValue =
-      axisSet.xIsLogScale && inputValues.x1 === inputValues.x2
-    const isXLogScaleAndZero =
-      axisSet.xIsLogScale && (inputValues.x1 === '0' || inputValues.x2 === '0')
-    const isYLogScaleAndSameValue =
-      axisSet.yIsLogScale && inputValues.y1 === inputValues.y2
-    const isYLogScaleAndZero =
-      axisSet.yIsLogScale && (inputValues.y1 === '0' || inputValues.y2 === '0')
+    const isXLogScaleAndSameValue = axisSet.xIsLogScale && x1 === x2
+    const isXLogScaleAndZero = axisSet.xIsLogScale && (x1 === '0' || x2 === '0')
+    const isYLogScaleAndSameValue = axisSet.yIsLogScale && y1 === y2
+    const isYLogScaleAndZero = axisSet.yIsLogScale && (y1 === '0' || y2 === '0')
 
     this.validationStatus[axisSetId] = {
-      isInvalidInputValue,
+      isInvalidInputFormat,
       isXLogScaleAndSameValue,
       isXLogScaleAndZero,
       isYLogScaleAndSameValue,
@@ -99,7 +115,12 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
   }
 
   getValidationStatus(axisSetId: number): {
-    isInvalidInputValue: boolean
+    isInvalidInputFormat: {
+      x1: boolean
+      x2: boolean
+      y1: boolean
+      y2: boolean
+    }
     isXLogScaleAndSameValue: boolean
     isXLogScaleAndZero: boolean
     isYLogScaleAndSameValue: boolean
@@ -107,6 +128,12 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
   } {
     return (
       this.validationStatus[axisSetId] || {
+        isInvalidInputFormat: {
+          x1: false,
+          x2: false,
+          y1: false,
+          y2: false,
+        },
         isInvalidInputValue: false,
         isXLogScaleAndSameValue: false,
         isXLogScaleAndZero: false,

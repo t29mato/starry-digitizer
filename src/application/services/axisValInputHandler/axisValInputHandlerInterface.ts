@@ -1,4 +1,4 @@
-import { AxisKey, AxisValuesInput } from '@/@types/types'
+import { AxisKey, AxisValFormat, AxisValuesInput } from '@/@types/types'
 import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
 
 export interface AxisValInputHandlerInterface {
@@ -6,6 +6,7 @@ export interface AxisValInputHandlerInterface {
   inputValues: Map<number, AxisValuesInput>
 
   getAxisSetInputValues(axisSetId: number): AxisValuesInput
+  getInputValueFormat(inputVal: string): AxisValFormat
 
   convertAxisValueToDecimal(inputVal: string): number
   setInputValue(axisSetId: number, axisKey: AxisKey, inpuVal: string): void
@@ -13,7 +14,12 @@ export interface AxisValInputHandlerInterface {
 
   validateInputValues(axisSetId: number): void
   getValidationStatus(axisSetId: number): {
-    isInvalidInputValue: boolean
+    isInvalidInputFormat: {
+      x1: boolean
+      x2: boolean
+      y1: boolean
+      y2: boolean
+    }
     isXLogScaleAndSameValue: boolean
     isXLogScaleAndZero: boolean
     isYLogScaleAndSameValue: boolean
