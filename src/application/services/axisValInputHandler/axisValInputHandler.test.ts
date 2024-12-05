@@ -24,12 +24,42 @@ describe('AxisValInputHandler', () => {
     expect(inputValues.x1).toBe('10')
   })
 
-  test('convertAxisValueToDecimal should correctly convert values', () => {
-    jest.spyOn(MathUtils, 'isPowerNotation').mockReturnValueOnce(true)
-    jest.spyOn(MathUtils, 'convertPowerNotationToDecimal').mockReturnValueOnce(1000)
-
-    const decimalValue = handler.convertAxisValueToDecimal('1k')
+  test('convertAxisValueToDecimal should correctly convert power notation values', () => {
+    const decimalValue = handler.convertAxisValueToDecimal('10^3')
     expect(decimalValue).toBe(1000)
+  })
+
+  test('convertAxisValueToDecimal should correctly convert scientific notation values', () => {
+    const decimalValue = handler.convertAxisValueToDecimal('1e+3')
+    expect(decimalValue).toBe(1000)
+  })
+
+  test('convertAxisValueToDecimal should correctly convert decimal values', () => {
+    const decimalValue = handler.convertAxisValueToDecimal('0.1')
+    expect(decimalValue).toBe(0.1)
+  })
+
+  test('convertAxisValueToDecimal should correctly return NaN for invalid vlaue', () => {
+    const decimalValue = handler.convertAxisValueToDecimal('abc')
+    expect(decimalValue).toBe(NaN)
+  })
+
+  test('canInputValueMultipliedAndDividedByTen correctly returns true when the input value can multiplied by ten', () => {
+    const decimalValue = '100'
+    const canInputValueMultipliedAndDividedByTen = handler.canInputValueMultipliedAndDividedByTen(decimalValue)
+    expect(canInputValueMultipliedAndDividedByTen).toBe(true)
+  })
+
+  test('canInputValueMultipliedAndDividedByTen correctly returns true when the input value can multiplied by ten', () => {
+    const scientificNotationValue = '1e+3'
+    const canInputValueMultipliedAndDividedByTen = handler.canInputValueMultipliedAndDividedByTen(scientificNotationValue)
+    expect(canInputValueMultipliedAndDividedByTen).toBe(true)
+  })
+
+  test('canInputValueMultipliedAndDividedByTen correctly returns false when the input value can multiplied by ten', () => {
+    const powerNotationValue = '10^3'
+    const canInputValueMultipliedAndDividedByTen = handler.canInputValueMultipliedAndDividedByTen(powerNotationValue)
+    expect(canInputValueMultipliedAndDividedByTen).toBe(false)
   })
 
   test('handleMultiplyAxisValue should multiply values by 10', () => {
