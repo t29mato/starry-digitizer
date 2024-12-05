@@ -5,7 +5,7 @@ import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetReposit
 
 export class AxisValInputHandler implements AxisValInputHandlerInterface {
   axisSetRepository: AxisSetRepositoryInterface
-  inputValues: Map<number, AxisValuesInput> = new Map()
+  inputValues: Record<number, AxisValuesInput> = {}
   validationStatus: Record<
     number,
     {
@@ -28,7 +28,7 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
 
   getAxisSetInputValues(axisSetId: number): AxisValuesInput {
     return (
-      this.inputValues.get(axisSetId) || {
+      this.inputValues[axisSetId] || {
         x1: '0',
         x2: '0',
         y1: '0',
@@ -70,23 +70,87 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
     }
   }
 
-  setInputValue(axisSetId: number, axisKey: AxisKey, inpuVal: string): void {
-    this.inputValues.set(axisSetId, {
-      ...(this.inputValues.get(axisSetId) || {
+  setInputValue(axisSetId: number, axisKey: AxisKey, inputVal: string): void {
+    if (!this.inputValues[axisSetId]) {
+      this.inputValues[axisSetId] = {
         x1: '0',
         x2: '0',
         y1: '0',
         y2: '0',
-      }),
-      [axisKey]: inpuVal,
-    })
+      }
+    }
+
+    this.inputValues[axisSetId][axisKey] = inputVal
   }
 
   setConvertedAxisValToAxisSet(axisSetId: number, axisKey: AxisKey): void {
     const inputAxisVal = this.getAxisSetInputValues(axisSetId)[axisKey]
-
     const convertedAxisValue = this.convertAxisValueToDecimal(inputAxisVal)
     this.axisSetRepository.activeAxisSet[axisKey].value = convertedAxisValue
+  }
+
+  canInputValueMultipliedAndDividedByTen(inputVal: string): boolean {
+    const inputValFormat = this.getInputValueFormat(inputVal)
+
+    if (inputValFormat === 'decimal') {
+      return true
+    }
+
+    if (inputValFormat === 'scientificNotation' && inputVal.startsWith('1e')) {
+      return true
+    }
+
+    return false
+  }
+
+  getInputValueMultipliedByTen(axisSetId: number, axisKey: AxisKey): string {
+    const originalVal = this.inputValues[axisSetId][axisKey]
+    const originalValFormat = this.getInputValueFormat(originalVal)
+
+    if (originalValFormat === 'decimal') {
+      return String(parseFloat(originalVal) * 10)
+    }
+
+    if (
+      originalValFormat === 'scientificNotation' &&
+      originalVal.startsWith('1e')
+    ) {
+      return MathUtils.incrementExponent(originalVal)
+    }
+
+    throw new Error('Cannot multiply this value by 10')
+  }
+
+  getInputValueDividedByTen(axisSetId: number, axisKey: AxisKey): string {
+    const originalVal = this.inputValues[axisSetId][axisKey]
+    const originalValFormat = this.getInputValueFormat(originalVal)
+
+    if (originalValFormat === 'decimal') {
+      return String(parseFloat(originalVal) / 10)
+    }
+
+    if (
+      originalValFormat === 'scientificNotation' &&
+      originalVal.startsWith('1e')
+    ) {
+      return MathUtils.decrementExponent(originalVal)
+    }
+
+    throw new Error('Cannot multiply this value by 10')
+  }
+
+  handleMultiplyAxisValue(axisSetId: number, axisKey: AxisKey): void {
+    const multipliedVal = this.getInputValueMultipliedByTen(axisSetId, axisKey)
+
+    this.setInputValue(axisSetId, axisKey, multipliedVal)
+    this.setConvertedAxisValToAxisSet(axisSetId, axisKey)
+  }
+
+  handleDivideAxisValue(axisSetId: number, axisKey: AxisKey): void {
+    const multipliedVal = this.getInputValueDividedByTen(axisSetId, axisKey)
+
+    this.setInputValue(axisSetId, axisKey, multipliedVal)
+    this.setConvertedAxisValToAxisSet(axisSetId, axisKey)
   }
 
   validateInputValues(axisSetId: number): void {
@@ -134,7 +198,6 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
           y1: false,
           y2: false,
         },
-        isInvalidInputValue: false,
         isXLogScaleAndSameValue: false,
         isXLogScaleAndZero: false,
         isYLogScaleAndSameValue: false,

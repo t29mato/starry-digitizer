@@ -3,7 +3,7 @@
     <div class="c__axis-set-settings__x">
       <p>X</p>
       <v-text-field
-        v-model="axisValuesDisplayed.x1"
+        :model-value="activeAxisInputValues.x1"
         id="x1-value"
         hide-details
         label="x1"
@@ -23,7 +23,7 @@
           <button
             v-if="canMultiplyAndDivideByTen('x1')"
             size="x-small"
-            @click="updateDisplayedValMultipliedByTen('x1')"
+            @click="onClickMultiplyByTen('x1')"
             id="multiply-by-ten-x1"
             icon
           >
@@ -33,7 +33,7 @@
             v-if="canMultiplyAndDivideByTen('x1')"
             id="divide-by-ten-x1"
             size="x-small"
-            @click="updateDisplayedValDividedByTen('x1')"
+            @click="onClickDivideByTen('x1')"
             icon
           >
             /10
@@ -41,7 +41,7 @@
         </div>
       </v-text-field>
       <v-text-field
-        v-model="axisValuesDisplayed.x2"
+        :model-value="activeAxisInputValues.x2"
         id="x2-value"
         hide-details
         label="x2"
@@ -62,7 +62,7 @@
             v-if="canMultiplyAndDivideByTen('x2')"
             id="multiply-by-ten-x2"
             size="x-small"
-            @click="updateDisplayedValMultipliedByTen('x2')"
+            @click="onClickMultiplyByTen('x2')"
             icon
           >
             x10
@@ -71,7 +71,7 @@
             v-if="canMultiplyAndDivideByTen('x2')"
             id="divide-by-ten-x2"
             size="x-small"
-            @click="updateDisplayedValDividedByTen('x2')"
+            @click="onClickDivideByTen('x2')"
             icon
           >
             /10
@@ -92,7 +92,7 @@
     <div class="c__axis-set-settings__y">
       <p>Y</p>
       <v-text-field
-        v-model="axisValuesDisplayed.y1"
+        :model-value="activeAxisInputValues.y1"
         id="y1-value"
         hide-details
         label="y1"
@@ -113,7 +113,7 @@
             v-if="canMultiplyAndDivideByTen('y1')"
             id="multiply-by-ten-y1"
             size="x-small"
-            @click="updateDisplayedValMultipliedByTen('y1')"
+            @click="onClickMultiplyByTen('y1')"
             icon
           >
             x10
@@ -122,7 +122,7 @@
             v-if="canMultiplyAndDivideByTen('y1')"
             id="divide-by-ten-y1"
             size="x-small"
-            @click="updateDisplayedValDividedByTen('y1')"
+            @click="onClickDivideByTen('y1')"
             icon
           >
             /10
@@ -130,7 +130,7 @@
         </div>
       </v-text-field>
       <v-text-field
-        v-model="axisValuesDisplayed.y2"
+        :model-value="activeAxisInputValues.y2"
         id="y2-value"
         hide-details
         label="y2"
@@ -151,7 +151,7 @@
             v-if="canMultiplyAndDivideByTen('y2')"
             id="multiply-by-ten-y2"
             size="x-small"
-            @click="updateDisplayedValMultipliedByTen('y2')"
+            @click="onClickMultiplyByTen('y2')"
             icon
           >
             x10
@@ -160,7 +160,7 @@
             v-if="canMultiplyAndDivideByTen('y2')"
             id="divide-by-ten-y2"
             size="x-small"
-            @click="updateDisplayedValDividedByTen('y2')"
+            @click="onClickDivideByTen('y2')"
             icon
           >
             /10
@@ -198,12 +198,12 @@
       >
         <v-radio
           label="2 Points"
-          :value="0"
+          value="0"
           :disabled="twoPointsRadioIsDisabled"
         ></v-radio>
         <v-radio
           label="4 Points"
-          :value="1"
+          value="1"
           :disabled="fourPointsRadioIsDisabled"
         ></v-radio>
       </v-radio-group>
@@ -234,11 +234,11 @@ import { AxisKey } from '@/@types/types'
 
 export default defineComponent({
   computed: {
-    axisValuesDisplayed() {
+    activeAxisInputValues() {
       return (
-        this.axisValInputHandler.inputValues.get(
-          this.axisSetRepository.activeAxisSetId,
-        ) || {
+        this.axisValInputHandler.inputValues[
+          this.axisSetRepository.activeAxisSetId
+        ] || {
           x1: '0',
           x2: '0',
           y1: '0',
@@ -292,6 +292,12 @@ export default defineComponent({
     onInputAxisVal(axisKey: AxisKey, val: string) {
       this.errorMessages = []
 
+      this.axisValInputHandler.setInputValue(
+        this.axisSetRepository.activeAxisSetId,
+        axisKey,
+        val,
+      )
+
       try {
         const activeAxisSetId = this.axisSetRepository.activeAxisSetId
         this.axisValInputHandler.setInputValue(activeAxisSetId, axisKey, val)
@@ -309,8 +315,8 @@ export default defineComponent({
     },
     onBlurInput(axisKey: AxisKey) {
       //NOTE: only if input value is '', convert it to '0' and will not show an error message
-      if (this.axisValuesDisplayed[axisKey] === '') {
-        this.axisValuesDisplayed[axisKey] = '0'
+      if (this.activeAxisInputValues[axisKey] === '') {
+        this.activeAxisInputValues[axisKey] = '0'
         return
       }
 
@@ -325,51 +331,21 @@ export default defineComponent({
         this.axisSetRepository.activeAxisSetId,
       )[axisKey]
 
-      const inputValFormat =
-        this.axisValInputHandler.getInputValueFormat(inputVal)
-
-      return (
-        inputValFormat === 'decimal' || inputValFormat === 'scientificNotation'
+      return this.axisValInputHandler.canInputValueMultipliedAndDividedByTen(
+        inputVal,
       )
     },
-    updateDisplayedValMultipliedByTen(axisKey: AxisKey): void {
-      //TODO Refactor
-      const activeAxisSetId = this.axisSetRepository.activeAxisSetId
-      const inputVal =
-        this.axisValInputHandler.getAxisSetInputValues(activeAxisSetId)[axisKey]
-
-      const inputValFormat =
-        this.axisValInputHandler.getInputValueFormat(inputVal)
-
-      if (inputValFormat === 'scientificNotation') {
-        return
-      }
-
-      if (inputValFormat === 'decimal') {
-        console.log('aaa')
-        const newVal = String(parseFloat(inputVal) * 10)
-        this.axisValuesDisplayed[axisKey] = newVal
-
-        this.axisValInputHandler.setInputValue(activeAxisSetId, axisKey, newVal)
-        this.axisValInputHandler.setConvertedAxisValToAxisSet(
-          activeAxisSetId,
-          axisKey,
-        )
-        return
-      }
-
-      throw new Error(
-        'input value must be decimal or schientificNotation to be multiplied by ten',
+    onClickMultiplyByTen(axisKey: AxisKey) {
+      this.axisValInputHandler.handleMultiplyAxisValue(
+        this.axisSetRepository.activeAxisSetId,
+        axisKey,
       )
-
-      // this.axisValInputHandler.activeAxisSetInputValues[axisName] = this.getDisplayedValMultipliedByTen(
-      //   parseFloat(this.axisValInputHandler.activeAxisSetInputValues[axisName]),
-      // )
     },
-    updateDisplayedValDividedByTen(axisKey: AxisKey): void {
-      // this.axisValInputHandler.activeAxisSetInputValues[axisName] = this.getDisplayedValDividedByTen(
-      //   parseFloat(this.axisValInputHandler.activeAxisSetInputValues[axisName]),
-      // )
+    onClickDivideByTen(axisKey: AxisKey) {
+      this.axisValInputHandler.handleDivideAxisValue(
+        this.axisSetRepository.activeAxisSetId,
+        axisKey,
+      )
     },
   },
   watch: {
@@ -378,10 +354,10 @@ export default defineComponent({
         this.axisSetRepository.activeAxisSetId,
       )
 
-      this.axisValuesDisplayed.x1 = x1
-      this.axisValuesDisplayed.x2 = x2
-      this.axisValuesDisplayed.y1 = y1
-      this.axisValuesDisplayed.y2 = y2
+      this.activeAxisInputValues.x1 = x1
+      this.activeAxisInputValues.x2 = x2
+      this.activeAxisInputValues.y1 = y1
+      this.activeAxisInputValues.y2 = y2
 
       // console.log(this.axisSetRepository.activeAxisSet)
     },

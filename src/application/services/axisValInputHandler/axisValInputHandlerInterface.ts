@@ -3,7 +3,7 @@ import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetReposit
 
 export interface AxisValInputHandlerInterface {
   axisSetRepository: AxisSetRepositoryInterface
-  inputValues: Map<number, AxisValuesInput>
+  inputValues: Record<number, AxisValuesInput>
 
   getAxisSetInputValues(axisSetId: number): AxisValuesInput
   getInputValueFormat(inputVal: string): AxisValFormat
@@ -25,4 +25,10 @@ export interface AxisValInputHandlerInterface {
     isYLogScaleAndSameValue: boolean
     isYLogScaleAndZero: boolean
   }
+
+  canInputValueMultipliedAndDividedByTen(inputVal: string): boolean
+  getInputValueMultipliedByTen(axisSetId: number, axisKey: AxisKey): string
+  getInputValueDividedByTen(axisSetId: number, axisKey: AxisKey): string
+  handleMultiplyAxisValue(axisSetId: number, axisKey: AxisKey): void
+  handleDivideAxisValue(axisSetId: number, axisKey: AxisKey): void
 }
