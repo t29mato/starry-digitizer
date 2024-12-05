@@ -3,7 +3,7 @@ import { ConfirmerManager } from '@/application/services/confirmer/manager/confi
 import { ExtractorManager } from '@/application/services/extractor/manager/extractorManager'
 import { InterpolatorManager } from '@/application/services/interpolator/manager/interpolatorManager'
 import { MagnifierManager } from '@/application/services/magnifier/manager/magnifierManager'
-import { AxisValInputHandlerManager } from '@/application/services/AxisValInputHandler/manager/axisValInputHandlerManager'
+import { AxisValInputHandlerManager } from '@/application/services/axisValInputHandler/manager/axisValInputHandlerManager'
 
 export const interpolator = new InterpolatorManager().getInstance()
 export const extractor = new ExtractorManager().getInstance()
