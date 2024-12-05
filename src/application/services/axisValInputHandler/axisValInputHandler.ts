@@ -155,21 +155,22 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
       y2: this.getInputValueFormat(y2) === 'invalidFormat',
     }
 
-    const isXLogScaleAndSameValue = axisSet.xIsLogScale && x1 === x2
+    const xValuesAreSame = x1 !== '0' && x2 !== '0' && x1 === x2
     const isXLogScaleAndZero = axisSet.xIsLogScale && (x1 === '0' || x2 === '0')
-    const isYLogScaleAndSameValue = axisSet.yIsLogScale && y1 === y2
+    const yValuesAreSame = y1 !== '0' && y2 !== '0' && y1 === y2
     const isYLogScaleAndZero = axisSet.yIsLogScale && (y1 === '0' || y2 === '0')
 
     this.validationStatus[axisSetId] = {
       isInvalidInputFormat,
-      isXLogScaleAndSameValue,
+      xValuesAreSame,
       isXLogScaleAndZero,
-      isYLogScaleAndSameValue,
+      yValuesAreSame,
       isYLogScaleAndZero,
     }
   }
 
   getValidationStatus(axisSetId: number): AxisValuesInputValidationStatus {
+    this.validateInputValues(axisSetId)
     return (
       this.validationStatus[axisSetId] || {
         isInvalidInputFormat: {
@@ -178,11 +179,41 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
           y1: false,
           y2: false,
         },
-        isXLogScaleAndSameValue: false,
+        xValuesAreSame: false,
         isXLogScaleAndZero: false,
-        isYLogScaleAndSameValue: false,
+        yValuesAreSame: false,
         isYLogScaleAndZero: false,
       }
     )
+  }
+
+  getValidationMessage(axisSetId: number): string {
+    let resultMessage: string = ''
+    const validationStatus = this.getValidationStatus(axisSetId)
+
+    for (const [axisKey, isInvalid] of Object.entries(
+      validationStatus.isInvalidInputFormat,
+    )) {
+      if (isInvalid) {
+        resultMessage += `${axisKey} value is invalid\n`
+      }
+    }
+
+    if (validationStatus.xValuesAreSame) {
+      resultMessage += 'X1 and X2 should not be the same value\n'
+    }
+
+    if (validationStatus.xValuesAreSame) {
+      resultMessage += 'Y1 and Y2 should not be the same value\n'
+    }
+
+    if (
+      validationStatus.isXLogScaleAndZero ||
+      validationStatus.isYLogScaleAndZero
+    ) {
+      resultMessage += 'In log scale, axis value should not be 0\n'
+    }
+
+    return resultMessage
   }
 }

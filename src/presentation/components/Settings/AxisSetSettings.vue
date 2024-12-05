@@ -13,7 +13,6 @@
             onInputAxisVal('x1', val)
           }
         "
-        @focus="onFocusInput"
         @blur="onBlurInput('x1')"
       >
         <div
@@ -51,7 +50,6 @@
             onInputAxisVal('x2', val)
           }
         "
-        @focus="onFocusInput"
         @blur="onBlurInput('x2')"
       >
         <div
@@ -102,7 +100,6 @@
             onInputAxisVal('y1', val)
           }
         "
-        @focus="onFocusInput"
         @blur="onBlurInput('y1')"
       >
         <div
@@ -140,7 +137,6 @@
             onInputAxisVal('y2', val)
           }
         "
-        @focus="onFocusInput"
         @blur="onBlurInput('y2')"
       >
         <div
@@ -179,10 +175,8 @@
       </td>
     </div>
 
-    <div v-if="shouldShowErrorMessage">
-      <p v-for="errMsg in errorMessages" :key="errMsg" class="text-red mb-5">
-        {{ errMsg }}
-      </p>
+    <div class="c__axis-set-settings__error-message mb-5">
+      {{ errorMessage }}
     </div>
 
     <div class="mb-5">
@@ -234,11 +228,12 @@ import { AxisKey } from '@/@types/types'
 
 export default defineComponent({
   computed: {
+    activeAxisSetId(): number {
+      return this.activeAxisSetId
+    },
     activeAxisInputValues() {
       return (
-        this.axisValInputHandler.inputValues[
-          this.axisSetRepository.activeAxisSetId
-        ] || {
+        this.axisValInputHandler.inputValues[this.activeAxisSetId] || {
           x1: '0',
           x2: '0',
           y1: '0',
@@ -271,35 +266,35 @@ export default defineComponent({
     return {
       axisSetRepository,
       axisValInputHandler,
-      errorMessages: [] as string[],
-      shouldShowErrorMessage: false,
+      errorMessage: '',
     }
   },
   created() {},
   methods: {
     onInputAxisVal(axisKey: AxisKey, val: string) {
-      this.errorMessages = []
-
-      this.axisValInputHandler.setInputValue(
-        this.axisSetRepository.activeAxisSetId,
-        axisKey,
-        val,
-      )
+      this.axisValInputHandler.setInputValue(this.activeAxisSetId, axisKey, val)
 
       try {
-        const activeAxisSetId = this.axisSetRepository.activeAxisSetId
-        this.axisValInputHandler.setInputValue(activeAxisSetId, axisKey, val)
+        this.axisValInputHandler.setInputValue(
+          this.activeAxisSetId,
+          axisKey,
+          val,
+        )
 
         this.axisValInputHandler.setConvertedAxisValToAxisSet(
-          activeAxisSetId,
+          this.activeAxisSetId,
           axisKey,
         )
+
+        //NOTE: update validation only when there are existing validation errors
+        if (this.errorMessage) {
+          this.errorMessage = this.axisValInputHandler.getValidationMessage(
+            this.activeAxisSetId,
+          )
+        }
       } catch (error: unknown) {
         console.error(error)
       }
-    },
-    onFocusInput() {
-      this.shouldShowErrorMessage = false
     },
     onBlurInput(axisKey: AxisKey) {
       //NOTE: only if input value is '', convert it to '0' and will not show an error message
@@ -308,15 +303,13 @@ export default defineComponent({
         return
       }
 
-      const activeAxisSetId = this.axisSetRepository.activeAxisSetId
-      this.axisValInputHandler.validateInputValues(activeAxisSetId)
-
-      //NOTE: To show error messages when a user blurred input tag for comfortability
-      this.shouldShowErrorMessage = true
+      this.errorMessage = this.axisValInputHandler.getValidationMessage(
+        this.activeAxisSetId,
+      )
     },
     canMultiplyAndDivideByTen(axisKey: AxisKey) {
       const inputVal = this.axisValInputHandler.getAxisSetInputValues(
-        this.axisSetRepository.activeAxisSetId,
+        this.activeAxisSetId,
       )[axisKey]
 
       return this.axisValInputHandler.canInputValueMultipliedAndDividedByTen(
@@ -325,21 +318,21 @@ export default defineComponent({
     },
     onClickMultiplyByTen(axisKey: AxisKey) {
       this.axisValInputHandler.handleMultiplyAxisValue(
-        this.axisSetRepository.activeAxisSetId,
+        this.activeAxisSetId,
         axisKey,
       )
     },
     onClickDivideByTen(axisKey: AxisKey) {
       this.axisValInputHandler.handleDivideAxisValue(
-        this.axisSetRepository.activeAxisSetId,
+        this.activeAxisSetId,
         axisKey,
       )
     },
   },
   watch: {
-    'axisSetRepository.activeAxisSetId'() {
+    activeAxisSetId() {
       const { x1, x2, y1, y2 } = this.axisValInputHandler.getAxisSetInputValues(
-        this.axisSetRepository.activeAxisSetId,
+        this.activeAxisSetId,
       )
 
       this.activeAxisInputValues.x1 = x1
@@ -392,6 +385,11 @@ export default defineComponent({
       &__label {
         font-size: 0.75rem;
       }
+    }
+
+    &__error-message {
+      font-size: 0.8rem;
+      color: red;
     }
   }
 }

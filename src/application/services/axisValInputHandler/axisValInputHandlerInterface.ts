@@ -25,4 +25,6 @@ export interface AxisValInputHandlerInterface {
   getInputValueDividedByTen(axisSetId: number, axisKey: AxisKey): string
   handleMultiplyAxisValue(axisSetId: number, axisKey: AxisKey): void
   handleDivideAxisValue(axisSetId: number, axisKey: AxisKey): void
+
+  getValidationMessage(axisSetId: number): string
 }

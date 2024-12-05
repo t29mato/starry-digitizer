@@ -54,8 +54,8 @@ type AxisValuesInputValidationStatus = {
     y1: boolean
     y2: boolean
   }
-  isXLogScaleAndSameValue: boolean
+  xValuesAreSame: boolean
   isXLogScaleAndZero: boolean
-  isYLogScaleAndSameValue: boolean
+  yValuesAreSame: boolean
   isYLogScaleAndZero: boolean
 }
