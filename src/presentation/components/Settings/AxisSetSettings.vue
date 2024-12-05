@@ -229,7 +229,7 @@ import { AxisKey } from '@/@types/types'
 export default defineComponent({
   computed: {
     activeAxisSetId(): number {
-      return this.activeAxisSetId
+      return this.axisSetRepository.activeAxisSetId
     },
     activeAxisInputValues() {
       return (
@@ -330,7 +330,7 @@ export default defineComponent({
     },
   },
   watch: {
-    activeAxisSetId() {
+    'axisSetRepository.activeAxisSetId'() {
       const { x1, x2, y1, y2 } = this.axisValInputHandler.getAxisSetInputValues(
         this.activeAxisSetId,
       )
