@@ -46,3 +46,16 @@ export type AxisValuesInput = {
   y1: string
   y2: string
 }
+
+type AxisValuesInputValidationStatus = {
+  isInvalidInputFormat: {
+    x1: boolean
+    x2: boolean
+    y1: boolean
+    y2: boolean
+  }
+  isXLogScaleAndSameValue: boolean
+  isXLogScaleAndZero: boolean
+  isYLogScaleAndSameValue: boolean
+  isYLogScaleAndZero: boolean
+}

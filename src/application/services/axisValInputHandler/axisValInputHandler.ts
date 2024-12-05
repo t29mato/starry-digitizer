@@ -1,4 +1,9 @@
-import { AxisKey, AxisValFormat, AxisValuesInput } from '@/@types/types'
+import {
+  AxisKey,
+  AxisValFormat,
+  AxisValuesInput,
+  AxisValuesInputValidationStatus,
+} from '@/@types/types'
 import { AxisValInputHandlerInterface } from './axisValInputHandlerInterface'
 import { MathUtils } from '@/application/utils/MathUtils'
 import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
@@ -6,21 +11,7 @@ import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetReposit
 export class AxisValInputHandler implements AxisValInputHandlerInterface {
   axisSetRepository: AxisSetRepositoryInterface
   inputValues: Record<number, AxisValuesInput> = {}
-  validationStatus: Record<
-    number,
-    {
-      isInvalidInputFormat: {
-        x1: boolean
-        x2: boolean
-        y1: boolean
-        y2: boolean
-      }
-      isXLogScaleAndSameValue: boolean
-      isXLogScaleAndZero: boolean
-      isYLogScaleAndSameValue: boolean
-      isYLogScaleAndZero: boolean
-    }
-  > = {}
+  validationStatus: Record<number, AxisValuesInputValidationStatus> = {}
 
   constructor(axisSetRepository: AxisSetRepositoryInterface) {
     this.axisSetRepository = axisSetRepository
@@ -178,18 +169,7 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
     }
   }
 
-  getValidationStatus(axisSetId: number): {
-    isInvalidInputFormat: {
-      x1: boolean
-      x2: boolean
-      y1: boolean
-      y2: boolean
-    }
-    isXLogScaleAndSameValue: boolean
-    isXLogScaleAndZero: boolean
-    isYLogScaleAndSameValue: boolean
-    isYLogScaleAndZero: boolean
-  } {
+  getValidationStatus(axisSetId: number): AxisValuesInputValidationStatus {
     return (
       this.validationStatus[axisSetId] || {
         isInvalidInputFormat: {

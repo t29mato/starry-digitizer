@@ -1,4 +1,9 @@
-import { AxisKey, AxisValFormat, AxisValuesInput } from '@/@types/types'
+import {
+  AxisKey,
+  AxisValFormat,
+  AxisValuesInput,
+  AxisValuesInputValidationStatus,
+} from '@/@types/types'
 import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
 
 export interface AxisValInputHandlerInterface {
@@ -13,18 +18,7 @@ export interface AxisValInputHandlerInterface {
   setConvertedAxisValToAxisSet(axisSetId: number, axisKey: AxisKey): void
 
   validateInputValues(axisSetId: number): void
-  getValidationStatus(axisSetId: number): {
-    isInvalidInputFormat: {
-      x1: boolean
-      x2: boolean
-      y1: boolean
-      y2: boolean
-    }
-    isXLogScaleAndSameValue: boolean
-    isXLogScaleAndZero: boolean
-    isYLogScaleAndSameValue: boolean
-    isYLogScaleAndZero: boolean
-  }
+  getValidationStatus(axisSetId: number): AxisValuesInputValidationStatus
 
   canInputValueMultipliedAndDividedByTen(inputVal: string): boolean
   getInputValueMultipliedByTen(axisSetId: number, axisKey: AxisKey): string

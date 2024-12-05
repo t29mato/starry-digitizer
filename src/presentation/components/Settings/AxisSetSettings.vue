@@ -246,18 +246,6 @@ export default defineComponent({
         }
       )
     },
-    x1Axis() {
-      return this.axisSetRepository.activeAxisSet.x1
-    },
-    x2Axis() {
-      return this.axisSetRepository.activeAxisSet.x2
-    },
-    y1Axis() {
-      return this.axisSetRepository.activeAxisSet.y1
-    },
-    y2Axis() {
-      return this.axisSetRepository.activeAxisSet.y2
-    },
     twoPointsRadioIsDisabled() {
       const activeAxisSet = this.axisSetRepository.activeAxisSet
       return (
@@ -358,8 +346,6 @@ export default defineComponent({
       this.activeAxisInputValues.x2 = x2
       this.activeAxisInputValues.y1 = y1
       this.activeAxisInputValues.y2 = y2
-
-      // console.log(this.axisSetRepository.activeAxisSet)
     },
     'axisSetRepository.activeAxisSet.pointMode'(newPointMode: number) {
       if (newPointMode === POINT_MODE.TWO_POINTS) {
