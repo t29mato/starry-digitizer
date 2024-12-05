@@ -1,5 +1,5 @@
-import { AxisValInputHandlerInterface } from '../AxisValInputHandlerInterface'
-import { AxisValInputHandlerManager } from './AxisValInputHandlerManager'
+import { AxisValInputHandlerInterface } from '../axisValInputHandlerInterface'
+import { AxisValInputHandlerManager } from './axisValInputHandlerManager'
 
 const manager = new AxisValInputHandlerManager()
 let firstInstance: AxisValInputHandlerInterface

@@ -1,4 +1,4 @@
-import { AxisValInputHandler } from './AxisValInputHandler'
+import { AxisValInputHandler } from './axisValInputHandler'
 import { AxisSetRepositoryInterface } from '../../../domain/repositories/axisSetRepository/axisSetRepositoryInterface'
 import { MathUtils } from '../../../application/utils/MathUtils'
 import { AxisSetRepositoryManager } from "../../../domain/repositories/axisSetRepository/manager/axisSetRepositoryManager"
