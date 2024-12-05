@@ -14,3 +14,48 @@ export type Point = {
   xPx: number
   yPx: number
 }
+
+export type AxisKey = 'x1' | 'x2' | 'y1' | 'y2'
+
+export type AxisValFormat =
+  | 'scientificNotation'
+  | 'powerNotation'
+  | 'decimal'
+  | 'invalidFormat'
+
+export type AxisValFormatState = {
+  axisSetId: number
+  displayedFormat: {
+    x1: AxisValFormat
+    x2: AxisValFormat
+    y1: AxisValFormat
+    y2: AxisValFormat
+  }
+}
+
+export type AxisValues = {
+  x1: number
+  x2: number
+  y1: number
+  y2: number
+}
+
+export type AxisValuesInput = {
+  x1: string
+  x2: string
+  y1: string
+  y2: string
+}
+
+type AxisValuesInputValidationStatus = {
+  isInvalidInputFormat: {
+    x1: boolean
+    x2: boolean
+    y1: boolean
+    y2: boolean
+  }
+  xValuesAreSame: boolean
+  isXLogScaleAndZero: boolean
+  yValuesAreSame: boolean
+  isYLogScaleAndZero: boolean
+}
