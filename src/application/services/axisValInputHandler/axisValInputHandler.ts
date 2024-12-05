@@ -94,7 +94,10 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
     return false
   }
 
-  getInputValueMultipliedByTen(axisSetId: number, axisKey: AxisKey): string {
+  private getInputValueMultipliedByTen(
+    axisSetId: number,
+    axisKey: AxisKey,
+  ): string {
     const originalVal = this.inputValues[axisSetId][axisKey]
     const originalValFormat = this.getInputValueFormat(originalVal)
 
@@ -112,7 +115,10 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
     throw new Error('Cannot multiply this value by 10')
   }
 
-  getInputValueDividedByTen(axisSetId: number, axisKey: AxisKey): string {
+  private getInputValueDividedByTen(
+    axisSetId: number,
+    axisKey: AxisKey,
+  ): string {
     const originalVal = this.inputValues[axisSetId][axisKey]
     const originalValFormat = this.getInputValueFormat(originalVal)
 
@@ -144,7 +150,7 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
     this.setConvertedAxisValToAxisSet(axisSetId, axisKey)
   }
 
-  validateInputValues(axisSetId: number): void {
+  private validateInputValues(axisSetId: number): void {
     const axisSet = this.axisSetRepository.activeAxisSet
     const { x1, x2, y1, y2 } = this.getAxisSetInputValues(axisSetId)
 
@@ -169,7 +175,9 @@ export class AxisValInputHandler implements AxisValInputHandlerInterface {
     }
   }
 
-  getValidationStatus(axisSetId: number): AxisValuesInputValidationStatus {
+  private getValidationStatus(
+    axisSetId: number,
+  ): AxisValuesInputValidationStatus {
     this.validateInputValues(axisSetId)
     return (
       this.validationStatus[axisSetId] || {
