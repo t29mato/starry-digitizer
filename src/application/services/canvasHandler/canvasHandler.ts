@@ -1,12 +1,10 @@
 //TODO: Separate into multiple apps based on feature (so far, multiple features related to canvas are gethered at this class but it is not ideal)
-import ColorThief from 'colorthief'
 import { CanvasHandlerInterface } from './canvasHandlerInterface'
+import { extractColorSwatches } from '@/application/utils/colorPaletteUtils'
 
 import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
 import { MANUAL_MODE, MASK_MODE } from '@/constants'
 import { Coord, ManualMode, MaskMode } from '@/@types/types'
-const colorThief = new ColorThief()
-
 export class CanvasHandler implements CanvasHandlerInterface {
   isDrawnMask = false
   imageElement: HTMLImageElement
@@ -239,15 +237,18 @@ export class CanvasHandler implements CanvasHandlerInterface {
     if (!this.imageElement) {
       throw new Error('imageElement is undefined.')
     }
-    return colorThief.getPalette(this.imageElement).map((color) => {
-      // INFO: rgbからhexへの切り替え
-      return color.reduce((prev, cur) => {
-        // INFO: HEXは各色16進数2桁なので
-        if (cur.toString(16).length === 1) {
-          return prev + '0' + cur.toString(16)
-        }
-        return prev + cur.toString(16)
-      }, '#')
+    // 画像全体のピクセルデータを取得
+    const canvas = document.createElement('canvas')
+    canvas.width = this.imageElement.width
+    canvas.height = this.imageElement.height
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    ctx.drawImage(this.imageElement, 0, 0)
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+    // ユーティリティ関数で代表色抽出
+    return extractColorSwatches({
+      imageData: data,
+      maxSwatches: 10,
+      colorDiffThreshold: 90,
     })
   }
 

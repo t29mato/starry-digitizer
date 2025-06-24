@@ -9,7 +9,7 @@ export class Extractor implements ExtractorInterface {
   strategies: string[] = ['Symbol Extract', 'Line Extract']
   colorPicker = '#000000ff'
   colors = [] as { R: number; G: number; B: number }[][]
-  colorDistancePct = 5
+  colorDistancePct = 1
   swatches = [...Array(5)].map(() => []) as string[][]
 
   constructor(strategy: ExtractStrategyInterface) {

@@ -34,7 +34,6 @@
     "@handsontable/vue3": "^13.1.0",
     "@mdi/font": "^7.2.96",
     "browser-sync": "^3.0.2",
-    "colorthief": "^2.4.0",
     "curve-interpolator": "^3.3.0",
     "handsontable": "^13.1.0",
     "vue": "^3.3.4",
