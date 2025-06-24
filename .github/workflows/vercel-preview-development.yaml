@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 22
           cache: 'yarn'
       - name: Install npm packages
         run: yarn
@@ -38,7 +38,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 22
           cache: 'yarn'
       - name: install npm packages
         run: yarn install
@@ -62,7 +62,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 22
           cache: 'yarn'
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
