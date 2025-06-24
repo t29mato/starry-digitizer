@@ -332,7 +332,7 @@ export default defineComponent({
     -webkit-user-drag: none;
     outline: solid 1px gray;
     overflow: auto;
-    max-height: 80vh;
+    height: 80vh;
   }
 }
 </style>

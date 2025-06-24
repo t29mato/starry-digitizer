@@ -312,9 +312,13 @@ export class CanvasHandler implements CanvasHandlerInterface {
 
   drawFitSizeImage() {
     const wrapperWidthPx = this.canvasWrapper.offsetWidth
-    const scale = wrapperWidthPx / this.originalWidth
-    const wrapperHeightPx = this.originalHeight * scale
-    this.resize(wrapperWidthPx, wrapperHeightPx)
+    const wrapperHeightPx = this.canvasWrapper.offsetHeight
+    const widthScale = wrapperWidthPx / this.originalWidth
+    const heightScale = wrapperHeightPx / this.originalHeight
+    const scale = Math.min(widthScale, heightScale) - 0.01 // INFO: 0.01を引くことで、画像がはみ出さないようにする
+    const fitWidth = this.originalWidth * scale
+    const fitHeight = this.originalHeight * scale
+    this.resize(fitWidth, fitHeight)
     this.scale = scale
   }
 
