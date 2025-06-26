@@ -4,7 +4,7 @@
     <v-btn-toggle
       :model-value="canvasHandler.maskMode"
       @update:model-value="change"
-      density
+      density="compact"
       class="mb-2"
       divided
       :border="true"
@@ -28,7 +28,7 @@
       type="number"
       hide-details
       label="Pen Size"
-      density
+      density="compact"
     ></v-text-field>
     <v-text-field
       v-if="maskModeIsEraser"
@@ -37,7 +37,7 @@
       type="number"
       hide-details
       label="Eraser Size (px)"
-      density
+      density="compact"
     ></v-text-field>
   </div>
 </template>

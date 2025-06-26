@@ -49,7 +49,7 @@
                 v-model="dataset.name"
                 :placeholder="'dataset ' + dataset.id"
                 hide-details
-                density
+                density="compact"
                 type="text"
                 class="mt-0 pt-0 pl-2"
                 variant="underlined"
@@ -224,7 +224,7 @@ export default defineComponent({
       sortOrders: ['ascending', 'descending'],
       axisSetRepository,
       showImportDialog: false,
-      csvFile: null,
+      csvFile: undefined as File[] | undefined,
       csvContent: '',
       importPreview: [] as string[][],
       importError: '',
@@ -471,7 +471,7 @@ export default defineComponent({
         }
 
         this.showImportDialog = false
-        this.csvFile = null
+        this.csvFile = undefined
         this.csvContent = ''
         this.importPreview = []
 

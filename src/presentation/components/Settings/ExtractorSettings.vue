@@ -4,7 +4,7 @@
     <v-btn-toggle
       :model-value="canvasHandler.manualMode"
       @update:model-value="changeManualMode"
-      density
+      density="compact"
       class="mb-2"
       divided
       :border="true"
@@ -22,7 +22,7 @@
         :model-value="interpolator.isActive"
         @update:model-value="handleOnClickInterpolatiorSwitch"
         hide-details
-        density
+        density="compact"
       ></v-switch>
     </div>
 
@@ -38,7 +38,7 @@
         min="2"
         step="1"
         max="30"
-        density
+        density="compact"
         hide-details
         :disabled="!interpolator.isActive"
       ></v-text-field>
@@ -68,7 +68,7 @@
       @update:model-value="setExtractStrategy"
       :model-value="extractor.strategy.name"
       :items="extractor.strategies"
-      density
+      density="compact"
       hide-details
       prefix="Algorithm: "
     ></v-select>

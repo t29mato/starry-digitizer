@@ -10,7 +10,7 @@
               type="text"
               prefix="x1: "
               hide-details
-              density
+              density="compact"
               width="300"
             >
             </v-text-field>
@@ -22,7 +22,7 @@
               type="text"
               prefix="x2: "
               hide-details
-              density
+              density="compact"
               width="200"
             >
             </v-text-field>
@@ -33,7 +33,7 @@
               v-model="axisSetRepository.activeAxisSet.xIsLogScale"
               id="x-is-log"
               hide-details
-              density
+              density="compact"
             ></v-checkbox>
             <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
@@ -46,7 +46,7 @@
               prefix="y1: "
               type="text"
               hide-details
-              density
+              density="compact"
             >
             </v-text-field>
           </td>
@@ -57,7 +57,7 @@
               prefix="y2: "
               type="text"
               hide-details
-              density
+              density="compact"
             >
             </v-text-field>
           </td>
@@ -66,7 +66,7 @@
               color="primary"
               v-model="axisSetRepository.activeAxisSet.yIsLogScale"
               id="y-is-log"
-              density
+              density="compact"
               hide-details
             ></v-checkbox>
             <span class="c__AxisSetRepository-settings__hint">Log</span>
@@ -101,13 +101,13 @@
         v-if="pointModeIsFourPoints"
         v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
         label="Consider graph tilt"
-        density
+        density="compact"
         hide-details
         color="primary"
       ></v-checkbox>
       <v-checkbox
         label="Show axes marker"
-        density
+        density="compact"
         hide-details
         color="primary"
         v-model="axisSetRepository.activeAxisSet.isVisible"
