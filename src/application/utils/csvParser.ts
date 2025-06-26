@@ -38,11 +38,11 @@ export class CsvParser {
     if (xMatch && yMatch) {
       const xDataset = xMatch[1].toLowerCase()
       const yDataset = yMatch[1].toLowerCase()
-      
+
       // Check if both contain similar patterns (e.g., x=value)
       const xPattern = xDataset.match(/x\s*=\s*([0-9.]+)/)
       const yPattern = yDataset.match(/x\s*=\s*([0-9.]+)/)
-      
+
       if (xPattern && yPattern && xPattern[1] === yPattern[1]) {
         return xMatch[1] // Return original case
       }
