@@ -3,7 +3,7 @@
     <table>
       <tbody>
         <tr>
-          <td class="pl-0 pr-1 w-50">
+          <td class="pl-0 pr-1" style="width: 42%">
             <v-text-field
               v-model="displayVal.x1"
               id="x1-value"
@@ -11,11 +11,10 @@
               prefix="x1: "
               hide-details
               density="compact"
-              width="300"
             >
             </v-text-field>
           </td>
-          <td class="pl-0 pr-1 w-50">
+          <td class="pl-0 pr-1" style="width: 42%">
             <v-text-field
               v-model="displayVal.x2"
               id="x2-value"
@@ -23,9 +22,11 @@
               prefix="x2: "
               hide-details
               density="compact"
-              width="200"
             >
             </v-text-field>
+          </td>
+          <td>
+            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
           <td>
             <v-checkbox
@@ -35,7 +36,6 @@
               hide-details
               density="compact"
             ></v-checkbox>
-            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
         </tr>
         <tr>
@@ -61,6 +61,7 @@
             >
             </v-text-field>
           </td>
+          <td><span class="c__AxisSetRepository-settings__hint">Log</span></td>
           <td>
             <v-checkbox
               color="primary"
@@ -69,7 +70,6 @@
               density="compact"
               hide-details
             ></v-checkbox>
-            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
         </tr>
       </tbody>
@@ -302,6 +302,8 @@ export default defineComponent({
       display: block;
       font-size: 0.75rem;
       transform: translateY(-8px);
+      padding-top: 13px;
+      vertical-align: middle;
     }
 
     &__point-mode {

@@ -5,6 +5,7 @@
       accept="image/*"
       @change="onImageUploaded"
       label="Choose an image"
+      :single-line="true"
       :clearable="false"
       hide-details
       density="compact"
