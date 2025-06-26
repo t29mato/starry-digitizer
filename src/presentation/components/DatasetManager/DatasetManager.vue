@@ -7,10 +7,11 @@
       >
       <v-btn
         size="x-small"
-        @click="handleOnClickRemoveDatasetButton"
-        :disabled="datasetRepository.datasets.length === 1"
+        @click="handleOnClickRemoveAllDatasetsButton"
+        :disabled="datasetRepository.datasets.length === 0"
         class="ml-2"
-        ><v-icon>mdi-minus</v-icon></v-btn
+        title="Remove all datasets"
+        ><v-icon>mdi-delete-sweep</v-icon></v-btn
       >
       <v-btn
         size="x-small"
@@ -35,7 +36,7 @@
         class="c__dataset-row"
       >
         <v-row class="ma-0">
-          <v-col cols="10" class="pa-0">
+          <v-col cols="9" class="pa-0">
             <v-list-item
               class="pl-2 c__dataset-item"
               link
@@ -72,6 +73,17 @@
               @click="copyDatasetToClipboard(dataset.id)"
               :disabled="dataset.points.length === 0"
               variant="text"
+              class="mr-1"
+            ></v-btn>
+          </v-col>
+          <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
+            <v-btn
+              size="x-small"
+              icon="mdi-delete"
+              @click="handleOnClickRemoveDatasetButton(dataset.id)"
+              :disabled="datasetRepository.datasets.length === 1"
+              variant="text"
+              title="Delete dataset"
             ></v-btn>
           </v-col>
         </v-row>
@@ -283,22 +295,45 @@ export default defineComponent({
 
       this.activateDataset(this.datasetRepository.lastDatasetId)
     },
-    removeActiveDataset() {
-      this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.removeDataset(
-        this.datasetRepository.activeDatasetId,
-      )
-    },
-    handleOnClickRemoveDatasetButton() {
-      //NOTE: remove active dataset without confirmation if the active dataset doesn't have data points
-      if (this.datasetRepository.activeDataset.points.length === 0) {
-        this.removeActiveDataset()
+    handleOnClickRemoveDatasetButton(datasetId?: number) {
+      const targetDataset = datasetId 
+        ? this.datasetRepository.datasets.find(d => d.id === datasetId)
+        : this.datasetRepository.activeDataset
+      
+      if (!targetDataset) return
+      
+      //NOTE: remove dataset without confirmation if the dataset doesn't have data points
+      if (targetDataset.points.length === 0) {
+        this.removeDataset(targetDataset.id)
         return
       }
 
       window.confirm(
-        `Are you sure to delete '${this.datasetRepository.activeDataset.name}'? This operation is irreversible.`,
-      ) && this.removeActiveDataset()
+        `Are you sure to delete '${targetDataset.name}'? This operation is irreversible.`,
+      ) && this.removeDataset(targetDataset.id)
+    },
+    removeDataset(datasetId: number) {
+      this.interpolator.isActive && this.interpolator.clearPreview()
+      this.datasetRepository.removeDataset(datasetId)
+    },
+    handleOnClickRemoveAllDatasetsButton() {
+      const totalPoints = this.datasetRepository.datasets.reduce(
+        (sum, dataset) => sum + dataset.points.length,
+        0,
+      )
+      
+      if (totalPoints === 0) {
+        this.removeAllDatasets()
+        return
+      }
+
+      window.confirm(
+        `Are you sure to delete all ${this.datasetRepository.datasets.length} datasets? This will remove ${totalPoints} data points. This operation is irreversible.`,
+      ) && this.removeAllDatasets()
+    },
+    removeAllDatasets() {
+      this.interpolator.isActive && this.interpolator.clearPreview()
+      this.datasetRepository.removeAllDatasets()
     },
     calculateXY(x: number, y: number): { xV: string; yV: string } {
       const calculator = new AxisSetCalculator(
