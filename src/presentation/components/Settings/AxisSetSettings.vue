@@ -11,6 +11,7 @@
               prefix="x1: "
               hide-details
               density="compact"
+              @click="$event.target.select()"
             >
             </v-text-field>
           </td>
@@ -22,6 +23,7 @@
               prefix="x2: "
               hide-details
               density="compact"
+              @click="$event.target.select()"
             >
             </v-text-field>
           </td>
@@ -47,6 +49,7 @@
               type="text"
               hide-details
               density="compact"
+              @click="$event.target.select()"
             >
             </v-text-field>
           </td>
@@ -58,6 +61,7 @@
               type="text"
               hide-details
               density="compact"
+              @click="$event.target.select()"
             >
             </v-text-field>
           </td>
