@@ -1,17 +1,17 @@
 <template>
-  <div class="mt-3 mb-5">
-    <h5 class="mb-2">Selection Area</h5>
+  <div class="mt-0 mb-0">
+    <h5 class="mb-0">Selection Area</h5>
     <v-btn-toggle
       :model-value="canvasHandler.maskMode"
       @update:model-value="change"
-      density="compact"
+      density
       class="mb-2"
       divided
       :border="true"
     >
-      <v-btn size="small" color="primary"> Pen </v-btn>
-      <v-btn size="small" color="primary"> Box </v-btn>
-      <v-btn size="small" color="primary"> Eraser </v-btn>
+      <v-btn size="small" class="pa-1" color="primary"> Pen </v-btn>
+      <v-btn size="small" class="pa-1" color="primary"> Box </v-btn>
+      <v-btn size="small" class="pa-1" color="primary"> Eraser </v-btn>
     </v-btn-toggle>
     <v-btn
       size="small"
@@ -28,7 +28,7 @@
       type="number"
       hide-details
       label="Pen Size"
-      density="compact"
+      density
     ></v-text-field>
     <v-text-field
       v-if="maskModeIsEraser"
@@ -37,7 +37,7 @@
       type="number"
       hide-details
       label="Eraser Size (px)"
-      density="compact"
+      density
     ></v-text-field>
   </div>
 </template>

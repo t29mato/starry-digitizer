@@ -5,7 +5,7 @@
       :settings="hotTableSettings"
       :key="key"
       ref="tableRef"
-      height="35vh"
+      height="30vh"
       class="overflow-y-auto"
     ></hot-table>
     <v-btn class="mt-1" @click="copyData" size="small">Copy to Clipboard</v-btn>

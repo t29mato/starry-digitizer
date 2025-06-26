@@ -14,9 +14,9 @@
       >
     </h4>
     <v-list
-      density="compact"
-      class="mb-5 mt-1 pa-0"
-      style="min-height: 154px; outline: solid 1px gray"
+      density
+      class="mb-2 mt-1 pa-0"
+      style="min-height: 8vh; outline: solid 1px gray; max-height: 20vh"
     >
       <v-list-item
         v-for="axisSet in axisSetRepository.axisSets"
@@ -35,7 +35,7 @@
               v-model="axisSet.name"
               :placeholder="'axisSet ' + axisSet.id"
               hide-details
-              density="compact"
+              density
               class="mt-0 pt-0 pl-2"
               variant="underlined"
             ></v-text-field>

@@ -3,26 +3,27 @@
     <table>
       <tbody>
         <tr>
-          <td class="pl-0 pr-1">X</td>
-          <td class="pl-0 pr-1">
+          <td class="pl-0 pr-1 w-50">
             <v-text-field
               v-model="displayVal.x1"
               id="x1-value"
               type="text"
+              prefix="x1: "
               hide-details
-              label="x1"
-              density="compact"
+              density
+              width="300"
             >
             </v-text-field>
           </td>
-          <td class="pl-0 pr-1">
+          <td class="pl-0 pr-1 w-50">
             <v-text-field
               v-model="displayVal.x2"
               id="x2-value"
               type="text"
+              prefix="x2: "
               hide-details
-              label="x2"
-              density="compact"
+              density
+              width="200"
             >
             </v-text-field>
           </td>
@@ -32,21 +33,20 @@
               v-model="axisSetRepository.activeAxisSet.xIsLogScale"
               id="x-is-log"
               hide-details
-              density="compact"
+              density
             ></v-checkbox>
             <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
         </tr>
         <tr>
-          <td class="pl-0 pr-1">Y</td>
           <td class="pl-0 pr-1">
             <v-text-field
               v-model="displayVal.y1"
               id="y1-value"
+              prefix="y1: "
               type="text"
               hide-details
-              label="y1"
-              density="compact"
+              density
             >
             </v-text-field>
           </td>
@@ -54,10 +54,10 @@
             <v-text-field
               v-model="displayVal.y2"
               id="y2-value"
+              prefix="y2: "
               type="text"
               hide-details
-              label="y2"
-              density="compact"
+              density
             >
             </v-text-field>
           </td>
@@ -66,7 +66,7 @@
               color="primary"
               v-model="axisSetRepository.activeAxisSet.yIsLogScale"
               id="y-is-log"
-              density="compact"
+              density
               hide-details
             ></v-checkbox>
             <span class="c__AxisSetRepository-settings__hint">Log</span>
@@ -74,8 +74,8 @@
         </tr>
       </tbody>
     </table>
-    <p class="text-red mb-5">{{ errorMessage }}</p>
-    <div class="mb-5">
+    <p class="text-red mb-2">{{ errorMessage }}</p>
+    <div class="mb-2">
       <h5 class="c__AxisSetRepository-settings__point-mode__label">
         Define the axes by the coordinates of:
       </h5>
@@ -101,12 +101,14 @@
         v-if="pointModeIsFourPoints"
         v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
         label="Consider graph tilt"
-        density="compact"
+        density
+        hide-details
         color="primary"
       ></v-checkbox>
       <v-checkbox
         label="Show axes marker"
-        density="compact"
+        density
+        hide-details
         color="primary"
         v-model="axisSetRepository.activeAxisSet.isVisible"
       ></v-checkbox>
@@ -215,7 +217,10 @@ export default defineComponent({
       return value
     },
     isExponentialFormat(value: string): boolean {
-      return (value.includes('e+') || value.includes('^')) && typeof parseFloat(this.parseExponentialValue(value)) === 'number'
+      return (
+        (value.includes('e+') || value.includes('^')) &&
+        typeof parseFloat(this.parseExponentialValue(value)) === 'number'
+      )
     },
     updateAxesToDisplayValAsExponential(
       axisName: 'x1' | 'x2' | 'y1' | 'y2',
@@ -256,19 +261,27 @@ export default defineComponent({
   watch: {
     'displayVal.x1'(value: string) {
       this.updateAxesToDisplayValAsExponential('x1', value)
-      this.axisSetRepository.activeAxisSet.setX1Value(parseFloat(this.parseExponentialValue(value)))
+      this.axisSetRepository.activeAxisSet.setX1Value(
+        parseFloat(this.parseExponentialValue(value)),
+      )
     },
     'displayVal.x2'(value: string) {
       this.updateAxesToDisplayValAsExponential('x2', value)
-      this.axisSetRepository.activeAxisSet.setX2Value(parseFloat(this.parseExponentialValue(value)))
+      this.axisSetRepository.activeAxisSet.setX2Value(
+        parseFloat(this.parseExponentialValue(value)),
+      )
     },
     'displayVal.y1'(value: string) {
       this.updateAxesToDisplayValAsExponential('y1', value)
-      this.axisSetRepository.activeAxisSet.setY1Value(parseFloat(this.parseExponentialValue(value)))
+      this.axisSetRepository.activeAxisSet.setY1Value(
+        parseFloat(this.parseExponentialValue(value)),
+      )
     },
     'displayVal.y2'(value: string) {
       this.updateAxesToDisplayValAsExponential('y2', value)
-      this.axisSetRepository.activeAxisSet.setY2Value(parseFloat(this.parseExponentialValue(value)))
+      this.axisSetRepository.activeAxisSet.setY2Value(
+        parseFloat(this.parseExponentialValue(value)),
+      )
     },
     'axisSetRepository.activeAxisSet'(axisSet: AxisSetInterface) {
       this.setAxisSetValuesToDisplayValues(axisSet)
