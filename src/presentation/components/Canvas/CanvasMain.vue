@@ -242,6 +242,7 @@ export default defineComponent({
         'ArrowLeft',
         'Backspace',
         'Delete',
+        'Escape',
         'a',
         'e',
         'd',
@@ -252,7 +253,17 @@ export default defineComponent({
       }
       e.preventDefault()
       switch (key) {
+        case 'Escape':
+          // Escape key to deselect all points
+          this.datasetRepository.activeDataset.inactivatePoints()
+          return
         case 'a':
+          // Cmd+A (Mac) or Ctrl+A (Windows) to select all points
+          if (e.metaKey || e.ctrlKey) {
+            this.datasetRepository.activeDataset.activateAllPoints()
+            return
+          }
+          // Regular 'a' key to set ADD mode
           this.canvasHandler.setManualMode(0)
           return
         case 'e':
