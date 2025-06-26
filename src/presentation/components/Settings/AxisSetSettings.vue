@@ -8,7 +8,7 @@
             <v-text-field
               v-model="displayVal.x1"
               id="x1-value"
-              type="number"
+              type="text"
               hide-details
               label="x1"
               density="compact"
@@ -40,7 +40,7 @@
             <v-text-field
               v-model="displayVal.x2"
               id="x2-value"
-              type="number"
+              type="text"
               hide-details
               label="x2"
               density="compact"
@@ -85,7 +85,7 @@
             <v-text-field
               v-model="displayVal.y1"
               id="y1-value"
-              type="number"
+              type="text"
               hide-details
               label="y1"
               density="compact"
@@ -117,7 +117,7 @@
             <v-text-field
               v-model="displayVal.y2"
               id="y2-value"
-              type="number"
+              type="text"
               hide-details
               label="y2"
               density="compact"
@@ -306,8 +306,22 @@ export default defineComponent({
       }
       return (value * 0.1).toPrecision(1)
     },
+    parseExponentialValue(value: string): string {
+      // Handle '^' notation as actual exponentiation (e.g., 2^3 = 8)
+      if (value.includes('^')) {
+        const parts = value.split('^')
+        if (parts.length === 2) {
+          const base = parseFloat(parts[0])
+          const exponent = parseFloat(parts[1])
+          if (!isNaN(base) && !isNaN(exponent)) {
+            return String(Math.pow(base, exponent))
+          }
+        }
+      }
+      return value
+    },
     isExponentialFormat(value: string): boolean {
-      return value.includes('e+') && typeof parseFloat(value) === 'number'
+      return (value.includes('e+') || value.includes('^')) && typeof parseFloat(this.parseExponentialValue(value)) === 'number'
     },
     updateAxesToDisplayValAsExponential(
       axisName: 'x1' | 'x2' | 'y1' | 'y2',
@@ -348,19 +362,19 @@ export default defineComponent({
   watch: {
     'displayVal.x1'(value: string) {
       this.updateAxesToDisplayValAsExponential('x1', value)
-      this.axisSetRepository.activeAxisSet.setX1Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setX1Value(parseFloat(this.parseExponentialValue(value)))
     },
     'displayVal.x2'(value: string) {
       this.updateAxesToDisplayValAsExponential('x2', value)
-      this.axisSetRepository.activeAxisSet.setX2Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setX2Value(parseFloat(this.parseExponentialValue(value)))
     },
     'displayVal.y1'(value: string) {
       this.updateAxesToDisplayValAsExponential('y1', value)
-      this.axisSetRepository.activeAxisSet.setY1Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setY1Value(parseFloat(this.parseExponentialValue(value)))
     },
     'displayVal.y2'(value: string) {
       this.updateAxesToDisplayValAsExponential('y2', value)
-      this.axisSetRepository.activeAxisSet.setY2Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setY2Value(parseFloat(this.parseExponentialValue(value)))
     },
     'axisSetRepository.activeAxisSet'(axisSet: AxisSetInterface) {
       this.setAxisSetValuesToDisplayValues(axisSet)
