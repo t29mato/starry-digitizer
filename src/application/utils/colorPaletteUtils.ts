@@ -3,7 +3,7 @@
 // 白・グレー系除外、同系色グループ化、彩度優先、黒系含む
 
 function isWhite(r: number, g: number, b: number): boolean {
-  return r > 240 && g > 240 && b > 240
+  return r > 200 && g > 200 && b > 200
 }
 
 // 彩度だけ返す関数にリネーム

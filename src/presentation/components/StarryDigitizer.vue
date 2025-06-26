@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid class="pa-1">
     <div class="c__wrapper">
       <div class="c__left-sidebar">
         <image-settings></image-settings>
@@ -96,7 +96,7 @@ export default defineComponent({
 <style lang="scss" scopde>
 $l_leftSidebarWidth: 260px;
 $l_rightSidebarWidth: 300px;
-$l_mainAreaSideMargin: 20px;
+$l_mainAreaSideMargin: 10px;
 
 .c {
   &__wrapper {
