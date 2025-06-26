@@ -413,6 +413,9 @@ export default defineComponent({
           throw new Error('Please provide CSV content')
         }
 
+        // Deactivate axis movement when importing
+        this.axisSetRepository.activeAxisSet.inactivateAxis()
+
         // Validate that axis coordinates are properly set
         const axisSet = this.axisSetRepository.activeAxisSet
         if (

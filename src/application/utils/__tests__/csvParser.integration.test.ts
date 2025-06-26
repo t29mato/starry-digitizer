@@ -149,6 +149,35 @@ invalid,3.2
       // Parsed data should match preview data
       expect(parsed.datasets[0].points[0]).toEqual({ x: 1, y: 2 })
     })
+
+    it('should handle thermal conductivity scientific data format', () => {
+      const csv = `Temperature (K),Thermal Conductivity (Wm^-1K^-1) (X=0),Temperature (K),Thermal Conductivity (Wm^-1K^-1) (x=0.005),Temperature (K),Thermal Conductivity (Wm^-1K^-1) (x=0.01),Temperature (K),Thermal Conductivity (Wm^-1K^-1) (x=0.02)
+300,10.5,300,9.8,300,9.2,300,8.5
+400,12.1,400,11.4,400,10.8,400,10.1
+500,13.8,500,13.1,500,12.5,500,11.8`
+
+      const result = CsvParser.parseCSV(csv)
+      
+      // Should parse 4 datasets with different x values
+      expect(result.datasets).toHaveLength(4)
+      
+      // Check dataset names are extracted correctly
+      const datasetNames = result.datasets.map(d => d.name)
+      expect(datasetNames).toContain('X=0')
+      expect(datasetNames).toContain('x=0.005')
+      expect(datasetNames).toContain('x=0.01')
+      expect(datasetNames).toContain('x=0.02')
+      
+      // Each dataset should have 3 points
+      result.datasets.forEach(dataset => {
+        expect(dataset.points).toHaveLength(3)
+      })
+      
+      // Verify first dataset data
+      expect(result.datasets[0].points[0]).toEqual({ x: 300, y: 10.5 })
+      expect(result.datasets[0].points[1]).toEqual({ x: 400, y: 12.1 })
+      expect(result.datasets[0].points[2]).toEqual({ x: 500, y: 13.8 })
+    })
   })
 
   describe('Error handling', () => {

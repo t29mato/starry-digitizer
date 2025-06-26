@@ -42,6 +42,22 @@ describe('CsvParser', () => {
       const result = CsvParser.extractDatasetName('x ()', 'y ()')
       expect(result).toBe('')
     })
+
+    it('should handle scientific notation with case differences', () => {
+      const result = CsvParser.extractDatasetName(
+        'Temperature (K)',
+        'Thermal Conductivity (Wm^-1K^-1) (X=0)'
+      )
+      expect(result).toMatch(/^Dataset \d+$/)
+    })
+
+    it('should match scientific parameters with same values', () => {
+      const result = CsvParser.extractDatasetName(
+        'Param1 (x=0.005)',
+        'Param2 (x=0.005)'
+      )
+      expect(result).toBe('x=0.005')
+    })
   })
 
   describe('identifyColumnPairs', () => {

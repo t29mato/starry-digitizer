@@ -34,6 +34,20 @@ export class CsvParser {
       return xMatch[1]
     }
 
+    // Handle case-insensitive matching for scientific notation like (X=0) vs (x=0.005)
+    if (xMatch && yMatch) {
+      const xDataset = xMatch[1].toLowerCase()
+      const yDataset = yMatch[1].toLowerCase()
+      
+      // Check if both contain similar patterns (e.g., x=value)
+      const xPattern = xDataset.match(/x\s*=\s*([0-9.]+)/)
+      const yPattern = yDataset.match(/x\s*=\s*([0-9.]+)/)
+      
+      if (xPattern && yPattern && xPattern[1] === yPattern[1]) {
+        return xMatch[1] // Return original case
+      }
+    }
+
     // Fallback: use timestamp to ensure uniqueness
     return `Dataset ${Date.now()}`
   }
@@ -65,6 +79,11 @@ export class CsvParser {
         ) {
           // Fall back to original x,y detection for headers like "x (Blue)", "y (Blue)"
           const name = this.extractDatasetName(xHeader, yHeader)
+          xyCols.push({ xCol: i, yCol: i + 1, name })
+        } else if (yMatch && yMatch[1]) {
+          // Handle cases where only Y header has dataset identifier (like thermal conductivity data)
+          // This assumes X,Y data pairs where Y column contains the dataset identifier
+          const name = yMatch[1]
           xyCols.push({ xCol: i, yCol: i + 1, name })
         }
       }
