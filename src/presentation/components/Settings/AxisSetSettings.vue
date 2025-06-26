@@ -13,27 +13,6 @@
               label="x1"
               density="compact"
             >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.xIsLogScale"
-              >
-                <button
-                  size="x-small"
-                  @click="updateDisplayValMultipliedByTen('x1')"
-                  id="multiply-by-ten-x1"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-x1"
-                  size="x-small"
-                  @click="updateDisplayValDividedByTen('x1')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
             </v-text-field>
           </td>
           <td class="pl-0 pr-1">
@@ -45,27 +24,6 @@
               label="x2"
               density="compact"
             >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.xIsLogScale"
-              >
-                <button
-                  id="multiply-by-ten-x2"
-                  size="x-small"
-                  @click="updateDisplayValMultipliedByTen('x2')"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-x2"
-                  size="x-small"
-                  @click="updateDisplayValDividedByTen('x2')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
             </v-text-field>
           </td>
           <td>
@@ -90,27 +48,6 @@
               label="y1"
               density="compact"
             >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.yIsLogScale"
-              >
-                <button
-                  id="multiply-by-ten-y1"
-                  size="x-small"
-                  @click="updateDisplayValMultipliedByTen('y1')"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-y1"
-                  size="x-small"
-                  @click="updateDisplayValDividedByTen('y1')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
             </v-text-field>
           </td>
           <td class="pl-0 pr-1">
@@ -122,27 +59,6 @@
               label="y2"
               density="compact"
             >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.yIsLogScale"
-              >
-                <button
-                  id="multiply-by-ten-y2"
-                  size="x-small"
-                  @click="updateDisplayValMultipliedByTen('y2')"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-y2"
-                  size="x-small"
-                  @click="updateDisplayValDividedByTen('y2')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
             </v-text-field>
           </td>
           <td>
@@ -284,28 +200,6 @@ export default defineComponent({
     this.displayVal.y2 = String(this.y2Axis.value)
   },
   methods: {
-    updateDisplayValMultipliedByTen(axisName: 'x1' | 'x2' | 'y1' | 'y2'): void {
-      this.displayVal[axisName] = this.getDisplayValMultipliedByTen(
-        parseFloat(this.displayVal[axisName]),
-      )
-    },
-    updateDisplayValDividedByTen(axisName: 'x1' | 'x2' | 'y1' | 'y2'): void {
-      this.displayVal[axisName] = this.getDisplayValDividedByTen(
-        parseFloat(this.displayVal[axisName]),
-      )
-    },
-    getDisplayValMultipliedByTen(value: number): string {
-      if (value === 0) {
-        return '1'
-      }
-      return (value * 10).toPrecision(1)
-    },
-    getDisplayValDividedByTen(value: number): string {
-      if (value === 0) {
-        return '0.1'
-      }
-      return (value * 0.1).toPrecision(1)
-    },
     parseExponentialValue(value: string): string {
       // Handle '^' notation as actual exponentiation (e.g., 2^3 = 8)
       if (value.includes('^')) {
@@ -395,23 +289,6 @@ export default defineComponent({
       display: block;
       font-size: 0.75rem;
       transform: translateY(-8px);
-    }
-
-    &__log-adjuster {
-      position: absolute;
-      right: 2px;
-      top: 4px;
-      display: flex;
-      gap: 4px;
-      & > button {
-        display: block;
-        font-size: 0.5rem;
-        padding: 0 4px;
-        background-color: #444444;
-        color: white;
-        border-radius: 2px;
-        box-shadow: 2px;
-      }
     }
 
     &__point-mode {
