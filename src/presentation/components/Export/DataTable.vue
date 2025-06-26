@@ -35,8 +35,6 @@ import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 registerAllModules()
 
-const CSV_DELIMITER = ','
-
 export default defineComponent({
   components: {
     HotTable,
@@ -87,22 +85,6 @@ export default defineComponent({
         },
       )
       return calculator.calculateXYValues(x, y)
-    },
-    copyData: function () {
-      // @ts-ignore: there is possibility that hotInstance is not defined though
-      const data = this.$refs.tableRef.hotInstance.getData()
-      const values = data.slice(0)
-      // @ts-ignore convertToCsv methods is defined apparently
-      const csv = this.convertToCsv(values)
-      navigator.clipboard
-        .writeText(csv)
-        .then(() => console.log('コピーが成功しました。'))
-        .catch((err) => console.error('コピーが失敗しました。', err))
-    },
-    convertToCsv(data: string[][]) {
-      console.log({ data })
-      const rows = data.map((row) => row.join(CSV_DELIMITER))
-      return rows.join('\n')
     },
   },
   watch: {
