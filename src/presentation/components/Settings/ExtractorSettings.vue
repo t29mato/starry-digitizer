@@ -26,7 +26,7 @@
       ></v-switch>
     </div>
 
-    <div class="d-flex align-end mt-1 mb-2">
+    <div v-if="interpolator.isActive" class="d-flex align-end mt-1 mb-2">
       <v-text-field
         id="interpolation-interval"
         class="mr-4"
@@ -40,14 +40,12 @@
         max="30"
         density="compact"
         hide-details
-        :disabled="!interpolator.isActive"
       ></v-text-field>
       <v-btn
         id="confirm-interpolation"
         @click="handleOnConfirmInterpolation"
         size="small"
         color="primary"
-        :disabled="!interpolator.isActive"
         >Confirm</v-btn
       >
     </div>
