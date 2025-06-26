@@ -1,5 +1,5 @@
 <template>
-  <div class="c__magnifier mb-2">
+  <div class="c__magnifier mb-0">
     <div
       :style="{
         overflow: 'hidden',

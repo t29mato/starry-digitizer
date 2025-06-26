@@ -1,6 +1,6 @@
 <template>
   <v-row class="ma-0">
-    <v-col class="pa-0">
+    <v-col class="pa-0 mr-2">
       <v-text-field
         :model-value="symbolExtractByArea.minDiameterPx"
         @update:model-value="inputMin"
