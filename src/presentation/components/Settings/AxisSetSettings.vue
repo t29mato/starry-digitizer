@@ -291,6 +291,19 @@ export default defineComponent({
         this.axisSetRepository.activeAxisSet.considerGraphTilt = false
       }
     },
+    // Watch for individual axis value changes to update displayVal
+    'axisSetRepository.activeAxisSet.x1.value'(newValue: number) {
+      this.displayVal.x1 = String(newValue)
+    },
+    'axisSetRepository.activeAxisSet.x2.value'(newValue: number) {
+      this.displayVal.x2 = String(newValue)
+    },
+    'axisSetRepository.activeAxisSet.y1.value'(newValue: number) {
+      this.displayVal.y1 = String(newValue)
+    },
+    'axisSetRepository.activeAxisSet.y2.value'(newValue: number) {
+      this.displayVal.y2 = String(newValue)
+    },
   },
 })
 </script>

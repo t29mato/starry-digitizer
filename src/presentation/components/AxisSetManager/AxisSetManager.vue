@@ -12,6 +12,21 @@
         class="ml-2"
         ><v-icon>mdi-minus</v-icon></v-btn
       >
+      <v-tooltip location="bottom">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            size="x-small"
+            @click="handleOnClickExtractAxisButton"
+            :disabled="extracting"
+            :loading="extracting"
+            class="ml-2"
+            color="primary"
+            v-bind="props"
+            ><v-icon>mdi-axis-arrow</v-icon></v-btn
+          >
+        </template>
+        <span>Extract Axis Information</span>
+      </v-tooltip>
     </h4>
     <v-list
       density
@@ -44,6 +59,15 @@
       </v-list-item>
     </v-list>
     <!-- TODO: モーダル上でデータセットを選べるようにする -->
+
+    <!-- Axis Extraction Confirmation Dialog -->
+    <AxisExtractionConfirmDialog
+      v-model="showConfirmDialog"
+      :result="extractionResult"
+      :original-canvas="originalCanvas"
+      @confirm="handleConfirmExtraction"
+      @reject="handleRejectExtraction"
+    />
   </div>
 </template>
 
@@ -55,9 +79,14 @@ import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { MANUAL_MODE } from '@/constants'
+import { AxisExtractorManager } from '@/application/services/axisExtractor/manager/axisExtractorManager'
+import { AxisExtractionConfirmDialog } from '@/presentation/components/AxisExtractionConfirmDialog'
+import { AxisExtractionResult } from '@/application/services/axisExtractor/axisExtractorInterface'
 
 export default defineComponent({
-  components: {},
+  components: {
+    AxisExtractionConfirmDialog,
+  },
   data() {
     return {
       canvasHandler,
@@ -68,6 +97,11 @@ export default defineComponent({
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
       sortOrders: ['ascending', 'descending'],
+      extracting: false,
+      axisExtractorManager: new AxisExtractorManager(),
+      showConfirmDialog: false,
+      extractionResult: null as AxisExtractionResult | null,
+      originalCanvas: null as HTMLCanvasElement | null,
     }
   },
   computed: {
@@ -151,6 +185,69 @@ export default defineComponent({
       } else {
         this.canvasHandler.manualMode = MANUAL_MODE.ADD
       }
+    },
+    async handleOnClickExtractAxisButton() {
+      try {
+        this.extracting = true
+
+        // Get the canvas element from the canvas handler
+        const canvas = document.querySelector('canvas') as HTMLCanvasElement
+        if (!canvas) {
+          throw new Error('Canvas not found')
+        }
+
+        // Show loading message
+        console.log('Initializing OpenCV.js and Tesseract.js...')
+
+        // Extract axis information from the canvas
+        const result =
+          await this.axisExtractorManager.extractAxisInformationFromCanvas(
+            canvas,
+          )
+
+        if (result) {
+          // Store the result and canvas for the confirmation dialog
+          this.extractionResult = result
+          this.originalCanvas = canvas
+          this.showConfirmDialog = true
+        } else {
+          alert(
+            'Could not detect axes in the image. Please ensure the chart has visible axis lines and tick labels.',
+          )
+        }
+      } catch (error) {
+        console.error('Failed to extract axis information:', error)
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
+        if (errorMessage.includes('OpenCV')) {
+          alert(
+            'Failed to load computer vision libraries. Please check your internet connection and try again.',
+          )
+        } else {
+          alert(
+            'Failed to extract axis information. Please try again or set the axes manually.',
+          )
+        }
+      } finally {
+        this.extracting = false
+      }
+    },
+    handleConfirmExtraction(result: AxisExtractionResult) {
+      // Update the active axis set with extracted values
+      const activeAxisSet = this.axisSetRepository.activeAxisSet
+      activeAxisSet.setX1Value(result.x1)
+      activeAxisSet.setX2Value(result.x2)
+      activeAxisSet.setY1Value(result.y1)
+      activeAxisSet.setY2Value(result.y2)
+
+      // Clean up
+      this.extractionResult = null
+      this.originalCanvas = null
+    },
+    handleRejectExtraction() {
+      // Clean up without applying changes
+      this.extractionResult = null
+      this.originalCanvas = null
     },
   },
 })

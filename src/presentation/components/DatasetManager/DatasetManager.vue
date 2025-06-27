@@ -15,7 +15,12 @@
     </h4>
     <div
       class="mb-2 mt-1 pa-0"
-      style="min-height: 15vh; outline: solid 1px gray; max-height: 30vh; overflow-y: auto"
+      style="
+        min-height: 15vh;
+        outline: solid 1px gray;
+        max-height: 30vh;
+        overflow-y: auto;
+      "
     >
       <div
         v-for="dataset in datasetRepository.datasets"
@@ -143,16 +148,31 @@ export default defineComponent({
 
       this.activateDataset(this.datasetRepository.lastDatasetId)
     },
-    removeActiveDataset() {
+    handleOnClickRemoveDatasetButton(datasetId?: number) {
+      const targetDataset = datasetId
+        ? this.datasetRepository.datasets.find((d) => d.id === datasetId)
+        : this.datasetRepository.activeDataset
+
+      if (!targetDataset) return
+
+      //NOTE: remove dataset without confirmation if the dataset doesn't have data points
+      if (targetDataset.points.length === 0) {
+        this.removeDataset(targetDataset.id)
+        return
+      }
+
+      window.confirm(
+        `Are you sure to delete '${targetDataset.name}'? This operation is irreversible.`,
+      ) && this.removeDataset(targetDataset.id)
+    },
+    removeDataset(datasetId: number) {
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.removeDataset(
         this.datasetRepository.activeDatasetId,
       )
-    },
-    handleOnClickRemoveDatasetButton() {
-      //NOTE: remove active dataset without confirmation if the active dataset doesn't have data points
-      if (this.datasetRepository.activeDataset.points.length === 0) {
-        this.removeActiveDataset()
+
+      if (totalPoints === 0) {
+        this.removeAllDatasets()
         return
       }
 
