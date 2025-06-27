@@ -29,7 +29,7 @@
       </v-tooltip>
     </h4>
     <v-list
-      density
+      density="compact"
       class="mb-2 mt-1 pa-0"
       style="min-height: 8vh; outline: solid 1px gray; max-height: 20vh"
     >
@@ -50,7 +50,7 @@
               v-model="axisSet.name"
               :placeholder="'axisSet ' + axisSet.id"
               hide-details
-              density
+              density="compact"
               class="mt-0 pt-0 pl-2"
               variant="underlined"
             ></v-text-field>

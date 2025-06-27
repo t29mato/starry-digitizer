@@ -104,4 +104,62 @@ export default class AxisSetCalculator {
       this.effectiveDigits
     )
   }
+
+  calculatePixelCoordinates(
+    xValue: number,
+    yValue: number,
+  ): { xPx: number; yPx: number } | null {
+    if (
+      !(
+        this.#axisSet.x1.coord &&
+        this.#axisSet.x2.coord &&
+        this.#axisSet.y1.coord &&
+        this.#axisSet.y2.coord
+      )
+    ) {
+      return null
+    }
+    if (
+      this.#axisSet.x1.value === this.#axisSet.x2.value ||
+      this.#axisSet.y1.value === this.#axisSet.y2.value
+    ) {
+      return null
+    }
+
+    const [xa, ya, xb, yb, a, b, xc, yc, yd, c, d] = [
+      this.#axisSet.x1.coord.xPx,
+      this.#axisSet.x1.coord.yPx,
+      this.#axisSet.x2.coord.xPx,
+      this.#axisSet.x2.coord.yPx,
+      this.#axisSet.x1.value,
+      this.#axisSet.x2.value,
+      this.#axisSet.y1.coord.xPx,
+      this.#axisSet.y1.coord.yPx,
+      this.#axisSet.y2.coord.yPx,
+      this.#axisSet.y1.value,
+      this.#axisSet.y2.value,
+    ]
+
+    const xRatio = this.#isLogScale.x
+      ? (Math.log10(xValue) - Math.log10(a)) / (Math.log10(b) - Math.log10(a))
+      : (xValue - a) / (b - a)
+
+    const yRatio = this.#isLogScale.y
+      ? (Math.log10(yValue) - Math.log10(c)) / (Math.log10(d) - Math.log10(c))
+      : (yValue - c) / (d - c)
+
+    let xPx = xa + xRatio * (xb - xa)
+    let yPx = yc + yRatio * (yd - yc)
+
+    if (this.#axisSet.considerGraphTilt) {
+      const xab = xb - xa
+      const yab = yb - ya
+      const r = xRatio
+      const s = yRatio
+      xPx = xa + r * xab + s * (xc - xa)
+      yPx = ya + r * yab + s * (yc - ya)
+    }
+
+    return { xPx, yPx }
+  }
 }

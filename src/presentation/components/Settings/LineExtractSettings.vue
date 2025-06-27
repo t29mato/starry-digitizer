@@ -10,7 +10,7 @@
         type="number"
         class="ma-0"
         id="line-extract-dx"
-        density
+        density="compact"
         hide-details
       ></v-text-field>
     </v-col>
@@ -23,7 +23,7 @@
         type="number"
         class="ma-0"
         id="line-extract-dy"
-        density
+        density="compact"
         hide-details
       ></v-text-field>
     </v-col>
