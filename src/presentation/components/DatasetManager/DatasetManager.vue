@@ -296,12 +296,12 @@ export default defineComponent({
       this.activateDataset(this.datasetRepository.lastDatasetId)
     },
     handleOnClickRemoveDatasetButton(datasetId?: number) {
-      const targetDataset = datasetId 
-        ? this.datasetRepository.datasets.find(d => d.id === datasetId)
+      const targetDataset = datasetId
+        ? this.datasetRepository.datasets.find((d) => d.id === datasetId)
         : this.datasetRepository.activeDataset
-      
+
       if (!targetDataset) return
-      
+
       //NOTE: remove dataset without confirmation if the dataset doesn't have data points
       if (targetDataset.points.length === 0) {
         this.removeDataset(targetDataset.id)
@@ -321,7 +321,7 @@ export default defineComponent({
         (sum, dataset) => sum + dataset.points.length,
         0,
       )
-      
+
       if (totalPoints === 0) {
         this.removeAllDatasets()
         return
