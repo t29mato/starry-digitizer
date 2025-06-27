@@ -13,7 +13,12 @@
         >
           <canvas
             ref="previewCanvas"
-            style="border: 1px solid #ccc; max-width: 100%; height: auto; cursor: crosshair"
+            style="
+              border: 1px solid #ccc;
+              max-width: 100%;
+              height: auto;
+              cursor: crosshair;
+            "
             @mousedown="onCanvasMouseDown"
             @mousemove="onCanvasMouseMove"
             @mouseup="onCanvasMouseUp"
@@ -22,7 +27,9 @@
           ></canvas>
           <div v-if="isAdjusting || isResizing" class="adjustment-info">
             <v-chip size="small" color="primary">
-              <v-icon class="mr-1">{{ isResizing ? 'mdi-resize' : 'mdi-cursor-move' }}</v-icon>
+              <v-icon class="mr-1">{{
+                isResizing ? 'mdi-resize' : 'mdi-cursor-move'
+              }}</v-icon>
               {{ isResizing ? 'Drag to resize region' : 'Drag to move region' }}
             </v-chip>
           </div>
@@ -35,7 +42,8 @@
         </div>
 
         <p class="mb-4">
-          The following axis information was detected from your chart. You can edit the values if needed.
+          The following axis information was detected from your chart. You can
+          edit the values if needed.
         </p>
 
         <!-- Axis Values Input Fields using table layout like AxisSetSettings -->
@@ -114,16 +122,22 @@
         <!-- Debug Information (only shown when debug is enabled) -->
         <v-expand-transition>
           <v-card v-if="showDebug && result" variant="outlined" class="mb-4">
-            <v-card-title class="text-subtitle-1">Debug Information</v-card-title>
+            <v-card-title class="text-subtitle-1"
+              >Debug Information</v-card-title
+            >
             <v-card-text>
               <v-row>
                 <v-col cols="6">
                   <h4>X-Axis Values:</h4>
-                  <p><strong>Range:</strong> {{ result.x1 }} to {{ result.x2 }}</p>
+                  <p>
+                    <strong>Range:</strong> {{ result.x1 }} to {{ result.x2 }}
+                  </p>
                   <p v-if="result.horizontalRegion">
-                    <strong>Detection region:</strong> 
-                    {{ result.horizontalRegion.x }}, {{ result.horizontalRegion.y }} 
-                    ({{ result.horizontalRegion.width }}×{{ result.horizontalRegion.height }})
+                    <strong>Detection region:</strong>
+                    {{ result.horizontalRegion.x }},
+                    {{ result.horizontalRegion.y }} ({{
+                      result.horizontalRegion.width
+                    }}×{{ result.horizontalRegion.height }})
                   </p>
                   <p v-if="result.horizontalRegion">
                     <strong>Extracted text:</strong> "{{
@@ -137,11 +151,15 @@
                 </v-col>
                 <v-col cols="6">
                   <h4>Y-Axis Values:</h4>
-                  <p><strong>Range:</strong> {{ result.y1 }} to {{ result.y2 }}</p>
+                  <p>
+                    <strong>Range:</strong> {{ result.y1 }} to {{ result.y2 }}
+                  </p>
                   <p v-if="result.verticalRegion">
-                    <strong>Detection region:</strong> 
-                    {{ result.verticalRegion.x }}, {{ result.verticalRegion.y }} 
-                    ({{ result.verticalRegion.width }}×{{ result.verticalRegion.height }})
+                    <strong>Detection region:</strong>
+                    {{ result.verticalRegion.x }},
+                    {{ result.verticalRegion.y }} ({{
+                      result.verticalRegion.width
+                    }}×{{ result.verticalRegion.height }})
                   </p>
                   <p v-if="result.verticalRegion">
                     <strong>Extracted text:</strong> "{{
@@ -157,14 +175,11 @@
             </v-card-text>
           </v-card>
         </v-expand-transition>
-
       </v-card-text>
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="grey" variant="text" @click="onReject">
-          Cancel
-        </v-btn>
+        <v-btn color="grey" variant="text" @click="onReject"> Cancel </v-btn>
         <v-btn color="primary" @click="onConfirm">Import Values</v-btn>
       </v-card-actions>
     </v-card>
@@ -204,18 +219,30 @@ export default defineComponent({
       isAdjusting: false,
       isResizing: false,
       isRerunning: false,
-      hoveredRegion: null as { region: any, type: 'horizontal' | 'vertical' } | null,
+      hoveredRegion: null as {
+        region: any
+        type: 'horizontal' | 'vertical'
+      } | null,
       dragState: {
         isDragging: false,
         isResizing: false,
         dragType: '' as 'horizontal' | 'vertical' | '',
-        resizeHandle: '' as 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r' | '',
+        resizeHandle: '' as
+          | 'tl'
+          | 'tr'
+          | 'bl'
+          | 'br'
+          | 't'
+          | 'b'
+          | 'l'
+          | 'r'
+          | '',
         startX: 0,
         startY: 0,
         originalRegion: null as any,
       },
       scale: 1,
-      ocrDebounceTimer: null as NodeJS.Timeout | null,
+      ocrDebounceTimer: null as number | null,
     }
   },
   computed: {
@@ -275,7 +302,7 @@ export default defineComponent({
   methods: {
     drawPreview() {
       const canvas = this.$refs.previewCanvas as HTMLCanvasElement
-      if (!canvas || !this.originalCanvas || !this.result) return
+      if (!canvas || !this.originalCanvas || !this.editableResult) return
 
       const ctx = canvas.getContext('2d')!
 
@@ -299,8 +326,8 @@ export default defineComponent({
       ctx.fillStyle = 'red'
       ctx.font = '12px Arial'
 
-      if (this.result.horizontalRegion) {
-        const region = this.result.horizontalRegion
+      if (this.editableResult?.horizontalRegion) {
+        const region = this.editableResult.horizontalRegion
         const scaledX = region.x * this.scale
         const scaledY = region.y * this.scale
         const scaledWidth = region.width * this.scale
@@ -308,16 +335,16 @@ export default defineComponent({
 
         // Draw region rectangle
         ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
-        
+
         // Draw resize handles
         this.drawResizeHandles(ctx, scaledX, scaledY, scaledWidth, scaledHeight)
-        
+
         // Add label
         ctx.fillText('X-Axis', scaledX, scaledY - 5)
       }
 
-      if (this.result.verticalRegion) {
-        const region = this.result.verticalRegion
+      if (this.editableResult?.verticalRegion) {
+        const region = this.editableResult.verticalRegion
         const scaledX = region.x * this.scale
         const scaledY = region.y * this.scale
         const scaledWidth = region.width * this.scale
@@ -325,18 +352,24 @@ export default defineComponent({
 
         // Draw region rectangle
         ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
-        
+
         // Draw resize handles
         this.drawResizeHandles(ctx, scaledX, scaledY, scaledWidth, scaledHeight)
-        
+
         // Add label
         ctx.fillText('Y-Axis', scaledX + scaledWidth + 5, scaledY + 15)
       }
     },
-    drawResizeHandles(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {
+    drawResizeHandles(
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+    ) {
       const handleSize = 6
       ctx.fillStyle = 'red'
-      
+
       // Corner handles
       const corners = [
         { x: x, y: y }, // top-left
@@ -344,24 +377,34 @@ export default defineComponent({
         { x: x, y: y + height }, // bottom-left
         { x: x + width, y: y + height }, // bottom-right
       ]
-      
-      corners.forEach(corner => {
-        ctx.fillRect(corner.x - handleSize/2, corner.y - handleSize/2, handleSize, handleSize)
+
+      corners.forEach((corner) => {
+        ctx.fillRect(
+          corner.x - handleSize / 2,
+          corner.y - handleSize / 2,
+          handleSize,
+          handleSize,
+        )
       })
-      
+
       // Edge handles
       const edges = [
-        { x: x + width/2, y: y }, // top
-        { x: x + width/2, y: y + height }, // bottom
-        { x: x, y: y + height/2 }, // left
-        { x: x + width, y: y + height/2 }, // right
+        { x: x + width / 2, y: y }, // top
+        { x: x + width / 2, y: y + height }, // bottom
+        { x: x, y: y + height / 2 }, // left
+        { x: x + width, y: y + height / 2 }, // right
       ]
-      
-      edges.forEach(edge => {
-        ctx.fillRect(edge.x - handleSize/2, edge.y - handleSize/2, handleSize, handleSize)
+
+      edges.forEach((edge) => {
+        ctx.fillRect(
+          edge.x - handleSize / 2,
+          edge.y - handleSize / 2,
+          handleSize,
+          handleSize,
+        )
       })
     },
-    getMousePos(event: MouseEvent): { x: number, y: number } {
+    getMousePos(event: MouseEvent): { x: number; y: number } {
       const canvas = this.$refs.previewCanvas as HTMLCanvasElement
       const rect = canvas.getBoundingClientRect()
       return {
@@ -369,40 +412,59 @@ export default defineComponent({
         y: event.clientY - rect.top,
       }
     },
-    getRegionAtPoint(x: number, y: number): { region: any, type: 'horizontal' | 'vertical' } | null {
+    getRegionAtPoint(
+      x: number,
+      y: number,
+    ): { region: any; type: 'horizontal' | 'vertical' } | null {
       if (!this.result) return null
-      
+
       // Check horizontal region
-      if (this.result.horizontalRegion) {
-        const region = this.result.horizontalRegion
+      if (this.editableResult?.horizontalRegion) {
+        const region = this.editableResult.horizontalRegion
         const scaledX = region.x * this.scale
         const scaledY = region.y * this.scale
         const scaledWidth = region.width * this.scale
         const scaledHeight = region.height * this.scale
-        
-        if (x >= scaledX && x <= scaledX + scaledWidth && 
-            y >= scaledY && y <= scaledY + scaledHeight) {
-          return { region: this.result.horizontalRegion, type: 'horizontal' }
+
+        if (
+          x >= scaledX &&
+          x <= scaledX + scaledWidth &&
+          y >= scaledY &&
+          y <= scaledY + scaledHeight
+        ) {
+          return {
+            region: this.editableResult.horizontalRegion,
+            type: 'horizontal',
+          }
         }
       }
-      
+
       // Check vertical region
-      if (this.result.verticalRegion) {
-        const region = this.result.verticalRegion
+      if (this.editableResult?.verticalRegion) {
+        const region = this.editableResult.verticalRegion
+        if (!region) return null
         const scaledX = region.x * this.scale
         const scaledY = region.y * this.scale
         const scaledWidth = region.width * this.scale
         const scaledHeight = region.height * this.scale
-        
-        if (x >= scaledX && x <= scaledX + scaledWidth && 
-            y >= scaledY && y <= scaledY + scaledHeight) {
+
+        if (
+          x >= scaledX &&
+          x <= scaledX + scaledWidth &&
+          y >= scaledY &&
+          y <= scaledY + scaledHeight
+        ) {
           return { region: this.result.verticalRegion, type: 'vertical' }
         }
       }
-      
+
       return null
     },
-    getResizeHandle(x: number, y: number, regionInfo: { region: any, type: 'horizontal' | 'vertical' }): string {
+    getResizeHandle(
+      x: number,
+      y: number,
+      regionInfo: { region: any; type: 'horizontal' | 'vertical' },
+    ): string {
       const region = regionInfo.region
       const scaledX = region.x * this.scale
       const scaledY = region.y * this.scale
@@ -410,19 +472,51 @@ export default defineComponent({
       const scaledHeight = region.height * this.scale
       const handleSize = 6
       const tolerance = handleSize
-      
+
       // Check corner handles
-      if (Math.abs(x - scaledX) <= tolerance && Math.abs(y - scaledY) <= tolerance) return 'tl'
-      if (Math.abs(x - (scaledX + scaledWidth)) <= tolerance && Math.abs(y - scaledY) <= tolerance) return 'tr'
-      if (Math.abs(x - scaledX) <= tolerance && Math.abs(y - (scaledY + scaledHeight)) <= tolerance) return 'bl'
-      if (Math.abs(x - (scaledX + scaledWidth)) <= tolerance && Math.abs(y - (scaledY + scaledHeight)) <= tolerance) return 'br'
-      
+      if (
+        Math.abs(x - scaledX) <= tolerance &&
+        Math.abs(y - scaledY) <= tolerance
+      )
+        return 'tl'
+      if (
+        Math.abs(x - (scaledX + scaledWidth)) <= tolerance &&
+        Math.abs(y - scaledY) <= tolerance
+      )
+        return 'tr'
+      if (
+        Math.abs(x - scaledX) <= tolerance &&
+        Math.abs(y - (scaledY + scaledHeight)) <= tolerance
+      )
+        return 'bl'
+      if (
+        Math.abs(x - (scaledX + scaledWidth)) <= tolerance &&
+        Math.abs(y - (scaledY + scaledHeight)) <= tolerance
+      )
+        return 'br'
+
       // Check edge handles
-      if (Math.abs(x - (scaledX + scaledWidth/2)) <= tolerance && Math.abs(y - scaledY) <= tolerance) return 't'
-      if (Math.abs(x - (scaledX + scaledWidth/2)) <= tolerance && Math.abs(y - (scaledY + scaledHeight)) <= tolerance) return 'b'
-      if (Math.abs(x - scaledX) <= tolerance && Math.abs(y - (scaledY + scaledHeight/2)) <= tolerance) return 'l'
-      if (Math.abs(x - (scaledX + scaledWidth)) <= tolerance && Math.abs(y - (scaledY + scaledHeight/2)) <= tolerance) return 'r'
-      
+      if (
+        Math.abs(x - (scaledX + scaledWidth / 2)) <= tolerance &&
+        Math.abs(y - scaledY) <= tolerance
+      )
+        return 't'
+      if (
+        Math.abs(x - (scaledX + scaledWidth / 2)) <= tolerance &&
+        Math.abs(y - (scaledY + scaledHeight)) <= tolerance
+      )
+        return 'b'
+      if (
+        Math.abs(x - scaledX) <= tolerance &&
+        Math.abs(y - (scaledY + scaledHeight / 2)) <= tolerance
+      )
+        return 'l'
+      if (
+        Math.abs(x - (scaledX + scaledWidth)) <= tolerance &&
+        Math.abs(y - (scaledY + scaledHeight / 2)) <= tolerance
+      )
+        return 'r'
+
       return ''
     },
     getCursorForHandle(handle: string): string {
@@ -446,24 +540,24 @@ export default defineComponent({
     onCanvasMouseDown(event: MouseEvent) {
       const pos = this.getMousePos(event)
       const regionInfo = this.getRegionAtPoint(pos.x, pos.y)
-      
+
       if (regionInfo) {
         const handle = this.getResizeHandle(pos.x, pos.y, regionInfo)
-        
+
         this.dragState.isDragging = true
         this.dragState.isResizing = !!handle
         this.dragState.dragType = regionInfo.type
-        this.dragState.resizeHandle = handle
+        this.dragState.resizeHandle = handle as any
         this.dragState.startX = pos.x
         this.dragState.startY = pos.y
         this.dragState.originalRegion = { ...regionInfo.region }
-        
+
         if (handle) {
           this.isResizing = true
         } else {
           this.isAdjusting = true
         }
-        
+
         const canvas = this.$refs.previewCanvas as HTMLCanvasElement
         canvas.style.cursor = this.getCursorForHandle(handle)
       }
@@ -474,7 +568,7 @@ export default defineComponent({
         const pos = this.getMousePos(event)
         const regionInfo = this.getRegionAtPoint(pos.x, pos.y)
         this.hoveredRegion = regionInfo
-        
+
         const canvas = this.$refs.previewCanvas as HTMLCanvasElement
         if (regionInfo) {
           const handle = this.getResizeHandle(pos.x, pos.y, regionInfo)
@@ -484,54 +578,70 @@ export default defineComponent({
         }
         return
       }
-      
+
       const pos = this.getMousePos(event)
       const deltaX = (pos.x - this.dragState.startX) / this.scale
       const deltaY = (pos.y - this.dragState.startY) / this.scale
-      
+
       if (this.dragState.isResizing) {
         this.handleResize(deltaX, deltaY)
       } else {
         this.handleMove(deltaX, deltaY)
       }
-      
+
       // Redraw canvas
       this.drawPreview()
     },
     handleMove(deltaX: number, deltaY: number) {
-      if (this.dragState.dragType === 'horizontal' && this.result?.horizontalRegion) {
+      if (
+        this.dragState.dragType === 'horizontal' &&
+        this.result?.horizontalRegion
+      ) {
         const newX = Math.max(0, this.dragState.originalRegion.x + deltaX)
         const newY = Math.max(0, this.dragState.originalRegion.y + deltaY)
-        
-        this.result.horizontalRegion.x = newX
-        this.result.horizontalRegion.y = newY
-      } else if (this.dragState.dragType === 'vertical' && this.result?.verticalRegion) {
+
+        if (this.editableResult?.horizontalRegion) {
+          this.editableResult.horizontalRegion.x = newX
+          this.editableResult.horizontalRegion.y = newY
+        }
+      } else if (
+        this.dragState.dragType === 'vertical' &&
+        this.result?.verticalRegion
+      ) {
         const newX = Math.max(0, this.dragState.originalRegion.x + deltaX)
         const newY = Math.max(0, this.dragState.originalRegion.y + deltaY)
-        
-        this.result.verticalRegion.x = newX
-        this.result.verticalRegion.y = newY
+
+        if (this.editableResult?.verticalRegion) {
+          this.editableResult.verticalRegion.x = newX
+          this.editableResult.verticalRegion.y = newY
+        }
       }
     },
     handleResize(deltaX: number, deltaY: number) {
       const handle = this.dragState.resizeHandle
       const originalRegion = this.dragState.originalRegion
-      
+
       let region = null
-      if (this.dragState.dragType === 'horizontal' && this.result?.horizontalRegion) {
+      if (
+        this.dragState.dragType === 'horizontal' &&
+        this.result?.horizontalRegion
+      ) {
         region = this.result.horizontalRegion
-      } else if (this.dragState.dragType === 'vertical' && this.result?.verticalRegion) {
+      } else if (
+        this.dragState.dragType === 'vertical' &&
+        this.result?.verticalRegion
+      ) {
         region = this.result.verticalRegion
       }
-      
+
       if (!region) return
-      
+
       // Calculate new bounds based on handle
       let newX = originalRegion.x
       let newY = originalRegion.y
       let newWidth = originalRegion.width
       let newHeight = originalRegion.height
-      
+
       switch (handle) {
         case 'tl': // top-left
           newX = originalRegion.x + deltaX
@@ -568,18 +678,20 @@ export default defineComponent({
           newWidth = originalRegion.width + deltaX
           break
       }
-      
+
       // Ensure minimum size
       const minSize = 20
       if (newWidth < minSize) {
-        if (handle.includes('l')) newX = originalRegion.x + originalRegion.width - minSize
+        if (handle.includes('l'))
+          newX = originalRegion.x + originalRegion.width - minSize
         newWidth = minSize
       }
       if (newHeight < minSize) {
-        if (handle.includes('t')) newY = originalRegion.y + originalRegion.height - minSize
+        if (handle.includes('t'))
+          newY = originalRegion.y + originalRegion.height - minSize
         newHeight = minSize
       }
-      
+
       // Update region
       region.x = Math.max(0, newX)
       region.y = Math.max(0, newY)
@@ -592,10 +704,10 @@ export default defineComponent({
         this.dragState.isResizing = false
         this.isAdjusting = false
         this.isResizing = false
-        
+
         const canvas = this.$refs.previewCanvas as HTMLCanvasElement
         canvas.style.cursor = 'crosshair'
-        
+
         // Auto-run OCR after adjustment
         this.rerunOCR()
       }
@@ -606,32 +718,32 @@ export default defineComponent({
     },
     onCanvasWheel(event: WheelEvent) {
       event.preventDefault()
-      
+
       const pos = this.getMousePos(event)
       const regionInfo = this.getRegionAtPoint(pos.x, pos.y)
-      
+
       if (regionInfo) {
         const scaleFactor = event.deltaY > 0 ? 0.9 : 1.1
         const region = regionInfo.region
-        
+
         // Scale around the center of the region
         const centerX = region.x + region.width / 2
         const centerY = region.y + region.height / 2
-        
+
         const newWidth = Math.max(20, region.width * scaleFactor)
         const newHeight = Math.max(20, region.height * scaleFactor)
-        
+
         region.x = centerX - newWidth / 2
         region.y = centerY - newHeight / 2
         region.width = newWidth
         region.height = newHeight
-        
+
         // Ensure region stays within bounds
         region.x = Math.max(0, region.x)
         region.y = Math.max(0, region.y)
-        
+
         this.drawPreview()
-        
+
         // Debounce OCR re-run for wheel events
         this.debouncedRerunOCR()
       }
@@ -641,77 +753,85 @@ export default defineComponent({
       if (this.ocrDebounceTimer) {
         clearTimeout(this.ocrDebounceTimer)
       }
-      
+
       // Set new timer for 500ms delay
       this.ocrDebounceTimer = setTimeout(() => {
         this.rerunOCR()
-      }, 500)
+      }, 500) as any
     },
     async rerunOCR() {
       if (!this.originalCanvas || !this.result) return
-      
+
       this.isRerunning = true
       try {
         const ctx = this.originalCanvas.getContext('2d')!
-        const imageData = ctx.getImageData(0, 0, this.originalCanvas.width, this.originalCanvas.height)
-        
+        const imageData = ctx.getImageData(
+          0,
+          0,
+          this.originalCanvas.width,
+          this.originalCanvas.height,
+        )
+
         // Import the axis extractor to re-run OCR on adjusted regions
-        const { AxisExtractor } = await import('@/application/services/axisExtractor/axisExtractor')
-        const extractor = new AxisExtractor()
-        
+        // const { AxisExtractor } = await import(
+        //   '@/application/services/axisExtractor/axisExtractor'
+        // )
+        // const extractor = new AxisExtractor() // Not needed for custom region extraction
+
         // Re-extract for horizontal region if it exists
-        if (this.result.horizontalRegion) {
-          const currentRegion = this.result.horizontalRegion
-          
+        if (this.editableResult?.horizontalRegion) {
+          const currentRegion = this.editableResult.horizontalRegion
+
           // Create a custom extraction that uses the adjusted region directly
           const horizontalResult = await this.extractFromCustomRegion(
             imageData,
             currentRegion,
-            'horizontal'
           )
-          
+
           // Preserve position and size, only update text and values
-          this.result.horizontalRegion.extractedText = horizontalResult.region.extractedText
-          this.result.horizontalRegion.extractedValues = horizontalResult.region.extractedValues
-          
-          if (horizontalResult.values.length >= 2) {
-            this.result.x1 = Math.min(...horizontalResult.values)
-            this.result.x2 = Math.max(...horizontalResult.values)
-            this.editableResult!.x1 = this.result.x1
-            this.editableResult!.x2 = this.result.x2
-            this.displayVal.x1 = String(this.result.x1)
-            this.displayVal.x2 = String(this.result.x2)
+          if (this.editableResult?.horizontalRegion) {
+            this.editableResult.horizontalRegion.extractedText =
+              horizontalResult.region.extractedText
+            this.editableResult.horizontalRegion.extractedValues =
+              horizontalResult.region.extractedValues
+          }
+
+          if (horizontalResult.values.length >= 2 && this.editableResult) {
+            this.editableResult.x1 = Math.min(...horizontalResult.values)
+            this.editableResult.x2 = Math.max(...horizontalResult.values)
+            this.displayVal.x1 = String(this.editableResult.x1)
+            this.displayVal.x2 = String(this.editableResult.x2)
           }
         }
-        
+
         // Re-extract for vertical region if it exists
-        if (this.result.verticalRegion) {
-          const currentRegion = this.result.verticalRegion
-          
+        if (this.editableResult?.verticalRegion) {
+          const currentRegion = this.editableResult.verticalRegion
+
           // Create a custom extraction that uses the adjusted region directly
           const verticalResult = await this.extractFromCustomRegion(
             imageData,
             currentRegion,
-            'vertical'
           )
-          
+
           // Preserve position and size, only update text and values
-          this.result.verticalRegion.extractedText = verticalResult.region.extractedText
-          this.result.verticalRegion.extractedValues = verticalResult.region.extractedValues
-          
-          if (verticalResult.values.length >= 2) {
-            this.result.y1 = Math.min(...verticalResult.values)
-            this.result.y2 = Math.max(...verticalResult.values)
-            this.editableResult!.y1 = this.result.y1
-            this.editableResult!.y2 = this.result.y2
-            this.displayVal.y1 = String(this.result.y1)
-            this.displayVal.y2 = String(this.result.y2)
+          if (this.editableResult?.verticalRegion) {
+            this.editableResult.verticalRegion.extractedText =
+              verticalResult.region.extractedText
+            this.editableResult.verticalRegion.extractedValues =
+              verticalResult.region.extractedValues
+          }
+
+          if (verticalResult.values.length >= 2 && this.editableResult) {
+            this.editableResult.y1 = Math.min(...verticalResult.values)
+            this.editableResult.y2 = Math.max(...verticalResult.values)
+            this.displayVal.y1 = String(this.editableResult.y1)
+            this.displayVal.y2 = String(this.editableResult.y2)
           }
         }
-        
+
         // Redraw with updated results
         this.drawPreview()
-        
       } catch (error) {
         console.error('Failed to re-run OCR:', error)
       } finally {
@@ -719,9 +839,8 @@ export default defineComponent({
       }
     },
     async extractFromCustomRegion(
-      imageData: ImageData, 
-      region: any, 
-      orientation: 'horizontal' | 'vertical'
+      imageData: ImageData,
+      region: any,
     ): Promise<{ values: number[]; region: any }> {
       try {
         const canvas = document.createElement('canvas')
@@ -744,7 +863,17 @@ export default defineComponent({
         tempCtx.putImageData(imageData, 0, 0)
 
         // Draw the specific region onto our canvas
-        ctx.drawImage(tempCanvas, roiX, roiY, roiWidth, roiHeight, 0, 0, roiWidth, roiHeight)
+        ctx.drawImage(
+          tempCanvas,
+          roiX,
+          roiY,
+          roiWidth,
+          roiHeight,
+          0,
+          0,
+          roiWidth,
+          roiHeight,
+        )
 
         // Get image data from the canvas
         const roiImageData = ctx.getImageData(0, 0, roiWidth, roiHeight)
@@ -760,9 +889,7 @@ export default defineComponent({
         const { default: Tesseract } = await import('tesseract.js')
         const result = await Tesseract.recognize(canvas2, 'eng', {
           logger: () => {},
-          tessedit_pageseg_mode: '6',
-          tessedit_char_whitelist: '0123456789.-+ ',
-        })
+        } as any)
 
         const numbers: number[] = []
         const confidenceThreshold = 40

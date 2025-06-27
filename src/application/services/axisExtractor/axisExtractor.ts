@@ -292,9 +292,7 @@ export class AxisExtractor implements AxisExtractorInterface {
 
       const result = await Tesseract.recognize(canvas2, 'eng', {
         logger: () => {},
-        tessedit_pageseg_mode: '6',
-        tessedit_char_whitelist: '0123456789.-+ ',
-      })
+      } as any)
 
       const numbers: number[] = []
       const confidenceThreshold = 40
