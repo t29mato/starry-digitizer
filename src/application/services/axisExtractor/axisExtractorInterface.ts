@@ -5,6 +5,7 @@ export interface DetectedRegion {
   height: number
   extractedText: string
   extractedValues: number[]
+  axisPosition?: { x?: number; y?: number } // Store original axis position used for extraction
 }
 
 export interface AxisExtractionResult {

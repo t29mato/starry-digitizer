@@ -323,6 +323,8 @@ export class AxisExtractor implements AxisExtractorInterface {
         height: regionInfo.height,
         extractedText: result.data.text.trim(),
         extractedValues: [...numbers].sort((a, b) => a - b),
+        axisPosition:
+          orientation === 'horizontal' ? { y: axis.y } : { x: axis.x },
       }
 
       return {
