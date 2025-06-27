@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" max-width="800px" persistent>
+  <v-dialog v-model="dialog" max-width="800px">
     <v-card>
       <v-card-title>
         <span class="text-h5">Confirm Axis Information Extraction</span>
@@ -132,17 +132,14 @@
           </v-card>
         </v-expand-transition>
 
-        <v-alert type="info" class="mt-4">
-          Do you want to import these axis values into your project?
-        </v-alert>
       </v-card-text>
 
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="grey" variant="text" @click="onReject">
-          No, Cancel
+          Cancel
         </v-btn>
-        <v-btn color="primary" @click="onConfirm"> Yes, Import Values </v-btn>
+        <v-btn color="primary" @click="onConfirm">Import Values</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
