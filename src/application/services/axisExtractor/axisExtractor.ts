@@ -240,86 +240,26 @@ export class AxisExtractor implements AxisExtractorInterface {
     orientation: 'horizontal' | 'vertical',
   ): Promise<{ values: number[]; region: DetectedRegion }> {
     try {
-      // Create a region of interest around the axis for OCR
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')!
+      const bestResult = await this.findOptimalExtractionRegion(
+        imageData,
+        axis,
+        orientation,
+      )
 
-      let roiImageData: ImageData
-      let regionInfo: { x: number; y: number; width: number; height: number }
-
-      if (orientation === 'horizontal') {
-        // Extract region below horizontal axis for tick labels
-        const roiHeight = 30
-        const roiY = Math.min(axis.y + 5, imageData.height - roiHeight)
-        const roiX = axis.x1
-        const roiWidth = axis.x2 - axis.x1
-
-        canvas.width = roiWidth
-        canvas.height = roiHeight
-        regionInfo = { x: roiX, y: roiY, width: roiWidth, height: roiHeight }
-
-        ctx.putImageData(imageData, -roiX, -roiY)
-        roiImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-      } else {
-        // Extract region left of vertical axis for tick labels
-        const roiWidth = 50
-        const roiX = Math.max(axis.x - 55, 0)
-        const roiY = axis.y1
-        const roiHeight = axis.y2 - axis.y1
-
-        canvas.width = roiWidth
-        canvas.height = roiHeight
-        regionInfo = { x: roiX, y: roiY, width: roiWidth, height: roiHeight }
-
-        ctx.putImageData(imageData, -roiX, -roiY)
-        roiImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-      }
-
-      // Use Tesseract to extract text with optimized configuration for numeric axis labels
-      const canvas2 = document.createElement('canvas')
-      const ctx2 = canvas2.getContext('2d')!
-      canvas2.width = roiImageData.width
-      canvas2.height = roiImageData.height
-      ctx2.putImageData(roiImageData, 0, 0)
-
-      const result = await Tesseract.recognize(canvas2, 'eng', {
-        logger: () => {}, // Disable logging for performance
-        // Character whitelist - restrict to numeric characters commonly found in axis labels
-        tessedit_char_whitelist: '0123456789.-+ ', // Numbers, decimal point, minus/plus signs, spaces
-        tessedit_pageseg_mode: '11', // PSM 11: Sparse text - optimal for scattered axis labels
-        tessedit_ocr_engine_mode: '1', // LSTM OCR Engine - more accurate for modern text
-        preserve_interword_spaces: '1', // Keep spaces between separate numbers
-        tessedit_do_invert: '0', // Disable automatic image inversion
-      })
-
-      // Parse numbers from the recognized text
-      const numbers: number[] = []
-      const lines = result.data.text.split('\n')
-
-      for (const line of lines) {
-        const matches = line.match(/-?\d*\.?\d+/g)
-        if (matches) {
-          for (const match of matches) {
-            const num = parseFloat(match)
-            if (!isNaN(num)) {
-              numbers.push(num)
-            }
-          }
-        }
-      }
-
-      const detectedRegion: DetectedRegion = {
-        x: regionInfo.x,
-        y: regionInfo.y,
-        width: regionInfo.width,
-        height: regionInfo.height,
-        extractedText: result.data.text.trim(),
-        extractedValues: numbers.sort((a, b) => a - b),
+      if (bestResult.values.length > 0) {
+        return bestResult
       }
 
       return {
-        values: numbers.sort((a, b) => a - b),
-        region: detectedRegion,
+        values: [],
+        region: {
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+          extractedText: '',
+          extractedValues: [],
+        },
       }
     } catch (error) {
       console.error('Error extracting tick values:', error)
@@ -335,6 +275,175 @@ export class AxisExtractor implements AxisExtractorInterface {
         },
       }
     }
+  }
+
+  private async findOptimalExtractionRegion(
+    imageData: ImageData,
+    axis: any,
+    orientation: 'horizontal' | 'vertical',
+  ): Promise<{ values: number[]; region: DetectedRegion }> {
+    let bestResult = {
+      values: [] as number[],
+      region: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        extractedText: '',
+        extractedValues: [],
+      } as DetectedRegion,
+    }
+    let bestScore = 0
+
+    const minPercentage = 1
+    const maxPercentage = 20
+    const step = 1
+
+    for (
+      let percentage = minPercentage;
+      percentage <= maxPercentage;
+      percentage += step
+    ) {
+      const result = await this.extractWithPercentageBasedRegion(
+        imageData,
+        axis,
+        orientation,
+        percentage,
+      )
+
+      const score = this.calculateOCRQualityScore(result)
+
+      if (score > bestScore && score >= 0.7) {
+        bestResult = result
+        break
+      } else if (score > bestScore) {
+        bestResult = result
+        bestScore = score
+      }
+    }
+
+    return bestResult
+  }
+
+  private async extractWithPercentageBasedRegion(
+    imageData: ImageData,
+    axis: any,
+    orientation: 'horizontal' | 'vertical',
+    percentage: number,
+  ): Promise<{ values: number[]; region: DetectedRegion }> {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+
+    let roiImageData: ImageData
+    let regionInfo: { x: number; y: number; width: number; height: number }
+
+    if (orientation === 'horizontal') {
+      const roiHeight = Math.floor(imageData.height * (percentage / 100))
+      const roiY = Math.min(axis.y + 5, imageData.height - roiHeight)
+      const roiX = axis.x1
+      const roiWidth = axis.x2 - axis.x1
+
+      canvas.width = roiWidth
+      canvas.height = roiHeight
+      regionInfo = { x: roiX, y: roiY, width: roiWidth, height: roiHeight }
+
+      ctx.putImageData(imageData, -roiX, -roiY)
+      roiImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    } else {
+      const roiWidth = Math.floor(imageData.width * (percentage / 100))
+      const roiX = Math.max(axis.x - roiWidth - 5, 0)
+      const roiY = axis.y1
+      const roiHeight = axis.y2 - axis.y1
+
+      canvas.width = roiWidth
+      canvas.height = roiHeight
+      regionInfo = { x: roiX, y: roiY, width: roiWidth, height: roiHeight }
+
+      ctx.putImageData(imageData, -roiX, -roiY)
+      roiImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    }
+
+    const canvas2 = document.createElement('canvas')
+    const ctx2 = canvas2.getContext('2d')!
+    canvas2.width = roiImageData.width
+    canvas2.height = roiImageData.height
+    ctx2.putImageData(roiImageData, 0, 0)
+
+    const result = await Tesseract.recognize(canvas2, 'eng', {
+      logger: () => {},
+    } as any)
+
+    const numbers: number[] = []
+    const lines = result.data.text.split('\n')
+
+    for (const line of lines) {
+      const matches = line.match(/-?\d*\.?\d+/g)
+      if (matches) {
+        for (const match of matches) {
+          const num = parseFloat(match)
+          if (!isNaN(num)) {
+            numbers.push(num)
+          }
+        }
+      }
+    }
+
+    const detectedRegion: DetectedRegion = {
+      x: regionInfo.x,
+      y: regionInfo.y,
+      width: regionInfo.width,
+      height: regionInfo.height,
+      extractedText: result.data.text.trim(),
+      extractedValues: [...numbers].sort((a, b) => a - b),
+    }
+
+    return {
+      values: [...numbers].sort((a, b) => a - b),
+      region: detectedRegion,
+    }
+  }
+
+  private calculateOCRQualityScore(result: {
+    values: number[]
+    region: DetectedRegion
+  }): number {
+    const { values, region } = result
+    let score = 0
+
+    if (values.length >= 2) {
+      score += 0.4
+    }
+
+    if (values.length >= 3) {
+      score += 0.2
+    }
+
+    const validNumericPattern = /^[\d\s\-+.]+$/
+    if (validNumericPattern.test(region.extractedText)) {
+      score += 0.3
+    }
+
+    const hasConsistentSpacing = this.checkConsistentSpacing(values)
+    if (hasConsistentSpacing) {
+      score += 0.1
+    }
+
+    return Math.min(score, 1.0)
+  }
+
+  private checkConsistentSpacing(values: number[]): boolean {
+    if (values.length < 3) return true
+
+    const differences: number[] = []
+    for (let i = 1; i < values.length; i++) {
+      differences.push(values[i] - values[i - 1])
+    }
+
+    const avgDiff =
+      differences.reduce((sum, diff) => sum + diff, 0) / differences.length
+    const tolerance = Math.abs(avgDiff) * 0.3
+
+    return differences.every((diff) => Math.abs(diff - avgDiff) <= tolerance)
   }
 
   async extractTickValues(
