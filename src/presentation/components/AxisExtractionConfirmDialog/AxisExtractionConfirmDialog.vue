@@ -6,11 +6,6 @@
       </v-card-title>
 
       <v-card-text>
-        <p class="mb-4">
-          The following axis information was detected from your chart. Red
-          frames show the regions where text was extracted.
-        </p>
-
         <!-- Canvas to show the image with highlighted regions -->
         <div
           class="canvas-container mb-4"
@@ -22,35 +17,120 @@
           ></canvas>
         </div>
 
-        <!-- Extracted values summary -->
-        <v-row v-if="result">
-          <v-col cols="6">
-            <h4>X-Axis Values:</h4>
-            <p><strong>Range:</strong> {{ result.x1 }} to {{ result.x2 }}</p>
-            <p v-if="result.horizontalRegion">
-              <strong>Extracted text:</strong> "{{
-                result.horizontalRegion.extractedText
-              }}"
-            </p>
-            <p v-if="result.horizontalRegion">
-              <strong>Found values:</strong>
-              {{ result.horizontalRegion.extractedValues.join(', ') }}
-            </p>
-          </v-col>
-          <v-col cols="6">
-            <h4>Y-Axis Values:</h4>
-            <p><strong>Range:</strong> {{ result.y1 }} to {{ result.y2 }}</p>
-            <p v-if="result.verticalRegion">
-              <strong>Extracted text:</strong> "{{
-                result.verticalRegion.extractedText
-              }}"
-            </p>
-            <p v-if="result.verticalRegion">
-              <strong>Found values:</strong>
-              {{ result.verticalRegion.extractedValues.join(', ') }}
-            </p>
-          </v-col>
-        </v-row>
+        <p class="mb-4">
+          The following axis information was detected from your chart. You can edit the values if needed.
+        </p>
+
+        <!-- Axis Values Input Fields using table layout like AxisSetSettings -->
+        <div v-if="editableResult">
+          <table>
+            <tbody>
+              <tr>
+                <td class="pl-0 pr-1" style="width: 42%">
+                  <v-text-field
+                    v-model="displayVal.x1"
+                    type="text"
+                    prefix="x1: "
+                    hide-details
+                    density="compact"
+                    @click="$event.target.select()"
+                  ></v-text-field>
+                </td>
+                <td class="pl-0 pr-1" style="width: 42%">
+                  <v-text-field
+                    v-model="displayVal.x2"
+                    type="text"
+                    prefix="x2: "
+                    hide-details
+                    density="compact"
+                    @click="$event.target.select()"
+                  ></v-text-field>
+                </td>
+                <td style="width: 16%">
+                  <!-- Debug Toggle -->
+                  <v-btn
+                    size="small"
+                    variant="text"
+                    @click="showDebug = !showDebug"
+                    :color="showDebug ? 'primary' : 'grey'"
+                  >
+                    <v-icon>mdi-bug</v-icon>
+                  </v-btn>
+                </td>
+              </tr>
+              <tr>
+                <td class="pl-0 pr-1">
+                  <v-text-field
+                    v-model="displayVal.y1"
+                    prefix="y1: "
+                    type="text"
+                    hide-details
+                    density="compact"
+                    @click="$event.target.select()"
+                  ></v-text-field>
+                </td>
+                <td class="pl-0 pr-1">
+                  <v-text-field
+                    v-model="displayVal.y2"
+                    prefix="y2: "
+                    type="text"
+                    hide-details
+                    density="compact"
+                    @click="$event.target.select()"
+                  ></v-text-field>
+                </td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Debug Information (only shown when debug is enabled) -->
+        <v-expand-transition>
+          <v-card v-if="showDebug && result" variant="outlined" class="mb-4">
+            <v-card-title class="text-subtitle-1">Debug Information</v-card-title>
+            <v-card-text>
+              <v-row>
+                <v-col cols="6">
+                  <h4>X-Axis Values:</h4>
+                  <p><strong>Range:</strong> {{ result.x1 }} to {{ result.x2 }}</p>
+                  <p v-if="result.horizontalRegion">
+                    <strong>Detection region:</strong> 
+                    {{ result.horizontalRegion.x }}, {{ result.horizontalRegion.y }} 
+                    ({{ result.horizontalRegion.width }}×{{ result.horizontalRegion.height }})
+                  </p>
+                  <p v-if="result.horizontalRegion">
+                    <strong>Extracted text:</strong> "{{
+                      result.horizontalRegion.extractedText
+                    }}"
+                  </p>
+                  <p v-if="result.horizontalRegion">
+                    <strong>Found values:</strong>
+                    {{ result.horizontalRegion.extractedValues.join(', ') }}
+                  </p>
+                </v-col>
+                <v-col cols="6">
+                  <h4>Y-Axis Values:</h4>
+                  <p><strong>Range:</strong> {{ result.y1 }} to {{ result.y2 }}</p>
+                  <p v-if="result.verticalRegion">
+                    <strong>Detection region:</strong> 
+                    {{ result.verticalRegion.x }}, {{ result.verticalRegion.y }} 
+                    ({{ result.verticalRegion.width }}×{{ result.verticalRegion.height }})
+                  </p>
+                  <p v-if="result.verticalRegion">
+                    <strong>Extracted text:</strong> "{{
+                      result.verticalRegion.extractedText
+                    }}"
+                  </p>
+                  <p v-if="result.verticalRegion">
+                    <strong>Found values:</strong>
+                    {{ result.verticalRegion.extractedValues.join(', ') }}
+                  </p>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </v-expand-transition>
 
         <v-alert type="info" class="mt-4">
           Do you want to import these axis values into your project?
@@ -88,6 +168,18 @@ export default defineComponent({
       default: null,
     },
   },
+  data() {
+    return {
+      showDebug: false,
+      editableResult: null as AxisExtractionResult | null,
+      displayVal: {
+        x1: '',
+        x2: '',
+        y1: '',
+        y2: '',
+      },
+    }
+  },
   computed: {
     dialog: {
       get(): boolean {
@@ -107,6 +199,38 @@ export default defineComponent({
         this.$nextTick(() => {
           this.drawPreview()
         })
+      }
+    },
+    result: {
+      handler(newResult) {
+        if (newResult) {
+          this.editableResult = { ...newResult }
+          this.displayVal.x1 = String(newResult.x1)
+          this.displayVal.x2 = String(newResult.x2)
+          this.displayVal.y1 = String(newResult.y1)
+          this.displayVal.y2 = String(newResult.y2)
+        }
+      },
+      immediate: true,
+    },
+    'displayVal.x1'(value: string) {
+      if (this.editableResult) {
+        this.editableResult.x1 = parseFloat(value) || 0
+      }
+    },
+    'displayVal.x2'(value: string) {
+      if (this.editableResult) {
+        this.editableResult.x2 = parseFloat(value) || 0
+      }
+    },
+    'displayVal.y1'(value: string) {
+      if (this.editableResult) {
+        this.editableResult.y1 = parseFloat(value) || 0
+      }
+    },
+    'displayVal.y2'(value: string) {
+      if (this.editableResult) {
+        this.editableResult.y2 = parseFloat(value) || 0
       }
     },
   },
@@ -167,7 +291,7 @@ export default defineComponent({
       }
     },
     onConfirm() {
-      this.$emit('confirm', this.result)
+      this.$emit('confirm', this.editableResult)
       this.dialog = false
     },
     onReject() {
