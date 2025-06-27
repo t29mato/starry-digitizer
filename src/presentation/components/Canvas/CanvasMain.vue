@@ -225,16 +225,27 @@ export default defineComponent({
     keyDownHandler(e: KeyboardEvent) {
       if (this.confirmer.isActive) return
 
-      const target = e.target as Element
-      // INFO: 編集可能HTMLにカーソルが当たってる場合はスルー
-      if (target.hasAttribute('contentEditable')) {
+      if (!this.shouldProcessKeyEvent(e)) {
         return
       }
-      // INFO: 入力フィールドにカーソルが当たってる場合はスルー
+
+      e.preventDefault()
+      this.handleKeyEvent(e)
+    },
+    shouldProcessKeyEvent(e: KeyboardEvent): boolean {
+      const target = e.target as Element
+
+      // Skip if editing content
+      if (target.hasAttribute('contentEditable')) {
+        return false
+      }
+
+      // Skip if in input fields
       const targetName = target.nodeName
       if (targetName === 'INPUT' || targetName === 'TEXTAREA') {
-        return
+        return false
       }
+
       const whiteList = [
         'ArrowUp',
         'ArrowRight',
@@ -247,32 +258,47 @@ export default defineComponent({
         'e',
         'd',
       ]
+
+      return whiteList.includes(e.key)
+    },
+    handleKeyEvent(e: KeyboardEvent) {
       const key = e.key
-      if (!whiteList.includes(key)) {
+
+      // Handle special keys
+      if (this.handleSpecialKeys(key, e)) {
         return
       }
-      e.preventDefault()
+
+      // Handle delete operations
+      if (this.handleDeleteKeys(key)) {
+        return
+      }
+
+      // Handle movement keys
+      this.handleMovementKeys(key, e.shiftKey)
+    },
+    handleSpecialKeys(key: string, e: KeyboardEvent): boolean {
       switch (key) {
         case 'Escape':
-          // Escape key to deselect all points
           this.datasetRepository.activeDataset.inactivatePoints()
-          return
+          return true
         case 'a':
-          // Cmd+A (Mac) or Ctrl+A (Windows) to select all points
           if (e.metaKey || e.ctrlKey) {
             this.datasetRepository.activeDataset.activateAllPoints()
-            return
+          } else {
+            this.canvasHandler.setManualMode(0)
           }
-          // Regular 'a' key to set ADD mode
-          this.canvasHandler.setManualMode(0)
-          return
+          return true
         case 'e':
           this.canvasHandler.setManualMode(1)
-          return
+          return true
         case 'd':
           this.canvasHandler.setManualMode(2)
-          return
+          return true
       }
+      return false
+    },
+    handleDeleteKeys(key: string): boolean {
       if (
         this.datasetRepository.activeDataset.hasActive() &&
         (key === 'Backspace' || key === 'Delete')
@@ -284,18 +310,24 @@ export default defineComponent({
         }
 
         const lastPointId = this.datasetRepository.activeDataset.lastPointId
-
         if (lastPointId !== -1) {
           this.datasetRepository.activeDataset.switchActivatedPoint(lastPointId)
         }
 
-        return
+        return true
       }
-      const shiftKeyIsPressed = e.shiftKey
+      return false
+    },
+    handleMovementKeys(key: string, shiftKeyPressed: boolean) {
       const vector: Vector = {
         direction: this.getDirectionFromKey(key),
-        distancePx: shiftKeyIsPressed ? 10 : 1,
+        distancePx: shiftKeyPressed ? 10 : 1,
       }
+
+      this.moveActiveAxis(vector)
+      this.moveActivePoints(vector)
+    },
+    moveActiveAxis(vector: Vector) {
       if (
         this.axisSetRepository.activeAxisSet.activeAxis &&
         this.axisSetRepository.activeAxisSet.activeAxis.coord
@@ -305,16 +337,22 @@ export default defineComponent({
           this.axisSetRepository.activeAxisSet.activeAxis.coord,
         )
       }
+    },
+    moveActivePoints(vector: Vector) {
       if (this.datasetRepository.activeDataset.pointsAreActive) {
         this.datasetRepository.activeDataset.moveActivePoint(vector)
         this.interpolator.isActive && this.interpolator.updatePreview()
-        this.canvasHandler.setCursor(
-          this.datasetRepository.activeDataset.points.filter((point: Point) =>
+
+        const activePoints = this.datasetRepository.activeDataset.points.filter(
+          (point: Point) =>
             this.datasetRepository.activeDataset.activePointIds.includes(
               point.id,
             ),
-          )[0],
         )
+
+        if (activePoints.length > 0) {
+          this.canvasHandler.setCursor(activePoints[0])
+        }
       }
     },
     getDirectionFromKey(key: string) {

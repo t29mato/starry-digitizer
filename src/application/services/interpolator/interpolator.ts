@@ -8,7 +8,7 @@ import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { Coord, Point } from '@/@types/types'
 
 export class Interpolator implements InterpolatorInterface {
-  public isActive: boolean = true
+  public isActive: boolean = false
   public interval: number = 10
   public interpolatedCoords: Coord[] = []
   public interpolatedCoordsForGuideline: Coord[] = []

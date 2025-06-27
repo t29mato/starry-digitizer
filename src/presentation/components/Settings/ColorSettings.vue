@@ -23,7 +23,7 @@
           hide-details
           :error="colorDistancePctErrorMsg.length > 0"
           :error-messages="colorDistancePctErrorMsg"
-          density
+          density="compact"
         >
         </v-text-field>
       </v-col>

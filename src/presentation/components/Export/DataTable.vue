@@ -86,6 +86,14 @@ export default defineComponent({
       )
       return calculator.calculateXYValues(x, y)
     },
+    copyData() {
+      const data = this.tableData.map((row: any) => [row.X, row.Y])
+      const csv = data.map((row: any[]) => row.join(',')).join('\n')
+      navigator.clipboard
+        .writeText(csv)
+        .then(() => console.log('Data copied to clipboard successfully.'))
+        .catch((err) => console.error('Failed to copy data to clipboard.', err))
+    },
   },
   watch: {
     tableData() {

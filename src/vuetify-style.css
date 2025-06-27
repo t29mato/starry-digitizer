@@ -1,0 +1,50 @@
+.v-field {
+  --v-field-input-padding-top: 4px !important;
+  --v-field-padding-top: 4px !important;
+}
+.v-field__input {
+  --v-field-input-padding-top: 4px !important;
+  --v-field-padding-top: 4px !important;
+  min-height: 0px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+
+}
+.v-text-field input.v-field__input {
+  --v-field-input-padding-top: 4px !important;
+  --v-field-padding-top: 4px !important;
+  --v-field-input-padding-bottom: 4px !important;
+  --v-field-padding-bottom: 4px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  min-height: 0px !important;
+}
+.v-text-field__prefix__text, .v-text-field__suffix__text {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+}
+.v-text-field__prefix, .v-text-field__suffix {
+  min-height: auto !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+.v-list-item--density-compact.v-list-item--one-line {
+  min-height: 0px !important;
+}
+.v-text-field__prefix{
+  padding-inline-start: 8px !important;
+}
+.v-checkbox .v-selection-control {
+  min-height: 0px !important;
+}
+.v-text-field--prefixed.v-text-field .v-field__input{
+  --v-field-padding-start: 4px !important;
+  --v-field-padding-end: 4px !important;
+}
+.v-input--density-compact .v-field--variant-solo, .v-input--density-compact .v-field--variant-solo-inverted, .v-input--density-compact .v-field--variant-solo-filled, .v-input--density-compact .v-field--variant-filled {
+  --v-input-control-height: 20px;
+}
+.v-select .v-select__selection {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+}

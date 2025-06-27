@@ -4,7 +4,7 @@
     <v-btn-toggle
       :model-value="canvasHandler.manualMode"
       @update:model-value="changeManualMode"
-      density
+      density="compact"
       class="mb-2"
       divided
       :border="true"
@@ -22,11 +22,11 @@
         :model-value="interpolator.isActive"
         @update:model-value="handleOnClickInterpolatiorSwitch"
         hide-details
-        density
+        density="compact"
       ></v-switch>
     </div>
 
-    <div class="d-flex align-end mt-1 mb-2">
+    <div v-if="interpolator.isActive" class="d-flex align-end mt-1 mb-2">
       <v-text-field
         id="interpolation-interval"
         class="mr-4"
@@ -38,16 +38,14 @@
         min="2"
         step="1"
         max="30"
-        density
+        density="compact"
         hide-details
-        :disabled="!interpolator.isActive"
       ></v-text-field>
       <v-btn
         id="confirm-interpolation"
         @click="handleOnConfirmInterpolation"
         size="small"
         color="primary"
-        :disabled="!interpolator.isActive"
         >Confirm</v-btn
       >
     </div>
@@ -68,7 +66,7 @@
       @update:model-value="setExtractStrategy"
       :model-value="extractor.strategy.name"
       :items="extractor.strategies"
-      density
+      density="compact"
       hide-details
       prefix="Algorithm: "
     ></v-select>

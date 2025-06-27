@@ -8,7 +8,7 @@
         suffix="px"
         type="number"
         class="ma-0"
-        density
+        density="compact"
         hide-details
       ></v-text-field>
     </v-col>
@@ -20,7 +20,7 @@
         suffix="px"
         type="number"
         class="ma-0"
-        density
+        density="compact"
         hide-details
       ></v-text-field>
     </v-col>

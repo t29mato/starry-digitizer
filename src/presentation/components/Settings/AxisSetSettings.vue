@@ -3,29 +3,32 @@
     <table>
       <tbody>
         <tr>
-          <td class="pl-0 pr-1 w-50">
+          <td class="pl-0 pr-1" style="width: 42%">
             <v-text-field
               v-model="displayVal.x1"
               id="x1-value"
               type="text"
               prefix="x1: "
               hide-details
-              density
-              width="300"
+              density="compact"
+              @click="$event.target.select()"
             >
             </v-text-field>
           </td>
-          <td class="pl-0 pr-1 w-50">
+          <td class="pl-0 pr-1" style="width: 42%">
             <v-text-field
               v-model="displayVal.x2"
               id="x2-value"
               type="text"
               prefix="x2: "
               hide-details
-              density
-              width="200"
+              density="compact"
+              @click="$event.target.select()"
             >
             </v-text-field>
+          </td>
+          <td>
+            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
           <td>
             <v-checkbox
@@ -33,9 +36,8 @@
               v-model="axisSetRepository.activeAxisSet.xIsLogScale"
               id="x-is-log"
               hide-details
-              density
+              density="compact"
             ></v-checkbox>
-            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
         </tr>
         <tr>
@@ -46,7 +48,8 @@
               prefix="y1: "
               type="text"
               hide-details
-              density
+              density="compact"
+              @click="$event.target.select()"
             >
             </v-text-field>
           </td>
@@ -57,19 +60,20 @@
               prefix="y2: "
               type="text"
               hide-details
-              density
+              density="compact"
+              @click="$event.target.select()"
             >
             </v-text-field>
           </td>
+          <td><span class="c__AxisSetRepository-settings__hint">Log</span></td>
           <td>
             <v-checkbox
               color="primary"
               v-model="axisSetRepository.activeAxisSet.yIsLogScale"
               id="y-is-log"
-              density
+              density="compact"
               hide-details
             ></v-checkbox>
-            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
         </tr>
       </tbody>
@@ -101,13 +105,13 @@
         v-if="pointModeIsFourPoints"
         v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
         label="Consider graph tilt"
-        density
+        density="compact"
         hide-details
         color="primary"
       ></v-checkbox>
       <v-checkbox
         label="Show axes marker"
-        density
+        density="compact"
         hide-details
         color="primary"
         v-model="axisSetRepository.activeAxisSet.isVisible"
@@ -302,6 +306,8 @@ export default defineComponent({
       display: block;
       font-size: 0.75rem;
       transform: translateY(-8px);
+      padding-top: 13px;
+      vertical-align: middle;
     }
 
     &__point-mode {
