@@ -30,8 +30,9 @@ export class AxisExtractor implements AxisExtractorInterface {
     return (
       typeof window === 'undefined' ||
       typeof document === 'undefined' ||
-      typeof process !== 'undefined' && 
-      (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined)
+      (typeof process !== 'undefined' &&
+        (process.env.NODE_ENV === 'test' ||
+          process.env.JEST_WORKER_ID !== undefined))
     )
   }
 

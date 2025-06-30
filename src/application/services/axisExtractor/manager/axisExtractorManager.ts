@@ -6,20 +6,9 @@ import {
 
 export class AxisExtractorManager {
   private axisExtractor: AxisExtractorInterface
-  private isTestEnvironment: boolean
 
   constructor() {
     this.axisExtractor = new AxisExtractor()
-    this.isTestEnvironment = this.detectTestEnvironment()
-  }
-
-  private detectTestEnvironment(): boolean {
-    return (
-      typeof window === 'undefined' ||
-      typeof document === 'undefined' ||
-      typeof process !== 'undefined' && 
-      (process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined)
-    )
   }
 
   async extractAxisInformationFromImage(
