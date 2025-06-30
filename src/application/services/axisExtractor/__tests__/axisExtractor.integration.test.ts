@@ -140,9 +140,9 @@ describe('AxisExtractor Integration Tests with Real Images', () => {
   let axisExtractorManager: AxisExtractorManager
 
   const testImagePaths = [
-    '/Users/matotomoya/dev/starry-digitizer/src/assets/test/cycleNumber_capacity.png',
-    '/Users/matotomoya/dev/starry-digitizer/src/assets/test/temperature_seebeckCoefficient.png',
-    '/Users/matotomoya/dev/starry-digitizer/src/assets/test/temperature_zt.png'
+    path.join(__dirname, '../../../../assets/test/cycleNumber_capacity.png'),
+    path.join(__dirname, '../../../../assets/test/temperature_seebeckCoefficient.png'),
+    path.join(__dirname, '../../../../assets/test/temperature_zt.png')
   ]
 
   beforeEach(() => {
