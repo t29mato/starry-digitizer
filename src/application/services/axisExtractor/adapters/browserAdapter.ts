@@ -123,10 +123,39 @@ export class BrowserAdapter implements AxisExtractorAdapter {
     try {
       const src = window.cv.matFromImageData(imageData)
       const gray = new window.cv.Mat()
+
+      // Convert to grayscale
+      window.cv.cvtColor(src, gray, window.cv.COLOR_RGBA2GRAY)
+
+      // Find the largest rectangle (plot area)
+      const plotArea = this.detectLargestRectangle(gray)
+
+      if (plotArea) {
+        // Use the left edge as vertical axis and bottom edge as horizontal axis
+        const detectedAxes: any = {
+          horizontalAxis: {
+            x1: plotArea.x,
+            x2: plotArea.x + plotArea.width,
+            y: plotArea.y + plotArea.height,
+          },
+          verticalAxis: {
+            x: plotArea.x,
+            y1: plotArea.y,
+            y2: plotArea.y + plotArea.height,
+          },
+          plotArea: plotArea,
+        }
+
+        src.delete()
+        gray.delete()
+
+        return detectedAxes
+      }
+
+      // Fallback to line detection if rectangle detection fails
       const edges = new window.cv.Mat()
       const lines = new window.cv.Mat()
 
-      window.cv.cvtColor(src, gray, window.cv.COLOR_RGBA2GRAY)
       window.cv.Canny(gray, edges, 50, 150)
       window.cv.HoughLinesP(edges, lines, 1, Math.PI / 180, 50, 50, 10)
 
@@ -199,12 +228,19 @@ export class BrowserAdapter implements AxisExtractorAdapter {
     try {
       // In test environment, provide mock OCR results
       if (this.isTestEnvironment()) {
-        return this.getMockOCRResult(x, y, width, height, imageData.width, imageData.height)
+        return this.getMockOCRResult(
+          x,
+          y,
+          width,
+          height,
+          imageData.width,
+          imageData.height,
+        )
       }
 
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
-      
+
       if (!ctx) {
         throw new Error('Failed to get canvas context')
       }
@@ -212,11 +248,11 @@ export class BrowserAdapter implements AxisExtractorAdapter {
       // 元の画像データを一時キャンバスに描画
       const tempCanvas = document.createElement('canvas')
       const tempCtx = tempCanvas.getContext('2d')
-      
+
       if (!tempCtx) {
         throw new Error('Failed to get temp canvas context')
       }
-      
+
       tempCanvas.width = imageData.width
       tempCanvas.height = imageData.height
       tempCtx.putImageData(imageData, 0, 0)
@@ -306,19 +342,20 @@ export class BrowserAdapter implements AxisExtractorAdapter {
     // Assumes axes are at typical positions in scientific plots
     const width = imageData.width
     const height = imageData.height
-    
+
     // Look for axes by analyzing pixel patterns
     const data = imageData.data
-    
+
     // Find horizontal axis (typically at bottom 20% of image)
     let horizontalY = height * 0.8 // Default position
     let maxHorizontalScore = 0
-    
+
     for (let y = Math.floor(height * 0.6); y < height * 0.95; y++) {
       let darkPixelCount = 0
       for (let x = 0; x < width; x++) {
         const idx = (y * width + x) * 4
-        const gray = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]
+        const gray =
+          0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]
         if (gray < 128) darkPixelCount++
       }
       const score = darkPixelCount / width
@@ -327,16 +364,17 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         horizontalY = y
       }
     }
-    
+
     // Find vertical axis (typically at left 20% of image)
     let verticalX = width * 0.1 // Default position
     let maxVerticalScore = 0
-    
+
     for (let x = Math.floor(width * 0.05); x < width * 0.3; x++) {
       let darkPixelCount = 0
       for (let y = 0; y < height; y++) {
         const idx = (y * width + x) * 4
-        const gray = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]
+        const gray =
+          0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]
         if (gray < 128) darkPixelCount++
       }
       const score = darkPixelCount / height
@@ -345,53 +383,224 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         verticalX = x
       }
     }
-    
+
     const result: any = {}
-    
+
     if (maxHorizontalScore > 0.3) {
       result.horizontalAxis = {
         x1: Math.floor(width * 0.1),
         x2: Math.floor(width * 0.9),
-        y: horizontalY
+        y: horizontalY,
       }
     }
-    
+
     if (maxVerticalScore > 0.3) {
       result.verticalAxis = {
         x: verticalX,
         y1: Math.floor(height * 0.1),
-        y2: Math.floor(height * 0.8)
+        y2: Math.floor(height * 0.8),
       }
     }
-    
+
     return result
   }
 
+  private detectLargestRectangle(
+    grayImage: any,
+  ): { x: number; y: number; width: number; height: number } | null {
+    try {
+      const edges = new window.cv.Mat()
+      const lines = new window.cv.Mat()
+
+      // Apply Canny edge detection
+      window.cv.Canny(grayImage, edges, 50, 150)
+
+      // Detect lines using HoughLinesP
+      window.cv.HoughLinesP(edges, lines, 1, Math.PI / 180, 50, 50, 10)
+
+      // Separate horizontal and vertical lines
+      const horizontalLines: any[] = []
+      const verticalLines: any[] = []
+
+      for (let i = 0; i < lines.rows; i++) {
+        const x1 = lines.data32S[i * 4]
+        const y1 = lines.data32S[i * 4 + 1]
+        const x2 = lines.data32S[i * 4 + 2]
+        const y2 = lines.data32S[i * 4 + 3]
+
+        const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI
+        const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+        // Filter out short lines
+        if (length < 30) continue
+
+        if (Math.abs(angle) < 10 || Math.abs(angle - 180) < 10) {
+          // Horizontal line
+          horizontalLines.push({ x1, y1, x2, y2, y: (y1 + y2) / 2 })
+        } else if (Math.abs(angle - 90) < 10 || Math.abs(angle + 90) < 10) {
+          // Vertical line
+          verticalLines.push({ x1, y1, x2, y2, x: (x1 + x2) / 2 })
+        }
+      }
+
+      // Sort lines by position
+      horizontalLines.sort((a, b) => a.y - b.y)
+      verticalLines.sort((a, b) => a.x - b.x)
+
+      // Find the most likely plot area by looking for a rectangle formed by lines
+      let bestRect = null
+      let maxScore = 0
+
+      // Look for rectangles formed by pairs of horizontal and vertical lines
+      for (let i = 0; i < verticalLines.length; i++) {
+        for (let j = i + 1; j < verticalLines.length; j++) {
+          const leftLine = verticalLines[i]
+          const rightLine = verticalLines[j]
+
+          // Skip if lines are too close or too far apart
+          const width = rightLine.x - leftLine.x
+          if (width < grayImage.cols * 0.1 || width > grayImage.cols * 0.9)
+            continue
+
+          for (let k = 0; k < horizontalLines.length; k++) {
+            for (let l = k + 1; l < horizontalLines.length; l++) {
+              const topLine = horizontalLines[k]
+              const bottomLine = horizontalLines[l]
+
+              // Skip if lines are too close or too far apart
+              const height = bottomLine.y - topLine.y
+              if (
+                height < grayImage.rows * 0.1 ||
+                height > grayImage.rows * 0.9
+              )
+                continue
+
+              // Check if lines form a rectangle
+              const rect = {
+                x: leftLine.x,
+                y: topLine.y,
+                width: width,
+                height: height,
+              }
+
+              // Score based on size and position
+              let score = (width * height) / (grayImage.cols * grayImage.rows)
+
+              // Prefer rectangles that are not too close to edges
+              const margin = 20
+              if (
+                rect.x > margin &&
+                rect.y > margin &&
+                rect.x + rect.width < grayImage.cols - margin &&
+                rect.y + rect.height < grayImage.rows - margin
+              ) {
+                score *= 1.5
+              }
+
+              // Prefer rectangles with aspect ratio similar to typical plots
+              const aspectRatio = width / height
+              if (aspectRatio > 0.5 && aspectRatio < 2) {
+                score *= 1.2
+              }
+
+              if (score > maxScore) {
+                maxScore = score
+                bestRect = rect
+              }
+            }
+          }
+        }
+      }
+
+      // If no good rectangle found from lines, fall back to contour detection
+      if (!bestRect || maxScore < 0.1) {
+        const contours = new window.cv.MatVector()
+        const hierarchy = new window.cv.Mat()
+
+        window.cv.findContours(
+          edges,
+          contours,
+          hierarchy,
+          window.cv.RETR_EXTERNAL,
+          window.cv.CHAIN_APPROX_SIMPLE,
+        )
+
+        let maxArea = 0
+
+        for (let i = 0; i < contours.size(); i++) {
+          const contour = contours.get(i)
+          const perimeter = window.cv.arcLength(contour, true)
+          const approx = new window.cv.Mat()
+          window.cv.approxPolyDP(contour, approx, 0.02 * perimeter, true)
+
+          // Look for quadrilaterals
+          if (approx.rows === 4) {
+            const rect = window.cv.boundingRect(contour)
+            const area = rect.width * rect.height
+
+            // Apply filters
+            if (
+              area > maxArea &&
+              rect.x > 10 &&
+              rect.y > 10 &&
+              rect.x + rect.width < grayImage.cols - 10 &&
+              rect.y + rect.height < grayImage.rows - 10 &&
+              rect.width > grayImage.cols * 0.2 &&
+              rect.height > grayImage.rows * 0.2 &&
+              rect.width < grayImage.cols * 0.9 &&
+              rect.height < grayImage.rows * 0.9
+            ) {
+              maxArea = area
+              bestRect = rect
+            }
+          }
+
+          approx.delete()
+          contour.delete()
+        }
+
+        contours.delete()
+        hierarchy.delete()
+      }
+
+      edges.delete()
+      lines.delete()
+
+      return bestRect
+    } catch (error) {
+      console.error('Error detecting largest rectangle:', error)
+      return null
+    }
+  }
+
   private getMockOCRResult(
-    x: number, 
-    y: number, 
-    width: number, 
+    x: number,
+    y: number,
+    width: number,
     height: number,
     imageWidth: number,
-    imageHeight: number
+    imageHeight: number,
   ): ImageProcessingResult {
     // Track call patterns to infer which test image is being processed
     const key = `${width}x${height}`
     const callNumber = (this.mockCallPatterns.get(key) || 0) + 1
     this.mockCallPatterns.set(key, callNumber)
     this.mockCallCount++
-    
+
     // Determine if this is horizontal or vertical axis based on region dimensions
     const isHorizontal = width > height * 2
     const isVertical = height > width * 2
-    
+
     // Get test context from global window object if available
-    const testContext = (typeof window !== 'undefined' && (window as any).__TEST_IMAGE_CONTEXT__) || this.mockContext
-    
+    const testContext =
+      (typeof window !== 'undefined' &&
+        (window as any).__TEST_IMAGE_CONTEXT__) ||
+      this.mockContext
+
     if (isHorizontal) {
       // X-axis mock values
       const position = x / imageWidth
-      
+
       // Check for specific patterns that indicate which test image
       if (testContext?.includes('cycleNumber')) {
         // cycleNumber_capacity.png: X[0-160]
@@ -430,8 +639,10 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         if (position > 0.8) {
           // Use call count to vary responses
           if (this.mockCallCount < 10) return { text: '160', confidence: 95 }
-          else if (this.mockCallCount < 20) return { text: '800', confidence: 95 }
-          else if (this.mockCallCount < 30) return { text: '500', confidence: 95 }
+          else if (this.mockCallCount < 20)
+            return { text: '800', confidence: 95 }
+          else if (this.mockCallCount < 30)
+            return { text: '500', confidence: 95 }
           else return { text: '600', confidence: 95 }
         }
         return { text: '100 200', confidence: 90 }
@@ -439,7 +650,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
     } else if (isVertical) {
       // Y-axis mock values
       const position = y / imageHeight
-      
+
       if (testContext?.includes('cycleNumber')) {
         // cycleNumber_capacity.png: Y[0-1000]
         if (position < 0.2) return { text: '1000', confidence: 95 }
@@ -480,15 +691,17 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         // Default fallback based on call count
         if (position < 0.2) {
           if (this.mockCallCount < 10) return { text: '1000', confidence: 95 }
-          else if (this.mockCallCount < 20) return { text: '600', confidence: 95 }
-          else if (this.mockCallCount < 30) return { text: '1.6', confidence: 95 }
+          else if (this.mockCallCount < 20)
+            return { text: '600', confidence: 95 }
+          else if (this.mockCallCount < 30)
+            return { text: '1.6', confidence: 95 }
           else return { text: '6', confidence: 95 }
         }
         if (position > 0.8) return { text: '0', confidence: 95 }
         return { text: '100 200', confidence: 90 }
       }
     }
-    
+
     // Default fallback
     return { text: '', confidence: 0 }
   }

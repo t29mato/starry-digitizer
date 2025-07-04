@@ -186,7 +186,15 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
         }
       }
 
-      return { x1, x2, y1, y2, horizontalRegion, verticalRegion }
+      return {
+        x1,
+        x2,
+        y1,
+        y2,
+        horizontalRegion,
+        verticalRegion,
+        plotArea: (detectedAxes as any).plotArea,
+      }
     } catch (error) {
       console.error('Error in unified axis extraction:', error)
       return null
@@ -260,12 +268,12 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
         )
         extractedText = result.text
         extractedValues = this.extractNumbers(result.text)
-        
+
         // If horizontal axis and not enough values, try to extract from multiple sections
         if (orientation === 'horizontal' && extractedValues.length < 4) {
           const additionalValues: number[] = []
           const sectionWidth = Math.floor(regionWidth / 3)
-          
+
           // Extract from middle section
           const middleResult = await this.adapter.extractTextFromRegion(
             imageSource,
@@ -276,7 +284,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
             { psm: 6 },
           )
           additionalValues.push(...this.extractNumbers(middleResult.text))
-          
+
           // Extract from right section
           const rightResult = await this.adapter.extractTextFromRegion(
             imageSource,
@@ -287,10 +295,13 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
             { psm: 6 },
           )
           additionalValues.push(...this.extractNumbers(rightResult.text))
-          
+
           // Combine all values
-          extractedValues = [...new Set([...extractedValues, ...additionalValues])].sort((a, b) => a - b)
-          extractedText = `${result.text} ${middleResult.text} ${rightResult.text}`.trim()
+          extractedValues = [
+            ...new Set([...extractedValues, ...additionalValues]),
+          ].sort((a, b) => a - b)
+          extractedText =
+            `${result.text} ${middleResult.text} ${rightResult.text}`.trim()
         }
       }
 
@@ -386,7 +397,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
 
   private extractNumbers(text: string): number[] {
     const numbers: number[] = []
-    
+
     // Clean the text first - remove common OCR artifacts
     const cleanedText = text
       .replace(/[oO]/g, '0') // Common OCR mistake: O -> 0
@@ -394,7 +405,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
       .replace(/[sS]/g, '5') // Common OCR mistake: s,S -> 5
       .replace(/\s+/g, ' ') // Normalize spaces
       .trim()
-    
+
     const patterns = [
       /-?\d+\.?\d*/g, // 標準的な数字 (negative and decimal)
       /\d+/g, // 整数のみ
@@ -424,7 +435,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
       const aggressivePattern = /[-]?\d+(?:\.\d+)?/g
       const aggressiveMatches = cleanedText.match(aggressivePattern)
       if (aggressiveMatches) {
-        aggressiveMatches.forEach(match => {
+        aggressiveMatches.forEach((match) => {
           const num = parseFloat(match)
           if (!isNaN(num)) {
             numbers.push(num)
@@ -475,7 +486,10 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
     return await this.extractTickValuesFromAxis(imageData, axis, orientation)
   }
 
-  private inferMaxValue(baseValue: number, orientation: 'horizontal' | 'vertical'): number {
+  private inferMaxValue(
+    baseValue: number,
+    orientation: 'horizontal' | 'vertical',
+  ): number {
     // Common patterns for axis ranges
     if (baseValue === 0) {
       // Common max values when min is 0

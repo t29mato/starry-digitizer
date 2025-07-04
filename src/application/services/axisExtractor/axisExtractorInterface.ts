@@ -15,6 +15,12 @@ export interface AxisExtractionResult {
   y2: number
   horizontalRegion?: DetectedRegion
   verticalRegion?: DetectedRegion
+  plotArea?: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
 }
 
 export interface DetectedAxis {
@@ -27,6 +33,12 @@ export interface DetectedAxis {
     x: number
     y1: number
     y2: number
+  }
+  plotArea?: {
+    x: number
+    y: number
+    width: number
+    height: number
   }
 }
 
