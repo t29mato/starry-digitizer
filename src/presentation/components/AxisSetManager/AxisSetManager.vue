@@ -67,6 +67,7 @@
       :original-canvas="originalCanvas"
       @confirm="handleConfirmExtraction"
       @reject="handleRejectExtraction"
+      @debugChange="handleDebugChange"
     />
   </div>
 </template>
@@ -102,6 +103,7 @@ export default defineComponent({
       showConfirmDialog: false,
       extractionResult: null as AxisExtractionResult | null,
       originalCanvas: null as HTMLCanvasElement | null,
+      debugMode: false,
     }
   },
   computed: {
@@ -199,6 +201,9 @@ export default defineComponent({
         // Show loading message
         console.log('Initializing OpenCV.js and Tesseract.js...')
 
+        // Set debug mode if needed
+        this.axisExtractorManager.setDebugMode(this.debugMode)
+
         // Extract axis information from the canvas
         const result =
           await this.axisExtractorManager.extractAxisInformationFromCanvas(
@@ -248,6 +253,26 @@ export default defineComponent({
       // Clean up without applying changes
       this.extractionResult = null
       this.originalCanvas = null
+    },
+    async handleDebugChange(debug: boolean) {
+      this.debugMode = debug
+      // Update axis extractor debug mode
+      this.axisExtractorManager.setDebugMode(debug)
+      
+      // Re-extract with debug mode if we have the original canvas
+      if (this.originalCanvas && debug) {
+        try {
+          console.log('Re-extracting with debug mode enabled...')
+          const result = await this.axisExtractorManager.extractAxisInformationFromCanvas(
+            this.originalCanvas
+          )
+          if (result) {
+            this.extractionResult = result
+          }
+        } catch (error) {
+          console.error('Failed to re-extract with debug mode:', error)
+        }
+      }
     },
   },
 })

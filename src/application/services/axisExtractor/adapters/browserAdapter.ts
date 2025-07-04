@@ -3,6 +3,7 @@ import {
   ImageProcessingResult,
 } from './axisExtractorAdapter'
 import Tesseract from 'tesseract.js'
+import { UnifiedAxisExtractionOptions } from '../unifiedAxisExtractor'
 
 // グローバルなOpenCV.js宣言
 declare global {
@@ -11,13 +12,27 @@ declare global {
   }
 }
 
+interface OCRRegionInfo {
+  x: number
+  y: number
+  width: number
+  height: number
+  text: string
+  type: 'x1' | 'x2' | 'y1' | 'y2' | 'other'
+}
+
 export class BrowserAdapter implements AxisExtractorAdapter {
   private isOpenCVReady = false
   private mockContext: string | null = null
   private mockCallCount = 0
   private mockCallPatterns: Map<string, number> = new Map()
+  private options: UnifiedAxisExtractionOptions
+  private ocrRegions: OCRRegionInfo[] = []
+  private allExtractedValues: { horizontal: number[], vertical: number[] } = { horizontal: [], vertical: [] }
+  private lastImageData: ImageData | null = null
 
-  constructor() {
+  constructor(options: UnifiedAxisExtractionOptions = {}) {
+    this.options = options
     this.initializeOpenCV()
   }
 
@@ -25,6 +40,283 @@ export class BrowserAdapter implements AxisExtractorAdapter {
     this.mockContext = context
     this.mockCallCount = 0
     this.mockCallPatterns.clear()
+  }
+
+  getOCRRegions(): OCRRegionInfo[] {
+    return this.ocrRegions
+  }
+
+  clearOCRRegions(): void {
+    this.ocrRegions = []
+    this.allExtractedValues = { horizontal: [], vertical: [] }
+    this.lastImageData = null
+  }
+
+  async refineOCRRegions(): Promise<void> {
+    if (!this.lastImageData || this.ocrRegions.length === 0) {
+      return
+    }
+
+    console.log('[OpenCV] Starting OCR region refinement for', this.ocrRegions.length, 'regions')
+    
+    // Refine each OCR region using OpenCV
+    const refinedRegions = await Promise.all(
+      this.ocrRegions.map(region => this.refineOCRRegionWithOpenCV(this.lastImageData!, region))
+    )
+    
+    this.ocrRegions = refinedRegions
+    console.log('[OpenCV] Refinement complete')
+  }
+
+  private async refineOCRRegionWithOpenCV(
+    imageData: ImageData,
+    region: OCRRegionInfo
+  ): Promise<OCRRegionInfo> {
+    if (!this.isOpenCVReady || !window?.cv) {
+      return region // Return original if OpenCV not available
+    }
+
+    try {
+      const src = window.cv.matFromImageData(imageData)
+      
+      // Extract the region of interest
+      const roi = src.roi(new window.cv.Rect(
+        Math.max(0, Math.floor(region.x - 5)), // Add small padding
+        Math.max(0, Math.floor(region.y - 5)),
+        Math.min(imageData.width - region.x, Math.floor(region.width + 10)),
+        Math.min(imageData.height - region.y, Math.floor(region.height + 10))
+      ))
+      
+      // Convert to grayscale
+      const gray = new window.cv.Mat()
+      window.cv.cvtColor(roi, gray, window.cv.COLOR_RGBA2GRAY)
+      
+      // Apply threshold to get binary image
+      const binary = new window.cv.Mat()
+      window.cv.threshold(gray, binary, 0, 255, window.cv.THRESH_BINARY_INV | window.cv.THRESH_OTSU)
+      
+      // Optional: Apply morphological operations to clean up
+      const kernel = window.cv.Mat.ones(2, 2, window.cv.CV_8U)
+      window.cv.morphologyEx(binary, binary, window.cv.MORPH_CLOSE, kernel)
+      kernel.delete()
+      
+      // Find contours
+      const contours = new window.cv.MatVector()
+      const hierarchy = new window.cv.Mat()
+      window.cv.findContours(binary, contours, hierarchy, window.cv.RETR_EXTERNAL, window.cv.CHAIN_APPROX_SIMPLE)
+      
+      let minX = region.x + region.width
+      let minY = region.y + region.height
+      let maxX = region.x
+      let maxY = region.y
+      
+      // Find bounding box of all contours
+      for (let i = 0; i < contours.size(); i++) {
+        const contour = contours.get(i)
+        const rect = window.cv.boundingRect(contour)
+        
+        // Filter small contours (noise)
+        if (rect.width > 3 && rect.height > 5) {
+          const actualX = region.x - 5 + rect.x
+          const actualY = region.y - 5 + rect.y
+          
+          minX = Math.min(minX, actualX)
+          minY = Math.min(minY, actualY)
+          maxX = Math.max(maxX, actualX + rect.width)
+          maxY = Math.max(maxY, actualY + rect.height)
+        }
+        
+        contour.delete()
+      }
+      
+      // Clean up
+      src.delete()
+      roi.delete()
+      gray.delete()
+      binary.delete()
+      contours.delete()
+      hierarchy.delete()
+      
+      // Update region with refined bounds
+      if (maxX > minX && maxY > minY) {
+        console.log(`[OpenCV] Refined region ${region.type}: ${region.x},${region.y},${region.width}x${region.height} -> ${minX},${minY},${maxX - minX}x${maxY - minY}`)
+        
+        return {
+          ...region,
+          x: minX,
+          y: minY,
+          width: maxX - minX,
+          height: maxY - minY,
+          centerX: minX + (maxX - minX) / 2,
+          centerY: minY + (maxY - minY) / 2
+        }
+      }
+      
+    } catch (error) {
+      console.error('[OpenCV] Error refining region:', error)
+    }
+    
+    return region
+  }
+
+  private estimateNumberPositions(
+    text: string,
+    numbers: number[],
+    regionX: number,
+    regionY: number,
+    regionWidth: number,
+    regionHeight: number,
+    orientation?: 'horizontal' | 'vertical'
+  ): void {
+    if (orientation === 'horizontal') {
+      // For horizontal axis, numbers are typically spaced evenly
+      const uniqueNumbers = [...new Set(numbers)].sort((a, b) => a - b)
+      const count = uniqueNumbers.length
+      
+      if (count > 0) {
+        // Estimate width for each number (assume equal spacing)
+        const estimatedWidth = regionWidth / count
+        const estimatedHeight = regionHeight * 0.8 // Use 80% of region height
+        
+        uniqueNumbers.forEach((num, index) => {
+          const estimatedX = regionX + (index * estimatedWidth)
+          const estimatedY = regionY + regionHeight * 0.1 // Center vertically
+          
+          const regionType = this.classifyOCRRegion(num.toString(), [num], orientation)
+          
+          if (regionType !== 'other') {
+            this.ocrRegions.push({
+              x: estimatedX,
+              y: estimatedY,
+              width: estimatedWidth * 0.8, // Make boxes slightly smaller for clarity
+              height: estimatedHeight,
+              text: num.toString(),
+              type: regionType
+            })
+          }
+        })
+      }
+    } else if (orientation === 'vertical') {
+      // For vertical axis, numbers are stacked vertically
+      const uniqueNumbers = [...new Set(numbers)].sort((a, b) => b - a) // Sort descending for Y axis
+      const count = uniqueNumbers.length
+      
+      if (count > 0) {
+        // Estimate height for each number
+        const estimatedHeight = regionHeight / count
+        const estimatedWidth = regionWidth * 0.8 // Use 80% of region width
+        
+        uniqueNumbers.forEach((num, index) => {
+          const estimatedX = regionX + regionWidth * 0.1
+          const estimatedY = regionY + (index * estimatedHeight)
+          
+          const regionType = this.classifyOCRRegion(num.toString(), [num], orientation)
+          
+          if (regionType !== 'other') {
+            this.ocrRegions.push({
+              x: estimatedX,
+              y: estimatedY,
+              width: estimatedWidth,
+              height: estimatedHeight * 0.8, // Make boxes slightly smaller for clarity
+              text: num.toString(),
+              type: regionType
+            })
+          }
+        })
+      }
+    }
+    
+    console.log(`[OCR Debug] Estimated positions for ${numbers.length} numbers, created ${this.ocrRegions.length} regions`)
+  }
+
+  private processWordBoundingBoxes(
+    words: any[],
+    regionX: number,
+    regionY: number,
+    orientation?: 'horizontal' | 'vertical'
+  ): void {
+    console.log(`[OCR Debug] Processing ${words.length} words for ${orientation} axis`)
+    
+    words.forEach((word, index) => {
+      const wordText = word.text.trim()
+      const numbers = this.extractNumbers(wordText)
+      
+      console.log(`[OCR Debug] Word ${index}:`, {
+        text: wordText,
+        numbers,
+        bbox: word.bbox
+      })
+      
+      if (numbers.length > 0) {
+        // This word contains a number
+        const bbox = word.bbox
+        
+        // Calculate absolute position (word bbox is relative to the OCR region)
+        const absoluteX = regionX + bbox.x0
+        const absoluteY = regionY + bbox.y0
+        const width = bbox.x1 - bbox.x0
+        const height = bbox.y1 - bbox.y0
+        
+        // Classify this specific number
+        const regionType = this.classifyOCRRegion(wordText, numbers, orientation)
+        
+        console.log(`[OCR Debug] Classified as:`, regionType)
+        
+        if (regionType !== 'other') {
+          this.ocrRegions.push({
+            x: absoluteX,
+            y: absoluteY,
+            width,
+            height,
+            text: wordText,
+            type: regionType
+          })
+        }
+      }
+    })
+    
+    console.log(`[OCR Debug] Total OCR regions after processing:`, this.ocrRegions.length)
+  }
+
+  private classifyOCRRegion(
+    text: string, 
+    extractedValues: number[], 
+    orientation?: 'horizontal' | 'vertical'
+  ): 'x1' | 'x2' | 'y1' | 'y2' | 'other' {
+    if (extractedValues.length === 0) return 'other'
+    
+    const value = extractedValues[0] // Use the first extracted number
+    
+    // Get all values for this orientation
+    const allValues = orientation === 'horizontal' 
+      ? this.allExtractedValues.horizontal 
+      : orientation === 'vertical' 
+        ? this.allExtractedValues.vertical 
+        : []
+    
+    if (allValues.length === 0) return 'other'
+    
+    // Remove duplicates and sort
+    const uniqueValues = [...new Set(allValues)].sort((a, b) => a - b)
+    const minValue = uniqueValues[0]
+    const maxValue = uniqueValues[uniqueValues.length - 1]
+    
+    // Classify based on orientation and values
+    if (orientation === 'horizontal') {
+      if (value === minValue) {
+        return 'x1'
+      } else if (value === maxValue) {
+        return 'x2'
+      }
+    } else if (orientation === 'vertical') {
+      if (value === minValue) {
+        return 'y1'
+      } else if (value === maxValue) {
+        return 'y2'
+      }
+    }
+    
+    return 'other'
   }
 
   private async initializeOpenCV(): Promise<void> {
@@ -115,6 +407,9 @@ export class BrowserAdapter implements AxisExtractorAdapter {
     horizontalAxis?: { x1: number; x2: number; y: number }
     verticalAxis?: { x: number; y1: number; y2: number }
   }> {
+    // Store imageData for later OpenCV processing
+    this.lastImageData = imageData
+    
     if (!this.isOpenCVReady || this.isTestEnvironment() || !window?.cv) {
       // Fallback to simple heuristic-based detection for test environment
       return this.detectAxesWithHeuristics(imageData)
@@ -223,6 +518,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
       psm?: number
       enhanceContrast?: boolean
       applyThreshold?: boolean
+      orientation?: 'horizontal' | 'vertical'
     } = {},
   ): Promise<ImageProcessingResult> {
     try {
@@ -282,8 +578,60 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         logger: () => {},
       })
 
+      const text = result.data.text.trim()
+      
+      // Extract word-level bounding boxes if debug mode is enabled
+      if (this.options.debug) {
+        console.log(`[OCR Debug] Tesseract result:`, {
+          hasWords: !!result.data.words,
+          wordCount: result.data.words?.length || 0,
+          words: result.data.words?.map((w: any) => ({ text: w.text, bbox: w.bbox })) || []
+        })
+        
+        if (result.data.words && result.data.words.length > 0) {
+          this.processWordBoundingBoxes(
+            result.data.words,
+            x,
+            y,
+            options.orientation
+          )
+        }
+      }
+      
+      // Track OCR region if debug mode is enabled
+      if (this.options.debug) {
+        const numbers = this.extractNumbers(text)
+        
+        // Collect all extracted values for later classification
+        if (numbers.length > 0 && options.orientation) {
+          if (options.orientation === 'horizontal') {
+            this.allExtractedValues.horizontal.push(...numbers)
+          } else {
+            this.allExtractedValues.vertical.push(...numbers)
+          }
+          
+          // Since we don't have word-level bounding boxes, estimate positions
+          this.estimateNumberPositions(
+            text,
+            numbers,
+            x,
+            y,
+            width,
+            height,
+            options.orientation
+          )
+        }
+        
+        console.log(`[OCR Debug] Region detected:`, {
+          text: text || '(empty)',
+          numbers,
+          orientation: options.orientation,
+          bounds: { x, y, width, height }
+        })
+      }
+
       return {
-        text: result.data.text.trim(),
+        text,
         confidence: result.data.confidence,
       }
     } catch (error) {
@@ -571,6 +919,42 @@ export class BrowserAdapter implements AxisExtractorAdapter {
       console.error('Error detecting largest rectangle:', error)
       return null
     }
+  }
+
+  private extractNumbers(text: string): number[] {
+    const numbers: number[] = []
+    
+    // Clean the text first - remove common OCR artifacts
+    const cleanedText = text
+      .replace(/[oO]/g, '0') // Common OCR mistake: O -> 0
+      .replace(/[lI\|]/g, '1') // Common OCR mistake: l,I,| -> 1
+      .replace(/[sS]/g, '5') // Common OCR mistake: s,S -> 5
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .trim()
+    
+    const patterns = [
+      /-?\d+\.?\d*/g, // Standard numbers (negative and decimal)
+      /\d+/g, // Integers only
+      /\d+\.\d+/g, // Decimals only
+    ]
+    
+    const allMatches = new Set<string>()
+    
+    for (const pattern of patterns) {
+      const matches = cleanedText.match(pattern)
+      if (matches) {
+        matches.forEach((match) => allMatches.add(match))
+      }
+    }
+    
+    for (const match of allMatches) {
+      const num = parseFloat(match)
+      if (!isNaN(num)) {
+        numbers.push(num)
+      }
+    }
+    
+    return [...new Set(numbers)].sort((a, b) => a - b)
   }
 
   private getMockOCRResult(

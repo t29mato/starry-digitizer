@@ -119,6 +119,10 @@
                     <strong>Found values:</strong>
                     {{ result.horizontalRegion.extractedValues.join(', ') }}
                   </p>
+                  <p v-if="result.ocrRegions">
+                    <strong>OCR regions found:</strong>
+                    {{ result.ocrRegions.filter(r => r.type === 'x1' || r.type === 'x2').length }}
+                  </p>
                   <p v-if="!result.horizontalRegion">
                     <v-chip size="small" color="warning" variant="outlined">
                       <v-icon class="mr-1">mdi-alert</v-icon>
@@ -152,6 +156,10 @@
                   <p v-if="result.verticalRegion">
                     <strong>Found values:</strong>
                     {{ result.verticalRegion.extractedValues.join(', ') }}
+                  </p>
+                  <p v-if="result.ocrRegions">
+                    <strong>OCR regions found:</strong>
+                    {{ result.ocrRegions.filter(r => r.type === 'y1' || r.type === 'y2').length }}
                   </p>
                   <p v-if="!result.verticalRegion">
                     <v-chip size="small" color="warning" variant="outlined">
@@ -191,7 +199,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { AxisExtractionResult } from '@/application/services/axisExtractor/axisExtractorInterface'
+import { AxisExtractionResult, OCRRegion } from '@/application/services/axisExtractor/axisExtractorInterface'
 
 export default defineComponent({
   name: 'AxisExtractionConfirmDialog',
@@ -245,15 +253,22 @@ export default defineComponent({
     },
     result: {
       handler(newResult) {
+        console.log('[Dialog] Result updated:', newResult)
         if (newResult) {
           this.editableResult = { ...newResult }
           this.displayVal.x1 = String(newResult.x1)
           this.displayVal.x2 = String(newResult.x2)
           this.displayVal.y1 = String(newResult.y1)
           this.displayVal.y2 = String(newResult.y2)
+          
+          // Redraw canvas when result changes
+          this.$nextTick(() => {
+            this.drawPreview()
+          })
         }
       },
       immediate: true,
+      deep: true,
     },
     'displayVal.x1'(value: string) {
       if (this.editableResult) {
@@ -276,6 +291,8 @@ export default defineComponent({
       }
     },
     showDebug(newVal: boolean) {
+      // Emit debug state change
+      this.$emit('debugChange', newVal)
       // Redraw canvas when debug mode is toggled
       this.$nextTick(() => {
         this.drawPreview()
@@ -304,6 +321,14 @@ export default defineComponent({
       this.drawRegions(ctx)
     },
     drawRegions(ctx: CanvasRenderingContext2D) {
+      console.log('[Dialog] drawRegions called, showDebug:', this.showDebug, 'has ocrRegions:', !!this.result?.ocrRegions)
+      
+      // Draw OCR regions if debug mode is enabled and they exist
+      if (this.showDebug && this.result?.ocrRegions) {
+        console.log('[Dialog] Calling drawOCRRegions')
+        this.drawOCRRegions(ctx)
+      }
+
       ctx.strokeStyle = 'red'
       ctx.lineWidth = 2
       ctx.fillStyle = 'red'
@@ -424,6 +449,94 @@ export default defineComponent({
     onReject() {
       this.$emit('reject')
       this.dialog = false
+    },
+    drawOCRRegions(ctx: CanvasRenderingContext2D) {
+      if (!this.result?.ocrRegions) {
+        console.log('[Dialog] No OCR regions to draw')
+        return
+      }
+
+      console.log('[Dialog] Drawing OCR regions:', this.result.ocrRegions.length, this.result.ocrRegions)
+
+      ctx.save()
+      
+      this.result.ocrRegions.forEach((region, index) => {
+        console.log(`[Dialog] Drawing region ${index}:`, region)
+        // Scale coordinates
+        const scaledX = region.x * this.scale
+        const scaledY = region.y * this.scale
+        const scaledWidth = region.width * this.scale
+        const scaledHeight = region.height * this.scale
+
+        // Set style based on region type
+        switch (region.type) {
+          case 'x1':
+            ctx.strokeStyle = '#FF0000' // Red
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.1)'
+            break
+          case 'x2':
+            ctx.strokeStyle = '#00CC00' // Green
+            ctx.fillStyle = 'rgba(0, 204, 0, 0.1)'
+            break
+          case 'y1':
+            ctx.strokeStyle = '#0066FF' // Blue
+            ctx.fillStyle = 'rgba(0, 102, 255, 0.1)'
+            break
+          case 'y2':
+            ctx.strokeStyle = '#CC00CC' // Magenta
+            ctx.fillStyle = 'rgba(204, 0, 204, 0.1)'
+            break
+          default:
+            ctx.strokeStyle = '#666666' // Gray
+            ctx.fillStyle = 'rgba(102, 102, 102, 0.05)'
+        }
+
+        ctx.lineWidth = 3
+        
+        // Draw filled rectangle
+        ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight)
+        
+        // Draw border with thicker line for x1, x2, y1, y2
+        if (region.type !== 'other') {
+          ctx.lineWidth = 4
+        }
+        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
+        ctx.lineWidth = 3  // Reset line width
+
+        // Draw label
+        if (region.type !== 'other') {
+          ctx.fillStyle = ctx.strokeStyle
+          ctx.font = 'bold 14px Arial'
+          ctx.fillText(
+            `${region.type}: ${region.text}`,
+            scaledX + 5,
+            scaledY - 5
+          )
+          
+          // Draw center point if available
+          if (region.centerX !== undefined && region.centerY !== undefined) {
+            const scaledCenterX = region.centerX * this.scale
+            const scaledCenterY = region.centerY * this.scale
+            
+            // Draw crosshair at center
+            ctx.strokeStyle = ctx.strokeStyle
+            ctx.lineWidth = 1
+            ctx.beginPath()
+            ctx.moveTo(scaledCenterX - 5, scaledCenterY)
+            ctx.lineTo(scaledCenterX + 5, scaledCenterY)
+            ctx.moveTo(scaledCenterX, scaledCenterY - 5)
+            ctx.lineTo(scaledCenterX, scaledCenterY + 5)
+            ctx.stroke()
+            
+            // Draw small circle at center
+            ctx.beginPath()
+            ctx.arc(scaledCenterX, scaledCenterY, 3, 0, 2 * Math.PI)
+            ctx.fill()
+          }
+        }
+      })
+      
+      ctx.restore()
     },
   },
 })

@@ -12,6 +12,7 @@ export interface UnifiedAxisExtractionOptions {
   useImprovedMode?: boolean
   confidenceThreshold?: number
   forceAdapter?: 'browser' | 'node'
+  debug?: boolean
 }
 
 export class UnifiedAxisExtractor implements AxisExtractorInterface {
@@ -22,6 +23,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
     this.options = {
       useImprovedMode: false,
       confidenceThreshold: 40,
+      debug: false,
       ...options,
     }
 
@@ -31,7 +33,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
   private createAdapter(): AxisExtractorAdapter {
     // 強制指定がある場合
     if (this.options.forceAdapter === 'browser') {
-      return new BrowserAdapter()
+      return new BrowserAdapter(this.options)
     }
     if (this.options.forceAdapter === 'node') {
       return new NodeAdapter()
@@ -39,7 +41,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
 
     // 環境自動判定
     const nodeAdapter = new NodeAdapter()
-    const browserAdapter = new BrowserAdapter()
+    const browserAdapter = new BrowserAdapter(this.options)
 
     if (
       nodeAdapter.isEnvironmentSupported() &&
@@ -53,6 +55,22 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
 
   getAdapter(): AxisExtractorAdapter {
     return this.adapter
+  }
+
+  getOptions(): UnifiedAxisExtractionOptions {
+    return this.options
+  }
+
+  setDebug(debug: boolean): void {
+    this.options.debug = debug
+    // If adapter is BrowserAdapter, update its debug mode
+    if (this.adapter instanceof BrowserAdapter) {
+      (this.adapter as any).options = { ...this.options }
+      // Clear OCR regions when toggling debug mode
+      if (!debug) {
+        (this.adapter as any).clearOCRRegions()
+      }
+    }
   }
 
   getEnvironmentInfo(): { name: string; adapter: string } {
@@ -117,6 +135,11 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
     imageSource: any,
   ): Promise<AxisExtractionResult | null> {
     try {
+      // Clear previous OCR regions if in debug mode
+      if (this.options.debug && this.adapter instanceof BrowserAdapter) {
+        (this.adapter as any).clearOCRRegions()
+      }
+
       // Step 1: 軸を検出
       const detectedAxes = await this.adapter.detectAxes(imageSource)
 
@@ -186,7 +209,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
         }
       }
 
-      return {
+      const result: AxisExtractionResult = {
         x1,
         x2,
         y1,
@@ -195,6 +218,91 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
         verticalRegion,
         plotArea: (detectedAxes as any).plotArea,
       }
+
+      // Include OCR regions if debug mode is enabled
+      if (this.options.debug && this.adapter instanceof BrowserAdapter) {
+        // Refine OCR regions using OpenCV
+        await (this.adapter as any).refineOCRRegions()
+        
+        // Re-classify regions based on final x1, x2, y1, y2 values
+        const ocrRegions = (this.adapter as any).getOCRRegions() as any[]
+        console.log(`[UnifiedAxisExtractor] OCR regions from adapter:`, ocrRegions.length)
+        console.log(`[UnifiedAxisExtractor] Final values: x1=${x1}, x2=${x2}, y1=${y1}, y2=${y2}`)
+        
+        result.ocrRegions = ocrRegions.map(region => {
+          // Calculate center of mass
+          region.centerX = region.x + region.width / 2
+          region.centerY = region.y + region.height / 2
+          
+          // Re-classify based on final values
+          if (region.type !== 'other') {
+            const value = parseFloat(region.text)
+            if (!isNaN(value)) {
+              if (region.type.startsWith('x')) {
+                if (Math.abs(value - x1) < 0.001) {
+                  region.type = 'x1'
+                  // For horizontal axis, the pixel position is the centerX
+                  region.axisPixelPosition = region.centerX
+                } else if (Math.abs(value - x2) < 0.001) {
+                  region.type = 'x2'
+                  region.axisPixelPosition = region.centerX
+                }
+              } else if (region.type.startsWith('y')) {
+                if (Math.abs(value - y1) < 0.001) {
+                  region.type = 'y1'
+                  // For vertical axis, the pixel position is the centerY
+                  region.axisPixelPosition = region.centerY
+                } else if (Math.abs(value - y2) < 0.001) {
+                  region.type = 'y2'
+                  region.axisPixelPosition = region.centerY
+                }
+              }
+            }
+          }
+          return region
+        })
+        
+        // Calculate pixel-to-value mapping if we have both x1 and x2 (or y1 and y2)
+        const x1Region = result.ocrRegions.find(r => r.type === 'x1')
+        const x2Region = result.ocrRegions.find(r => r.type === 'x2')
+        const y1Region = result.ocrRegions.find(r => r.type === 'y1')
+        const y2Region = result.ocrRegions.find(r => r.type === 'y2')
+        
+        // Create axis pixel mapping
+        result.axisPixelMapping = {}
+        
+        if (x1Region && x2Region && x1Region.axisPixelPosition && x2Region.axisPixelPosition) {
+          const pixelDistance = x2Region.axisPixelPosition - x1Region.axisPixelPosition
+          const valueDistance = x2 - x1
+          const pixelsPerUnit = pixelDistance / valueDistance
+          
+          result.axisPixelMapping.horizontal = {
+            x1Pixel: x1Region.axisPixelPosition,
+            x2Pixel: x2Region.axisPixelPosition,
+            pixelsPerUnit: pixelsPerUnit
+          }
+          
+          console.log(`[UnifiedAxisExtractor] X-axis mapping: ${pixelsPerUnit} pixels per unit`)
+          console.log(`[UnifiedAxisExtractor] X-axis pixel range: ${x1Region.axisPixelPosition} to ${x2Region.axisPixelPosition}`)
+        }
+        
+        if (y1Region && y2Region && y1Region.axisPixelPosition && y2Region.axisPixelPosition) {
+          const pixelDistance = Math.abs(y2Region.axisPixelPosition - y1Region.axisPixelPosition)
+          const valueDistance = y2 - y1
+          const pixelsPerUnit = pixelDistance / valueDistance
+          
+          result.axisPixelMapping.vertical = {
+            y1Pixel: y1Region.axisPixelPosition,
+            y2Pixel: y2Region.axisPixelPosition,
+            pixelsPerUnit: pixelsPerUnit
+          }
+          
+          console.log(`[UnifiedAxisExtractor] Y-axis mapping: ${pixelsPerUnit} pixels per unit`)
+          console.log(`[UnifiedAxisExtractor] Y-axis pixel range: ${y1Region.axisPixelPosition} to ${y2Region.axisPixelPosition}`)
+        }
+      }
+
+      return result
     } catch (error) {
       console.error('Error in unified axis extraction:', error)
       return null
@@ -264,7 +372,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
           regionY,
           regionWidth,
           regionHeight,
-          { psm: 6 },
+          { psm: 6, orientation },
         )
         extractedText = result.text
         extractedValues = this.extractNumbers(result.text)
@@ -281,7 +389,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
             regionY,
             sectionWidth,
             regionHeight,
-            { psm: 6 },
+            { psm: 6, orientation },
           )
           additionalValues.push(...this.extractNumbers(middleResult.text))
 
@@ -292,7 +400,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
             regionY,
             sectionWidth,
             regionHeight,
-            { psm: 6 },
+            { psm: 6, orientation },
           )
           additionalValues.push(...this.extractNumbers(rightResult.text))
 
@@ -352,6 +460,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
         y,
         width,
         height,
+        { orientation }
       )
       return { text: result.text, regions: [result.text] }
     }

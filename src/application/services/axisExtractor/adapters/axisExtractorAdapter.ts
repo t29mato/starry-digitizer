@@ -30,6 +30,7 @@ export interface AxisExtractorAdapter {
       psm?: number
       enhanceContrast?: boolean
       applyThreshold?: boolean
+      orientation?: 'horizontal' | 'vertical'
     },
   ): Promise<ImageProcessingResult>
 

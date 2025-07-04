@@ -20,6 +20,11 @@ export class AxisExtractor implements AxisExtractorInterface {
     })
   }
 
+  setDebug(debug: boolean): void {
+    // Use the new setDebug method instead of recreating the extractor
+    this.unifiedExtractor.setDebug(debug)
+  }
+
   async extractAxisInformation(
     imageData: ImageData,
   ): Promise<AxisExtractionResult | null> {

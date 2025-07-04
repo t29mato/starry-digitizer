@@ -5,10 +5,14 @@ import {
 } from '../axisExtractorInterface'
 
 export class AxisExtractorManager {
-  private axisExtractor: AxisExtractorInterface
+  private axisExtractor: AxisExtractor
 
   constructor() {
     this.axisExtractor = new AxisExtractor()
+  }
+
+  setDebugMode(debug: boolean): void {
+    this.axisExtractor.setDebug(debug)
   }
 
   async extractAxisInformationFromImage(
