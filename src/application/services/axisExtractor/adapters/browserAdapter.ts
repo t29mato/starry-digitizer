@@ -880,8 +880,18 @@ export class BrowserAdapter implements AxisExtractorAdapter {
                 height: height,
               };
 
+              // Calculate area ratio
+              const areaRatio =
+                (width * height) / (grayImage.cols * grayImage.rows);
+
+              // Skip rectangles that are too small (below minimum area ratio)
+              const minAreaRatio = this.options.minAreaRatio || 0.7;
+              if (areaRatio < minAreaRatio) {
+                continue;
+              }
+
               // Score based on size and position
-              let score = (width * height) / (grayImage.cols * grayImage.rows);
+              let score = areaRatio;
 
               // Prefer rectangles that are not too close to edges
               const margin = 20;
@@ -943,10 +953,16 @@ export class BrowserAdapter implements AxisExtractorAdapter {
           if (approx.rows === 4) {
             const rect = window.cv.boundingRect(contour);
             const area = rect.width * rect.height;
+            const totalArea = grayImage.cols * grayImage.rows;
+            const areaRatio = area / totalArea;
+
+            // Apply minimum area ratio filter
+            const minAreaRatio = this.options.minAreaRatio || 0.7;
 
             // Apply filters
             if (
               area > maxArea &&
+              areaRatio >= minAreaRatio &&
               rect.x > 10 &&
               rect.y > 10 &&
               rect.x + rect.width < grayImage.cols - 10 &&

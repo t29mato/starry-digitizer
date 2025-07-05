@@ -70,6 +70,7 @@
       @debugChange="handleDebugChange"
       @toleranceChange="handleToleranceChange"
       @colorThresholdChange="handleColorThresholdChange"
+      @minAreaRatioChange="handleMinAreaRatioChange"
     />
   </div>
 </template>
@@ -330,6 +331,25 @@ export default defineComponent({
             "Failed to re-extract with new color threshold:",
             error,
           );
+        }
+      }
+    },
+    async handleMinAreaRatioChange(ratio: number) {
+      // Update min area ratio and re-extract
+      this.axisExtractorManager.setMinAreaRatio(ratio);
+
+      if (this.originalCanvas && this.debugMode) {
+        try {
+          console.log("Re-extracting with new min area ratio:", ratio);
+          const result =
+            await this.axisExtractorManager.extractAxisInformationFromCanvas(
+              this.originalCanvas,
+            );
+          if (result) {
+            this.extractionResult = result;
+          }
+        } catch (error) {
+          console.error("Failed to re-extract with new min area ratio:", error);
         }
       }
     },

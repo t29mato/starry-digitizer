@@ -23,6 +23,10 @@ export class AxisExtractorManager {
     this.axisExtractor.setColorThreshold(threshold);
   }
 
+  setMinAreaRatio(ratio: number): void {
+    this.axisExtractor.setMinAreaRatio(ratio);
+  }
+
   async extractAxisInformationFromImage(
     imageData: ImageData,
   ): Promise<AxisExtractionResult | null> {

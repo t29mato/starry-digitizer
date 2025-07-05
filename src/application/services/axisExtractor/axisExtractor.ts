@@ -33,6 +33,10 @@ export class AxisExtractor implements AxisExtractorInterface {
     this.unifiedExtractor.setColorThreshold(threshold);
   }
 
+  setMinAreaRatio(ratio: number): void {
+    this.unifiedExtractor.setMinAreaRatio(ratio);
+  }
+
   async extractAxisInformation(
     imageData: ImageData,
   ): Promise<AxisExtractionResult | null> {

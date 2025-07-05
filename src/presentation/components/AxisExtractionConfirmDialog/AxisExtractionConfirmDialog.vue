@@ -78,6 +78,30 @@
             </p>
           </div>
 
+          <!-- Minimum area ratio adjustment slider -->
+          <div class="mb-4">
+            <v-slider
+              v-model="minAreaRatio"
+              label="Minimum Plot Area Size (%)"
+              :min="10"
+              :max="90"
+              :step="5"
+              thumb-label
+              @update:model-value="onMinAreaRatioChange"
+            >
+              <template v-slot:prepend>
+                <span class="text-caption">10%</span>
+              </template>
+              <template v-slot:append>
+                <span class="text-caption">90%</span>
+              </template>
+            </v-slider>
+            <p class="text-caption text-center mt-n2">
+              Minimum plot area size as percentage of image (current:
+              {{ minAreaRatio }}%)
+            </p>
+          </div>
+
           <div class="debug-canvas-grid mb-4" style="position: relative">
             <!-- Loading overlay -->
             <v-overlay
@@ -369,6 +393,7 @@ export default defineComponent({
       canvasHandler,
       lineTolerance: 20,
       colorThreshold: 50,
+      minAreaRatio: 70,
       isReloading: false,
     };
   },
@@ -960,6 +985,13 @@ export default defineComponent({
       if (this.originalCanvas && this.showDebug) {
         this.isReloading = true;
         this.$emit("colorThresholdChange", this.colorThreshold);
+      }
+    },
+    async onMinAreaRatioChange() {
+      // Re-extract with new min area ratio value
+      if (this.originalCanvas && this.showDebug) {
+        this.isReloading = true;
+        this.$emit("minAreaRatioChange", this.minAreaRatio / 100); // Convert percentage to ratio
       }
     },
   },

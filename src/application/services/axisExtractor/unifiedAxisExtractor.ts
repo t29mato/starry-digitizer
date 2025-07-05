@@ -15,6 +15,7 @@ export interface UnifiedAxisExtractionOptions {
   debug?: boolean;
   lineTolerance?: number; // Tolerance for line connection detection (default: 20)
   colorThreshold?: number; // RGB threshold for detecting dark lines (default: 50)
+  minAreaRatio?: number; // Minimum area ratio for plot area detection (default: 0.7 = 70%)
 }
 
 export class UnifiedAxisExtractor implements AxisExtractorInterface {
@@ -28,6 +29,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
       debug: false,
       lineTolerance: 20,
       colorThreshold: 50,
+      minAreaRatio: 0.7,
       ...options,
     };
 
@@ -88,6 +90,14 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
   setColorThreshold(threshold: number): void {
     this.options.colorThreshold = threshold;
     // If adapter is BrowserAdapter, update its color threshold
+    if (this.adapter instanceof BrowserAdapter) {
+      (this.adapter as any).options = { ...this.options };
+    }
+  }
+
+  setMinAreaRatio(ratio: number): void {
+    this.options.minAreaRatio = ratio;
+    // If adapter is BrowserAdapter, update its min area ratio
     if (this.adapter instanceof BrowserAdapter) {
       (this.adapter as any).options = { ...this.options };
     }
