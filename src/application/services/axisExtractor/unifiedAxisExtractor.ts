@@ -159,10 +159,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
 
       // Check if plot area was detected
       if (!detectedAxes.plotArea) {
-        console.warn(
-          "No plot area detected. Cannot proceed with axis extraction.",
-        );
-        return null;
+        console.warn("No plot area detected. Continuing with axis extraction anyway.");
       }
 
       // Step 2: 軸の値を抽出
