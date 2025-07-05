@@ -78,7 +78,25 @@
             </p>
           </div>
 
-          <div class="debug-canvas-grid mb-4">
+          <div class="debug-canvas-grid mb-4" style="position: relative">
+            <!-- Loading overlay -->
+            <v-overlay
+              :model-value="isReloading"
+              contained
+              class="align-center justify-center"
+              persistent
+            >
+              <v-progress-circular
+                indeterminate
+                size="64"
+                color="primary"
+              ></v-progress-circular>
+              <div class="text-center mt-4">
+                <p class="text-h6">Processing...</p>
+                <p class="text-body-2">Applying new threshold settings</p>
+              </div>
+            </v-overlay>
+
             <div class="debug-canvas-item">
               <h5 class="text-center mb-2">1. All Detected Rectangles</h5>
               <canvas
@@ -351,6 +369,7 @@ export default defineComponent({
       canvasHandler,
       lineTolerance: 20,
       colorThreshold: 50,
+      isReloading: false,
     };
   },
   computed: {
@@ -382,6 +401,9 @@ export default defineComponent({
           this.displayVal.x2 = String(newResult.x2);
           this.displayVal.y1 = String(newResult.y1);
           this.displayVal.y2 = String(newResult.y2);
+
+          // Reset loading state when new result arrives
+          this.isReloading = false;
 
           // Redraw canvas when result changes
           this.$nextTick(() => {
@@ -929,12 +951,14 @@ export default defineComponent({
     async onToleranceChange() {
       // Re-extract with new tolerance value
       if (this.originalCanvas && this.showDebug) {
+        this.isReloading = true;
         this.$emit("toleranceChange", this.lineTolerance);
       }
     },
     async onColorThresholdChange() {
       // Re-extract with new color threshold value
       if (this.originalCanvas && this.showDebug) {
+        this.isReloading = true;
         this.$emit("colorThresholdChange", this.colorThreshold);
       }
     },
@@ -952,6 +976,7 @@ export default defineComponent({
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
   max-width: 100%;
+  min-height: 400px;
 }
 
 .debug-canvas-item {
