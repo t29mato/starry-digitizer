@@ -19,6 +19,10 @@ export class AxisExtractorManager {
     this.axisExtractor.setLineTolerance(tolerance);
   }
 
+  setColorThreshold(threshold: number): void {
+    this.axisExtractor.setColorThreshold(threshold);
+  }
+
   async extractAxisInformationFromImage(
     imageData: ImageData,
   ): Promise<AxisExtractionResult | null> {

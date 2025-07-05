@@ -14,6 +14,7 @@ export interface UnifiedAxisExtractionOptions {
   forceAdapter?: "browser" | "node";
   debug?: boolean;
   lineTolerance?: number; // Tolerance for line connection detection (default: 20)
+  colorThreshold?: number; // RGB threshold for detecting dark lines (default: 15)
 }
 
 export class UnifiedAxisExtractor implements AxisExtractorInterface {
@@ -26,6 +27,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
       confidenceThreshold: 40,
       debug: false,
       lineTolerance: 20,
+      colorThreshold: 15,
       ...options,
     };
 
@@ -78,6 +80,14 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
   setLineTolerance(tolerance: number): void {
     this.options.lineTolerance = tolerance;
     // If adapter is BrowserAdapter, update its tolerance
+    if (this.adapter instanceof BrowserAdapter) {
+      (this.adapter as any).options = { ...this.options };
+    }
+  }
+
+  setColorThreshold(threshold: number): void {
+    this.options.colorThreshold = threshold;
+    // If adapter is BrowserAdapter, update its color threshold
     if (this.adapter instanceof BrowserAdapter) {
       (this.adapter as any).options = { ...this.options };
     }
@@ -159,7 +169,9 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
 
       // Check if plot area was detected
       if (!detectedAxes.plotArea) {
-        console.warn("No plot area detected. Continuing with axis extraction anyway.");
+        console.warn(
+          "No plot area detected. Continuing with axis extraction anyway.",
+        );
       }
 
       // Step 2: 軸の値を抽出

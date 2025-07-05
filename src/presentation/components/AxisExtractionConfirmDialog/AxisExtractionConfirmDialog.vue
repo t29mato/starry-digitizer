@@ -54,6 +54,30 @@
             </p>
           </div>
 
+          <!-- Color threshold adjustment slider -->
+          <div class="mb-4">
+            <v-slider
+              v-model="colorThreshold"
+              label="Color Threshold (RGB)"
+              :min="0"
+              :max="100"
+              :step="5"
+              thumb-label
+              @update:model-value="onColorThresholdChange"
+            >
+              <template v-slot:prepend>
+                <span class="text-caption">0</span>
+              </template>
+              <template v-slot:append>
+                <span class="text-caption">100</span>
+              </template>
+            </v-slider>
+            <p class="text-caption text-center mt-n2">
+              Adjust RGB threshold for detecting dark lines (current: RGB ≤
+              {{ colorThreshold }})
+            </p>
+          </div>
+
           <div class="debug-canvas-grid mb-4">
             <div class="debug-canvas-item">
               <h5 class="text-center mb-2">1. All Detected Rectangles</h5>
@@ -315,6 +339,7 @@ export default defineComponent({
       axisSetRepository,
       canvasHandler,
       lineTolerance: 20,
+      colorThreshold: 15,
     };
   },
   computed: {
@@ -894,6 +919,12 @@ export default defineComponent({
       // Re-extract with new tolerance value
       if (this.originalCanvas && this.showDebug) {
         this.$emit("toleranceChange", this.lineTolerance);
+      }
+    },
+    async onColorThresholdChange() {
+      // Re-extract with new color threshold value
+      if (this.originalCanvas && this.showDebug) {
+        this.$emit("colorThresholdChange", this.colorThreshold);
       }
     },
   },

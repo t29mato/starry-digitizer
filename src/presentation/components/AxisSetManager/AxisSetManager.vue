@@ -69,6 +69,7 @@
       @reject="handleRejectExtraction"
       @debugChange="handleDebugChange"
       @toleranceChange="handleToleranceChange"
+      @colorThresholdChange="handleColorThresholdChange"
     />
   </div>
 </template>
@@ -304,6 +305,28 @@ export default defineComponent({
           }
         } catch (error) {
           console.error("Failed to re-extract with new tolerance:", error);
+        }
+      }
+    },
+    async handleColorThresholdChange(threshold: number) {
+      // Update color threshold and re-extract
+      this.axisExtractorManager.setColorThreshold(threshold);
+
+      if (this.originalCanvas && this.debugMode) {
+        try {
+          console.log("Re-extracting with new color threshold:", threshold);
+          const result =
+            await this.axisExtractorManager.extractAxisInformationFromCanvas(
+              this.originalCanvas,
+            );
+          if (result) {
+            this.extractionResult = result;
+          }
+        } catch (error) {
+          console.error(
+            "Failed to re-extract with new color threshold:",
+            error,
+          );
         }
       }
     },

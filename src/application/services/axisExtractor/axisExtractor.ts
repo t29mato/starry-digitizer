@@ -29,6 +29,10 @@ export class AxisExtractor implements AxisExtractorInterface {
     this.unifiedExtractor.setLineTolerance(tolerance);
   }
 
+  setColorThreshold(threshold: number): void {
+    this.unifiedExtractor.setColorThreshold(threshold);
+  }
+
   async extractAxisInformation(
     imageData: ImageData,
   ): Promise<AxisExtractionResult | null> {

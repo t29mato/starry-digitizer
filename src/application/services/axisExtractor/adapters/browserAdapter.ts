@@ -798,13 +798,14 @@ export class BrowserAdapter implements AxisExtractorAdapter {
       const lines = new window.cv.Mat();
       const binaryImage = new window.cv.Mat();
 
-      // Apply threshold to keep only very dark lines (RGB <= 15)
-      // Since we want pixels with value <= 15, and threshold makes pixels > threshold white,
+      // Apply threshold to keep only very dark lines (RGB <= colorThreshold)
+      // Since we want pixels with value <= colorThreshold, and threshold makes pixels > threshold white,
       // we use THRESH_BINARY_INV to invert the result
+      const colorThreshold = this.options.colorThreshold || 15;
       window.cv.threshold(
         grayImage,
         binaryImage,
-        15,
+        colorThreshold,
         255,
         window.cv.THRESH_BINARY_INV,
       );
