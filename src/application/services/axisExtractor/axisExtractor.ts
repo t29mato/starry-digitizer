@@ -3,59 +3,63 @@ import {
   AxisExtractionResult,
   DetectedAxis,
   DetectedRegion,
-} from './axisExtractorInterface'
+} from "./axisExtractorInterface";
 import {
   UnifiedAxisExtractor,
   UnifiedAxisExtractionOptions,
-} from './unifiedAxisExtractor'
+} from "./unifiedAxisExtractor";
 
 export class AxisExtractor implements AxisExtractorInterface {
-  private unifiedExtractor: UnifiedAxisExtractor
+  private unifiedExtractor: UnifiedAxisExtractor;
 
   constructor(options: UnifiedAxisExtractionOptions = {}) {
     // Force browser adapter for backward compatibility
     this.unifiedExtractor = new UnifiedAxisExtractor({
       ...options,
-      forceAdapter: 'browser',
-    })
+      forceAdapter: "browser",
+    });
   }
 
   setDebug(debug: boolean): void {
     // Use the new setDebug method instead of recreating the extractor
-    this.unifiedExtractor.setDebug(debug)
+    this.unifiedExtractor.setDebug(debug);
+  }
+
+  setLineTolerance(tolerance: number): void {
+    this.unifiedExtractor.setLineTolerance(tolerance);
   }
 
   async extractAxisInformation(
     imageData: ImageData,
   ): Promise<AxisExtractionResult | null> {
-    return await this.unifiedExtractor.extractAxisInformation(imageData)
+    return await this.unifiedExtractor.extractAxisInformation(imageData);
   }
 
   async detectAxes(imageData: ImageData): Promise<DetectedAxis> {
-    return await this.unifiedExtractor.detectAxes(imageData)
+    return await this.unifiedExtractor.detectAxes(imageData);
   }
 
   async extractTickValuesWithRegion(
     imageData: ImageData,
     axis: any,
-    orientation: 'horizontal' | 'vertical',
+    orientation: "horizontal" | "vertical",
   ): Promise<{ values: number[]; region: DetectedRegion }> {
     return await this.unifiedExtractor.extractTickValuesWithRegion(
       imageData,
       axis,
       orientation,
-    )
+    );
   }
 
   async extractTickValues(
     imageData: ImageData,
     axis: any,
-    orientation: 'horizontal' | 'vertical',
+    orientation: "horizontal" | "vertical",
   ): Promise<number[]> {
     return await this.unifiedExtractor.extractTickValues(
       imageData,
       axis,
       orientation,
-    )
+    );
   }
 }

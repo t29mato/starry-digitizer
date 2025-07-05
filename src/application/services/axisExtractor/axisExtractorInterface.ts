@@ -15,9 +15,24 @@ export interface OCRRegion {
   height: number
   text: string
   type: 'x1' | 'x2' | 'y1' | 'y2' | 'other'
-  centerX?: number  // 重心のX座標
-  centerY?: number  // 重心のY座標
-  axisPixelPosition?: number  // 軸上のピクセル位置
+  centerX?: number // 重心のX座標
+  centerY?: number // 重心のY座標
+  axisPixelPosition?: number // 軸上のピクセル位置
+  originalRegion?: {
+    // OCR推定時の元の領域（OpenCV精製前）
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+}
+
+export interface DetectedRectangle {
+  x: number
+  y: number
+  width: number
+  height: number
+  score?: number
 }
 
 export interface AxisExtractionResult {
@@ -46,6 +61,7 @@ export interface AxisExtractionResult {
       pixelsPerUnit: number
     }
   }
+  detectedRectangles?: DetectedRectangle[]
 }
 
 export interface DetectedAxis {

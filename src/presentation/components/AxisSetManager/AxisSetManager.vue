@@ -39,10 +39,10 @@
         class="pl-2 c__axisSet-item"
         link
         @click="handleOnClickAxisSet(axisSet.id)"
-        :class="
-          axisSet.id === axisSetRepository.activeAxisSet.id &&
-          'bg-yellow-lighten-4'
-        "
+        :class="{
+          'bg-yellow-lighten-4':
+            axisSet.id === axisSetRepository.activeAxisSet.id,
+        }"
       >
         <v-row>
           <v-col cols="10">
@@ -68,21 +68,22 @@
       @confirm="handleConfirmExtraction"
       @reject="handleRejectExtraction"
       @debugChange="handleDebugChange"
+      @toleranceChange="handleToleranceChange"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent } from "vue";
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
-import { MANUAL_MODE } from '@/constants'
-import { AxisExtractorManager } from '@/application/services/axisExtractor/manager/axisExtractorManager'
-import { AxisExtractionConfirmDialog } from '@/presentation/components/AxisExtractionConfirmDialog'
-import { AxisExtractionResult } from '@/application/services/axisExtractor/axisExtractorInterface'
+import { canvasHandler } from "@/instanceStore/applicationServiceInstances";
+import { interpolator } from "@/instanceStore/applicationServiceInstances";
+import { axisSetRepository } from "@/instanceStore/repositoryInatances";
+import { datasetRepository } from "@/instanceStore/repositoryInatances";
+import { MANUAL_MODE } from "@/constants";
+import { AxisExtractorManager } from "@/application/services/axisExtractor/manager/axisExtractorManager";
+import { AxisExtractionConfirmDialog } from "@/presentation/components/AxisExtractionConfirmDialog";
+import { AxisExtractionResult } from "@/application/services/axisExtractor/axisExtractorInterface";
 
 export default defineComponent({
   components: {
@@ -94,70 +95,70 @@ export default defineComponent({
       interpolator,
       axisSetRepository,
       datasetRepository,
-      sortKey: 'as added',
-      sortKeys: ['as added', 'x', 'y'],
-      sortOrder: 'ascending',
-      sortOrders: ['ascending', 'descending'],
+      sortKey: "as added",
+      sortKeys: ["as added", "x", "y"],
+      sortOrder: "ascending",
+      sortOrders: ["ascending", "descending"],
       extracting: false,
       axisExtractorManager: new AxisExtractorManager(),
       showConfirmDialog: false,
       extractionResult: null as AxisExtractionResult | null,
       originalCanvas: null as HTMLCanvasElement | null,
       debugMode: false,
-    }
+    };
   },
   computed: {
     allAxisCoordsAreFilled() {
       return (
         this.axisSetRepository.activeAxisSet.hasXAxis &&
         this.axisSetRepository.activeAxisSet.hasYAxis
-      )
+      );
     },
   },
   methods: {
     activateAxisSet(id: number) {
-      this.axisSetRepository.setActiveAxisSet(id)
-      this.datasetRepository.activeDataset.setAxisSetId(id)
+      this.axisSetRepository.setActiveAxisSet(id);
+      this.datasetRepository.activeDataset.setAxisSetId(id);
 
       //NOTE: If axis coords are not calibrated, change manualMode for calibration. Otherwise automatically set to ADD mode
       if (this.axisSetRepository.activeAxisSet.nextAxis) {
-        this.canvasHandler.manualMode = MANUAL_MODE.UNSET
+        this.canvasHandler.manualMode = MANUAL_MODE.UNSET;
       } else {
-        this.canvasHandler.manualMode = MANUAL_MODE.ADD
+        this.canvasHandler.manualMode = MANUAL_MODE.ADD;
       }
     },
     handleOnClickAxisSet(id: number) {
-      if (id === this.axisSetRepository.activeAxisSetId) return
+      if (id === this.axisSetRepository.activeAxisSetId) return;
 
-      this.activateAxisSet(id)
+      this.activateAxisSet(id);
     },
     handleOnClickAddAxisSetButton() {
-      this.axisSetRepository.createNewAxisSet()
-      this.activateAxisSet(this.axisSetRepository.lastAxisSetId)
+      this.axisSetRepository.createNewAxisSet();
+      this.activateAxisSet(this.axisSetRepository.lastAxisSetId);
     },
     removeActiveAxisSet() {
       this.axisSetRepository.removeAxisSet(
         this.axisSetRepository.activeAxisSetId,
-      )
+      );
     },
     handleOnClickRemoveAxisSetButton() {
       //TODO: Move these logics to domain service and add test...
-      const targetAxisSet = this.axisSetRepository.activeAxisSet
+      const targetAxisSet = this.axisSetRepository.activeAxisSet;
 
       const datasetsConnectedToTargetAxisSet =
         this.datasetRepository.datasets.filter(
           (dataset) => dataset.axisSetId === targetAxisSet.id,
-        )
+        );
 
       const targetAxisSetIndex =
-        this.axisSetRepository.axisSets.indexOf(targetAxisSet)
+        this.axisSetRepository.axisSets.indexOf(targetAxisSet);
       const previousAxisSet =
-        this.axisSetRepository.axisSets[targetAxisSetIndex - 1]
+        this.axisSetRepository.axisSets[targetAxisSetIndex - 1];
 
       const alternativeAxisSet =
         targetAxisSetIndex === 0
           ? this.axisSetRepository.axisSets[1]
-          : previousAxisSet || this.axisSetRepository.axisSets[0]
+          : previousAxisSet || this.axisSetRepository.axisSets[0];
 
       // Early return if the user cancels the confirmation dialog
       if (targetAxisSet.atLeastOneCoordOrValueIsChanged) {
@@ -167,113 +168,145 @@ export default defineComponent({
           alternativeAxisSet.name
         }' will be applied to the following datasets: ${datasetsConnectedToTargetAxisSet
           .map((dataset) => dataset.name)
-          .toString()}`
+          .toString()}`;
 
         if (!window.confirm(confirmMessage)) {
-          return
+          return;
         }
       }
 
-      this.removeActiveAxisSet()
+      this.removeActiveAxisSet();
 
       datasetsConnectedToTargetAxisSet.forEach((dataset) => {
-        dataset.setAxisSetId(alternativeAxisSet.id)
-      })
+        dataset.setAxisSetId(alternativeAxisSet.id);
+      });
 
-      this.axisSetRepository.setActiveAxisSet(alternativeAxisSet.id)
+      this.axisSetRepository.setActiveAxisSet(alternativeAxisSet.id);
 
       if (alternativeAxisSet.nextAxis) {
-        this.canvasHandler.manualMode = MANUAL_MODE.UNSET
+        this.canvasHandler.manualMode = MANUAL_MODE.UNSET;
       } else {
-        this.canvasHandler.manualMode = MANUAL_MODE.ADD
+        this.canvasHandler.manualMode = MANUAL_MODE.ADD;
       }
     },
     async handleOnClickExtractAxisButton() {
       try {
-        this.extracting = true
+        this.extracting = true;
 
         // Get the canvas element from the canvas handler
-        const canvas = document.querySelector('canvas') as HTMLCanvasElement
+        const canvas = document.querySelector("canvas") as HTMLCanvasElement;
         if (!canvas) {
-          throw new Error('Canvas not found')
+          throw new Error("Canvas not found");
         }
 
-        // Show loading message
-        console.log('Initializing OpenCV.js and Tesseract.js...')
+        // Debug: Log canvas dimensions and scale
+        console.log("Canvas actual size:", canvas.width, "x", canvas.height);
+        console.log(
+          "Original image size:",
+          this.canvasHandler.originalWidth,
+          "x",
+          this.canvasHandler.originalHeight,
+        );
+        console.log("Canvas scale:", this.canvasHandler.scale);
+
+        // Calculate the actual scale ratio between canvas and original image
+        const canvasToOriginalScale =
+          this.canvasHandler.originalWidth / canvas.width;
+        console.log("Canvas to original scale ratio:", canvasToOriginalScale);
 
         // Set debug mode if needed
-        this.axisExtractorManager.setDebugMode(this.debugMode)
+        this.axisExtractorManager.setDebugMode(this.debugMode);
 
         // Extract axis information from the canvas
         const result =
           await this.axisExtractorManager.extractAxisInformationFromCanvas(
             canvas,
-          )
+          );
 
         if (result) {
           // Store the result and canvas for the confirmation dialog
-          this.extractionResult = result
-          this.originalCanvas = canvas
-          this.showConfirmDialog = true
+          this.extractionResult = result;
+          this.originalCanvas = canvas;
+          this.showConfirmDialog = true;
         } else {
           alert(
-            'Could not detect axes in the image. Please ensure the chart has visible axis lines and tick labels.',
-          )
+            "Could not detect axes in the image. Please ensure the chart has visible axis lines and tick labels.",
+          );
         }
       } catch (error) {
-        console.error('Failed to extract axis information:', error)
+        console.error("Failed to extract axis information:", error);
         const errorMessage =
-          error instanceof Error ? error.message : String(error)
-        if (errorMessage.includes('OpenCV')) {
+          error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes("OpenCV")) {
           alert(
-            'Failed to load computer vision libraries. Please check your internet connection and try again.',
-          )
+            "Failed to load computer vision libraries. Please check your internet connection and try again.",
+          );
         } else {
           alert(
-            'Failed to extract axis information. Please try again or set the axes manually.',
-          )
+            "Failed to extract axis information. Please try again or set the axes manually.",
+          );
         }
       } finally {
-        this.extracting = false
+        this.extracting = false;
       }
     },
     handleConfirmExtraction(result: AxisExtractionResult) {
       // Update the active axis set with extracted values
-      const activeAxisSet = this.axisSetRepository.activeAxisSet
-      activeAxisSet.setX1Value(result.x1)
-      activeAxisSet.setX2Value(result.x2)
-      activeAxisSet.setY1Value(result.y1)
-      activeAxisSet.setY2Value(result.y2)
+      const activeAxisSet = this.axisSetRepository.activeAxisSet;
+      activeAxisSet.setX1Value(result.x1);
+      activeAxisSet.setX2Value(result.x2);
+      activeAxisSet.setY1Value(result.y1);
+      activeAxisSet.setY2Value(result.y2);
 
       // Clean up
-      this.extractionResult = null
-      this.originalCanvas = null
+      this.extractionResult = null;
+      this.originalCanvas = null;
     },
     handleRejectExtraction() {
       // Clean up without applying changes
-      this.extractionResult = null
-      this.originalCanvas = null
+      this.extractionResult = null;
+      this.originalCanvas = null;
     },
     async handleDebugChange(debug: boolean) {
-      this.debugMode = debug
+      this.debugMode = debug;
       // Update axis extractor debug mode
-      this.axisExtractorManager.setDebugMode(debug)
-      
+      this.axisExtractorManager.setDebugMode(debug);
+
       // Re-extract with debug mode if we have the original canvas
       if (this.originalCanvas && debug) {
         try {
-          console.log('Re-extracting with debug mode enabled...')
-          const result = await this.axisExtractorManager.extractAxisInformationFromCanvas(
-            this.originalCanvas
-          )
+          console.log("Re-extracting with debug mode enabled...");
+          const result =
+            await this.axisExtractorManager.extractAxisInformationFromCanvas(
+              this.originalCanvas,
+            );
           if (result) {
-            this.extractionResult = result
+            this.extractionResult = result;
           }
         } catch (error) {
-          console.error('Failed to re-extract with debug mode:', error)
+          console.error("Failed to re-extract with debug mode:", error);
+        }
+      }
+    },
+    async handleToleranceChange(tolerance: number) {
+      // Update tolerance and re-extract
+      this.axisExtractorManager.setLineTolerance(tolerance);
+
+      if (this.originalCanvas && this.debugMode) {
+        try {
+          console.log("Re-extracting with new tolerance:", tolerance);
+          const result =
+            await this.axisExtractorManager.extractAxisInformationFromCanvas(
+              this.originalCanvas,
+            );
+          if (result) {
+            this.extractionResult = result;
+          }
+        } catch (error) {
+          console.error("Failed to re-extract with new tolerance:", error);
         }
       }
     },
   },
-})
+});
 </script>
