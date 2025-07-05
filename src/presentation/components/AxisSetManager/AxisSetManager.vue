@@ -285,11 +285,28 @@ export default defineComponent({
             await this.axisExtractorManager.extractAxisInformationFromCanvas(
               this.originalCanvas,
             );
-          if (result) {
-            this.extractionResult = result;
-          }
+          // Always update the extraction result to trigger the dialog's watcher
+          this.extractionResult = result || {
+            x1: 0,
+            x2: 1,
+            y1: 0,
+            y2: 1,
+            horizontalRegion: undefined,
+            verticalRegion: undefined,
+            plotArea: undefined,
+          };
         } catch (error) {
           console.error("Failed to re-extract with debug mode:", error);
+          // Reset extraction result even on error to clear loading state
+          this.extractionResult = {
+            x1: 0,
+            x2: 1,
+            y1: 0,
+            y2: 1,
+            horizontalRegion: undefined,
+            verticalRegion: undefined,
+            plotArea: undefined,
+          };
         }
       }
     },
@@ -304,11 +321,28 @@ export default defineComponent({
             await this.axisExtractorManager.extractAxisInformationFromCanvas(
               this.originalCanvas,
             );
-          if (result) {
-            this.extractionResult = result;
-          }
+          // Always update the extraction result to trigger the dialog's watcher
+          this.extractionResult = result || {
+            x1: 0,
+            x2: 1,
+            y1: 0,
+            y2: 1,
+            horizontalRegion: undefined,
+            verticalRegion: undefined,
+            plotArea: undefined,
+          };
         } catch (error) {
           console.error("Failed to re-extract with new tolerance:", error);
+          // Reset extraction result even on error to clear loading state
+          this.extractionResult = {
+            x1: 0,
+            x2: 1,
+            y1: 0,
+            y2: 1,
+            horizontalRegion: undefined,
+            verticalRegion: undefined,
+            plotArea: undefined,
+          };
         }
       }
     },
@@ -323,14 +357,31 @@ export default defineComponent({
             await this.axisExtractorManager.extractAxisInformationFromCanvas(
               this.originalCanvas,
             );
-          if (result) {
-            this.extractionResult = result;
-          }
+          // Always update the extraction result to trigger the dialog's watcher
+          this.extractionResult = result || {
+            x1: 0,
+            x2: 1,
+            y1: 0,
+            y2: 1,
+            horizontalRegion: undefined,
+            verticalRegion: undefined,
+            plotArea: undefined,
+          };
         } catch (error) {
           console.error(
             "Failed to re-extract with new color threshold:",
             error,
           );
+          // Reset extraction result even on error to clear loading state
+          this.extractionResult = {
+            x1: 0,
+            x2: 1,
+            y1: 0,
+            y2: 1,
+            horizontalRegion: undefined,
+            verticalRegion: undefined,
+            plotArea: undefined,
+          };
         }
       }
     },
@@ -345,11 +396,28 @@ export default defineComponent({
             await this.axisExtractorManager.extractAxisInformationFromCanvas(
               this.originalCanvas,
             );
-          if (result) {
-            this.extractionResult = result;
-          }
+          // Always update the extraction result to trigger the dialog's watcher
+          this.extractionResult = result || {
+            x1: 0,
+            x2: 1,
+            y1: 0,
+            y2: 1,
+            horizontalRegion: undefined,
+            verticalRegion: undefined,
+            plotArea: undefined,
+          };
         } catch (error) {
           console.error("Failed to re-extract with new min area ratio:", error);
+          // Reset extraction result even on error to clear loading state
+          this.extractionResult = {
+            x1: 0,
+            x2: 1,
+            y1: 0,
+            y2: 1,
+            horizontalRegion: undefined,
+            verticalRegion: undefined,
+            plotArea: undefined,
+          };
         }
       }
     },
