@@ -760,6 +760,16 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         window.cv.THRESH_BINARY_INV,
       );
 
+      // Apply morphological operations to connect broken lines
+      const kernel = window.cv.Mat.ones(3, 3, window.cv.CV_8U);
+      window.cv.morphologyEx(
+        binaryImage,
+        binaryImage,
+        window.cv.MORPH_CLOSE,
+        kernel,
+      );
+      kernel.delete();
+
       // Apply Canny edge detection on the binary image
       window.cv.Canny(binaryImage, edges, 50, 150);
 
