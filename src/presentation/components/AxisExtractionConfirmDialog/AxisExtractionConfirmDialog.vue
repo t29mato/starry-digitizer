@@ -339,7 +339,7 @@ export default defineComponent({
       axisSetRepository,
       canvasHandler,
       lineTolerance: 20,
-      colorThreshold: 15,
+      colorThreshold: 50,
     };
   },
   computed: {

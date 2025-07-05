@@ -497,61 +497,11 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         return detectedAxes;
       }
 
-      // Fallback to line detection if rectangle detection fails
-      const edges = new window.cv.Mat();
-      const lines = new window.cv.Mat();
-
-      window.cv.Canny(gray, edges, 50, 150);
-      window.cv.HoughLinesP(edges, lines, 1, Math.PI / 180, 50, 50, 10);
-
-      const detectedAxes: any = {};
-
-      for (let i = 0; i < lines.rows; i++) {
-        const x1 = lines.data32S[i * 4];
-        const y1 = lines.data32S[i * 4 + 1];
-        const x2 = lines.data32S[i * 4 + 2];
-        const y2 = lines.data32S[i * 4 + 3];
-
-        const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
-        const isHorizontal = Math.abs(angle) < 15 || Math.abs(angle - 180) < 15;
-        const isVertical =
-          Math.abs(angle - 90) < 15 || Math.abs(angle + 90) < 15;
-
-        if (isHorizontal) {
-          const lineY = (y1 + y2) / 2;
-          if (
-            !detectedAxes.horizontalAxis ||
-            lineY > detectedAxes.horizontalAxis.y
-          ) {
-            detectedAxes.horizontalAxis = {
-              x1: Math.min(x1, x2),
-              x2: Math.max(x1, x2),
-              y: lineY,
-            };
-          }
-        }
-
-        if (isVertical) {
-          const lineX = (x1 + x2) / 2;
-          if (
-            !detectedAxes.verticalAxis ||
-            lineX < detectedAxes.verticalAxis.x
-          ) {
-            detectedAxes.verticalAxis = {
-              x: lineX,
-              y1: Math.min(y1, y2),
-              y2: Math.max(y1, y2),
-            };
-          }
-        }
-      }
-
+      // No plot area detected - return empty result (no axes)
       src.delete();
       gray.delete();
-      edges.delete();
-      lines.delete();
 
-      return detectedAxes;
+      return {};
     } catch (error) {
       console.error("Error detecting axes:", error);
       return {};
@@ -738,8 +688,8 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         const r = data[idx];
         const g = data[idx + 1];
         const b = data[idx + 2];
-        // Only count pixels where all RGB values are 15 or less (very dark pixels)
-        if (r <= 15 && g <= 15 && b <= 15) darkPixelCount++;
+        // Only count pixels where all RGB values are 50 or less (dark pixels)
+        if (r <= 50 && g <= 50 && b <= 50) darkPixelCount++;
       }
       const score = darkPixelCount / width;
       if (score > maxHorizontalScore && score > 0.3) {
@@ -759,8 +709,8 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         const r = data[idx];
         const g = data[idx + 1];
         const b = data[idx + 2];
-        // Only count pixels where all RGB values are 15 or less (very dark pixels)
-        if (r <= 15 && g <= 15 && b <= 15) darkPixelCount++;
+        // Only count pixels where all RGB values are 50 or less (dark pixels)
+        if (r <= 50 && g <= 50 && b <= 50) darkPixelCount++;
       }
       const score = darkPixelCount / height;
       if (score > maxVerticalScore && score > 0.3) {
@@ -801,7 +751,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
       // Apply threshold to keep only very dark lines (RGB <= colorThreshold)
       // Since we want pixels with value <= colorThreshold, and threshold makes pixels > threshold white,
       // we use THRESH_BINARY_INV to invert the result
-      const colorThreshold = this.options.colorThreshold || 15;
+      const colorThreshold = this.options.colorThreshold || 50;
       window.cv.threshold(
         grayImage,
         binaryImage,

@@ -14,7 +14,7 @@ export interface UnifiedAxisExtractionOptions {
   forceAdapter?: "browser" | "node";
   debug?: boolean;
   lineTolerance?: number; // Tolerance for line connection detection (default: 20)
-  colorThreshold?: number; // RGB threshold for detecting dark lines (default: 15)
+  colorThreshold?: number; // RGB threshold for detecting dark lines (default: 50)
 }
 
 export class UnifiedAxisExtractor implements AxisExtractorInterface {
@@ -27,7 +27,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
       confidenceThreshold: 40,
       debug: false,
       lineTolerance: 20,
-      colorThreshold: 15,
+      colorThreshold: 50,
       ...options,
     };
 
