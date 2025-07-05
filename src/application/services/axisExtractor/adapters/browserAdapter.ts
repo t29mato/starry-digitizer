@@ -879,10 +879,6 @@ export class BrowserAdapter implements AxisExtractorAdapter {
                 bottomLineCoversLeft &&
                 bottomLineCoversRight;
 
-              if (!isValidRectangle) {
-                continue;
-              }
-
               const rect = {
                 x: leftLine.x,
                 y: topLine.y,
@@ -894,14 +890,21 @@ export class BrowserAdapter implements AxisExtractorAdapter {
               const areaRatio =
                 (width * height) / (grayImage.cols * grayImage.rows);
 
-              // Skip rectangles that are too small (below minimum area ratio)
-              const minAreaRatio = this.options.minAreaRatio || 0.7;
-              if (areaRatio < minAreaRatio) {
-                continue;
-              }
-
               // Score based on size and position
               let score = areaRatio;
+
+              // Add validation status to the rectangle
+              const validationStatus = {
+                isValidRectangle: isValidRectangle,
+                areaRatio: areaRatio,
+                meetsMinAreaRatio:
+                  areaRatio >= (this.options.minAreaRatio || 0.7),
+              };
+
+              // Skip for selection but still store for visualization
+              const minAreaRatio = this.options.minAreaRatio || 0.7;
+              const skipForSelection =
+                !isValidRectangle || areaRatio < minAreaRatio;
 
               // Prefer rectangles that are not too close to edges
               const margin = 20;
@@ -920,16 +923,20 @@ export class BrowserAdapter implements AxisExtractorAdapter {
                 score *= 1.2;
               }
 
-              // Store this rectangle candidate
+              // Store this rectangle candidate with validation info
               this.detectedRectangles.push({
                 x: rect.x,
                 y: rect.y,
                 width: rect.width,
                 height: rect.height,
                 score: score,
+                isValid: isValidRectangle,
+                areaRatio: areaRatio,
+                skipped: skipForSelection,
               });
 
-              if (score > maxScore) {
+              // Only consider for best rect if it passes all checks
+              if (!skipForSelection && score > maxScore) {
                 maxScore = score;
                 bestRect = rect;
               }

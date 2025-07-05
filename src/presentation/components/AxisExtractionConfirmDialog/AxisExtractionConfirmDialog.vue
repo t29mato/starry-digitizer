@@ -536,11 +536,29 @@ export default defineComponent({
         ctx.save();
 
         this.result.detectedRectangles.forEach((rect, index) => {
-          // Use different colors for different rectangles
-          const hue = (index * 60) % 360;
-          ctx.strokeStyle = `hsla(${hue}, 70%, 50%, 0.8)`;
-          ctx.lineWidth = 2;
-          ctx.setLineDash([5, 5]);
+          // Use different colors based on validation status
+          let strokeColor;
+          let lineStyle = [5, 5];
+
+          if (rect.skipped) {
+            // Skipped rectangles: gray color
+            strokeColor = `hsla(0, 0%, 50%, 0.5)`;
+            lineStyle = [3, 3];
+          } else if (!rect.isValid) {
+            // Invalid rectangles: red color
+            strokeColor = `hsla(0, 70%, 50%, 0.6)`;
+          } else if (rect.areaRatio < 0.7) {
+            // Too small: orange color
+            strokeColor = `hsla(30, 70%, 50%, 0.6)`;
+          } else {
+            // Valid candidates: use different hues
+            const hue = (index * 60) % 360;
+            strokeColor = `hsla(${hue}, 70%, 50%, 0.8)`;
+          }
+
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = rect.skipped ? 1 : 2;
+          ctx.setLineDash(lineStyle);
 
           const scaledX = rect.x * this.scale;
           const scaledY = rect.y * this.scale;
@@ -549,11 +567,17 @@ export default defineComponent({
 
           ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
 
-          // Label with score
-          ctx.fillStyle = ctx.strokeStyle;
-          ctx.font = "bold 12px Arial";
+          // Label with score and status
+          ctx.fillStyle = strokeColor;
+          ctx.font = rect.skipped ? "10px Arial" : "bold 12px Arial";
+          const status = rect.skipped
+            ? " (skip)"
+            : rect.isValid
+            ? ""
+            : " (invalid)";
+          const areaInfo = ` ${(rect.areaRatio * 100).toFixed(0)}%`;
           ctx.fillText(
-            `R${index + 1} (score: ${rect.score?.toFixed(2) || "N/A"})`,
+            `R${index + 1}${areaInfo}${status}`,
             scaledX + 5,
             scaledY - 5,
           );
