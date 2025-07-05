@@ -499,10 +499,12 @@ export default defineComponent({
     drawDebugCanvases() {
       if (!this.originalCanvas || !this.editableResult) return;
 
-      // Calculate scale for debug canvases (smaller for 2x2 grid)
+      // Calculate scale for debug canvases
+      // Use larger size since we have a 3-column grid and modal is 1400px wide
+      // Each canvas can be roughly 450px wide (1400 / 3 - gaps)
       this.scale = Math.min(
-        300 / this.originalCanvas.width,
-        200 / this.originalCanvas.height,
+        450 / this.originalCanvas.width,
+        300 / this.originalCanvas.height,
       );
 
       // Draw all 5 debug canvases
@@ -1008,7 +1010,7 @@ export default defineComponent({
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
   max-width: 100%;
-  min-height: 400px;
+  min-height: 600px;
 }
 
 .debug-canvas-item {
