@@ -124,6 +124,17 @@
           verify the values before importing.
         </p>
 
+        <!-- Warning when no plot area is detected -->
+        <v-alert
+          v-if="!result?.plotArea"
+          type="warning"
+          variant="outlined"
+          class="mb-4"
+        >
+          <strong>No plot area detected.</strong> Please manually adjust the
+          axis values below or try adjusting the color threshold in debug mode.
+        </v-alert>
+
         <!-- Axis Values Input Fields -->
         <table
           v-if="editableResult"

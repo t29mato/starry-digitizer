@@ -224,16 +224,19 @@ export default defineComponent({
             canvas,
           );
 
-        if (result) {
-          // Store the result and canvas for the confirmation dialog
-          this.extractionResult = result;
-          this.originalCanvas = canvas;
-          this.showConfirmDialog = true;
-        } else {
-          alert(
-            "Could not detect axes in the image. Please ensure the chart has visible axis lines and tick labels.",
-          );
-        }
+        // Always show the dialog, even if no axes were detected
+        // If no result, create a default result with zeros
+        this.extractionResult = result || {
+          x1: 0,
+          x2: 1,
+          y1: 0,
+          y2: 1,
+          horizontalRegion: undefined,
+          verticalRegion: undefined,
+          plotArea: undefined,
+        };
+        this.originalCanvas = canvas;
+        this.showConfirmDialog = true;
       } catch (error) {
         console.error("Failed to extract axis information:", error);
         const errorMessage =
