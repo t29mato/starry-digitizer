@@ -760,21 +760,55 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         window.cv.THRESH_BINARY_INV,
       );
 
-      // Apply morphological operations to connect broken lines
-      const kernel = window.cv.Mat.ones(3, 3, window.cv.CV_8U);
-      window.cv.morphologyEx(
-        binaryImage,
-        binaryImage,
-        window.cv.MORPH_CLOSE,
-        kernel,
+      // Apply morphological operations based on threshold level
+      // For high thresholds, use opening to separate merged elements
+      const kernelSize = colorThreshold > 60 ? 2 : 3;
+      const kernel = window.cv.Mat.ones(
+        kernelSize,
+        kernelSize,
+        window.cv.CV_8U,
       );
+
+      if (colorThreshold > 60) {
+        // For high thresholds, first open to separate merged elements
+        window.cv.morphologyEx(
+          binaryImage,
+          binaryImage,
+          window.cv.MORPH_OPEN,
+          kernel,
+        );
+      } else {
+        // For normal thresholds, close to connect broken lines
+        window.cv.morphologyEx(
+          binaryImage,
+          binaryImage,
+          window.cv.MORPH_CLOSE,
+          kernel,
+        );
+      }
       kernel.delete();
 
+      // Adjust Canny parameters based on threshold
+      // Higher color threshold needs lower Canny thresholds
+      const cannyLow = colorThreshold > 60 ? 30 : 50;
+      const cannyHigh = colorThreshold > 60 ? 100 : 150;
+
       // Apply Canny edge detection on the binary image
-      window.cv.Canny(binaryImage, edges, 50, 150);
+      window.cv.Canny(binaryImage, edges, cannyLow, cannyHigh);
 
       // Detect lines using HoughLinesP
-      window.cv.HoughLinesP(edges, lines, 1, Math.PI / 180, 50, 50, 10);
+      // Adjust parameters based on threshold
+      const minLineLength = colorThreshold > 60 ? 100 : 50;
+      const maxLineGap = colorThreshold > 60 ? 5 : 10;
+      window.cv.HoughLinesP(
+        edges,
+        lines,
+        1,
+        Math.PI / 180,
+        50,
+        minLineLength,
+        maxLineGap,
+      );
 
       // Separate horizontal and vertical lines
       const horizontalLines: any[] = [];
