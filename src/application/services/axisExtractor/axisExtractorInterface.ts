@@ -36,6 +36,8 @@ export interface DetectedRectangle {
   isValid?: boolean;
   areaRatio?: number;
   skipped?: boolean;
+  maxGap?: number;
+  tolerance?: number;
 }
 
 export interface AxisExtractionResult {

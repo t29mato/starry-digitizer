@@ -933,6 +933,25 @@ export class BrowserAdapter implements AxisExtractorAdapter {
                 areaRatio: areaRatio,
                 meetsMinAreaRatio:
                   areaRatio >= (this.options.minAreaRatio || 0.7),
+                tolerance: tolerance,
+                cornerGaps: {
+                  topLeft: Math.max(
+                    topLine.x1 - leftLine.x,
+                    leftLine.y1 - topLine.y,
+                  ),
+                  topRight: Math.max(
+                    rightLine.x - topLine.x2,
+                    rightLine.y1 - topLine.y,
+                  ),
+                  bottomLeft: Math.max(
+                    bottomLine.x1 - leftLine.x,
+                    bottomLine.y - leftLine.y2,
+                  ),
+                  bottomRight: Math.max(
+                    rightLine.x - bottomLine.x2,
+                    bottomLine.y - rightLine.y2,
+                  ),
+                },
               };
 
               // Skip for selection but still store for visualization
@@ -967,6 +986,13 @@ export class BrowserAdapter implements AxisExtractorAdapter {
                 isValid: isValidRectangle,
                 areaRatio: areaRatio,
                 skipped: skipForSelection,
+                maxGap: Math.max(
+                  validationStatus.cornerGaps.topLeft,
+                  validationStatus.cornerGaps.topRight,
+                  validationStatus.cornerGaps.bottomLeft,
+                  validationStatus.cornerGaps.bottomRight,
+                ),
+                tolerance: tolerance,
               });
 
               // Only consider for best rect if it passes all checks

@@ -576,8 +576,10 @@ export default defineComponent({
             ? ""
             : " (invalid)";
           const areaInfo = ` ${(rect.areaRatio * 100).toFixed(0)}%`;
+          const gapInfo =
+            rect.maxGap !== undefined ? ` gap:${rect.maxGap.toFixed(0)}px` : "";
           ctx.fillText(
-            `R${index + 1}${areaInfo}${status}`,
+            `R${index + 1}${areaInfo}${status}${gapInfo}`,
             scaledX + 5,
             scaledY - 5,
           );
