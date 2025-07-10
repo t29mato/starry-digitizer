@@ -30,77 +30,56 @@
 
         <!-- Debug mode: 5 separate canvases -->
         <div v-if="showDebug">
-          <!-- Tolerance adjustment slider -->
-          <div class="mb-4">
-            <v-slider
-              v-model="lineTolerance"
-              label="Line Connection Tolerance"
-              :min="0"
-              :max="50"
-              :step="5"
-              thumb-label
-              @update:model-value="onToleranceChange"
-            >
-              <template v-slot:prepend>
-                <span class="text-caption">0px</span>
-              </template>
-              <template v-slot:append>
-                <span class="text-caption">50px</span>
-              </template>
-            </v-slider>
-            <p class="text-caption text-center mt-n2">
-              Adjust tolerance for detecting connected rectangle lines (current:
-              {{ lineTolerance }}px)
-            </p>
-          </div>
+          <!-- Sliders in a row -->
+          <v-row class="mb-4">
+            <!-- Minimum area ratio adjustment slider -->
+            <v-col cols="6" class="pr-2">
+              <v-slider
+                v-model="minAreaRatio"
+                label="Minimum Plot Area Size (%)"
+                :min="10"
+                :max="90"
+                :step="5"
+                thumb-label
+                @update:model-value="onMinAreaRatioChange"
+              >
+                <template v-slot:prepend>
+                  <span class="text-caption">10%</span>
+                </template>
+                <template v-slot:append>
+                  <span class="text-caption">90%</span>
+                </template>
+              </v-slider>
+              <p class="text-caption text-center mt-n2">
+                Plot area size threshold<br />
+                (current: {{ minAreaRatio }}%)
+              </p>
+            </v-col>
 
-          <!-- Color threshold adjustment slider -->
-          <div class="mb-4">
-            <v-slider
-              v-model="colorThreshold"
-              label="Color Threshold (RGB)"
-              :min="0"
-              :max="100"
-              :step="5"
-              thumb-label
-              @update:model-value="onColorThresholdChange"
-            >
-              <template v-slot:prepend>
-                <span class="text-caption">0</span>
-              </template>
-              <template v-slot:append>
-                <span class="text-caption">100</span>
-              </template>
-            </v-slider>
-            <p class="text-caption text-center mt-n2">
-              Adjust RGB threshold for detecting dark lines (current: RGB ≤
-              {{ colorThreshold }})
-            </p>
-          </div>
-
-          <!-- Minimum area ratio adjustment slider -->
-          <div class="mb-4">
-            <v-slider
-              v-model="minAreaRatio"
-              label="Minimum Plot Area Size (%)"
-              :min="10"
-              :max="90"
-              :step="5"
-              thumb-label
-              @update:model-value="onMinAreaRatioChange"
-            >
-              <template v-slot:prepend>
-                <span class="text-caption">10%</span>
-              </template>
-              <template v-slot:append>
-                <span class="text-caption">90%</span>
-              </template>
-            </v-slider>
-            <p class="text-caption text-center mt-n2">
-              Minimum plot area size as percentage of image (current:
-              {{ minAreaRatio }}%)
-            </p>
-          </div>
+            <!-- Minimum solidity adjustment slider -->
+            <v-col cols="6" class="pl-2">
+              <v-slider
+                v-model="minSolidity"
+                label="Minimum Rectangle Solidity (%)"
+                :min="80"
+                :max="100"
+                :step="1"
+                thumb-label
+                @update:model-value="onMinSolidityChange"
+              >
+                <template v-slot:prepend>
+                  <span class="text-caption">80%</span>
+                </template>
+                <template v-slot:append>
+                  <span class="text-caption">100%</span>
+                </template>
+              </v-slider>
+              <p class="text-caption text-center mt-n2">
+                Rectangle "closedness"<br />
+                (current: {{ minSolidity }}%)
+              </p>
+            </v-col>
+          </v-row>
 
           <div class="debug-canvas-grid mb-4" style="position: relative">
             <!-- Loading overlay -->
@@ -265,13 +244,13 @@
                   </p>
                   <p v-if="result.horizontalRegion">
                     <strong>Found values:</strong>
-                    {{ result.horizontalRegion.extractedValues.join(", ") }}
+                    {{ result.horizontalRegion.extractedValues.join(', ') }}
                   </p>
                   <p v-if="result.ocrRegions">
                     <strong>OCR regions found:</strong>
                     {{
                       result.ocrRegions.filter(
-                        (r) => r.type === "x1" || r.type === "x2",
+                        (r) => r.type === 'x1' || r.type === 'x2',
                       ).length
                     }}
                   </p>
@@ -307,13 +286,13 @@
                   </p>
                   <p v-if="result.verticalRegion">
                     <strong>Found values:</strong>
-                    {{ result.verticalRegion.extractedValues.join(", ") }}
+                    {{ result.verticalRegion.extractedValues.join(', ') }}
                   </p>
                   <p v-if="result.ocrRegions">
                     <strong>OCR regions found:</strong>
                     {{
                       result.ocrRegions.filter(
-                        (r) => r.type === "y1" || r.type === "y2",
+                        (r) => r.type === 'y1' || r.type === 'y2',
                       ).length
                     }}
                   </p>
@@ -347,23 +326,26 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="grey" variant="text" @click="onReject"> Cancel </v-btn>
-        <v-btn color="primary" @click="onConfirm">Import Values</v-btn>
+        <v-btn color="primary" variant="outlined" @click="onConfirmAxesOnly"
+          >Import Axes Only</v-btn
+        >
+        <v-btn color="primary" variant="outlined" @click="onConfirmValuesOnly"
+          >Import Values Only</v-btn
+        >
+        <v-btn color="primary" @click="onConfirm">Import Both</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
-import {
-  AxisExtractionResult,
-  OCRRegion,
-} from "@/application/services/axisExtractor/axisExtractorInterface";
-import { axisSetRepository } from "@/instanceStore/repositoryInatances";
-import { canvasHandler } from "@/instanceStore/applicationServiceInstances";
+import { defineComponent, PropType } from 'vue'
+import { AxisExtractionResult } from '@/application/services/axisExtractor/axisExtractorInterface'
+import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 
 export default defineComponent({
-  name: "AxisExtractionConfirmDialog",
+  name: 'AxisExtractionConfirmDialog',
   props: {
     modelValue: {
       type: Boolean,
@@ -383,121 +365,120 @@ export default defineComponent({
       showDebug: false,
       editableResult: null as AxisExtractionResult | null,
       displayVal: {
-        x1: "",
-        x2: "",
-        y1: "",
-        y2: "",
+        x1: '',
+        x2: '',
+        y1: '',
+        y2: '',
       },
       scale: 1,
       axisSetRepository,
       canvasHandler,
-      lineTolerance: 20,
-      colorThreshold: 50,
-      minAreaRatio: 70,
+      minAreaRatio: 50,
+      minSolidity: 90,
       isReloading: false,
-    };
+    }
   },
   computed: {
     dialog: {
       get(): boolean {
-        return this.modelValue;
+        return this.modelValue
       },
       set(value: boolean): void {
-        this.$emit("update:modelValue", value);
+        this.$emit('update:modelValue', value)
       },
     },
   },
   mounted() {
-    this.drawPreview();
+    this.drawPreview()
   },
   watch: {
     modelValue(newVal) {
       if (newVal) {
         this.$nextTick(() => {
-          this.drawPreview();
-        });
+          this.drawPreview()
+        })
       }
     },
     result: {
       handler(newResult) {
         if (newResult) {
-          this.editableResult = { ...newResult };
-          this.displayVal.x1 = String(newResult.x1);
-          this.displayVal.x2 = String(newResult.x2);
-          this.displayVal.y1 = String(newResult.y1);
-          this.displayVal.y2 = String(newResult.y2);
+          this.editableResult = { ...newResult }
+          this.displayVal.x1 = String(newResult.x1)
+          this.displayVal.x2 = String(newResult.x2)
+          this.displayVal.y1 = String(newResult.y1)
+          this.displayVal.y2 = String(newResult.y2)
 
           // Reset loading state when new result arrives
-          this.isReloading = false;
+          this.isReloading = false
 
           // Redraw canvas when result changes
           this.$nextTick(() => {
-            this.drawPreview();
-          });
+            this.drawPreview()
+          })
         }
       },
       immediate: true,
       deep: true,
     },
-    "displayVal.x1"(value: string) {
+    'displayVal.x1'(value: string) {
       if (this.editableResult) {
-        this.editableResult.x1 = parseFloat(value) || 0;
+        this.editableResult.x1 = parseFloat(value) || 0
       }
     },
-    "displayVal.x2"(value: string) {
+    'displayVal.x2'(value: string) {
       if (this.editableResult) {
-        this.editableResult.x2 = parseFloat(value) || 0;
+        this.editableResult.x2 = parseFloat(value) || 0
       }
     },
-    "displayVal.y1"(value: string) {
+    'displayVal.y1'(value: string) {
       if (this.editableResult) {
-        this.editableResult.y1 = parseFloat(value) || 0;
+        this.editableResult.y1 = parseFloat(value) || 0
       }
     },
-    "displayVal.y2"(value: string) {
+    'displayVal.y2'(value: string) {
       if (this.editableResult) {
-        this.editableResult.y2 = parseFloat(value) || 0;
+        this.editableResult.y2 = parseFloat(value) || 0
       }
     },
     showDebug(newVal: boolean) {
       // Emit debug state change
-      this.$emit("debugChange", newVal);
+      this.$emit('debugChange', newVal)
       // Redraw canvas when debug mode is toggled
       this.$nextTick(() => {
-        this.drawPreview();
-      });
+        this.drawPreview()
+      })
     },
   },
   methods: {
     drawPreview() {
       if (this.showDebug) {
-        this.drawDebugCanvases();
+        this.drawDebugCanvases()
       } else {
-        this.drawNormalPreview();
+        this.drawNormalPreview()
       }
     },
     drawNormalPreview() {
-      const canvas = this.$refs.previewCanvas as HTMLCanvasElement;
-      if (!canvas || !this.originalCanvas || !this.editableResult) return;
+      const canvas = this.$refs.previewCanvas as HTMLCanvasElement
+      if (!canvas || !this.originalCanvas || !this.editableResult) return
 
-      const ctx = canvas.getContext("2d")!;
+      const ctx = canvas.getContext('2d')!
 
       // Set canvas size to match original (with scaling for display)
       this.scale = Math.min(
         600 / this.originalCanvas.width,
         400 / this.originalCanvas.height,
-      );
-      canvas.width = this.originalCanvas.width * this.scale;
-      canvas.height = this.originalCanvas.height * this.scale;
+      )
+      canvas.width = this.originalCanvas.width * this.scale
+      canvas.height = this.originalCanvas.height * this.scale
 
       // Draw the original image scaled
-      ctx.drawImage(this.originalCanvas, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(this.originalCanvas, 0, 0, canvas.width, canvas.height)
 
       // Draw red frames around detected regions
-      this.drawBasicAxisRegions(ctx);
+      this.drawBasicAxisRegions(ctx)
     },
     drawDebugCanvases() {
-      if (!this.originalCanvas || !this.editableResult) return;
+      if (!this.originalCanvas || !this.editableResult) return
 
       // Calculate scale for debug canvases
       // Use larger size since we have a 3-column grid and modal is 1400px wide
@@ -505,525 +486,647 @@ export default defineComponent({
       this.scale = Math.min(
         450 / this.originalCanvas.width,
         300 / this.originalCanvas.height,
-      );
+      )
 
       // Draw all 5 debug canvases
-      this.drawDebugCanvas0();
-      this.drawDebugCanvas1();
-      this.drawDebugCanvas2();
-      this.drawDebugCanvas3();
-      this.drawDebugCanvas4();
+      this.drawDebugCanvas0()
+      this.drawDebugCanvas1()
+      this.drawDebugCanvas2()
+      this.drawDebugCanvas3()
+      this.drawDebugCanvas4()
     },
     setupCanvas(canvasRef: string): CanvasRenderingContext2D | null {
-      const canvas = this.$refs[canvasRef] as HTMLCanvasElement;
-      if (!canvas || !this.originalCanvas) return null;
+      const canvas = this.$refs[canvasRef] as HTMLCanvasElement
+      if (!canvas || !this.originalCanvas) return null
 
-      const ctx = canvas.getContext("2d")!;
-      canvas.width = this.originalCanvas.width * this.scale;
-      canvas.height = this.originalCanvas.height * this.scale;
+      const ctx = canvas.getContext('2d')!
+      canvas.width = this.originalCanvas.width * this.scale
+      canvas.height = this.originalCanvas.height * this.scale
 
       // Draw original image
-      ctx.drawImage(this.originalCanvas, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(this.originalCanvas, 0, 0, canvas.width, canvas.height)
 
-      return ctx;
+      return ctx
     },
     drawDebugCanvas0() {
-      const ctx = this.setupCanvas("debugCanvas0");
-      if (!ctx || !this.result) return;
+      const ctx = this.setupCanvas('debugCanvas0')
+      if (!ctx || !this.result) return
 
       // Draw all detected rectangle candidates
       if (this.result.detectedRectangles) {
-        ctx.save();
+        ctx.save()
 
+        // Sort rectangles by y position for label placement
+        const sortedRects = this.result.detectedRectangles
+          .map((rect, index) => ({ rect, index }))
+          .sort((a, b) => a.rect.y - b.rect.y)
+
+        // Track label positions to avoid overlaps
+        const labelPositions: { y: number; bottom: number }[] = []
+
+        // First pass: draw all rectangles
         this.result.detectedRectangles.forEach((rect, index) => {
           // Use different colors based on validation status
-          let strokeColor;
-          let lineStyle = [5, 5];
+          let strokeColor
+          let lineStyle = [5, 5]
 
           if (rect.skipped) {
             // Skipped rectangles: gray color
-            strokeColor = `hsla(0, 0%, 50%, 0.5)`;
-            lineStyle = [3, 3];
+            strokeColor = `hsla(0, 0%, 50%, 0.5)`
+            lineStyle = [3, 3]
           } else if (!rect.isValid) {
             // Invalid rectangles: red color
-            strokeColor = `hsla(0, 70%, 50%, 0.6)`;
+            strokeColor = `hsla(0, 70%, 50%, 0.6)`
           } else if (rect.areaRatio < 0.7) {
             // Too small: orange color
-            strokeColor = `hsla(30, 70%, 50%, 0.6)`;
+            strokeColor = `hsla(30, 70%, 50%, 0.6)`
           } else {
             // Valid candidates: use different hues
-            const hue = (index * 60) % 360;
-            strokeColor = `hsla(${hue}, 70%, 50%, 0.8)`;
+            const hue = (index * 60) % 360
+            strokeColor = `hsla(${hue}, 70%, 50%, 0.8)`
           }
 
-          ctx.strokeStyle = strokeColor;
-          ctx.lineWidth = rect.skipped ? 1 : 2;
-          ctx.setLineDash(lineStyle);
+          ctx.strokeStyle = strokeColor
+          ctx.lineWidth = rect.skipped ? 1 : 2
+          ctx.setLineDash(lineStyle)
 
-          const scaledX = rect.x * this.scale;
-          const scaledY = rect.y * this.scale;
-          const scaledWidth = rect.width * this.scale;
-          const scaledHeight = rect.height * this.scale;
+          const scaledX = rect.x * this.scale
+          const scaledY = rect.y * this.scale
+          const scaledWidth = rect.width * this.scale
+          const scaledHeight = rect.height * this.scale
 
-          ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
+          ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
+        })
+
+        // Second pass: draw labels with collision avoidance
+        sortedRects.forEach(({ rect, index }) => {
+          // Use different colors based on validation status
+          let strokeColor
+
+          if (rect.skipped) {
+            strokeColor = `hsla(0, 0%, 50%, 0.9)`
+          } else if (!rect.isValid) {
+            strokeColor = `hsla(0, 70%, 50%, 1)`
+          } else if (rect.areaRatio < 0.7) {
+            strokeColor = `hsla(30, 70%, 50%, 1)`
+          } else {
+            const hue = (index * 60) % 360
+            strokeColor = `hsla(${hue}, 70%, 50%, 1)`
+          }
+
+          const scaledX = rect.x * this.scale
+          const scaledY = rect.y * this.scale
 
           // Label with score and status
-          ctx.fillStyle = strokeColor;
-          ctx.font = rect.skipped ? "10px Arial" : "bold 12px Arial";
+          ctx.font = rect.skipped ? '10px Arial' : 'bold 11px Arial'
           const status = rect.skipped
-            ? " (skip)"
+            ? ' (skip)'
             : rect.isValid
-            ? ""
-            : " (invalid)";
-          const areaInfo = ` ${(rect.areaRatio * 100).toFixed(0)}%`;
+            ? ''
+            : ' (invalid)'
+          const areaInfo = ` ${(rect.areaRatio * 100).toFixed(0)}%`
           const gapInfo =
-            rect.maxGap !== undefined ? ` gap:${rect.maxGap.toFixed(0)}px` : "";
-          ctx.fillText(
-            `R${index + 1}${areaInfo}${status}${gapInfo}`,
-            scaledX + 5,
-            scaledY - 5,
-          );
-        });
+            rect.maxGap !== undefined ? ` gap:${rect.maxGap.toFixed(0)}px` : ''
+          const solidityInfo =
+            rect.solidity !== undefined
+              ? ` sol:${(rect.solidity * 100).toFixed(0)}%`
+              : ''
+          const labelText = `R${
+            index + 1
+          }${areaInfo}${status}${gapInfo}${solidityInfo}`
+
+          // Calculate label position
+          let labelY = scaledY - 5
+          const labelHeight = 14 // Approximate height with padding
+
+          // Check for collisions and adjust
+          for (const pos of labelPositions) {
+            if (labelY < pos.bottom && labelY + labelHeight > pos.y) {
+              // Collision detected, place below the existing label
+              labelY = pos.bottom + 2
+            }
+          }
+
+          // Add to tracked positions
+          labelPositions.push({ y: labelY - labelHeight, bottom: labelY })
+
+          // Draw label with background for better readability
+          const textWidth = ctx.measureText(labelText).width
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
+          ctx.fillRect(scaledX + 3, labelY - 11, textWidth + 4, 13)
+
+          // Draw label text
+          ctx.fillStyle = strokeColor
+          ctx.fillText(labelText, scaledX + 5, labelY)
+        })
 
         // Highlight the selected plot area
         if (this.editableResult?.plotArea) {
-          ctx.strokeStyle = "#FF0000";
-          ctx.lineWidth = 3;
-          ctx.setLineDash([]);
+          ctx.strokeStyle = '#FF0000'
+          ctx.lineWidth = 3
+          ctx.setLineDash([])
 
-          const plotArea = this.editableResult.plotArea;
-          const scaledX = plotArea.x * this.scale;
-          const scaledY = plotArea.y * this.scale;
-          const scaledWidth = plotArea.width * this.scale;
-          const scaledHeight = plotArea.height * this.scale;
+          const plotArea = this.editableResult.plotArea
+          const scaledX = plotArea.x * this.scale
+          const scaledY = plotArea.y * this.scale
+          const scaledWidth = plotArea.width * this.scale
+          const scaledHeight = plotArea.height * this.scale
 
-          ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
-          ctx.fillStyle = "#FF0000";
-          ctx.font = "bold 14px Arial";
+          ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
+          ctx.fillStyle = '#FF0000'
+          ctx.font = 'bold 14px Arial'
           ctx.fillText(
-            "Selected Plot Area",
+            'Selected Plot Area',
             scaledX + 5,
             scaledY + scaledHeight + 20,
-          );
+          )
         }
 
-        ctx.restore();
+        ctx.restore()
       }
     },
     drawDebugCanvas1() {
-      const ctx = this.setupCanvas("debugCanvas1");
-      if (!ctx) return;
+      const ctx = this.setupCanvas('debugCanvas1')
+      if (!ctx) return
 
       // Draw plot area
       if (this.editableResult?.plotArea) {
-        ctx.save();
-        ctx.strokeStyle = "#0080ff";
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([10, 5]);
+        ctx.save()
+        ctx.strokeStyle = '#0080ff'
+        ctx.lineWidth = 1.5
+        ctx.setLineDash([10, 5])
 
-        const plotArea = this.editableResult.plotArea;
-        const scaledX = plotArea.x * this.scale;
-        const scaledY = plotArea.y * this.scale;
-        const scaledWidth = plotArea.width * this.scale;
-        const scaledHeight = plotArea.height * this.scale;
+        const plotArea = this.editableResult.plotArea
+        const scaledX = plotArea.x * this.scale
+        const scaledY = plotArea.y * this.scale
+        const scaledWidth = plotArea.width * this.scale
+        const scaledHeight = plotArea.height * this.scale
 
-        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
-        ctx.fillStyle = "#0080ff";
-        ctx.font = "bold 14px Arial";
-        ctx.fillText("Plot Area", scaledX + 5, scaledY - 5);
-        ctx.restore();
+        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
+        ctx.fillStyle = '#0080ff'
+        ctx.font = 'bold 14px Arial'
+        ctx.fillText('Plot Area', scaledX + 5, scaledY - 5)
+        ctx.restore()
       }
 
       // Draw axis areas
-      ctx.save();
-      ctx.strokeStyle = "#FF6600";
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([8, 4]);
-      ctx.font = "bold 14px Arial";
+      ctx.save()
+      ctx.strokeStyle = '#FF6600'
+      ctx.lineWidth = 1.5
+      ctx.setLineDash([8, 4])
+      ctx.font = 'bold 14px Arial'
 
       if (this.editableResult?.horizontalRegion) {
-        const region = this.editableResult.horizontalRegion;
-        const scaledX = region.x * this.scale;
-        const scaledY = region.y * this.scale;
-        const scaledWidth = region.width * this.scale;
-        const scaledHeight = region.height * this.scale;
+        const region = this.editableResult.horizontalRegion
+        const scaledX = region.x * this.scale
+        const scaledY = region.y * this.scale
+        const scaledWidth = region.width * this.scale
+        const scaledHeight = region.height * this.scale
 
-        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
-        ctx.fillStyle = "#FF6600";
-        ctx.fillText("X-Axis Area", scaledX, scaledY - 5);
+        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
+        ctx.fillStyle = '#FF6600'
+        ctx.fillText('X-Axis Area', scaledX, scaledY - 5)
       }
 
       if (this.editableResult?.verticalRegion) {
-        const region = this.editableResult.verticalRegion;
-        const scaledX = region.x * this.scale;
-        const scaledY = region.y * this.scale;
-        const scaledWidth = region.width * this.scale;
-        const scaledHeight = region.height * this.scale;
+        const region = this.editableResult.verticalRegion
+        const scaledX = region.x * this.scale
+        const scaledY = region.y * this.scale
+        const scaledWidth = region.width * this.scale
+        const scaledHeight = region.height * this.scale
 
-        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
-        ctx.fillStyle = "#FF6600";
-        ctx.fillText("Y-Axis Area", scaledX - 80, scaledY + scaledHeight / 2);
+        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
+        ctx.fillStyle = '#FF6600'
+        ctx.fillText('Y-Axis Area', scaledX - 80, scaledY + scaledHeight / 2)
       }
-      ctx.restore();
+      ctx.restore()
     },
     drawDebugCanvas2() {
-      const ctx = this.setupCanvas("debugCanvas2");
-      if (!ctx || !this.result?.ocrRegions) return;
+      const ctx = this.setupCanvas('debugCanvas2')
+      if (!ctx || !this.result?.ocrRegions) return
 
-      ctx.save();
+      ctx.save()
 
       // Draw OCR regions (original estimates)
       this.result.ocrRegions.forEach((region) => {
-        if (region.type === "other") return;
-        if (!region.originalRegion) return;
+        if (region.type === 'other') return
+        if (!region.originalRegion) return
 
         // Set color based on region type (same as image 3 & 4)
         switch (region.type) {
-          case "x1":
-            ctx.strokeStyle = "#FF0000";
-            ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
-            break;
-          case "x2":
-            ctx.strokeStyle = "#00CC00";
-            ctx.fillStyle = "rgba(0, 204, 0, 0.2)";
-            break;
-          case "y1":
-            ctx.strokeStyle = "#0066FF";
-            ctx.fillStyle = "rgba(0, 102, 255, 0.2)";
-            break;
-          case "y2":
-            ctx.strokeStyle = "#CC00CC";
-            ctx.fillStyle = "rgba(204, 0, 204, 0.2)";
-            break;
+          case 'x1':
+            ctx.strokeStyle = '#FF0000'
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.2)'
+            break
+          case 'x2':
+            ctx.strokeStyle = '#00CC00'
+            ctx.fillStyle = 'rgba(0, 204, 0, 0.2)'
+            break
+          case 'y1':
+            ctx.strokeStyle = '#0066FF'
+            ctx.fillStyle = 'rgba(0, 102, 255, 0.2)'
+            break
+          case 'y2':
+            ctx.strokeStyle = '#CC00CC'
+            ctx.fillStyle = 'rgba(204, 0, 204, 0.2)'
+            break
         }
 
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([5, 3]);
+        ctx.lineWidth = 1.5
+        ctx.setLineDash([5, 3])
 
-        const origX = region.originalRegion.x * this.scale;
-        const origY = region.originalRegion.y * this.scale;
-        const origWidth = region.originalRegion.width * this.scale;
-        const origHeight = region.originalRegion.height * this.scale;
+        const origX = region.originalRegion.x * this.scale
+        const origY = region.originalRegion.y * this.scale
+        const origWidth = region.originalRegion.width * this.scale
+        const origHeight = region.originalRegion.height * this.scale
 
-        ctx.fillRect(origX, origY, origWidth, origHeight);
-        ctx.strokeRect(origX, origY, origWidth, origHeight);
+        ctx.fillRect(origX, origY, origWidth, origHeight)
+        ctx.strokeRect(origX, origY, origWidth, origHeight)
 
         // Label with matching color
-        ctx.fillStyle = ctx.strokeStyle;
-        ctx.font = "bold 12px Arial";
-        ctx.fillText(`${region.type}: ${region.text}`, origX + 2, origY - 3);
-      });
+        ctx.fillStyle = ctx.strokeStyle
+        ctx.font = 'bold 12px Arial'
+        ctx.fillText(`${region.type}: ${region.text}`, origX + 2, origY - 3)
+      })
 
-      ctx.restore();
+      ctx.restore()
     },
     drawDebugCanvas3() {
-      const ctx = this.setupCanvas("debugCanvas3");
-      if (!ctx || !this.result?.ocrRegions) return;
+      const ctx = this.setupCanvas('debugCanvas3')
+      if (!ctx || !this.result?.ocrRegions) return
 
-      ctx.save();
+      ctx.save()
 
       // Draw OpenCV refined regions
       this.result.ocrRegions.forEach((region) => {
-        if (region.type === "other") return;
+        if (region.type === 'other') return
 
-        const scaledX = region.x * this.scale;
-        const scaledY = region.y * this.scale;
-        const scaledWidth = region.width * this.scale;
-        const scaledHeight = region.height * this.scale;
+        const scaledX = region.x * this.scale
+        const scaledY = region.y * this.scale
+        const scaledWidth = region.width * this.scale
+        const scaledHeight = region.height * this.scale
 
         // Set style based on region type
         switch (region.type) {
-          case "x1":
-            ctx.strokeStyle = "#FF0000";
-            ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
-            break;
-          case "x2":
-            ctx.strokeStyle = "#00CC00";
-            ctx.fillStyle = "rgba(0, 204, 0, 0.2)";
-            break;
-          case "y1":
-            ctx.strokeStyle = "#0066FF";
-            ctx.fillStyle = "rgba(0, 102, 255, 0.2)";
-            break;
-          case "y2":
-            ctx.strokeStyle = "#CC00CC";
-            ctx.fillStyle = "rgba(204, 0, 204, 0.2)";
-            break;
+          case 'x1':
+            ctx.strokeStyle = '#FF0000'
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.2)'
+            break
+          case 'x2':
+            ctx.strokeStyle = '#00CC00'
+            ctx.fillStyle = 'rgba(0, 204, 0, 0.2)'
+            break
+          case 'y1':
+            ctx.strokeStyle = '#0066FF'
+            ctx.fillStyle = 'rgba(0, 102, 255, 0.2)'
+            break
+          case 'y2':
+            ctx.strokeStyle = '#CC00CC'
+            ctx.fillStyle = 'rgba(204, 0, 204, 0.2)'
+            break
         }
 
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([]);
+        ctx.lineWidth = 1.5
+        ctx.setLineDash([])
 
-        ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
-        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
+        ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight)
+        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
 
         // Label
-        ctx.fillStyle = ctx.strokeStyle;
-        ctx.font = "bold 12px Arial";
+        ctx.fillStyle = ctx.strokeStyle
+        ctx.font = 'bold 12px Arial'
         ctx.fillText(
           `${region.type}: ${region.text}`,
           scaledX + 5,
           scaledY + scaledHeight + 15,
-        );
-      });
+        )
+      })
 
-      ctx.restore();
+      ctx.restore()
     },
     drawDebugCanvas4() {
-      const ctx = this.setupCanvas("debugCanvas4");
-      if (!ctx || !this.result?.ocrRegions) return;
+      const ctx = this.setupCanvas('debugCanvas4')
+      if (!ctx || !this.result?.ocrRegions) return
 
-      ctx.save();
+      ctx.save()
 
       // Draw center points and axis intersections
       this.result.ocrRegions.forEach((region) => {
-        if (region.type === "other") return;
-        if (region.centerX === undefined || region.centerY === undefined)
-          return;
+        if (region.type === 'other') return
+        if (region.centerX === undefined || region.centerY === undefined) return
 
-        const scaledCenterX = region.centerX * this.scale;
-        const scaledCenterY = region.centerY * this.scale;
+        const scaledCenterX = region.centerX * this.scale
+        const scaledCenterY = region.centerY * this.scale
 
         // Set color based on type
         switch (region.type) {
-          case "x1":
-            ctx.strokeStyle = "#FF0000";
-            ctx.fillStyle = "#FF0000";
-            break;
-          case "x2":
-            ctx.strokeStyle = "#00CC00";
-            ctx.fillStyle = "#00CC00";
-            break;
-          case "y1":
-            ctx.strokeStyle = "#0066FF";
-            ctx.fillStyle = "#0066FF";
-            break;
-          case "y2":
-            ctx.strokeStyle = "#CC00CC";
-            ctx.fillStyle = "#CC00CC";
-            break;
+          case 'x1':
+            ctx.strokeStyle = '#FF0000'
+            ctx.fillStyle = '#FF0000'
+            break
+          case 'x2':
+            ctx.strokeStyle = '#00CC00'
+            ctx.fillStyle = '#00CC00'
+            break
+          case 'y1':
+            ctx.strokeStyle = '#0066FF'
+            ctx.fillStyle = '#0066FF'
+            break
+          case 'y2':
+            ctx.strokeStyle = '#CC00CC'
+            ctx.fillStyle = '#CC00CC'
+            break
         }
 
         // Draw center point
-        ctx.beginPath();
-        ctx.arc(scaledCenterX, scaledCenterY, 5, 0, 2 * Math.PI);
-        ctx.fill();
+        ctx.beginPath()
+        ctx.arc(scaledCenterX, scaledCenterY, 5, 0, 2 * Math.PI)
+        ctx.fill()
 
         // Draw crosshair
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(scaledCenterX - 10, scaledCenterY);
-        ctx.lineTo(scaledCenterX + 10, scaledCenterY);
-        ctx.moveTo(scaledCenterX, scaledCenterY - 10);
-        ctx.lineTo(scaledCenterX, scaledCenterY + 10);
-        ctx.stroke();
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.moveTo(scaledCenterX - 10, scaledCenterY)
+        ctx.lineTo(scaledCenterX + 10, scaledCenterY)
+        ctx.moveTo(scaledCenterX, scaledCenterY - 10)
+        ctx.lineTo(scaledCenterX, scaledCenterY + 10)
+        ctx.stroke()
 
         // Draw line to axis
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1
+        ctx.setLineDash([3, 3])
 
-        if (region.type.startsWith("x")) {
+        if (region.type.startsWith('x')) {
           // Draw vertical line to X-axis
           if (this.editableResult?.horizontalRegion?.axisPosition?.y) {
             const axisY =
-              this.editableResult.horizontalRegion.axisPosition.y * this.scale;
-            ctx.beginPath();
-            ctx.moveTo(scaledCenterX, scaledCenterY);
-            ctx.lineTo(scaledCenterX, axisY);
-            ctx.stroke();
+              this.editableResult.horizontalRegion.axisPosition.y * this.scale
+            ctx.beginPath()
+            ctx.moveTo(scaledCenterX, scaledCenterY)
+            ctx.lineTo(scaledCenterX, axisY)
+            ctx.stroke()
 
             // Draw intersection point
-            ctx.beginPath();
-            ctx.arc(scaledCenterX, axisY, 3, 0, 2 * Math.PI);
-            ctx.fill();
+            ctx.beginPath()
+            ctx.arc(scaledCenterX, axisY, 3, 0, 2 * Math.PI)
+            ctx.fill()
           }
         } else {
           // Draw horizontal line to Y-axis
           if (this.editableResult?.verticalRegion?.axisPosition?.x) {
             const axisX =
-              this.editableResult.verticalRegion.axisPosition.x * this.scale;
-            ctx.beginPath();
-            ctx.moveTo(scaledCenterX, scaledCenterY);
-            ctx.lineTo(axisX, scaledCenterY);
-            ctx.stroke();
+              this.editableResult.verticalRegion.axisPosition.x * this.scale
+            ctx.beginPath()
+            ctx.moveTo(scaledCenterX, scaledCenterY)
+            ctx.lineTo(axisX, scaledCenterY)
+            ctx.stroke()
 
             // Draw intersection point
-            ctx.beginPath();
-            ctx.arc(axisX, scaledCenterY, 3, 0, 2 * Math.PI);
-            ctx.fill();
+            ctx.beginPath()
+            ctx.arc(axisX, scaledCenterY, 3, 0, 2 * Math.PI)
+            ctx.fill()
           }
         }
 
         // Label with axis intersection coordinates (in original image coordinates)
-        ctx.setLineDash([]);
-        ctx.font = "bold 12px Arial";
+        ctx.setLineDash([])
+        ctx.font = 'bold 12px Arial'
 
-        let intersectionCoord = "";
+        let intersectionCoord = ''
         if (
-          region.type.startsWith("x") &&
+          region.type.startsWith('x') &&
           this.editableResult?.horizontalRegion?.axisPosition?.y
         ) {
           // For x-axis values, show intersection with horizontal axis (original coordinates)
-          const axisY = this.editableResult.horizontalRegion.axisPosition.y;
+          const axisY = this.editableResult.horizontalRegion.axisPosition.y
           intersectionCoord = `(${Math.round(region.centerX)}, ${Math.round(
             axisY,
-          )})`;
+          )})`
         } else if (
-          region.type.startsWith("y") &&
+          region.type.startsWith('y') &&
           this.editableResult?.verticalRegion?.axisPosition?.x
         ) {
           // For y-axis values, show intersection with vertical axis (original coordinates)
-          const axisX = this.editableResult.verticalRegion.axisPosition.x;
+          const axisX = this.editableResult.verticalRegion.axisPosition.x
           intersectionCoord = `(${Math.round(axisX)}, ${Math.round(
             region.centerY,
-          )})`;
+          )})`
         }
 
         ctx.fillText(
           `${region.type}: ${intersectionCoord}`,
           scaledCenterX + 10,
           scaledCenterY - 10,
-        );
-      });
+        )
+      })
 
-      ctx.restore();
+      ctx.restore()
     },
     drawBasicAxisRegions(ctx: CanvasRenderingContext2D) {
-      ctx.strokeStyle = "red";
-      ctx.lineWidth = 2;
-      ctx.fillStyle = "red";
-      ctx.font = "12px Arial";
+      ctx.strokeStyle = 'red'
+      ctx.lineWidth = 2
+      ctx.fillStyle = 'red'
+      ctx.font = '12px Arial'
 
       if (this.editableResult?.horizontalRegion) {
-        const region = this.editableResult.horizontalRegion;
-        const scaledX = region.x * this.scale;
-        const scaledY = region.y * this.scale;
-        const scaledWidth = region.width * this.scale;
-        const scaledHeight = region.height * this.scale;
+        const region = this.editableResult.horizontalRegion
+        const scaledX = region.x * this.scale
+        const scaledY = region.y * this.scale
+        const scaledWidth = region.width * this.scale
+        const scaledHeight = region.height * this.scale
 
         // Draw region rectangle
-        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
+        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
 
         // Add label
-        ctx.fillText("X-Axis OCR Region", scaledX, scaledY - 5);
+        ctx.fillText('X-Axis OCR Region', scaledX, scaledY - 5)
       }
 
       if (this.editableResult?.verticalRegion) {
-        const region = this.editableResult.verticalRegion;
-        const scaledX = region.x * this.scale;
-        const scaledY = region.y * this.scale;
-        const scaledWidth = region.width * this.scale;
-        const scaledHeight = region.height * this.scale;
+        const region = this.editableResult.verticalRegion
+        const scaledX = region.x * this.scale
+        const scaledY = region.y * this.scale
+        const scaledWidth = region.width * this.scale
+        const scaledHeight = region.height * this.scale
 
         // Draw region rectangle
-        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
+        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
 
         // Add label
         ctx.fillText(
-          "Y-Axis OCR Region",
+          'Y-Axis OCR Region',
           scaledX + scaledWidth + 5,
           scaledY + 15,
-        );
+        )
       }
     },
     onConfirm() {
       // Set axis coordinates in the active axis set
       // Always import coordinates regardless of debug mode
       if (this.result && this.editableResult) {
-        const activeAxisSet = this.axisSetRepository.activeAxisSet;
+        const activeAxisSet = this.axisSetRepository.activeAxisSet
 
         // Set axis values
-        activeAxisSet.setX1Value(this.editableResult.x1);
-        activeAxisSet.setX2Value(this.editableResult.x2);
-        activeAxisSet.setY1Value(this.editableResult.y1);
-        activeAxisSet.setY2Value(this.editableResult.y2);
+        activeAxisSet.setX1Value(this.editableResult.x1)
+        activeAxisSet.setX2Value(this.editableResult.x2)
+        activeAxisSet.setY1Value(this.editableResult.y1)
+        activeAxisSet.setY2Value(this.editableResult.y2)
 
         // Calculate scale factor between canvas and original image
         // The OCR coordinates are in canvas space, but we need original image space
         const canvasToOriginalScale =
-          this.canvasHandler.originalWidth / this.originalCanvas.width;
-        console.log("Applying scale factor:", canvasToOriginalScale);
+          this.canvasHandler.originalWidth / this.originalCanvas.width
+        console.log('Applying scale factor:', canvasToOriginalScale)
 
         // Set axis coordinates (converting from canvas to original image pixel space)
         // Find the x1 and x2 regions to set x-axis coordinates
-        const x1Region = this.result.ocrRegions?.find((r) => r.type === "x1");
-        const x2Region = this.result.ocrRegions?.find((r) => r.type === "x2");
+        const x1Region = this.result.ocrRegions?.find((r) => r.type === 'x1')
+        const x2Region = this.result.ocrRegions?.find((r) => r.type === 'x2')
         if (
           x1Region &&
           x2Region &&
           this.result.horizontalRegion?.axisPosition?.y
         ) {
           const axisY =
-            this.result.horizontalRegion.axisPosition.y * canvasToOriginalScale;
+            this.result.horizontalRegion.axisPosition.y * canvasToOriginalScale
           activeAxisSet.x1.coord = {
             xPx:
               (x1Region.centerX || x1Region.x + x1Region.width / 2) *
               canvasToOriginalScale,
             yPx: axisY,
-          };
+          }
           activeAxisSet.x2.coord = {
             xPx:
               (x2Region.centerX || x2Region.x + x2Region.width / 2) *
               canvasToOriginalScale,
             yPx: axisY,
-          };
+          }
         }
 
         // Find the y1 and y2 regions to set y-axis coordinates
-        const y1Region = this.result.ocrRegions?.find((r) => r.type === "y1");
-        const y2Region = this.result.ocrRegions?.find((r) => r.type === "y2");
+        const y1Region = this.result.ocrRegions?.find((r) => r.type === 'y1')
+        const y2Region = this.result.ocrRegions?.find((r) => r.type === 'y2')
         if (
           y1Region &&
           y2Region &&
           this.result.verticalRegion?.axisPosition?.x
         ) {
           const axisX =
-            this.result.verticalRegion.axisPosition.x * canvasToOriginalScale;
+            this.result.verticalRegion.axisPosition.x * canvasToOriginalScale
           activeAxisSet.y1.coord = {
             xPx: axisX,
             yPx:
               (y1Region.centerY || y1Region.y + y1Region.height / 2) *
               canvasToOriginalScale,
-          };
+          }
           activeAxisSet.y2.coord = {
             xPx: axisX,
             yPx:
               (y2Region.centerY || y2Region.y + y2Region.height / 2) *
               canvasToOriginalScale,
-          };
+          }
         }
       }
 
-      this.$emit("confirm", this.editableResult);
-      this.dialog = false;
+      this.$emit('confirm', this.editableResult)
+      this.dialog = false
     },
     onReject() {
-      this.$emit("reject");
-      this.dialog = false;
+      this.$emit('reject')
+      this.dialog = false
     },
-    async onToleranceChange() {
-      // Re-extract with new tolerance value
-      if (this.originalCanvas && this.showDebug) {
-        this.isReloading = true;
-        this.$emit("toleranceChange", this.lineTolerance);
+    onConfirmAxesOnly() {
+      if (!this.editableResult) return
+
+      const activeAxisSet = this.axisSetRepository.activeAxisSet
+      const canvasToOriginalScale =
+        this.canvasHandler.originalWidth / this.originalCanvas!.width
+
+      // Update axis coordinates if OCR regions are available
+      if (this.result?.ocrRegions && this.result.ocrRegions.length > 0) {
+        // Find the x1 and x2 regions to set x-axis coordinates
+        const x1Region = this.result.ocrRegions?.find((r) => r.type === 'x1')
+        const x2Region = this.result.ocrRegions?.find((r) => r.type === 'x2')
+        if (
+          x1Region &&
+          x2Region &&
+          this.result.horizontalRegion?.axisPosition?.y
+        ) {
+          const axisY =
+            this.result.horizontalRegion.axisPosition.y * canvasToOriginalScale
+          activeAxisSet.x1.coord = {
+            xPx:
+              (x1Region.centerX || x1Region.x + x1Region.width / 2) *
+              canvasToOriginalScale,
+            yPx: axisY,
+          }
+          activeAxisSet.x2.coord = {
+            xPx:
+              (x2Region.centerX || x2Region.x + x2Region.width / 2) *
+              canvasToOriginalScale,
+            yPx: axisY,
+          }
+        }
+
+        // Find the y1 and y2 regions to set y-axis coordinates
+        const y1Region = this.result.ocrRegions?.find((r) => r.type === 'y1')
+        const y2Region = this.result.ocrRegions?.find((r) => r.type === 'y2')
+        if (
+          y1Region &&
+          y2Region &&
+          this.result.verticalRegion?.axisPosition?.x
+        ) {
+          const axisX =
+            this.result.verticalRegion.axisPosition.x * canvasToOriginalScale
+          activeAxisSet.y1.coord = {
+            xPx: axisX,
+            yPx:
+              (y1Region.centerY || y1Region.y + y1Region.height / 2) *
+              canvasToOriginalScale,
+          }
+          activeAxisSet.y2.coord = {
+            xPx: axisX,
+            yPx:
+              (y2Region.centerY || y2Region.y + y2Region.height / 2) *
+              canvasToOriginalScale,
+          }
+        }
       }
+
+      // Don't update values, only emit the axes-only confirmation
+      this.$emit('confirmAxesOnly', this.editableResult)
+      this.dialog = false
     },
-    async onColorThresholdChange() {
-      // Re-extract with new color threshold value
-      if (this.originalCanvas && this.showDebug) {
-        this.isReloading = true;
-        this.$emit("colorThresholdChange", this.colorThreshold);
+    onConfirmValuesOnly() {
+      if (!this.editableResult) return
+
+      // Only update the values, not the coordinates
+      const result = {
+        ...this.editableResult,
+        // Ensure we're not including coordinate data
+        ocrRegions: undefined,
+        axisPixelMapping: undefined,
       }
+
+      this.$emit('confirmValuesOnly', result)
+      this.dialog = false
     },
     async onMinAreaRatioChange() {
       // Re-extract with new min area ratio value
       if (this.originalCanvas && this.showDebug) {
-        this.isReloading = true;
-        this.$emit("minAreaRatioChange", this.minAreaRatio / 100); // Convert percentage to ratio
+        this.isReloading = true
+        this.$emit('minAreaRatioChange', this.minAreaRatio / 100) // Convert percentage to ratio
+      }
+    },
+    async onMinSolidityChange() {
+      // Re-extract with new min solidity value
+      if (this.originalCanvas && this.showDebug) {
+        this.isReloading = true
+        this.$emit('minSolidityChange', this.minSolidity / 100) // Convert percentage to ratio
       }
     },
   },
-});
+})
 </script>
 
 <style scoped>
