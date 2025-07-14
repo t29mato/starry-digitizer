@@ -1,35 +1,13 @@
 <template>
   <v-dialog v-model="dialog" max-width="1400px">
     <v-card>
-      <v-card-title class="d-flex justify-space-between align-center">
+      <v-card-title>
         <span class="text-h5">Confirm Axis Information Extraction</span>
-        <!-- Debug Toggle -->
-        <v-btn
-          size="small"
-          variant="text"
-          @click="showDebug = !showDebug"
-          :color="showDebug ? 'primary' : 'grey'"
-          icon
-        >
-          <v-icon>mdi-bug</v-icon>
-        </v-btn>
       </v-card-title>
 
       <v-card-text>
-        <!-- Canvas to show the image with highlighted regions -->
-        <div
-          v-if="!showDebug"
-          class="canvas-container mb-4"
-          style="position: relative; display: inline-block"
-        >
-          <canvas
-            ref="previewCanvas"
-            style="border: 1px solid #ccc; max-width: 100%; height: auto"
-          ></canvas>
-        </div>
-
-        <!-- Debug mode: 5 separate canvases -->
-        <div v-if="showDebug">
+        <!-- Debug mode: 4 separate canvases -->
+        <div>
           <!-- Sliders in a row -->
           <v-row class="mb-4">
             <!-- Minimum area ratio adjustment slider -->
@@ -101,39 +79,34 @@
             </v-overlay>
 
             <div class="debug-canvas-item">
-              <h5 class="text-center mb-2">1. All Detected Rectangles</h5>
+              <h5 class="text-center mb-2">
+              1. All Detected Rectangles & Plot Area
+            </h5>
               <canvas
                 ref="debugCanvas0"
                 style="border: 1px solid #ccc; width: 100%; height: auto"
               ></canvas>
             </div>
             <div class="debug-canvas-item">
-              <h5 class="text-center mb-2">2. Plot Area & Axis Areas</h5>
+              <h5 class="text-center mb-2">2. OCR Areas (x1, x2, y1, y2)</h5>
               <canvas
                 ref="debugCanvas1"
                 style="border: 1px solid #ccc; width: 100%; height: auto"
               ></canvas>
             </div>
             <div class="debug-canvas-item">
-              <h5 class="text-center mb-2">3. OCR Areas (x1, x2, y1, y2)</h5>
+              <h5 class="text-center mb-2">3. OpenCV Refined Areas</h5>
               <canvas
                 ref="debugCanvas2"
                 style="border: 1px solid #ccc; width: 100%; height: auto"
               ></canvas>
             </div>
             <div class="debug-canvas-item">
-              <h5 class="text-center mb-2">4. OpenCV Refined Areas</h5>
-              <canvas
-                ref="debugCanvas3"
-                style="border: 1px solid #ccc; width: 100%; height: auto"
-              ></canvas>
-            </div>
-            <div class="debug-canvas-item">
               <h5 class="text-center mb-2">
-                5. Center Points & Axis Intersections
+                4. Center Points & Axis Intersections
               </h5>
               <canvas
-                ref="debugCanvas4"
+                ref="debugCanvas3"
                 style="border: 1px solid #ccc; width: 100%; height: auto"
               ></canvas>
             </div>
@@ -362,7 +335,7 @@ export default defineComponent({
   },
   data() {
     return {
-      showDebug: false,
+      showDebug: true,
       editableResult: null as AxisExtractionResult | null,
       displayVal: {
         x1: '',
@@ -439,14 +412,6 @@ export default defineComponent({
       if (this.editableResult) {
         this.editableResult.y2 = parseFloat(value) || 0
       }
-    },
-    showDebug(newVal: boolean) {
-      // Emit debug state change
-      this.$emit('debugChange', newVal)
-      // Redraw canvas when debug mode is toggled
-      this.$nextTick(() => {
-        this.drawPreview()
-      })
     },
   },
   methods: {
@@ -636,7 +601,7 @@ export default defineComponent({
           ctx.fillStyle = '#FF0000'
           ctx.font = 'bold 14px Arial'
           ctx.fillText(
-            'Selected Plot Area',
+            'Plot Area',
             scaledX + 5,
             scaledY + scaledHeight + 20,
           )
@@ -644,35 +609,11 @@ export default defineComponent({
 
         ctx.restore()
       }
-    },
-    drawDebugCanvas1() {
-      const ctx = this.setupCanvas('debugCanvas1')
-      if (!ctx) return
-
-      // Draw plot area
-      if (this.editableResult?.plotArea) {
-        ctx.save()
-        ctx.strokeStyle = '#0080ff'
-        ctx.lineWidth = 1.5
-        ctx.setLineDash([10, 5])
-
-        const plotArea = this.editableResult.plotArea
-        const scaledX = plotArea.x * this.scale
-        const scaledY = plotArea.y * this.scale
-        const scaledWidth = plotArea.width * this.scale
-        const scaledHeight = plotArea.height * this.scale
-
-        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
-        ctx.fillStyle = '#0080ff'
-        ctx.font = 'bold 14px Arial'
-        ctx.fillText('Plot Area', scaledX + 5, scaledY - 5)
-        ctx.restore()
-      }
 
       // Draw axis areas
       ctx.save()
       ctx.strokeStyle = '#FF6600'
-      ctx.lineWidth = 1.5
+      ctx.lineWidth = 2
       ctx.setLineDash([8, 4])
       ctx.font = 'bold 14px Arial'
 
@@ -701,8 +642,8 @@ export default defineComponent({
       }
       ctx.restore()
     },
-    drawDebugCanvas2() {
-      const ctx = this.setupCanvas('debugCanvas2')
+    drawDebugCanvas1() {
+      const ctx = this.setupCanvas('debugCanvas1')
       if (!ctx || !this.result?.ocrRegions) return
 
       ctx.save()
@@ -751,8 +692,8 @@ export default defineComponent({
 
       ctx.restore()
     },
-    drawDebugCanvas3() {
-      const ctx = this.setupCanvas('debugCanvas3')
+    drawDebugCanvas2() {
+      const ctx = this.setupCanvas('debugCanvas2')
       if (!ctx || !this.result?.ocrRegions) return
 
       ctx.save()
@@ -804,8 +745,8 @@ export default defineComponent({
 
       ctx.restore()
     },
-    drawDebugCanvas4() {
-      const ctx = this.setupCanvas('debugCanvas4')
+    drawDebugCanvas3() {
+      const ctx = this.setupCanvas('debugCanvas3')
       if (!ctx || !this.result?.ocrRegions) return
 
       ctx.save()
@@ -1136,7 +1077,7 @@ export default defineComponent({
 
 .debug-canvas-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   max-width: 100%;
   min-height: 600px;

@@ -107,7 +107,7 @@ export default defineComponent({
       showConfirmDialog: false,
       extractionResult: null as AxisExtractionResult | null,
       originalCanvas: null as HTMLCanvasElement | null,
-      debugMode: false,
+      debugMode: true,
     }
   },
   computed: {
