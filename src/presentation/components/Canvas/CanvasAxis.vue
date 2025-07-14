@@ -1,14 +1,32 @@
 <template>
   <div v-if="axis.coordIsFilled" v-show="isVisible">
+    <!-- Click area (larger for easier interaction) -->
+    <div
+      :style="{
+        position: 'absolute',
+        top: `${yPx - clickAreaHalfSizePx}px`,
+        left: `${xPx - clickAreaHalfSizePx}px`,
+        width: `${clickAreaSizePx}px`,
+        height: `${clickAreaSizePx}px`,
+        cursor: 'pointer',
+        'z-index': 10,
+      }"
+      @click="handleClick"
+      @mouseenter="isHovered = true"
+      @mouseleave="isHovered = false"
+    ></div>
+    <!-- Visual axis marker -->
     <div
       :style="{
         position: 'absolute',
         top: `${yPx - axisHalfSizePx}px`,
         left: `${xPx - axisCrossBorderHalfPx}px`,
-        'pointer-events': 'none',
         width: `${axisCrossBorderPx}px`,
         height: `${axisSizePx}px`,
         background: isActive ? 'red' : 'dodgerblue',
+        opacity: isHovered ? 0.8 : 1,
+        transition: 'opacity 0.2s',
+        'pointer-events': 'none',
       }"
     >
       <div
@@ -50,7 +68,7 @@ import { defineComponent } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { axisSetRepository, datasetRepository } from '@/instanceStore/repositoryInatances'
 import { POINT_MODE, STYLE } from '@/constants'
 
 export default defineComponent({
@@ -69,7 +87,10 @@ export default defineComponent({
       fontSize: 14,
       canvasHandler,
       axisSetRepository,
+      datasetRepository,
       axisSizePx: STYLE.AXIS_SIZE_PX,
+      clickAreaSizePx: STYLE.AXIS_SIZE_PX * 2, // Larger click area
+      isHovered: false,
     }
   },
   computed: {
@@ -100,6 +121,9 @@ export default defineComponent({
     axisCrossCursorPx(): number {
       return this.axisSizePx * 0.7
     },
+    clickAreaHalfSizePx(): number {
+      return this.clickAreaSizePx / 2
+    },
     labelLeft(): number {
       if (this.axis.name.includes('x')) {
         // Keep x labels horizontally centered on their axis position
@@ -113,11 +137,7 @@ export default defineComponent({
     },
     labelTop(): number {
       if (this.axis.name.includes('x')) {
-        // Position x labels at the bottom edge of the canvas
-        const canvasElement = document.querySelector('canvas')
-        if (canvasElement) {
-          return canvasElement.clientHeight - 25
-        }
+        // Position x labels below their axis position
         return this.yPx + 25
       }
       if (this.axis.name.includes('y')) {
@@ -156,6 +176,16 @@ export default defineComponent({
       )
     },
   },
-  methods: {},
+  methods: {
+    handleClick(e: MouseEvent) {
+      e.stopPropagation()
+
+      // Deactivate all active points when entering axis edit mode
+      this.datasetRepository.activeDataset.inactivatePoints()
+      
+      // Activate this axis (turn it red for edit mode)
+      this.axisSetRepository.activeAxisSet.activateAxisByName(this.axis.name)
+    },
+  },
 })
 </script>

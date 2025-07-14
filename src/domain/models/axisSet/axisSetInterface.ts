@@ -35,6 +35,7 @@ export interface AxisSetInterface {
   clearYAxisCoords(): void
   addAxisCoord(coord: Coord): void
   inactivateAxis(): void
+  activateAxisByName(axisName: string): void
   setX1Value(value: number): void
   setX2Value(value: number): void
   setY1Value(value: number): void

@@ -212,6 +212,13 @@ export class AxisSet implements AxisSetInterface {
     this.activeAxisName = ''
   }
 
+  activateAxisByName(axisName: string) {
+    // Validate that the axis name is valid
+    if (['x1', 'x2', 'y1', 'y2', 'x2y2'].includes(axisName)) {
+      this.activeAxisName = axisName
+    }
+  }
+
   setX1Value(value: number): void {
     this.x1.value = value
   }
