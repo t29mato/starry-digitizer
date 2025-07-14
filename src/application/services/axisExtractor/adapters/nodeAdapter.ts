@@ -92,11 +92,11 @@ export class NodeAdapter implements AxisExtractorAdapter {
         const imageData = ctx.getImageData(0, 0, width, height)
 
         if (options.enhanceContrast) {
-          this.enhanceContrast(imageData)
+          this.enhanceContrast(imageData as any)
         }
 
         if (options.applyThreshold) {
-          this.applyThreshold(imageData)
+          this.applyThreshold(imageData as any)
         }
 
         ctx.putImageData(imageData, 0, 0)
@@ -106,7 +106,7 @@ export class NodeAdapter implements AxisExtractorAdapter {
       const result = await Tesseract.recognize(buffer, 'eng', {
         psm: options.psm || 6,
         logger: () => {},
-      })
+      } as any)
 
       return {
         text: result.data.text.trim(),

@@ -68,7 +68,10 @@ import { defineComponent } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
-import { axisSetRepository, datasetRepository } from '@/instanceStore/repositoryInatances'
+import {
+  axisSetRepository,
+  datasetRepository,
+} from '@/instanceStore/repositoryInatances'
 import { POINT_MODE, STYLE } from '@/constants'
 
 export default defineComponent({
@@ -182,7 +185,7 @@ export default defineComponent({
 
       // Deactivate all active points when entering axis edit mode
       this.datasetRepository.activeDataset.inactivatePoints()
-      
+
       // Activate this axis (turn it red for edit mode)
       this.axisSetRepository.activeAxisSet.activateAxisByName(this.axis.name)
     },

@@ -181,6 +181,7 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
   }
 
   // 統一されたコアロジック
+  // eslint-disable-next-line complexity
   private async extractAxisInformationFromSource(
     imageSource: any,
   ): Promise<AxisExtractionResult | null> {
@@ -198,7 +199,8 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
       }
 
       // Check if plot area was detected
-      if (!detectedAxes.plotArea) {
+      const detectedAxesWithPlotArea = detectedAxes as any
+      if (!detectedAxesWithPlotArea.plotArea) {
         console.warn(
           'No plot area detected. Continuing with axis extraction anyway.',
         )
@@ -582,10 +584,16 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
       regions.push({ x, y, width, height, psm: 6 })
     }
 
-    return await this.adapter.extractTextFromMultipleRegions(
+    const result = await this.adapter.extractTextFromMultipleRegions(
       imageSource,
       regions,
     )
+
+    // Ensure the result has the required properties
+    return {
+      text: result?.text || '',
+      regions: result?.regions || [],
+    }
   }
 
   private extractNumbers(text: string): number[] {

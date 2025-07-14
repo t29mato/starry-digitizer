@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import fs from 'fs'
-import path from 'path'
 import Tesseract from 'tesseract.js'
 import { createCanvas, loadImage, Canvas } from 'canvas'
 
@@ -105,7 +104,7 @@ export class ImprovedAxisExtractor {
 
     // Enhance contrast
     const imageData = ctx.getImageData(0, 0, canvas.width, height)
-    this.enhanceContrast(imageData)
+    this.enhanceContrast(imageData as any)
     ctx.putImageData(imageData, 0, 0)
 
     console.log(
@@ -115,14 +114,14 @@ export class ImprovedAxisExtractor {
     const buffer = regionCanvas.toBuffer('image/png')
     const result = await Tesseract.recognize(buffer, 'eng', {
       psm: 6, // Uniform block of text
-      logger: (m) => {
+      logger: (m: any) => {
         if (m.status === 'recognizing text') {
           process.stdout.write(
             `\r🔍 OCR Progress: ${Math.round(m.progress * 100)}%`,
           )
         }
       },
-    })
+    } as any)
 
     console.log(`\n📝 Bottom region text: "${result.data.text.trim()}"`)
     return { text: result.data.text.trim(), regions: [result.data.text.trim()] }
@@ -133,7 +132,6 @@ export class ImprovedAxisExtractor {
   ): Promise<{ text: string; regions: string[] }> {
     const width = Math.floor(canvas.width * 0.15) // Left 15% of image
     const allTexts: string[] = []
-    const allNumbers: string[] = []
 
     console.log(`🔤 Extracting text from left region using multiple methods...`)
 
@@ -226,8 +224,8 @@ export class ImprovedAxisExtractor {
 
     // Apply image preprocessing
     const imageData = ctx.getImageData(0, 0, width, height)
-    this.enhanceContrast(imageData)
-    this.applyThreshold(imageData) // Convert to black and white
+    this.enhanceContrast(imageData as any)
+    this.applyThreshold(imageData as any) // Convert to black and white
     ctx.putImageData(imageData, 0, 0)
 
     const buffer = regionCanvas.toBuffer('image/png')
@@ -236,7 +234,7 @@ export class ImprovedAxisExtractor {
       const result = await Tesseract.recognize(buffer, 'eng', {
         psm: psm,
         logger: () => {}, // Silent for multiple calls
-      })
+      } as any)
 
       const text = result.data.text.trim()
       console.log(`  🔍 ${label} (${width}x${height}, PSM${psm}): "${text}"`)

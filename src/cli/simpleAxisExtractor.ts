@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import fs from 'fs'
-import path from 'path'
 import Tesseract from 'tesseract.js'
 import { createCanvas, loadImage, Canvas } from 'canvas'
 

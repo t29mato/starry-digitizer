@@ -39,6 +39,7 @@ export interface DetectedRectangle {
   skipped?: boolean
   maxGap?: number
   tolerance?: number
+  solidity?: number
 }
 
 export interface TickMark {

@@ -225,8 +225,6 @@ export class BrowserAdapter implements AxisExtractorAdapter {
           y: minY,
           width: maxX - minX,
           height: maxY - minY,
-          centerX: minX + (maxX - minX) / 2,
-          centerY: minY + (maxY - minY) / 2,
           originalRegion: originalRegion,
         }
       }
@@ -238,6 +236,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
   }
 
   private estimateNumberPositions(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     text: string,
     numbers: number[],
     regionX: number,
@@ -359,6 +358,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
   }
 
   private classifyOCRRegion(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     text: string,
     extractedValues: number[],
     orientation?: 'horizontal' | 'vertical',
@@ -512,7 +512,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
 
         // Detect tick marks
         const tickMarks = this.detectTickMarks(gray, plotArea)
-        
+
         // Store detected tick marks for later use
         this.detectedTickMarks = tickMarks
 
@@ -616,14 +616,15 @@ export class BrowserAdapter implements AxisExtractorAdapter {
       const result = await Tesseract.recognize(canvas, 'eng', {
         psm: options.psm || 6,
         logger: () => {},
-      })
+      } as any)
 
       const text = result.data.text.trim()
 
       // Always extract word-level bounding boxes for coordinate import
-      if (result.data.words && result.data.words.length > 0) {
+      const resultData = result.data as any
+      if (resultData.words && resultData.words.length > 0) {
         this.processWordBoundingBoxes(
-          result.data.words,
+          resultData.words,
           x,
           y,
           options.orientation,
@@ -780,6 +781,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
     return result
   }
 
+  // eslint-disable-next-line complexity
   private detectRectangles(grayImage: any): Array<{
     x: number
     y: number
@@ -987,7 +989,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
 
   private detectTickMarks(
     grayImage: any,
-    plotArea: { x: number; y: number; width: number; height: number }
+    plotArea: { x: number; y: number; width: number; height: number },
   ): Array<{
     position: { x: number; y: number }
     startPoint: { x: number; y: number }
@@ -1049,7 +1051,8 @@ export class BrowserAdapter implements AxisExtractorAdapter {
 
           // プロットエリアの境界近くの線分のみを対象とする
           const nearLeftEdge = Math.abs(midX - plotArea.x) < 20
-          const nearBottomEdge = Math.abs(midY - (plotArea.y + plotArea.height)) < 20
+          const nearBottomEdge =
+            Math.abs(midY - (plotArea.y + plotArea.height)) < 20
 
           let axisType: 'horizontal' | 'vertical' | undefined
           let axisIntersection: { x: number; y: number } | undefined
@@ -1181,6 +1184,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
     return [...new Set(numbers)].sort((a, b) => a - b)
   }
 
+  // eslint-disable-next-line complexity
   private getMockOCRResult(
     x: number,
     y: number,

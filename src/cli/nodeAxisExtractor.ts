@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
 import fs from 'fs'
-import path from 'path'
-import cv from 'opencv4nodejs'
+// import cv from 'opencv4nodejs' // Optional dependency - commented out as it's not installed
 import Tesseract from 'tesseract.js'
-import { createCanvas, loadImage, Canvas, Image } from 'canvas'
+import { createCanvas, loadImage, Canvas } from 'canvas'
 import {
   AxisExtractorInterface,
   AxisExtractionResult,
@@ -69,7 +68,12 @@ export class NodeAxisExtractor implements AxisExtractorInterface {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async detectAxes(imageData: ImageData): Promise<DetectedAxis> {
+    // OpenCV functionality is disabled as opencv4nodejs is not installed
+    return {}
+
+    /* Original implementation using opencv4nodejs (commented out)
     try {
       // Convert ImageData to OpenCV Mat
       const mat = new cv.Mat(
@@ -133,6 +137,7 @@ export class NodeAxisExtractor implements AxisExtractorInterface {
       console.error('Error detecting axes:', error)
       return {}
     }
+    */
   }
 
   async extractTickValuesWithRegion(
@@ -283,7 +288,7 @@ export class NodeAxisExtractor implements AxisExtractorInterface {
     const ctx = canvas.getContext('2d')
     ctx.drawImage(image, 0, 0)
 
-    return ctx.getImageData(0, 0, image.width, image.height)
+    return ctx.getImageData(0, 0, image.width, image.height) as any
   }
 }
 

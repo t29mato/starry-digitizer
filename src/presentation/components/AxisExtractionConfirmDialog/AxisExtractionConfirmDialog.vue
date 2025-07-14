@@ -453,12 +453,12 @@ export default defineComponent({
         300 / this.originalCanvas.height,
       )
 
-      // Draw all 5 debug canvases
+      // Draw all debug canvases
       this.drawDebugCanvas0()
       this.drawDebugCanvas1()
       this.drawDebugCanvas2()
       this.drawDebugCanvas3()
-      this.drawDebugCanvas4()
+      // this.drawDebugCanvas4() // Method not implemented yet
     },
     setupCanvas(canvasRef: string): CanvasRenderingContext2D | null {
       const canvas = this.$refs[canvasRef] as HTMLCanvasElement
@@ -502,7 +502,7 @@ export default defineComponent({
           } else if (!rect.isValid) {
             // Invalid rectangles: red color
             strokeColor = `hsla(0, 70%, 50%, 0.6)`
-          } else if (rect.areaRatio < 0.7) {
+          } else if ((rect.areaRatio ?? 1) < 0.7) {
             // Too small: orange color
             strokeColor = `hsla(30, 70%, 50%, 0.6)`
           } else {
@@ -532,7 +532,7 @@ export default defineComponent({
             strokeColor = `hsla(0, 0%, 50%, 0.9)`
           } else if (!rect.isValid) {
             strokeColor = `hsla(0, 70%, 50%, 1)`
-          } else if (rect.areaRatio < 0.7) {
+          } else if ((rect.areaRatio ?? 1) < 0.7) {
             strokeColor = `hsla(30, 70%, 50%, 1)`
           } else {
             const hue = (index * 60) % 360
@@ -549,7 +549,10 @@ export default defineComponent({
             : rect.isValid
             ? ''
             : ' (invalid)'
-          const areaInfo = ` ${(rect.areaRatio * 100).toFixed(0)}%`
+          const areaInfo =
+            rect.areaRatio !== undefined
+              ? ` ${(rect.areaRatio * 100).toFixed(0)}%`
+              : ''
           const gapInfo =
             rect.maxGap !== undefined ? ` gap:${rect.maxGap.toFixed(0)}px` : ''
           const solidityInfo =
@@ -968,7 +971,7 @@ export default defineComponent({
         // Calculate scale factor between canvas and original image
         // The OCR coordinates are in canvas space, but we need original image space
         const canvasToOriginalScale =
-          this.canvasHandler.originalWidth / this.originalCanvas.width
+          this.canvasHandler.originalWidth / (this.originalCanvas?.width || 1)
         console.log('Applying scale factor:', canvasToOriginalScale)
 
         // Set axis coordinates (converting from canvas to original image pixel space)

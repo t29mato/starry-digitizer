@@ -24,7 +24,8 @@ export class NodeAxisExtractor implements AxisExtractorInterface {
   }
 
   async extractAxisInformation(
-    imageData: ImageData,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _imageData: ImageData,
   ): Promise<AxisExtractionResult | null> {
     // This method expects browser ImageData, so we need to convert from our Node.js canvas
     throw new Error(
@@ -255,14 +256,14 @@ export class NodeAxisExtractor implements AxisExtractorInterface {
 
     // Apply preprocessing
     const imageData = ctx.getImageData(0, 0, canvas.width, height)
-    this.enhanceContrast(imageData)
+    this.enhanceContrast(imageData as any)
     ctx.putImageData(imageData, 0, 0)
 
     const buffer = regionCanvas.toBuffer('image/png')
     const result = await Tesseract.recognize(buffer, 'eng', {
       psm: 6,
       logger: () => {},
-    })
+    } as any)
 
     const text = result.data.text.trim()
     return { text, regions: [text] }
@@ -344,8 +345,8 @@ export class NodeAxisExtractor implements AxisExtractorInterface {
 
     // Apply preprocessing
     const imageData = ctx.getImageData(0, 0, width, height)
-    this.enhanceContrast(imageData)
-    this.applyThreshold(imageData)
+    this.enhanceContrast(imageData as any)
+    this.applyThreshold(imageData as any)
     ctx.putImageData(imageData, 0, 0)
 
     const buffer = regionCanvas.toBuffer('image/png')
@@ -354,7 +355,7 @@ export class NodeAxisExtractor implements AxisExtractorInterface {
       const result = await Tesseract.recognize(buffer, 'eng', {
         psm: psm,
         logger: () => {},
-      })
+      } as any)
       return result.data.text.trim()
     } catch (error) {
       return ''
@@ -432,22 +433,29 @@ export class NodeAxisExtractor implements AxisExtractorInterface {
   }
 
   // Placeholder methods to satisfy AxisExtractorInterface
-  async detectAxes(imageData: ImageData): Promise<DetectedAxis> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async detectAxes(_imageData: ImageData): Promise<DetectedAxis> {
     return {}
   }
 
   async extractTickValues(
-    imageData: ImageData,
-    axis: any,
-    orientation: 'horizontal' | 'vertical',
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _imageData: ImageData,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _axis: any,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _orientation: 'horizontal' | 'vertical',
   ): Promise<number[]> {
     return []
   }
 
   async extractTickValuesWithRegion(
-    imageData: ImageData,
-    axis: any,
-    orientation: 'horizontal' | 'vertical',
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _imageData: ImageData,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _axis: any,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _orientation: 'horizontal' | 'vertical',
   ): Promise<{ values: number[]; region: DetectedRegion }> {
     return {
       values: [],
