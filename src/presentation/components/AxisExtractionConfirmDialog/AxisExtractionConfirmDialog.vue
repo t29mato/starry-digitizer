@@ -80,8 +80,8 @@
 
             <div class="debug-canvas-item">
               <h5 class="text-center mb-2">
-              1. All Detected Rectangles & Plot Area
-            </h5>
+                1. Detected Rectangles, Plot Area & Tick Marks
+              </h5>
               <canvas
                 ref="debugCanvas0"
                 style="border: 1px solid #ccc; width: 100%; height: auto"
@@ -600,11 +600,7 @@ export default defineComponent({
           ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight)
           ctx.fillStyle = '#FF0000'
           ctx.font = 'bold 14px Arial'
-          ctx.fillText(
-            'Plot Area',
-            scaledX + 5,
-            scaledY + scaledHeight + 20,
-          )
+          ctx.fillText('Plot Area', scaledX + 5, scaledY + scaledHeight + 20)
         }
 
         ctx.restore()
@@ -862,6 +858,62 @@ export default defineComponent({
       })
 
       ctx.restore()
+
+      // Draw detected tick marks if available
+      if (this.result?.tickMarks) {
+        ctx.save()
+        ctx.strokeStyle = '#00FF00' // Green for tick marks
+        ctx.lineWidth = 2
+
+        this.result.tickMarks.forEach((tick) => {
+          // Draw tick line
+          ctx.beginPath()
+          ctx.moveTo(
+            tick.startPoint.x * this.scale,
+            tick.startPoint.y * this.scale,
+          )
+          ctx.lineTo(tick.endPoint.x * this.scale, tick.endPoint.y * this.scale)
+          ctx.stroke()
+
+          // Draw intersection point if available
+          if (tick.axisIntersection) {
+            ctx.fillStyle = '#00FF00'
+            ctx.beginPath()
+            ctx.arc(
+              tick.axisIntersection.x * this.scale,
+              tick.axisIntersection.y * this.scale,
+              4,
+              0,
+              2 * Math.PI,
+            )
+            ctx.fill()
+          }
+        })
+
+        // Draw connections between OCR regions and their nearest ticks
+        ctx.save()
+        ctx.strokeStyle = '#FFA500' // Orange for connections
+        ctx.lineWidth = 1
+        ctx.setLineDash([2, 2])
+
+        this.result.ocrRegions?.forEach((region) => {
+          if (region.nearestTick?.axisIntersection) {
+            ctx.beginPath()
+            ctx.moveTo(
+              (region.centerX || region.x + region.width / 2) * this.scale,
+              (region.centerY || region.y + region.height / 2) * this.scale,
+            )
+            ctx.lineTo(
+              region.nearestTick.axisIntersection.x * this.scale,
+              region.nearestTick.axisIntersection.y * this.scale,
+            )
+            ctx.stroke()
+          }
+        })
+        ctx.restore()
+
+        ctx.restore()
+      }
     },
     drawBasicAxisRegions(ctx: CanvasRenderingContext2D) {
       ctx.strokeStyle = 'red'

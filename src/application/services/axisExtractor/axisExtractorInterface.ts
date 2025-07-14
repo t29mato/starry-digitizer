@@ -18,6 +18,7 @@ export interface OCRRegion {
   centerX?: number // 重心のX座標
   centerY?: number // 重心のY座標
   axisPixelPosition?: number // 軸上のピクセル位置
+  nearestTick?: TickMark // 最も近い目盛り
   originalRegion?: {
     // OCR推定時の元の領域（OpenCV精製前）
     x: number
@@ -40,6 +41,16 @@ export interface DetectedRectangle {
   tolerance?: number
 }
 
+export interface TickMark {
+  position: { x: number; y: number } // 目盛りの位置（線分の中点）
+  startPoint: { x: number; y: number } // 線分の開始点
+  endPoint: { x: number; y: number } // 線分の終了点
+  length: number // 目盛りの長さ
+  angle: number // 目盛りの角度（ラジアン）
+  axisType?: 'horizontal' | 'vertical' // 属する軸のタイプ
+  axisIntersection?: { x: number; y: number } // 軸との交点
+}
+
 export interface AxisExtractionResult {
   x1: number
   x2: number
@@ -54,6 +65,7 @@ export interface AxisExtractionResult {
     height: number
   }
   ocrRegions?: OCRRegion[]
+  tickMarks?: TickMark[] // 検出された目盛り
   axisPixelMapping?: {
     horizontal?: {
       x1Pixel: number

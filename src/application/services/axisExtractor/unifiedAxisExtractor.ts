@@ -289,10 +289,23 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
           this.adapter as any
         ).getDetectedRectangles()
 
+        // Get detected tick marks
+        const tickMarks = (this.adapter as any).getDetectedTickMarks()
+        result.tickMarks = tickMarks
+
         result.ocrRegions = ocrRegions.map((region) => {
           // Calculate center of mass
           region.centerX = region.x + region.width / 2
           region.centerY = region.y + region.height / 2
+
+          // Find nearest tick mark
+          const nearestTick = (this.adapter as any).findNearestTick(
+            region,
+            tickMarks,
+          )
+          if (nearestTick) {
+            region.nearestTick = nearestTick
+          }
 
           // Re-classify based on final values
           if (region.type !== 'other') {
@@ -301,20 +314,24 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
               if (region.type.startsWith('x')) {
                 if (Math.abs(value - x1) < 0.001) {
                   region.type = 'x1'
-                  // For horizontal axis, the pixel position is the centerX
-                  region.axisPixelPosition = region.centerX
+                  // Use tick intersection if available, otherwise use centerX
+                  region.axisPixelPosition =
+                    nearestTick?.axisIntersection?.x || region.centerX
                 } else if (Math.abs(value - x2) < 0.001) {
                   region.type = 'x2'
-                  region.axisPixelPosition = region.centerX
+                  region.axisPixelPosition =
+                    nearestTick?.axisIntersection?.x || region.centerX
                 }
               } else if (region.type.startsWith('y')) {
                 if (Math.abs(value - y1) < 0.001) {
                   region.type = 'y1'
-                  // For vertical axis, the pixel position is the centerY
-                  region.axisPixelPosition = region.centerY
+                  // Use tick intersection if available, otherwise use centerY
+                  region.axisPixelPosition =
+                    nearestTick?.axisIntersection?.y || region.centerY
                 } else if (Math.abs(value - y2) < 0.001) {
                   region.type = 'y2'
-                  region.axisPixelPosition = region.centerY
+                  region.axisPixelPosition =
+                    nearestTick?.axisIntersection?.y || region.centerY
                 }
               }
             }

@@ -52,6 +52,15 @@ export class BrowserAdapter implements AxisExtractorAdapter {
     maxGap?: number
     solidity?: number
   }> = []
+  private detectedTickMarks: Array<{
+    position: { x: number; y: number }
+    startPoint: { x: number; y: number }
+    endPoint: { x: number; y: number }
+    length: number
+    angle: number
+    axisType?: 'horizontal' | 'vertical'
+    axisIntersection?: { x: number; y: number }
+  }> = []
 
   constructor(options: UnifiedAxisExtractionOptions = {}) {
     this.options = options
@@ -88,6 +97,18 @@ export class BrowserAdapter implements AxisExtractorAdapter {
     solidity?: number
   }> {
     return this.detectedRectangles
+  }
+
+  getDetectedTickMarks(): Array<{
+    position: { x: number; y: number }
+    startPoint: { x: number; y: number }
+    endPoint: { x: number; y: number }
+    length: number
+    angle: number
+    axisType?: 'horizontal' | 'vertical'
+    axisIntersection?: { x: number; y: number }
+  }> {
+    return this.detectedTickMarks
   }
 
   async refineOCRRegions(): Promise<void> {
@@ -488,6 +509,12 @@ export class BrowserAdapter implements AxisExtractorAdapter {
       if (rectangles.length > 0) {
         // Use the rectangle with the highest score as the plot area
         const plotArea = rectangles[0] // Already sorted by score in detectRectangles
+
+        // Detect tick marks
+        const tickMarks = this.detectTickMarks(gray, plotArea)
+        
+        // Store detected tick marks for later use
+        this.detectedTickMarks = tickMarks
 
         // Use the left edge as vertical axis and bottom edge as horizontal axis
         const detectedAxes: any = {
@@ -956,6 +983,166 @@ export class BrowserAdapter implements AxisExtractorAdapter {
       console.error('Error detecting rectangles:', error)
       return []
     }
+  }
+
+  private detectTickMarks(
+    grayImage: any,
+    plotArea: { x: number; y: number; width: number; height: number }
+  ): Array<{
+    position: { x: number; y: number }
+    startPoint: { x: number; y: number }
+    endPoint: { x: number; y: number }
+    length: number
+    angle: number
+    axisType?: 'horizontal' | 'vertical'
+    axisIntersection?: { x: number; y: number }
+  }> {
+    try {
+      const cv = window.cv
+      if (!cv) return []
+
+      // エッジ検出用の画像を準備
+      const edges = new cv.Mat()
+
+      // Cannyエッジ検出
+      cv.Canny(grayImage, edges, 50, 150)
+
+      // HoughLinesPで線分検出
+      const lines = new cv.Mat()
+      cv.HoughLinesP(
+        edges,
+        lines,
+        1, // rho: 距離分解能（ピクセル）
+        Math.PI / 180, // theta: 角度分解能（ラジアン）
+        10, // threshold: 最小投票数
+        5, // minLineLength: 最小線分長（短い目盛り用）
+        3, // maxLineGap: 線分間の最大ギャップ
+      )
+
+      const tickMarks: Array<{
+        position: { x: number; y: number }
+        startPoint: { x: number; y: number }
+        endPoint: { x: number; y: number }
+        length: number
+        angle: number
+        axisType?: 'horizontal' | 'vertical'
+        axisIntersection?: { x: number; y: number }
+      }> = []
+
+      // 検出された線分を処理
+      for (let i = 0; i < lines.rows; i++) {
+        const startX = lines.data32S[i * 4]
+        const startY = lines.data32S[i * 4 + 1]
+        const endX = lines.data32S[i * 4 + 2]
+        const endY = lines.data32S[i * 4 + 3]
+
+        // 線分の長さと角度を計算
+        const dx = endX - startX
+        const dy = endY - startY
+        const length = Math.sqrt(dx * dx + dy * dy)
+        const angle = Math.atan2(dy, dx)
+
+        // 短い線分のみを目盛りとして検出（5-20ピクセル）
+        if (length >= 5 && length <= 20) {
+          const midX = (startX + endX) / 2
+          const midY = (startY + endY) / 2
+
+          // プロットエリアの境界近くの線分のみを対象とする
+          const nearLeftEdge = Math.abs(midX - plotArea.x) < 20
+          const nearBottomEdge = Math.abs(midY - (plotArea.y + plotArea.height)) < 20
+
+          let axisType: 'horizontal' | 'vertical' | undefined
+          let axisIntersection: { x: number; y: number } | undefined
+
+          // 角度から軸タイプを判定
+          const angleDeg = Math.abs((angle * 180) / Math.PI)
+
+          // 垂直線（X軸の目盛り）
+          if (angleDeg > 80 && angleDeg < 100 && nearBottomEdge) {
+            axisType = 'horizontal'
+            axisIntersection = { x: midX, y: plotArea.y + plotArea.height }
+          }
+          // 水平線（Y軸の目盛り）
+          else if ((angleDeg < 10 || angleDeg > 170) && nearLeftEdge) {
+            axisType = 'vertical'
+            axisIntersection = { x: plotArea.x, y: midY }
+          }
+
+          if (axisType) {
+            tickMarks.push({
+              position: { x: midX, y: midY },
+              startPoint: { x: startX, y: startY },
+              endPoint: { x: endX, y: endY },
+              length,
+              angle,
+              axisType,
+              axisIntersection,
+            })
+          }
+        }
+      }
+
+      // クリーンアップ
+      edges.delete()
+      lines.delete()
+
+      return tickMarks
+    } catch (error) {
+      console.error('Error detecting tick marks:', error)
+      return []
+    }
+  }
+
+  findNearestTick(
+    ocrRegion: OCRRegionInfo,
+    tickMarks: Array<{
+      position: { x: number; y: number }
+      startPoint: { x: number; y: number }
+      endPoint: { x: number; y: number }
+      length: number
+      angle: number
+      axisType?: 'horizontal' | 'vertical'
+      axisIntersection?: { x: number; y: number }
+    }>,
+  ): (typeof tickMarks)[0] | undefined {
+    if (tickMarks.length === 0) return undefined
+
+    const regionCenterX = ocrRegion.x + ocrRegion.width / 2
+    const regionCenterY = ocrRegion.y + ocrRegion.height / 2
+
+    let nearestTick: (typeof tickMarks)[0] | undefined
+    let minDistance = Infinity
+
+    for (const tick of tickMarks) {
+      if (!tick.axisIntersection) continue
+
+      // 軸タイプに応じて距離を計算
+      let distance: number
+      if (ocrRegion.type.startsWith('x') && tick.axisType === 'horizontal') {
+        // X軸ラベルの場合、水平方向の距離を重視
+        distance = Math.abs(regionCenterX - tick.axisIntersection.x)
+      } else if (
+        ocrRegion.type.startsWith('y') &&
+        tick.axisType === 'vertical'
+      ) {
+        // Y軸ラベルの場合、垂直方向の距離を重視
+        distance = Math.abs(regionCenterY - tick.axisIntersection.y)
+      } else {
+        continue // 軸タイプが一致しない場合はスキップ
+      }
+
+      if (distance < minDistance) {
+        minDistance = distance
+        nearestTick = tick
+      }
+    }
+
+    // 最大許容距離（50ピクセル）を超える場合は無効
+    if (minDistance > 50) {
+      return undefined
+    }
+
+    return nearestTick
   }
 
   private extractNumbers(text: string): number[] {
