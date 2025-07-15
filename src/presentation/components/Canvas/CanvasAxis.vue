@@ -1,7 +1,8 @@
 <template>
-  <div v-if="axis.coordIsFilled" v-show="isVisible">
+  <div v-if="axis.coordIsFilled || isActive || isNextAxis" v-show="isVisible">
     <!-- Click area (larger for easier interaction) -->
     <div
+      v-if="axis.coordIsFilled"
       :style="{
         position: 'absolute',
         top: `${yPx - clickAreaHalfSizePx}px`,
@@ -42,7 +43,7 @@
       ></div>
     </div>
     <span
-      v-if="axis.name !== 'x2y2'"
+      v-if="axis.name !== 'x2y2' && shouldShowLabel"
       :style="{
         position: 'absolute',
         top: `${labelTop}px`,
@@ -72,7 +73,7 @@ import {
   axisSetRepository,
   datasetRepository,
 } from '@/instanceStore/repositoryInatances'
-import { POINT_MODE, STYLE } from '@/constants'
+import { POINT_MODE, STYLE, MANUAL_MODE } from '@/constants'
 
 export default defineComponent({
   props: {
@@ -98,12 +99,22 @@ export default defineComponent({
   },
   computed: {
     xPx(): number {
+      // If axis is active or next and not yet confirmed, follow cursor
+      if ((this.isActive || this.isNextAxis) && !this.axis.coordIsFilled) {
+        return this.canvasHandler.scaledCursor.xPx
+      }
+      // Otherwise use the fixed coordinate
       if (this.axis.coord) {
         return this.axis.coord.xPx * this.canvasHandler.scale
       }
       return -999
     },
     yPx(): number {
+      // If axis is active or next and not yet confirmed, follow cursor
+      if ((this.isActive || this.isNextAxis) && !this.axis.coordIsFilled) {
+        return this.canvasHandler.scaledCursor.yPx
+      }
+      // Otherwise use the fixed coordinate
       if (this.axis.coord) {
         return this.axis.coord.yPx * this.canvasHandler.scale
       }
@@ -127,24 +138,56 @@ export default defineComponent({
     clickAreaHalfSizePx(): number {
       return this.clickAreaSizePx / 2
     },
+    canvasWidth(): number {
+      return this.canvasHandler.originalWidth * this.canvasHandler.scale
+    },
+    canvasHeight(): number {
+      return this.canvasHandler.originalHeight * this.canvasHandler.scale
+    },
     labelLeft(): number {
-      if (this.axis.name.includes('x')) {
-        // Keep x labels horizontally centered on their axis position
+      const axis = this.axis
+      const isActive = this.isActive
+      const isNextAxis = this.isNextAxis
+      const coordIsFilled = axis.coordIsFilled
+
+      if (axis.name.includes('x')) {
+        // For unconfirmed active or next axes, follow cursor
+        if ((isActive || isNextAxis) && !coordIsFilled) {
+          return this.canvasHandler.scaledCursor.xPx - 15
+        }
+        // For confirmed axes at bottom edge
         return this.xPx - 15
       }
-      if (this.axis.name.includes('y')) {
-        // Position y labels at the left edge of the canvas
-        return 5
+      if (axis.name.includes('y')) {
+        // For unconfirmed active or next axes, follow cursor
+        if ((isActive || isNextAxis) && !coordIsFilled) {
+          return this.canvasHandler.scaledCursor.xPx - 35
+        }
+        // For confirmed axes at left edge
+        return 0
       }
       return 0
     },
     labelTop(): number {
-      if (this.axis.name.includes('x')) {
-        // Position x labels below their axis position
-        return this.yPx + 25
+      const axis = this.axis
+      const isActive = this.isActive
+      const isNextAxis = this.isNextAxis
+      const coordIsFilled = axis.coordIsFilled
+
+      if (axis.name.includes('x')) {
+        // For unconfirmed active or next axes, follow cursor
+        if ((isActive || isNextAxis) && !coordIsFilled) {
+          return this.canvasHandler.scaledCursor.yPx + 15
+        }
+        // For confirmed axes at bottom edge
+        return this.canvasHeight - 20
       }
-      if (this.axis.name.includes('y')) {
-        // Keep y labels vertically centered on their axis position
+      if (axis.name.includes('y')) {
+        // For unconfirmed active or next axes, follow cursor
+        if ((isActive || isNextAxis) && !coordIsFilled) {
+          return this.canvasHandler.scaledCursor.yPx - 10
+        }
+        // For confirmed axes, use fixed position
         return this.yPx - 10
       }
       return 0
@@ -177,6 +220,42 @@ export default defineComponent({
       return (
         this.axisSetRepository.activeAxisSet.activeAxisName === this.axis.name
       )
+    },
+    isNextAxis(): boolean {
+      const nextAxis = this.axisSetRepository.activeAxisSet.nextAxis
+      // In TWO_POINTS mode, both x1 and y1 are next axes
+      if (
+        this.axisSetRepository.activeAxisSet.pointMode ===
+          POINT_MODE.TWO_POINTS &&
+        nextAxis !== null &&
+        nextAxis.name === 'x1' &&
+        this.axis.name === 'y1'
+      ) {
+        return true
+      }
+      // In TWO_POINTS mode, when nextAxis is x2y2, both x2 and y2 should be visible
+      if (
+        this.axisSetRepository.activeAxisSet.pointMode ===
+          POINT_MODE.TWO_POINTS &&
+        nextAxis !== null &&
+        nextAxis.name === 'x2y2' &&
+        (this.axis.name === 'x2' || this.axis.name === 'y2')
+      ) {
+        return true
+      }
+      return nextAxis !== null && nextAxis.name === this.axis.name
+    },
+    shouldShowLabel(): boolean {
+      // Hide cursor-following labels during manual extraction mode
+      const isManualModeActive =
+        this.canvasHandler.manualMode !== MANUAL_MODE.UNSET
+      const isFollowingCursor =
+        (this.isActive || this.isNextAxis) && !this.axis.coordIsFilled
+
+      if (isManualModeActive && isFollowingCursor) {
+        return false
+      }
+      return true
     },
   },
   methods: {
