@@ -109,8 +109,8 @@
                 v-model="csvContent"
                 label="Or paste CSV content here"
                 rows="6"
-                variant="outlined"
                 class="mt-4"
+                variant="outlined"
               ></v-textarea>
 
               <div v-if="importPreview.length > 0" class="mt-4">

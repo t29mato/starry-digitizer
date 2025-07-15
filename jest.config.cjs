@@ -10,6 +10,7 @@ module.exports = {
   testEnvironmentOptions: {
     customExportConditions: ['node', 'node-addons'],
   },
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   transform: {
     '^.+\\.(t|j)s?$': 'babel-jest',
     '^.+\\.vue$': '@vue/vue3-jest',

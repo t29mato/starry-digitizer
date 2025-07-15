@@ -27,22 +27,13 @@
           height: `${axisCrossBorderPx}px`,
           background: isActive ? 'red' : 'dodgerblue',
         }"
-      >
-        <div v-if="axis.name.includes('x') && axis.name !== 'x2y2'">
-          <magnifier-axis-label-x :label="axis.name" />
-        </div>
-        <div v-if="axis.name.includes('y') && axis.name !== 'x2y2'">
-          <magnifier-axis-label-y :label="axis.name" />
-        </div>
-      </div>
+      ></div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
-import MagnifierAxisLabelX from './MagnifierAxisLabelX.vue'
-import MagnifierAxisLabelY from './MagnifierAxisLabelY.vue'
 import { defineComponent } from 'vue'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
@@ -50,10 +41,7 @@ import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { STYLE } from '@/constants'
 
 export default defineComponent({
-  components: {
-    MagnifierAxisLabelX,
-    MagnifierAxisLabelY,
-  },
+  components: {},
   data() {
     return {
       magnifier,

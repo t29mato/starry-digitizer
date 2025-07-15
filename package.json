@@ -36,6 +36,8 @@
     "browser-sync": "^3.0.2",
     "curve-interpolator": "^3.3.0",
     "handsontable": "^13.1.0",
+    "opencv.js": "^1.2.1",
+    "tesseract.js": "^6.0.1",
     "vue": "^3.3.4",
     "vuetify": "^3.3.13"
   },
