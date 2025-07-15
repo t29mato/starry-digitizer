@@ -9,7 +9,7 @@
         <!-- Debug mode: 4 separate canvases -->
         <div>
           <!-- Sliders in a row -->
-          <v-row class="mb-4">
+          <v-row class="mb-2">
             <!-- Minimum area ratio adjustment slider -->
             <v-col cols="6" class="pr-2">
               <v-slider
@@ -28,9 +28,8 @@
                   <span class="text-caption">90%</span>
                 </template>
               </v-slider>
-              <p class="text-caption text-center mt-n2">
-                Plot area size threshold<br />
-                (current: {{ minAreaRatio }}%)
+              <p class="text-caption text-center mt-n3 mb-0">
+                Plot area size threshold (current: {{ minAreaRatio }}%)
               </p>
             </v-col>
 
@@ -52,14 +51,13 @@
                   <span class="text-caption">100%</span>
                 </template>
               </v-slider>
-              <p class="text-caption text-center mt-n2">
-                Rectangle "closedness"<br />
-                (current: {{ minSolidity }}%)
+              <p class="text-caption text-center mt-n3 mb-0">
+                Rectangle "closedness" (current: {{ minSolidity }}%)
               </p>
             </v-col>
           </v-row>
 
-          <div class="debug-canvas-grid mb-4" style="position: relative">
+          <div class="debug-canvas-grid mb-2" style="position: relative">
             <!-- Loading overlay -->
             <v-overlay
               :model-value="isReloading"
@@ -113,9 +111,9 @@
           </div>
         </div>
 
-        <p class="mb-4">
-          The following axis information was detected from your chart. Please
-          verify the values before importing.
+        <p class="mb-2">
+          <strong>Note:</strong> This is an experimental feature that may not be
+          perfect. Manual adjustment may be needed for optimal results.
         </p>
 
         <!-- Warning when no plot area is detected -->

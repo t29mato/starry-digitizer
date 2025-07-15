@@ -25,7 +25,7 @@
             ><v-icon>mdi-axis-arrow</v-icon></v-btn
           >
         </template>
-        <span>Extract Axis Information</span>
+        <span>Extract Axis Information (Experimental)</span>
       </v-tooltip>
     </h4>
     <v-list
