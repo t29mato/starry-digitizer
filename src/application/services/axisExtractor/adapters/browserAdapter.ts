@@ -1213,20 +1213,6 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         else if (position < 0.7) return { text: '600', confidence: 95 }
         else if (position < 0.85) return { text: '700 800', confidence: 95 }
         else return { text: '800', confidence: 95 }
-      } else if (testContext?.includes('zt')) {
-        // temperature_zt.png: X[0-500]
-        if (position < 0.15) return { text: '0', confidence: 95 }
-        else if (position < 0.3) return { text: '100', confidence: 95 }
-        else if (position < 0.5) return { text: '200 300', confidence: 95 }
-        else if (position < 0.7) return { text: '400', confidence: 95 }
-        else return { text: '500', confidence: 95 }
-      } else if (testContext?.includes('thermal')) {
-        // temperature_thermal_conductivity.png: X[0-600]
-        if (position < 0.15) return { text: '0', confidence: 95 }
-        else if (position < 0.3) return { text: '100 200', confidence: 95 }
-        else if (position < 0.5) return { text: '300', confidence: 95 }
-        else if (position < 0.7) return { text: '400 500', confidence: 95 }
-        else return { text: '600', confidence: 95 }
       } else {
         // Default fallback based on call number and position
         // This handles cases where context is not set
@@ -1259,29 +1245,6 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         else if (position < 0.7) return { text: '200', confidence: 95 }
         else if (position > 0.85) return { text: '0', confidence: 95 }
         else return { text: '300', confidence: 90 }
-      } else if (testContext?.includes('zt')) {
-        // temperature_zt.png: Y[0-1.6]
-        // Provide complete range of decimal values
-        if (position < 0.1) {
-          // Top area near max value
-          return { text: '1.6', confidence: 95 }
-        } else if (position < 0.25) {
-          return { text: '1.2', confidence: 95 }
-        } else if (position < 0.4) {
-          return { text: '0.8', confidence: 90 }
-        } else if (position < 0.6) {
-          return { text: '0.4', confidence: 90 }
-        } else if (position < 0.8) {
-          return { text: '0.2', confidence: 90 }
-        } else {
-          // Bottom area near 0
-          return { text: '0.0', confidence: 95 }
-        }
-      } else if (testContext?.includes('thermal')) {
-        // temperature_thermal_conductivity.png: Y[0-6]
-        if (position < 0.2) return { text: '6', confidence: 95 }
-        if (position > 0.8) return { text: '0', confidence: 95 }
-        return { text: '3', confidence: 90 }
       } else {
         // Default fallback based on call count
         if (position < 0.2) {

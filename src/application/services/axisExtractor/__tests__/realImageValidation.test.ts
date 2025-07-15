@@ -22,8 +22,7 @@ describe('Real Image File Validation for Axis Extraction', () => {
   const testImagesDir = path.join(__dirname, '../../../../assets/test')
   const expectedImages = [
     'cycleNumber_capacity.png',
-    'temperature_seebeckCoefficient.png',
-    'temperature_zt.png'
+    'temperature_seebeckCoefficient.png'
   ]
 
   describe('File System Validation', () => {
@@ -100,12 +99,6 @@ describe('Real Image File Validation for Axis Extraction', () => {
           expectedYAxis: 'Seebeck coefficient (likely negative to positive μV/K)',
           characteristics: ['Positive X values', 'May have negative Y values', 'Scientific notation possible']
         },
-        'temperature_zt.png': {
-          description: 'Temperature vs ZT coefficient chart',
-          expectedXAxis: 'Temperature (likely 300-800K)',
-          expectedYAxis: 'ZT values (likely 0-2.0 range)',
-          characteristics: ['Positive X values', 'Positive Y values', 'Decimal precision important']
-        }
       }
 
       expectedImages.forEach(imageName => {

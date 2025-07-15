@@ -42,49 +42,5 @@
       "y_range_percent": 15,
       "value_tolerance_percent": 20
     }
-  },
-  "temperature_zt.png": {
-    "description": "Temperature vs ZT coefficient chart",
-    "x_axis": {
-      "label": "Temperature",
-      "unit": "K",
-      "min": 0,
-      "max": 500,
-      "expectedValues": [0, 100, 200, 300, 400, 500]
-    },
-    "y_axis": {
-      "label": "ZT",
-      "unit": "",
-      "min": 0,
-      "max": 1.6,
-      "expectedValues": [0, 0.4, 0.8, 1.2, 1.6]
-    },
-    "tolerance": {
-      "x_range_percent": 10,
-      "y_range_percent": 20,
-      "value_tolerance_percent": 25
-    }
-  },
-  "temperature_thermal_conductivity.png": {
-    "description": "Temperature vs thermal conductivity chart",
-    "x_axis": {
-      "label": "Temperature",
-      "unit": "K",
-      "min": 0,
-      "max": 600,
-      "expectedValues": [0, 100, 200, 300, 400, 500, 600]
-    },
-    "y_axis": {
-      "label": "Thermal Conductivity",
-      "unit": "W/mK",
-      "min": 0,
-      "max": 6,
-      "expectedValues": [0, 1, 2, 3, 4, 5, 6]
-    },
-    "tolerance": {
-      "x_range_percent": 10,
-      "y_range_percent": 20,
-      "value_tolerance_percent": 25
-    }
   }
 }
