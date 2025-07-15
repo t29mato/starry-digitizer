@@ -14,10 +14,7 @@ export class AxisExtractor implements AxisExtractorInterface {
 
   constructor(options: UnifiedAxisExtractionOptions = {}) {
     // Force browser adapter for backward compatibility
-    this.unifiedExtractor = new UnifiedAxisExtractor({
-      ...options,
-      forceAdapter: 'browser',
-    })
+    this.unifiedExtractor = new UnifiedAxisExtractor(options)
   }
 
   setDebug(debug: boolean): void {

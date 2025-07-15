@@ -6,12 +6,10 @@ import {
 } from './axisExtractorInterface'
 import { AxisExtractorAdapter } from './adapters/axisExtractorAdapter'
 import { BrowserAdapter } from './adapters/browserAdapter'
-import { NodeAdapter } from './adapters/nodeAdapter'
 
 export interface UnifiedAxisExtractionOptions {
   useImprovedMode?: boolean
   confidenceThreshold?: number
-  forceAdapter?: 'browser' | 'node'
   debug?: boolean
   lineTolerance?: number // Tolerance for line connection detection (default: 20)
   colorThreshold?: number // RGB threshold for detecting dark lines (default: 50)
@@ -41,26 +39,8 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
   }
 
   private createAdapter(): AxisExtractorAdapter {
-    // 強制指定がある場合
-    if (this.options.forceAdapter === 'browser') {
-      return new BrowserAdapter(this.options)
-    }
-    if (this.options.forceAdapter === 'node') {
-      return new NodeAdapter()
-    }
-
-    // 環境自動判定
-    const nodeAdapter = new NodeAdapter()
-    const browserAdapter = new BrowserAdapter(this.options)
-
-    if (
-      nodeAdapter.isEnvironmentSupported() &&
-      !browserAdapter.isEnvironmentSupported()
-    ) {
-      return nodeAdapter
-    } else {
-      return browserAdapter
-    }
+    // Always use BrowserAdapter
+    return new BrowserAdapter(this.options)
   }
 
   getAdapter(): AxisExtractorAdapter {
@@ -127,25 +107,6 @@ export class UnifiedAxisExtractor implements AxisExtractorInterface {
     return {
       name: this.adapter.getEnvironmentName(),
       adapter: this.adapter.constructor.name,
-    }
-  }
-
-  // ファイルから軸抽出（Node.js用）
-  async extractAxisInformationFromFile(
-    filePath: string,
-  ): Promise<AxisExtractionResult | null> {
-    if (!this.adapter.loadImageFromFile) {
-      throw new Error(
-        `File loading not supported by ${this.adapter.getEnvironmentName()} adapter`,
-      )
-    }
-
-    try {
-      const imageSource = await this.adapter.loadImageFromFile(filePath)
-      return await this.extractAxisInformationFromSource(imageSource)
-    } catch (error) {
-      console.error('Error extracting axis information from file:', error)
-      return null
     }
   }
 

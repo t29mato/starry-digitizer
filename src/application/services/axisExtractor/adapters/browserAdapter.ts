@@ -236,8 +236,6 @@ export class BrowserAdapter implements AxisExtractorAdapter {
   }
 
   private estimateNumberPositions(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    text: string,
     numbers: number[],
     regionX: number,
     regionY: number,
@@ -259,11 +257,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
           const estimatedX = regionX + index * estimatedWidth
           const estimatedY = regionY + regionHeight * 0.1 // Center vertically
 
-          const regionType = this.classifyOCRRegion(
-            num.toString(),
-            [num],
-            orientation,
-          )
+          const regionType = this.classifyOCRRegion([num], orientation)
 
           if (regionType !== 'other') {
             this.ocrRegions.push({
@@ -291,11 +285,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
           const estimatedX = regionX + regionWidth * 0.1
           const estimatedY = regionY + index * estimatedHeight
 
-          const regionType = this.classifyOCRRegion(
-            num.toString(),
-            [num],
-            orientation,
-          )
+          const regionType = this.classifyOCRRegion([num], orientation)
 
           if (regionType !== 'other') {
             this.ocrRegions.push({
@@ -337,11 +327,7 @@ export class BrowserAdapter implements AxisExtractorAdapter {
         const height = bbox.y1 - bbox.y0
 
         // Classify this specific number
-        const regionType = this.classifyOCRRegion(
-          wordText,
-          numbers,
-          orientation,
-        )
+        const regionType = this.classifyOCRRegion(numbers, orientation)
 
         if (regionType !== 'other') {
           this.ocrRegions.push({
@@ -358,8 +344,6 @@ export class BrowserAdapter implements AxisExtractorAdapter {
   }
 
   private classifyOCRRegion(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    text: string,
     extractedValues: number[],
     orientation?: 'horizontal' | 'vertical',
   ): 'x1' | 'x2' | 'y1' | 'y2' | 'other' {
@@ -644,7 +628,6 @@ export class BrowserAdapter implements AxisExtractorAdapter {
 
         // Since we don't have word-level bounding boxes, estimate positions
         this.estimateNumberPositions(
-          text,
           numbers,
           x,
           y,

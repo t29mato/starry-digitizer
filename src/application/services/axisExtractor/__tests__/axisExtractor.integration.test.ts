@@ -3,7 +3,6 @@
  */
 import { AxisExtractor } from '../axisExtractor'
 import { AxisExtractorManager } from '../manager/axisExtractorManager'
-import { NodeAxisExtractor } from '../nodeAxisExtractor'
 import fs from 'fs'
 import path from 'path'
 
@@ -701,100 +700,6 @@ describe('AxisExtractor Integration Tests with Real Images', () => {
     })
   })
 
-  describe('Real Node.js Axis Extraction (Hybrid Test)', () => {
-    let nodeExtractor: NodeAxisExtractor
-
-    beforeEach(() => {
-      nodeExtractor = new NodeAxisExtractor(true) // Use improved mode
-    })
-
-    it('should perform real axis extraction with Node.js extractor', async () => {
-      const imagePath = testImagePaths[0] // cycleNumber_capacity.png
-
-      expect(fs.existsSync(imagePath)).toBe(true)
-
-      console.log('🔄 Running real Node.js axis extraction...')
-
-      const realResult = await nodeExtractor.extractAxisInformationFromFile(imagePath)
-
-      // For real Node.js extraction, we expect it to work or return null
-      // We'll check the structure if it returns a result
-      if (realResult) {
-        console.log(`🎯 Real extraction result: X[${realResult.x1}-${realResult.x2}], Y[${realResult.y1}-${realResult.y2}]`)
-
-        // Validate real results
-        expect(typeof realResult.x1).toBe('number')
-        expect(typeof realResult.x2).toBe('number')
-        expect(typeof realResult.y1).toBe('number')
-        expect(typeof realResult.y2).toBe('number')
-
-        expect(realResult.horizontalRegion).toBeDefined()
-        expect(realResult.verticalRegion).toBeDefined()
-
-        if (realResult.horizontalRegion) {
-          console.log(`🔢 Real X-axis values: [${realResult.horizontalRegion.extractedValues.join(', ')}]`)
-          expect(Array.isArray(realResult.horizontalRegion.extractedValues)).toBe(true)
-        }
-
-        if (realResult.verticalRegion) {
-          console.log(`🔢 Real Y-axis values: [${realResult.verticalRegion.extractedValues.join(', ')}]`)
-          expect(Array.isArray(realResult.verticalRegion.extractedValues)).toBe(true)
-        }
-
-        // Demonstrate that we can get real results in tests
-        expect(realResult).not.toBeNull()
-      } else {
-        console.log('⚠️ Real extraction returned null (OCR may have failed)')
-        // For real OCR extraction, null is acceptable as OCR may fail
-        // But we should at least verify the function executed without throwing
-        expect(realResult).toBeNull()
-      }
-    }, 45000) // Extended timeout for real OCR
-
-    it('should compare mock vs real extraction approaches', async () => {
-      const imagePath = testImagePaths[2] // temperature_zt.png
-
-      expect(fs.existsSync(imagePath)).toBe(true)
-
-      console.log('\n📊 COMPARISON: Mock vs Real Extraction')
-
-      // Mock extraction (current test approach)
-      const canvas = await loadImageAsCanvas(imagePath)
-      const mockResult = await axisExtractorManager.extractAxisInformationFromCanvas(canvas)
-
-      // Real extraction
-      const realResult = await nodeExtractor.extractAxisInformationFromFile(imagePath)
-
-      console.log(`🎭 Mock result: X[${mockResult?.x1}-${mockResult?.x2}], Y[${mockResult?.y1}-${mockResult?.y2}]`)
-      console.log(`🎯 Real result: X[${realResult?.x1}-${realResult?.x2}], Y[${realResult?.y1}-${realResult?.y2}]`)
-
-      // Mock extraction should always succeed in test environment
-      expect(mockResult).not.toBeNull()
-      expect(mockResult).toBeDefined()
-
-      if (mockResult) {
-        expect(typeof mockResult.x1).toBe('number')
-        expect(typeof mockResult.x2).toBe('number')
-        expect(typeof mockResult.y1).toBe('number')
-        expect(typeof mockResult.y2).toBe('number')
-      }
-
-      // Real extraction may or may not succeed
-      if (realResult) {
-        expect(typeof realResult.x1).toBe('number')
-        expect(typeof realResult.x2).toBe('number')
-        expect(typeof realResult.y1).toBe('number')
-        expect(typeof realResult.y2).toBe('number')
-      }
-
-      // Log the comparison for analysis
-      console.log(`📈 Mock extraction: ${mockResult ? 'Success' : 'Failed'}`)
-      console.log(`📈 Real extraction: ${realResult ? 'Success' : 'Failed'}`)
-
-      // At least one extraction method should work
-      expect(mockResult || realResult).toBeTruthy()
-    }, 45000)
-  })
 
   describe('Integration Test Summary', () => {
     it('should provide test environment context', () => {
