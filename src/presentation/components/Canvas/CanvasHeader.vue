@@ -6,24 +6,24 @@
     </div>
     <div class="d-flex justify-end mt-1" style="margin-left: auto">
       <div class="ml-2">
-        <v-btn size="small" @click="handleOnClickScaleDownButton"
+        <v-btn size="x-small" @click="handleOnClickScaleDownButton"
           ><v-icon>mdi-minus</v-icon></v-btn
         >
-        <v-btn size="small" class="ml-2" @click="handleOnClickScaleUpButton"
+        <v-btn size="x-small" class="ml-2" @click="handleOnClickScaleUpButton"
           ><v-icon>mdi-plus</v-icon></v-btn
         >
         <v-btn
           id="reset-canvas-scale"
-          size="small"
+          size="x-small"
           class="ml-2"
           @click="handleOnClickResetScaleButton"
           >100%</v-btn
         >
-        <v-btn size="small" class="ml-2" @click="handleOnClickFitButton"
+        <v-btn size="x-small" class="ml-2" @click="handleOnClickFitButton"
           >Fit</v-btn
         >
       </div>
-      <span class="ma-1">{{ showCanvasScale }}</span>
+      <span class="mb-1">{{ showCanvasScale }}</span>
     </div>
   </div>
 </template>

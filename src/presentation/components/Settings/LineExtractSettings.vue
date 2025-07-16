@@ -1,26 +1,30 @@
 <template>
   <v-row class="ma-0">
     <!--  TODO: pxはappendixで追加する -->
-    <v-col class="pa-0">
+    <v-col class="pa-0 mr-2">
       <v-text-field
         :model-value="lineExtract.dxPx"
         @update:model-value="inputDxDyPx"
-        label="ΔX (px)"
+        prefix="ΔX: "
+        suffix="px"
         type="number"
         class="ma-0"
         id="line-extract-dx"
         density="compact"
+        hide-details
       ></v-text-field>
     </v-col>
     <v-col class="pa-0">
       <v-text-field
         :model-value="lineExtract.dyPx"
         @update:model-value="inputDxDyPx"
-        label="ΔY (px)"
+        prefix="ΔY: "
+        suffix="px"
         type="number"
         class="ma-0"
         id="line-extract-dy"
         density="compact"
+        hide-details
       ></v-text-field>
     </v-col>
   </v-row>

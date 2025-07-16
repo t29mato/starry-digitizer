@@ -1,9 +1,9 @@
 <template>
-  <div class="mt-3">
-    <h5 class="mb-2">Extracted Color</h5>
+  <div class="mt-0">
+    <h5 class="mb-0">Color</h5>
     <!-- TODO: 抽出色設定もColorSettingsComponentに入れる -->
-    <v-row class="mt-1">
-      <v-col cols="4">
+    <v-row class="mt-0 ml-1 mb-0">
+      <v-col cols="4" class="pa-0">
         <label class="d-flex">
           <input
             type="color"
@@ -13,12 +13,14 @@
           <v-icon size="small">mdi-palette</v-icon>
         </label>
       </v-col>
-      <v-col cols="8">
+      <v-col cols="8" class="pa-0">
         <v-text-field
           :model-value="extractor.colorDistancePct"
           @update:model-value="inputColorDistancePct"
-          label="Color Diff. (%)"
+          prefix="Color Diff."
+          suffix="%"
           type="number"
+          hide-details
           :error="colorDistancePctErrorMsg.length > 0"
           :error-messages="colorDistancePctErrorMsg"
           density="compact"

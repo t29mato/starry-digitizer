@@ -10,6 +10,7 @@ import { Integrations } from '@sentry/tracing'
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
 import { createVuetify } from 'vuetify'
+import './vuetify-style.css'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 // TODO: TSの型宣言エラーが解消できずignore いずれ再度調査

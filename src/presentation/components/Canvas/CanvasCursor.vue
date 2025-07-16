@@ -17,30 +17,6 @@
     >
       {{ rightLabel }}
     </div>
-    <!-- INFO: bottom label -->
-    <div
-      v-if="!axisSetRepository.activeAxisSet.isAdjusting"
-      :style="{
-        position: 'absolute',
-        top: `${canvasHandler.scaledCursor.yPx + axisCrossCursorPx / 2}px`,
-        left: `${canvasHandler.scaledCursor.xPx - axisCrossCursorPx / 2}px`,
-        'pointer-events': 'none',
-      }"
-    >
-      {{ bottomLabel }}
-    </div>
-    <!-- INFO: left label -->
-    <div
-      v-if="!axisSetRepository.activeAxisSet.isAdjusting"
-      :style="{
-        position: 'absolute',
-        top: `${canvasHandler.scaledCursor.yPx - axisCrossCursorPx}px`,
-        left: `${canvasHandler.scaledCursor.xPx - axisCrossCursorPx * 2}px`,
-        'pointer-events': 'none',
-      }"
-    >
-      {{ leftLabel }}
-    </div>
     <div v-if="isCursorGuideLinesActive">
       <!-- INFO: Horizontal Guide Line -->
       <div :style="horizontalGuideLineStyle"></div>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h4 class="mb-2">Manual Extraction</h4>
+    <h4>Manual Extraction</h4>
     <v-btn-toggle
       :model-value="canvasHandler.manualMode"
       @update:model-value="changeManualMode"
@@ -9,9 +9,9 @@
       divided
       :border="true"
     >
-      <v-btn size="small" color="primary"> Add (A) </v-btn>
-      <v-btn size="small" color="primary"> Edit (E) </v-btn>
-      <v-btn size="small" color="primary"> Delete (D) </v-btn>
+      <v-btn color="primary" size="small" class="pa-1"> Add (A) </v-btn>
+      <v-btn color="primary" size="small" class="pa-1"> Edit (E) </v-btn>
+      <v-btn color="primary" size="small" class="pa-1"> Delete (D) </v-btn>
     </v-btn-toggle>
     <div class="d-flex align-center">
       <h5>Interpolation</h5>
@@ -26,37 +26,49 @@
       ></v-switch>
     </div>
 
-    <div class="d-flex align-end mt-1 mb-4">
+    <div v-if="interpolator.isActive" class="d-flex align-end mt-1 mb-2">
       <v-text-field
         id="interpolation-interval"
         class="mr-4"
         :model-value="interpolator.interval"
         @update:model-value="handleOnUpdateInterpolatorInterval"
-        label="Interval"
+        prefix="Interval: "
+        suffix="px"
         type="number"
         min="2"
         step="1"
         max="30"
         density="compact"
         hide-details
-        :disabled="!interpolator.isActive"
       ></v-text-field>
       <v-btn
         id="confirm-interpolation"
         @click="handleOnConfirmInterpolation"
         size="small"
         color="primary"
-        :disabled="!interpolator.isActive"
         >Confirm</v-btn
       >
     </div>
-    <v-divider></v-divider>
-    <h4 class="mt-4 mb-2">Automatic Extraction</h4>
+    <div class="d-flex align-center mb-1">
+      <h4 class="mb-0">Automatic Extraction</h4>
+      <v-btn
+        :loading="isExtracting"
+        @click="extractPoints"
+        color="primary"
+        size="small"
+        class="ml-3"
+        style="min-width: 60px"
+        >Run</v-btn
+      >
+    </div>
     <v-select
+      class="mb-2"
       @update:model-value="setExtractStrategy"
       :model-value="extractor.strategy.name"
       :items="extractor.strategies"
-      label="Select Algorithm"
+      density="compact"
+      hide-details
+      prefix="Algorithm: "
     ></v-select>
     <div v-if="extractor.strategy.name === 'Symbol Extract'">
       <symbol-extract-settings></symbol-extract-settings>
@@ -66,16 +78,6 @@
     </div>
     <mask-settings></mask-settings>
     <color-settings></color-settings>
-    <div class="text-right mb-4">
-      <v-btn
-        :loading="isExtracting"
-        @click="extractPoints"
-        color="primary"
-        size="small"
-        >Run</v-btn
-      >
-    </div>
-    <v-divider></v-divider>
   </div>
 </template>
 

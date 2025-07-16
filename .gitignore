@@ -23,3 +23,6 @@ dist-ssr
 .env
 
 /coverage
+report
+.envrc
+.claude

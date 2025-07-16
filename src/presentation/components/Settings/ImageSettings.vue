@@ -4,10 +4,13 @@
       id="fileInput"
       accept="image/*"
       @change="onImageUploaded"
+      label="Choose an image"
+      :single-line="true"
       :clearable="false"
-      label="choose an image file"
       hide-details
-      class="mb-5"
+      density="compact"
+      class="mb-2"
+      font-size="0.8rem"
     ></v-file-input>
     <div
       class="c_file-drag-area"

@@ -118,6 +118,10 @@ export class Dataset implements DatasetInterface {
     this.activePointIds.length = 0
   }
 
+  activateAllPoints() {
+    this.activePointIds = this.points.map((point) => point.id)
+  }
+
   hasActive(): boolean {
     return this.activePointIds.length > 0
   }

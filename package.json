@@ -1,6 +1,6 @@
 {
   "name": "starry-digitizer",
-  "version": "0.16.1",
+  "version": "1.11.0",
   "type": "module",
   "files": [
     "library-build/dist"
@@ -28,15 +28,16 @@
     "test:coverage": "jest --coverage",
     "coverage:report": "browser-sync start --server \"coverage/lcov-report\"",
     "coverage": "npm run test:coverage && npm run coverage:report",
-    "lint": "vue-tsc"
+    "lint": "eslint src --ext .js,.ts,.vue && vue-tsc"
   },
   "dependencies": {
     "@handsontable/vue3": "^13.1.0",
     "@mdi/font": "^7.2.96",
     "browser-sync": "^3.0.2",
-    "colorthief": "^2.4.0",
     "curve-interpolator": "^3.3.0",
     "handsontable": "^13.1.0",
+    "opencv.js": "^1.2.1",
+    "tesseract.js": "^6.0.1",
     "vue": "^3.3.4",
     "vuetify": "^3.3.13"
   },

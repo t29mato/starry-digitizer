@@ -3,70 +3,32 @@
     <table>
       <tbody>
         <tr>
-          <td class="pl-0 pr-1">X</td>
-          <td class="pl-0 pr-1">
+          <td class="pl-0 pr-1" style="width: 42%">
             <v-text-field
               v-model="displayVal.x1"
               id="x1-value"
-              type="number"
+              type="text"
+              prefix="x1: "
               hide-details
-              label="x1"
               density="compact"
+              @click="$event.target.select()"
             >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.xIsLogScale"
-              >
-                <button
-                  size="x-small"
-                  @click="updateDisplayValMultipliedByTen('x1')"
-                  id="multiply-by-ten-x1"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-x1"
-                  size="x-small"
-                  @click="updateDisplayValDividedByTen('x1')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
             </v-text-field>
           </td>
-          <td class="pl-0 pr-1">
+          <td class="pl-0 pr-1" style="width: 42%">
             <v-text-field
               v-model="displayVal.x2"
               id="x2-value"
-              type="number"
+              type="text"
+              prefix="x2: "
               hide-details
-              label="x2"
               density="compact"
+              @click="$event.target.select()"
             >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.xIsLogScale"
-              >
-                <button
-                  id="multiply-by-ten-x2"
-                  size="x-small"
-                  @click="updateDisplayValMultipliedByTen('x2')"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-x2"
-                  size="x-small"
-                  @click="updateDisplayValDividedByTen('x2')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
             </v-text-field>
+          </td>
+          <td>
+            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
           <td>
             <v-checkbox
@@ -76,75 +38,34 @@
               hide-details
               density="compact"
             ></v-checkbox>
-            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
         </tr>
         <tr>
-          <td class="pl-0 pr-1">Y</td>
           <td class="pl-0 pr-1">
             <v-text-field
               v-model="displayVal.y1"
               id="y1-value"
-              type="number"
+              prefix="y1: "
+              type="text"
               hide-details
-              label="y1"
               density="compact"
+              @click="$event.target.select()"
             >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.yIsLogScale"
-              >
-                <button
-                  id="multiply-by-ten-y1"
-                  size="x-small"
-                  @click="updateDisplayValMultipliedByTen('y1')"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-y1"
-                  size="x-small"
-                  @click="updateDisplayValDividedByTen('y1')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
             </v-text-field>
           </td>
           <td class="pl-0 pr-1">
             <v-text-field
               v-model="displayVal.y2"
               id="y2-value"
-              type="number"
+              prefix="y2: "
+              type="text"
               hide-details
-              label="y2"
               density="compact"
+              @click="$event.target.select()"
             >
-              <div
-                class="c__AxisSetRepository-settings__log-adjuster"
-                v-if="axisSetRepository.activeAxisSet.yIsLogScale"
-              >
-                <button
-                  id="multiply-by-ten-y2"
-                  size="x-small"
-                  @click="updateDisplayValMultipliedByTen('y2')"
-                  icon
-                >
-                  x10
-                </button>
-                <button
-                  id="divide-by-ten-y2"
-                  size="x-small"
-                  @click="updateDisplayValDividedByTen('y2')"
-                  icon
-                >
-                  /10
-                </button>
-              </div>
             </v-text-field>
           </td>
+          <td><span class="c__AxisSetRepository-settings__hint">Log</span></td>
           <td>
             <v-checkbox
               color="primary"
@@ -153,13 +74,12 @@
               density="compact"
               hide-details
             ></v-checkbox>
-            <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
         </tr>
       </tbody>
     </table>
-    <p class="text-red mb-5">{{ errorMessage }}</p>
-    <div class="mb-5">
+    <p class="text-red mb-2">{{ errorMessage }}</p>
+    <div class="mb-2">
       <h5 class="c__AxisSetRepository-settings__point-mode__label">
         Define the axes by the coordinates of:
       </h5>
@@ -186,11 +106,13 @@
         v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
         label="Consider graph tilt"
         density="compact"
+        hide-details
         color="primary"
       ></v-checkbox>
       <v-checkbox
         label="Show axes marker"
         density="compact"
+        hide-details
         color="primary"
         v-model="axisSetRepository.activeAxisSet.isVisible"
       ></v-checkbox>
@@ -284,30 +206,25 @@ export default defineComponent({
     this.displayVal.y2 = String(this.y2Axis.value)
   },
   methods: {
-    updateDisplayValMultipliedByTen(axisName: 'x1' | 'x2' | 'y1' | 'y2'): void {
-      this.displayVal[axisName] = this.getDisplayValMultipliedByTen(
-        parseFloat(this.displayVal[axisName]),
-      )
-    },
-    updateDisplayValDividedByTen(axisName: 'x1' | 'x2' | 'y1' | 'y2'): void {
-      this.displayVal[axisName] = this.getDisplayValDividedByTen(
-        parseFloat(this.displayVal[axisName]),
-      )
-    },
-    getDisplayValMultipliedByTen(value: number): string {
-      if (value === 0) {
-        return '1'
+    parseExponentialValue(value: string): string {
+      // Handle '^' notation as actual exponentiation (e.g., 2^3 = 8)
+      if (value.includes('^')) {
+        const parts = value.split('^')
+        if (parts.length === 2) {
+          const base = parseFloat(parts[0])
+          const exponent = parseFloat(parts[1])
+          if (!isNaN(base) && !isNaN(exponent)) {
+            return String(Math.pow(base, exponent))
+          }
+        }
       }
-      return (value * 10).toPrecision(1)
-    },
-    getDisplayValDividedByTen(value: number): string {
-      if (value === 0) {
-        return '0.1'
-      }
-      return (value * 0.1).toPrecision(1)
+      return value
     },
     isExponentialFormat(value: string): boolean {
-      return value.includes('e+') && typeof parseFloat(value) === 'number'
+      return (
+        (value.includes('e+') || value.includes('^')) &&
+        typeof parseFloat(this.parseExponentialValue(value)) === 'number'
+      )
     },
     updateAxesToDisplayValAsExponential(
       axisName: 'x1' | 'x2' | 'y1' | 'y2',
@@ -348,19 +265,27 @@ export default defineComponent({
   watch: {
     'displayVal.x1'(value: string) {
       this.updateAxesToDisplayValAsExponential('x1', value)
-      this.axisSetRepository.activeAxisSet.setX1Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setX1Value(
+        parseFloat(this.parseExponentialValue(value)),
+      )
     },
     'displayVal.x2'(value: string) {
       this.updateAxesToDisplayValAsExponential('x2', value)
-      this.axisSetRepository.activeAxisSet.setX2Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setX2Value(
+        parseFloat(this.parseExponentialValue(value)),
+      )
     },
     'displayVal.y1'(value: string) {
       this.updateAxesToDisplayValAsExponential('y1', value)
-      this.axisSetRepository.activeAxisSet.setY1Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setY1Value(
+        parseFloat(this.parseExponentialValue(value)),
+      )
     },
     'displayVal.y2'(value: string) {
       this.updateAxesToDisplayValAsExponential('y2', value)
-      this.axisSetRepository.activeAxisSet.setY2Value(parseFloat(value))
+      this.axisSetRepository.activeAxisSet.setY2Value(
+        parseFloat(this.parseExponentialValue(value)),
+      )
     },
     'axisSetRepository.activeAxisSet'(axisSet: AxisSetInterface) {
       this.setAxisSetValuesToDisplayValues(axisSet)
@@ -369,6 +294,19 @@ export default defineComponent({
       if (newPointMode === POINT_MODE.TWO_POINTS) {
         this.axisSetRepository.activeAxisSet.considerGraphTilt = false
       }
+    },
+    // Watch for individual axis value changes to update displayVal
+    'axisSetRepository.activeAxisSet.x1.value'(newValue: number) {
+      this.displayVal.x1 = String(newValue)
+    },
+    'axisSetRepository.activeAxisSet.x2.value'(newValue: number) {
+      this.displayVal.x2 = String(newValue)
+    },
+    'axisSetRepository.activeAxisSet.y1.value'(newValue: number) {
+      this.displayVal.y1 = String(newValue)
+    },
+    'axisSetRepository.activeAxisSet.y2.value'(newValue: number) {
+      this.displayVal.y2 = String(newValue)
     },
   },
 })
@@ -381,23 +319,8 @@ export default defineComponent({
       display: block;
       font-size: 0.75rem;
       transform: translateY(-8px);
-    }
-
-    &__log-adjuster {
-      position: absolute;
-      right: 2px;
-      top: 4px;
-      display: flex;
-      gap: 4px;
-      & > button {
-        display: block;
-        font-size: 0.5rem;
-        padding: 0 4px;
-        background-color: #444444;
-        color: white;
-        border-radius: 2px;
-        box-shadow: 2px;
-      }
+      padding-top: 13px;
+      vertical-align: middle;
     }
 
     &__point-mode {

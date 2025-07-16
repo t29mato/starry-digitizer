@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 22
           cache: 'yarn'
       - name: Install npm packages
         run: yarn
@@ -29,6 +29,29 @@ jobs:
         uses: codecov/codecov-action@v4.2.0
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  E2E-Test:
+    runs-on: ubuntu-latest
+    if: github.base_ref == 'main' # https://github.com/t29mato/starry-digitizer/issues/211
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+          cache: 'yarn'
+      - name: install npm packages
+        run: yarn install
+      - name: Cypress run
+        uses: cypress-io/github-action@v4
+        with:
+          start: yarn dev
+          wait-on: 'http://localhost:8080'
+          record: true
+          parallel: true
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   Deploy-Preview:
     runs-on: ubuntu-latest
     needs: [UnitTest]
@@ -39,7 +62,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 22
           cache: 'yarn'
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
@@ -58,4 +81,3 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_MESSAGE: |
             Preview URL: ${{ env.DEPLOY_URL }}
-

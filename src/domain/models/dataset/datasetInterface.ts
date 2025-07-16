@@ -36,6 +36,7 @@ export interface DatasetInterface {
   clearPoints(): void
   inactivatePoints(): void
   clearActivePoints(): void
+  activateAllPoints(): void
   addVisiblePointId(id: number): void
   removeVisiblePointId(id: number): void
   addManuallyAddedPointId(id: number): void

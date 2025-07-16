@@ -5,7 +5,7 @@
       :settings="hotTableSettings"
       :key="key"
       ref="tableRef"
-      height="35vh"
+      height="30vh"
       class="overflow-y-auto"
     ></hot-table>
     <v-btn class="mt-1" @click="copyData" size="small">Copy to Clipboard</v-btn>
@@ -34,8 +34,6 @@ import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 registerAllModules()
-
-const CSV_DELIMITER = ','
 
 export default defineComponent({
   components: {
@@ -88,21 +86,13 @@ export default defineComponent({
       )
       return calculator.calculateXYValues(x, y)
     },
-    copyData: function () {
-      // @ts-ignore: there is possibility that hotInstance is not defined though
-      const data = this.$refs.tableRef.hotInstance.getData()
-      const values = data.slice(0)
-      // @ts-ignore convertToCsv methods is defined apparently
-      const csv = this.convertToCsv(values)
+    copyData() {
+      const data = this.tableData.map((row: any) => [row.X, row.Y])
+      const csv = data.map((row: any[]) => row.join(',')).join('\n')
       navigator.clipboard
         .writeText(csv)
-        .then(() => console.log('コピーが成功しました。'))
-        .catch((err) => console.error('コピーが失敗しました。', err))
-    },
-    convertToCsv(data: string[][]) {
-      console.log({ data })
-      const rows = data.map((row) => row.join(CSV_DELIMITER))
-      return rows.join('\n')
+        .then(() => console.log('Data copied to clipboard successfully.'))
+        .catch((err) => console.error('Failed to copy data to clipboard.', err))
     },
   },
   watch: {

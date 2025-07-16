@@ -1,23 +1,27 @@
 <template>
   <v-row class="ma-0">
-    <v-col class="pa-0">
+    <v-col class="pa-0 mr-2">
       <v-text-field
         :model-value="symbolExtractByArea.minDiameterPx"
         @update:model-value="inputMin"
-        label="Min. Diameter (px)"
+        prefix="Min: "
+        suffix="px"
         type="number"
         class="ma-0"
         density="compact"
+        hide-details
       ></v-text-field>
     </v-col>
     <v-col class="pa-0">
       <v-text-field
         :model-value="symbolExtractByArea.maxDiameterPx"
         @update:model-value="inputMax"
-        label="Max. Diameter (px)"
+        prefix="Max: "
+        suffix="px"
         type="number"
         class="ma-0"
         density="compact"
+        hide-details
       ></v-text-field>
     </v-col>
   </v-row>

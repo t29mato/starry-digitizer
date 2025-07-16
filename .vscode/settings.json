@@ -8,5 +8,6 @@
         "javascript",
         "javascriptreact",
     ],
-    "eslint.workingDirectories": [".storybook/"]
+    "eslint.workingDirectories": [".storybook/"],
+    "jest.jestCommandLine": "/Users/matotomoya/.nvm/versions/node/v22.16.0/bin/node /Users/matotomoya/dev/starry-digitizer/node_modules/.bin/jest"
 }
