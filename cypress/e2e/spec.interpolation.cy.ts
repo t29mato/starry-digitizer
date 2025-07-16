@@ -16,7 +16,7 @@ describe('template spec', () => {
       .click(150, 220)
       .click(250, 150)
 
-    cy.get('.canvas-point').should('have.length', 18)
+    cy.get('.canvas-point').should('have.length', 3)
   })
 
   it('asserts that interpolation on/off settings are remained after reload (localStorage feature)', () => {

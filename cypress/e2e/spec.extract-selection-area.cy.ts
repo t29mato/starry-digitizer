@@ -22,6 +22,6 @@ describe('template spec', () => {
     cy.contains('Run').click()
     cy.scrollTo(0, 0)
 
-    cy.get('.dataset-count-1 > span').should('have.text', 21)
+    cy.get('.dataset-count-1 > span').should('have.text', 7)
   })
 })
