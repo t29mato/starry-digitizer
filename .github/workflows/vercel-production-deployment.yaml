@@ -57,9 +57,23 @@ jobs:
         with:
           node-version: 22
           cache: 'yarn'
-      - name: Update Version and Tag
+      - name: Verify Version Match
         run: |
-          npm version --no-git-tag-version "${GITHUB_REF#refs/tags/}"
+          # Extract version from tag (remove 'v' prefix)
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          
+          # Get version from package.json
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          
+          # Check if versions match
+          if [ "$TAG_VERSION" = "$PACKAGE_VERSION" ]; then
+              echo "✅ Version check passed: $TAG_VERSION"
+          else
+              echo "❌ Version mismatch!"
+              echo "   Tag version: $TAG_VERSION"
+              echo "   Package.json version: $PACKAGE_VERSION"
+              exit 1
+          fi
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
@@ -86,9 +100,23 @@ jobs:
         run: |
           git config --local user.email "${{ github.event.sender.email }}"
           git config --local user.name "${{ github.event.sender.login }}"
-      - name: Update Version and Tag
+      - name: Verify Version Match
         run: |
-          npm version --no-git-tag-version "${GITHUB_REF#refs/tags/}"
+          # Extract version from tag (remove 'v' prefix)
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          
+          # Get version from package.json
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          
+          # Check if versions match
+          if [ "$TAG_VERSION" = "$PACKAGE_VERSION" ]; then
+              echo "✅ Version check passed: $TAG_VERSION"
+          else
+              echo "❌ Version mismatch!"
+              echo "   Tag version: $TAG_VERSION"
+              echo "   Package.json version: $PACKAGE_VERSION"
+              exit 1
+          fi
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
