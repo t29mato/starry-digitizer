@@ -2,7 +2,9 @@
   <div v-if="axis.coordIsFilled || isActive || isNextAxis" v-show="isVisible">
     <!-- Click area (larger for easier interaction) -->
     <div
-      v-if="axis.coordIsFilled"
+      v-if="
+        axis.coordIsFilled && canvasHandler.manualMode === MANUAL_MODE.UNSET
+      "
       :style="{
         position: 'absolute',
         top: `${yPx - clickAreaHalfSizePx}px`,
@@ -95,6 +97,7 @@ export default defineComponent({
       axisSizePx: STYLE.AXIS_SIZE_PX,
       clickAreaSizePx: STYLE.AXIS_SIZE_PX * 2, // Larger click area
       isHovered: false,
+      MANUAL_MODE,
     }
   },
   computed: {
