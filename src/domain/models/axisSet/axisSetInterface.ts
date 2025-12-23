@@ -7,10 +7,14 @@ export type Vector = {
   distancePx: number
 }
 
+/**
+ * AxisSet domain model
+ * Represents a set of axes with their relationships and transformations
+ */
 export interface AxisSetInterface {
   id: number
   name: string
-  x1: AxisInterface
+  x1: AxisInterface // ← これがネストした複雑なオブジェクト
   x2: AxisInterface
   y1: AxisInterface
   y2: AxisInterface

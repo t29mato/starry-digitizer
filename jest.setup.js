@@ -102,6 +102,18 @@ global.URL = global.URL || {}
 global.URL.createObjectURL = global.URL.createObjectURL || jest.fn(() => 'mock-object-url')
 global.URL.revokeObjectURL = global.URL.revokeObjectURL || jest.fn()
 
+// Mock fetch for base64 to blob conversion
+global.fetch = global.fetch || jest.fn((url) => {
+  // Handle data URLs (base64)
+  if (typeof url === 'string' && url.startsWith('data:')) {
+    const blob = new Blob(['mock-blob-data'], { type: 'image/png' })
+    return Promise.resolve({
+      blob: () => Promise.resolve(blob)
+    })
+  }
+  return Promise.reject(new Error('fetch mock only handles data URLs'))
+})
+
 // Mock FileReader if needed
 global.FileReader = global.FileReader || class FileReader {
   constructor() {
