@@ -35,3 +35,33 @@ test('set points', () => {
     { id: 1, xPx: 2, yPx: 2 },
   ])
 })
+
+test('clearAllDatasets clears datasets and resets activeDatasetId', () => {
+  const datasets = new DatasetRepository()
+  datasets.addDataset(new Dataset('dataset 2', [], datasets.nextDatasetId))
+  datasets.addDataset(new Dataset('dataset 3', [], datasets.nextDatasetId))
+  datasets.setActiveDataset(2)
+
+  expect(datasets.datasets.length).toBe(3)
+  expect(datasets.activeDatasetId).toBe(2)
+
+  datasets.clearAllDatasets()
+
+  expect(datasets.datasets.length).toBe(0)
+  expect(datasets.activeDatasetId).toBe(1)
+})
+
+test('removeAllDatasets vs clearAllDatasets', () => {
+  const repository1 = new DatasetRepository()
+  const repository2 = new DatasetRepository()
+
+  // removeAllDatasets creates a new dataset
+  repository1.removeAllDatasets()
+  expect(repository1.datasets.length).toBe(1)
+  expect(repository1.activeDatasetId).toBe(1)
+
+  // clearAllDatasets does not create a new dataset
+  repository2.clearAllDatasets()
+  expect(repository2.datasets.length).toBe(0)
+  expect(repository2.activeDatasetId).toBe(1)
+})

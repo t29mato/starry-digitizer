@@ -10,4 +10,5 @@ export interface AxisSetRepositoryInterface {
   createNewAxisSet(): void
   addAxisSet(dataset: AxisSetInterface): void
   removeAxisSet(id: number): void
+  clearAllAxisSets(): void
 }

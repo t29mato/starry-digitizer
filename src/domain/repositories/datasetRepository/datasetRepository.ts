@@ -101,6 +101,11 @@ export class DatasetRepository implements DatasetRepositoryInterface {
     this.setActiveDataset(1)
   }
 
+  clearAllDatasets(): void {
+    this.datasets = []
+    this.activeDatasetId = 1
+  }
+
   activatePointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
     this.activeDataset.activatePointsInRectangleArea(
       topLeftCoord,
