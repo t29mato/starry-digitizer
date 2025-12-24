@@ -182,9 +182,11 @@ export class ProjectService implements ProjectServiceInterface {
     link.href = url
     link.download =
       filename ||
-      `starry-digitizer-project-${new Date()
+      `sd-${new Date()
         .toISOString()
-        .replace(/[:.]/g, '-')}.zip`
+        .replace(/[-:]/g, '')
+        .replace(/\.\d{3}Z$/, '')
+        .replace('T', '-')}.zip`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
