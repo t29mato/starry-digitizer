@@ -69,4 +69,9 @@ export class AxisSetRepository implements AxisSetRepositoryInterface {
     this.axisSets = this.axisSets.filter((axisSet) => axisSet.id !== id)
     this.setActiveAxisSet(this.axisSets[0].id)
   }
+
+  clearAllAxisSets(): void {
+    this.axisSets = []
+    this.activeAxisSetId = 1
+  }
 }

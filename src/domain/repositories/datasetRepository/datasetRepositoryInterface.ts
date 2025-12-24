@@ -19,6 +19,7 @@ export interface DatasetRepositoryInterface {
   addDataset(dataset: DatasetInterface): void
   removeDataset(id: number): void
   removeAllDatasets(): void
+  clearAllDatasets(): void
   activatePointsInRectangleArea(
     topLeftCoord: Coord,
     bottomRightCoord: Coord,

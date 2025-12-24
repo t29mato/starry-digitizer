@@ -3,25 +3,29 @@ import { Vector } from '../axisSet/axisSetInterface'
 
 export type Points = Point[]
 
+/**
+ * Dataset domain model with state and behavior
+ * Represents a collection of data points with associated metadata
+ */
 export interface DatasetInterface {
-  name: string
-  points: Points
   id: number
+  name: string
+  axisSetId: number
+  points: Point[]
+  visiblePointIds: number[]
+  manuallyAddedPointIds: number[]
   pointsAreAdjusting: boolean
   tempPoints: Points
   activePointIds: number[]
-  axisSetId: number
-  /**
-   * INFO: Confirm interpolation: Delay finalization until user confirms via window.confirm.
-   * If canceled, manual points are restored. Temporarily hides manual points during preview
-   * by using 'visiblePointIds' state.
-   */
-  visiblePointIds: number[]
-  manuallyAddedPointIds: number[]
+
+  // Computed properties
   get nextPointId(): number
   get nextTempPointId(): number
   get lastPointId(): number
   get pointsAreActive(): boolean
+  get manuallyAddedPoints(): Points
+
+  // Methods
   scaledPoints(scale: number): Points
   scaledTempPoints(scale: number): Points
   addPoint(xPx: number, yPx: number): void
@@ -41,7 +45,6 @@ export interface DatasetInterface {
   removeVisiblePointId(id: number): void
   addManuallyAddedPointId(id: number): void
   removeManuallyAddedPointId(id: number): void
-  get manuallyAddedPoints(): Points
   moveTempPointToPoint(tempPointId: number): void
   pointsSortedByXAscending(): Points
   activatePointsInRectangleArea(
