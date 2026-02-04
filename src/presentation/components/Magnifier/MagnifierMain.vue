@@ -13,41 +13,81 @@
         :toggleSettingsDialog="toggleSettingsDialog"
       ></magnifier-settings-btn>
       <magnifier-image></magnifier-image>
-      <div
-        v-for="point in datasetRepository.activeDataset.points"
-        :key="point.id"
-      >
-        <magnifier-points
-          :point="point"
-          :magnifierSize="magnifier.sizePx"
-          :isActive="
-            datasetRepository.activeDataset.activePointIds.includes(point.id)
-          "
-          :isVisible="
-            datasetRepository.activeDataset.visiblePointIds.includes(point.id)
-          "
-          :isManuallyAdded="
-            datasetRepository.activeDataset.manuallyAddedPointIds.includes(
-              point.id,
-            )
-          "
-        ></magnifier-points>
-      </div>
-      <div
-        v-for="point in datasetRepository.activeDataset.tempPoints"
-        :key="point.id"
-      >
-        <magnifier-points
-          :point="point"
-          :magnifierSize="magnifier.sizePx"
-          :isActive="
-            datasetRepository.activeDataset.activePointIds.includes(point.id)
-          "
-          :isVisible="true"
-          :isTemporary="true"
-          :isManuallyAdded="false"
-        ></magnifier-points>
-      </div>
+      <!-- Show all datasets mode -->
+      <template v-if="datasetRepository.isViewAllMode">
+        <template v-for="dataset in datasetRepository.datasets">
+          <div
+            v-for="point in dataset.points"
+            :key="`${dataset.id}-${point.id}`"
+          >
+            <magnifier-points
+              :point="point"
+              :magnifierSize="magnifier.sizePx"
+              :isActive="
+                dataset.id === datasetRepository.activeDatasetId &&
+                dataset.activePointIds.includes(point.id)
+              "
+              :isVisible="dataset.visiblePointIds.includes(point.id)"
+              :isManuallyAdded="
+                dataset.manuallyAddedPointIds.includes(point.id)
+              "
+              :datasetColor="datasetRepository.getDatasetColor(dataset.id)"
+            ></magnifier-points>
+          </div>
+        </template>
+        <!-- Show temp points only for active dataset -->
+        <div
+          v-for="point in datasetRepository.activeDataset.tempPoints"
+          :key="`temp-${point.id}`"
+        >
+          <magnifier-points
+            :point="point"
+            :magnifierSize="magnifier.sizePx"
+            :isActive="false"
+            :isVisible="true"
+            :isTemporary="true"
+            :isManuallyAdded="false"
+          ></magnifier-points>
+        </div>
+      </template>
+      <!-- Show active dataset only mode (default) -->
+      <template v-else>
+        <div
+          v-for="point in datasetRepository.activeDataset.points"
+          :key="point.id"
+        >
+          <magnifier-points
+            :point="point"
+            :magnifierSize="magnifier.sizePx"
+            :isActive="
+              datasetRepository.activeDataset.activePointIds.includes(point.id)
+            "
+            :isVisible="
+              datasetRepository.activeDataset.visiblePointIds.includes(point.id)
+            "
+            :isManuallyAdded="
+              datasetRepository.activeDataset.manuallyAddedPointIds.includes(
+                point.id,
+              )
+            "
+          ></magnifier-points>
+        </div>
+        <div
+          v-for="point in datasetRepository.activeDataset.tempPoints"
+          :key="`temp-${point.id}`"
+        >
+          <magnifier-points
+            :point="point"
+            :magnifierSize="magnifier.sizePx"
+            :isActive="
+              datasetRepository.activeDataset.activePointIds.includes(point.id)
+            "
+            :isVisible="true"
+            :isTemporary="true"
+            :isManuallyAdded="false"
+          ></magnifier-points>
+        </div>
+      </template>
       <magnifier-extract-size></magnifier-extract-size>
       <magnifier-axis-set></magnifier-axis-set>
       <magnifier-vertical-line></magnifier-vertical-line>

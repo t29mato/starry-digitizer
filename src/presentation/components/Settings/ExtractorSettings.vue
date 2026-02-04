@@ -1,7 +1,15 @@
 <template>
   <div>
     <h4>Manual Extraction</h4>
+    <div
+      v-if="datasetRepository.isViewAllMode"
+      class="text-caption mb-2"
+      style="color: #999"
+    >
+      Disabled in View All mode
+    </div>
     <v-btn-toggle
+      v-else
       :model-value="canvasHandler.manualMode"
       @update:model-value="changeManualMode"
       density="compact"
@@ -23,6 +31,7 @@
         @update:model-value="handleOnClickInterpolatiorSwitch"
         hide-details
         density="compact"
+        :disabled="datasetRepository.isViewAllMode"
       ></v-switch>
     </div>
 
@@ -58,6 +67,7 @@
         size="small"
         class="ml-3"
         style="min-width: 60px"
+        :disabled="datasetRepository.isViewAllMode"
         >Run</v-btn
       >
     </div>
@@ -69,15 +79,18 @@
       density="compact"
       hide-details
       prefix="Algorithm: "
+      :disabled="datasetRepository.isViewAllMode"
     ></v-select>
-    <div v-if="extractor.strategy.name === 'Symbol Extract'">
-      <symbol-extract-settings></symbol-extract-settings>
+    <div v-if="!datasetRepository.isViewAllMode">
+      <div v-if="extractor.strategy.name === 'Symbol Extract'">
+        <symbol-extract-settings></symbol-extract-settings>
+      </div>
+      <div v-else-if="extractor.strategy.name === 'Line Extract'">
+        <line-extract-settings></line-extract-settings>
+      </div>
+      <mask-settings></mask-settings>
+      <color-settings></color-settings>
     </div>
-    <div v-else-if="extractor.strategy.name === 'Line Extract'">
-      <line-extract-settings></line-extract-settings>
-    </div>
-    <mask-settings></mask-settings>
-    <color-settings></color-settings>
   </div>
 </template>
 

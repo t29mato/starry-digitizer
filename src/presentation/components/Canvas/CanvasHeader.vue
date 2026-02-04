@@ -1,8 +1,8 @@
 <template>
   <div class="d-flex justify-space-between align-center flex-wrap">
     <div class="c__current-dataset-and-axis">
-      Dataset: <span>{{ datasetRepository.activeDataset.name }}</span> / XY
-      Axes: <span>{{ axisSetRepository.activeAxisSet.name }}</span>
+      Dataset: <span>{{ currentDatasetName }}</span> / XY Axes:
+      <span>{{ axisSetRepository.activeAxisSet.name }}</span>
     </div>
     <div class="d-flex justify-end mt-1" style="margin-left: auto">
       <div class="ml-2">
@@ -48,6 +48,12 @@ export default defineComponent({
   computed: {
     showCanvasScale(): string {
       return Math.trunc(this.canvasHandler.scale * 100) + '%'
+    },
+    currentDatasetName(): string {
+      if (this.datasetRepository.activeDatasetId === 0) {
+        return 'All Datasets (View Only)'
+      }
+      return this.datasetRepository.activeDataset.name
     },
   },
   methods: {

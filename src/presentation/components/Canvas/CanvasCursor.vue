@@ -3,6 +3,7 @@
     <!-- INFO: right label -->
     <div
       v-if="
+        !datasetRepository.isViewAllMode &&
         !(
           axisSetRepository.activeAxisSet.isAdjusting ||
           datasetRepository.activeDataset.pointsAreAdjusting
@@ -102,6 +103,11 @@ export default defineComponent({
       return ''
     },
     isCursorGuideLinesActive(): boolean {
+      //INFO: View All mode is read-only
+      if (this.datasetRepository.isViewAllMode) {
+        return false
+      }
+
       //INFO: 軸定義後でプロットのいずれのモードでもないときは表示しない
       if (
         this.canvasHandler.manualMode === MANUAL_MODE.UNSET &&
