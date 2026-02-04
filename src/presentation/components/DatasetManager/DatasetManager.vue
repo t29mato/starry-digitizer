@@ -1,7 +1,7 @@
 <template>
   <div>
     <h4>
-      Dataset List
+      Datasets
       <v-btn @click="handleOnClickAddDatasetButton" size="x-small" class="ml-2"
         ><v-icon>mdi-plus</v-icon></v-btn
       >
@@ -13,12 +13,26 @@
         title="Remove all datasets"
         ><v-icon>mdi-delete-sweep</v-icon></v-btn
       >
+      <v-tooltip :text="importButtonTitle" location="bottom">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            v-bind="props"
+            size="x-small"
+            @click="showImportDialog = true"
+            class="ml-2"
+            :disabled="!isAxisCalibrated"
+            ><v-icon>mdi-import</v-icon></v-btn
+          >
+        </template>
+      </v-tooltip>
       <v-btn
+        v-if="datasetRepository.datasets.length > 1"
         size="x-small"
-        @click="showImportDialog = true"
+        @click="handleOnClickViewAll"
         class="ml-2"
-        title="Import datasets from CSV"
-        ><v-icon>mdi-import</v-icon></v-btn
+        :color="datasetRepository.activeDatasetId === 0 ? 'primary' : ''"
+        title="View all datasets"
+        ><v-icon>mdi-eye-outline</v-icon></v-btn
       >
     </h4>
     <div
@@ -30,6 +44,7 @@
         overflow-y: auto;
       "
     >
+      <!-- Individual datasets -->
       <div
         v-for="dataset in datasetRepository.datasets"
         :key="dataset.id"
@@ -42,7 +57,7 @@
               link
               @click="handleOnClickDataset(dataset.id)"
               :class="
-                dataset.id === datasetRepository.activeDataset.id &&
+                dataset.id === datasetRepository.activeDatasetId &&
                 'bg-yellow-lighten-4'
               "
             >
@@ -90,73 +105,66 @@
       </div>
     </div>
 
-    <!-- CSV Import Dialog -->
-    <v-dialog v-model="showImportDialog" max-width="900">
-      <v-card>
-        <v-card-title>Import Datasets from CSV</v-card-title>
-        <v-card-text>
-          <v-row>
-            <v-col cols="6">
-              <v-file-input
-                v-model="csvFile"
-                label="Select CSV file"
-                accept=".csv"
-                show-size
-                @change="handleFileChange"
-              ></v-file-input>
-
+    <!-- CSV/JSON Import Dialog -->
+    <v-dialog v-model="showImportDialog" max-width="1400" max-height="90vh">
+      <v-card class="d-flex flex-column" style="height: 90vh">
+        <v-card-title>Import Datasets from CSV or JSON</v-card-title>
+        <v-card-text class="flex-grow-1" style="overflow-y: auto">
+          <v-row class="fill-height" style="min-height: 650px">
+            <!-- Left: JSON Input (1/3) -->
+            <v-col cols="4" class="d-flex flex-column" style="height: 650px">
               <v-textarea
                 v-model="csvContent"
-                label="Or paste CSV content here"
-                rows="6"
-                class="mt-4"
+                label="Paste CSV/JSON content here"
                 variant="outlined"
+                style="height: 100%"
+                class="csv-json-textarea"
+                no-resize
+                hide-details
               ></v-textarea>
 
-              <div v-if="importPreview.length > 0" class="mt-4">
-                <h6>Preview (first 5 rows):</h6>
-                <div class="preview-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th
-                          v-for="(header, index) in importPreview[0]"
-                          :key="index"
-                        >
-                          {{ header }}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(row, rowIndex) in importPreview.slice(1, 6)"
-                        :key="rowIndex"
-                      >
-                        <td v-for="(cell, cellIndex) in row" :key="cellIndex">
-                          {{ cell }}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
+              <!-- Error Message -->
               <div v-if="importError" class="error-message mt-2">
                 {{ importError }}
               </div>
             </v-col>
 
-            <v-col cols="6">
-              <h6>Visual Preview on Image:</h6>
-              <div v-if="parsedDatasets.length > 0">
-                <div class="image-preview-container">
+            <!-- Right: Visual Preview (2/3) -->
+            <v-col cols="8" class="d-flex flex-column">
+              <div class="d-flex align-center justify-space-between mb-2">
+                <h6 class="mb-0">Visual Preview on Image:</h6>
+                <div v-if="parsedDatasets.length > 0" class="d-flex gap-2">
+                  <v-btn
+                    size="small"
+                    @click="sortByX = !sortByX"
+                    :color="sortByX ? 'primary' : ''"
+                    variant="outlined"
+                  >
+                    <v-icon>mdi-sort-ascending</v-icon>
+                    Sort by X
+                  </v-btn>
+                  <v-btn
+                    size="small"
+                    @click="showDataPoints = !showDataPoints"
+                    :color="showDataPoints ? 'primary' : ''"
+                    variant="outlined"
+                  >
+                    <v-icon>{{
+                      showDataPoints ? 'mdi-eye' : 'mdi-eye-off'
+                    }}</v-icon>
+                    {{ showDataPoints ? 'Hide Points' : 'Show Points' }}
+                  </v-btn>
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <div class="image-preview-container-large">
                   <canvas
                     ref="previewCanvas"
-                    class="preview-canvas"
+                    class="preview-canvas-flexible"
                     @mouseenter="updatePreviewCanvas"
                   ></canvas>
                 </div>
-                <div class="dataset-legend">
+                <div v-if="parsedDatasets.length > 0" class="dataset-legend mt-3">
                   <div
                     v-for="(dataset, index) in parsedDatasets"
                     :key="index"
@@ -175,21 +183,6 @@
                   </div>
                 </div>
               </div>
-              <div
-                v-else-if="importPreview.length > 0"
-                class="axis-setup-notice"
-              >
-                <v-alert type="warning" variant="tonal" class="text-center">
-                  <div class="d-flex flex-column align-center">
-                    <v-icon size="32" class="mb-2">mdi-axis-arrow</v-icon>
-                    <strong>Set Axis Coordinates First</strong>
-                    <p class="mt-2 mb-0">
-                      Please configure the X and Y axis coordinates on the image
-                      to see the visual preview of your CSV data points.
-                    </p>
-                  </div>
-                </v-alert>
-              </div>
             </v-col>
           </v-row>
         </v-card-text>
@@ -199,7 +192,7 @@
           <v-btn
             @click="importDatasets"
             color="primary"
-            :disabled="!csvContent && !csvFile"
+            :disabled="!csvContent"
           >
             Import
           </v-btn>
@@ -222,6 +215,7 @@ import { MASK_MODE } from '@/constants'
 import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 import { Point } from '@/@types/types'
 import { CsvParser } from '@/application/utils/csvParser'
+import { JsonParser } from '@/application/utils/jsonParser'
 
 export default defineComponent({
   components: {},
@@ -236,14 +230,17 @@ export default defineComponent({
       sortOrders: ['ascending', 'descending'],
       axisSetRepository,
       showImportDialog: false,
-      csvFile: undefined as File[] | undefined,
       csvContent: '',
       importPreview: [] as string[][],
       importError: '',
       parsedDatasets: [] as {
         name: string
+        color?: string
         points: { x: number; y: number; xPx: number; yPx: number }[]
       }[],
+      importFormat: 'auto' as 'auto' | 'csv' | 'json',
+      showDataPoints: true,
+      sortByX: false,
     }
   },
   props: {
@@ -254,6 +251,40 @@ export default defineComponent({
     exportBtnClick: {
       type: Function,
       required: false,
+    },
+  },
+  computed: {
+    totalPointsCount(): number {
+      return this.datasetRepository.datasets.reduce(
+        (sum, dataset) => sum + dataset.points.length,
+        0,
+      )
+    },
+    isAxisCalibrated(): boolean {
+      return (
+        this.axisSetRepository.activeAxisSet.hasXAxis &&
+        this.axisSetRepository.activeAxisSet.hasYAxis
+      )
+    },
+    importButtonTitle(): string {
+      if (!this.isAxisCalibrated) {
+        return 'Please calibrate axes first (set x1, y1, x2, y2)'
+      }
+      return 'Import datasets from CSV or JSON'
+    },
+    sortedParsedDatasets(): {
+      name: string
+      color?: string
+      points: { x: number; y: number; xPx: number; yPx: number }[]
+    }[] {
+      if (!this.sortByX) {
+        return this.parsedDatasets
+      }
+
+      return this.parsedDatasets.map((dataset) => ({
+        ...dataset,
+        points: [...dataset.points].sort((a, b) => a.x - b.x),
+      }))
     },
   },
   methods: {
@@ -283,6 +314,14 @@ export default defineComponent({
         return
 
       this.activateDataset(id)
+    },
+    handleOnClickViewAll() {
+      if (!this.shouldContinueSwitchDataset()) return
+
+      this.interpolator.isActive && this.interpolator.clearPreview()
+      this.datasetRepository.setActiveDataset(0)
+      this.canvasHandler.clearMask()
+      this.canvasHandler.maskMode = MASK_MODE.UNSET
     },
     handleOnClickAddDatasetButton() {
       if (!this.shouldContinueSwitchDataset()) return
@@ -369,16 +408,12 @@ export default defineComponent({
           console.error('Failed to copy dataset to clipboard.', err),
         )
     },
-    handleFileChange(files: File[]) {
-      if (files && files.length > 0) {
-        const file = files[0]
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          this.csvContent = e.target?.result as string
-          this.parseCSVPreview()
-        }
-        reader.readAsText(file)
+    detectFormat(content: string): 'csv' | 'json' {
+      const trimmed = content.trim()
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        return 'json'
       }
+      return 'csv'
     },
     parseCSVPreview() {
       this.importError = ''
@@ -387,8 +422,21 @@ export default defineComponent({
 
       if (!this.csvContent.trim()) return
 
+      const format = this.detectFormat(this.csvContent)
+
       try {
-        this.importPreview = CsvParser.generatePreview(this.csvContent, 6)
+        if (format === 'json') {
+          // For JSON, show formatted preview
+          const previewResult = JsonParser.generatePreview(this.csvContent)
+          if (!previewResult.success) {
+            this.importError = previewResult.preview
+            return
+          }
+          // Convert preview text to table format for display
+          this.importPreview = [[previewResult.preview]]
+        } else {
+          this.importPreview = CsvParser.generatePreview(this.csvContent, 6)
+        }
 
         // Parse full datasets for preview (only if axis coordinates are set)
         const axisSet = this.axisSetRepository.activeAxisSet
@@ -400,7 +448,11 @@ export default defineComponent({
           axisSet.x1.value !== axisSet.x2.value &&
           axisSet.y1.value !== axisSet.y2.value
         ) {
-          const parsed = CsvParser.parseCSV(this.csvContent)
+          const parsed =
+            format === 'json'
+              ? JsonParser.parseJSON(this.csvContent)
+              : CsvParser.parseCSV(this.csvContent)
+
           const calculator = new AxisSetCalculator(
             this.axisSetRepository.activeAxisSet,
             {
@@ -412,6 +464,7 @@ export default defineComponent({
           this.parsedDatasets = parsed.datasets
             .map((dataset) => ({
               name: dataset.name,
+              color: (dataset as any).color,
               points: dataset.points
                 .map((point) => {
                   const pixelCoords = calculator.calculatePixelCoordinates(
@@ -437,7 +490,11 @@ export default defineComponent({
           this.updatePreviewCanvas()
         })
       } catch (error) {
-        this.importError = 'Error parsing CSV: ' + (error as Error).message
+        this.importError =
+          'Error parsing ' +
+          format.toUpperCase() +
+          ': ' +
+          (error as Error).message
       }
     },
     async importDatasets() {
@@ -445,7 +502,7 @@ export default defineComponent({
 
       try {
         if (!this.csvContent.trim()) {
-          throw new Error('Please provide CSV content')
+          throw new Error('Please provide CSV or JSON content')
         }
 
         // Deactivate axis movement when importing
@@ -460,7 +517,7 @@ export default defineComponent({
           !axisSet.y2.coord
         ) {
           this.importError =
-            'Please set the X and Y axis coordinates before importing CSV data.\n\n' +
+            'Please set the X and Y axis coordinates before importing data.\n\n' +
             'You need to define the axis points on the image first:\n' +
             '• X1 and X2 points for the X-axis\n' +
             '• Y1 and Y2 points for the Y-axis'
@@ -479,7 +536,12 @@ export default defineComponent({
           return
         }
 
-        const parsed = CsvParser.parseCSV(this.csvContent)
+        const format = this.detectFormat(this.csvContent)
+        const parsed =
+          format === 'json'
+            ? JsonParser.parseJSON(this.csvContent)
+            : CsvParser.parseCSV(this.csvContent)
+
         const calculator = new AxisSetCalculator(
           this.axisSetRepository.activeAxisSet,
           {
@@ -488,10 +550,16 @@ export default defineComponent({
           },
         )
 
+        // Clear existing datasets before import
+        this.datasetRepository.clearAllDatasets()
+
         for (const datasetData of parsed.datasets) {
           this.datasetRepository.createNewDataset()
           const newDataset = this.datasetRepository.lastDataset
           newDataset.name = datasetData.name
+          if (datasetData.color) {
+            newDataset.color = datasetData.color
+          }
           newDataset.setAxisSetId(this.axisSetRepository.activeAxisSetId)
 
           for (const point of datasetData.points) {
@@ -505,17 +573,33 @@ export default defineComponent({
           }
         }
 
+        // Set first dataset as active
+        if (this.datasetRepository.datasets.length > 0) {
+          this.datasetRepository.setActiveDataset(
+            this.datasetRepository.datasets[0].id,
+          )
+        }
+
         this.showImportDialog = false
-        this.csvFile = undefined
         this.csvContent = ''
         this.importPreview = []
 
-        console.log(`Successfully imported ${parsed.datasets.length} datasets`)
+        console.log(
+          `Successfully imported ${
+            parsed.datasets.length
+          } datasets from ${format.toUpperCase()}`,
+        )
       } catch (error) {
         this.importError = (error as Error).message
       }
     },
     getDatasetColor(index: number): string {
+      // Check if the dataset has a color property
+      if (this.parsedDatasets[index] && this.parsedDatasets[index].color) {
+        return this.parsedDatasets[index].color!
+      }
+
+      // Fallback to default colors
       const colors = [
         '#2196F3', // Blue
         '#FF9800', // Orange
@@ -535,85 +619,91 @@ export default defineComponent({
       const ctx = canvas.getContext('2d')
       if (!ctx) return
 
-      // Set canvas size to fit the container
-      const containerWidth = 350
-      const containerHeight = 250
-      canvas.width = containerWidth
-      canvas.height = containerHeight
+      // Calculate canvas size based on image aspect ratio
+      const imageWidth = this.canvasHandler.imageElement.width
+      const imageHeight = this.canvasHandler.imageElement.height
+      const imageAspect = imageWidth / imageHeight
 
-      // Calculate scale to fit image in canvas
-      const imageAspect =
-        this.canvasHandler.imageElement.width /
-        this.canvasHandler.imageElement.height
-      const canvasAspect = containerWidth / containerHeight
+      // Use container width and calculate height to maintain aspect ratio
+      const maxWidth = 900
+      const maxHeight = 600
 
-      let drawWidth,
-        drawHeight,
-        offsetX = 0,
-        offsetY = 0
+      let canvasWidth, canvasHeight
 
-      if (imageAspect > canvasAspect) {
-        drawWidth = containerWidth
-        drawHeight = containerWidth / imageAspect
-        offsetY = (containerHeight - drawHeight) / 2
+      if (imageAspect > maxWidth / maxHeight) {
+        // Image is wider - fit to width
+        canvasWidth = maxWidth
+        canvasHeight = maxWidth / imageAspect
       } else {
-        drawHeight = containerHeight
-        drawWidth = containerHeight * imageAspect
-        offsetX = (containerWidth - drawWidth) / 2
+        // Image is taller - fit to height
+        canvasHeight = maxHeight
+        canvasWidth = maxHeight * imageAspect
       }
 
-      const scaleX = drawWidth / this.canvasHandler.imageElement.width
-      const scaleY = drawHeight / this.canvasHandler.imageElement.height
+      canvas.width = canvasWidth
+      canvas.height = canvasHeight
+
+      const scaleX = canvasWidth / imageWidth
+      const scaleY = canvasHeight / imageHeight
 
       // Clear canvas
-      ctx.clearRect(0, 0, containerWidth, containerHeight)
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 
-      // Draw image
-      ctx.drawImage(
-        this.canvasHandler.imageElement,
-        offsetX,
-        offsetY,
-        drawWidth,
-        drawHeight,
-      )
+      // Draw image (fill entire canvas)
+      ctx.drawImage(this.canvasHandler.imageElement, 0, 0, canvasWidth, canvasHeight)
 
-      // Draw datasets
-      this.parsedDatasets.forEach((dataset, datasetIndex) => {
+      // Draw datasets only if showDataPoints is true
+      if (!this.showDataPoints) return
+
+      this.sortedParsedDatasets.forEach((dataset, datasetIndex) => {
         const color = this.getDatasetColor(datasetIndex)
-        ctx.strokeStyle = color
-        ctx.fillStyle = color
-        ctx.lineWidth = 2
 
         if (dataset.points.length > 0) {
-          // Draw connecting lines
+          // Draw connecting lines with white border
+          // White border for line
+          ctx.strokeStyle = 'white'
+          ctx.lineWidth = 3
           ctx.beginPath()
           const firstPoint = dataset.points[0]
-          ctx.moveTo(
-            offsetX + firstPoint.xPx * scaleX,
-            offsetY + firstPoint.yPx * scaleY,
-          )
+          ctx.moveTo(firstPoint.xPx * scaleX, firstPoint.yPx * scaleY)
 
           for (let i = 1; i < dataset.points.length; i++) {
             const point = dataset.points[i]
-            ctx.lineTo(
-              offsetX + point.xPx * scaleX,
-              offsetY + point.yPx * scaleY,
-            )
+            ctx.lineTo(point.xPx * scaleX, point.yPx * scaleY)
           }
           ctx.stroke()
 
-          // Draw points as circles
-          dataset.points.forEach((point) => {
-            ctx.beginPath()
-            ctx.arc(
-              offsetX + point.xPx * scaleX,
-              offsetY + point.yPx * scaleY,
-              4,
-              0,
-              2 * Math.PI,
-            )
-            ctx.fill()
-          })
+          // Colored line on top
+          ctx.strokeStyle = color
+          ctx.lineWidth = 1.5
+          ctx.beginPath()
+          ctx.moveTo(firstPoint.xPx * scaleX, firstPoint.yPx * scaleY)
+
+          for (let i = 1; i < dataset.points.length; i++) {
+            const point = dataset.points[i]
+            ctx.lineTo(point.xPx * scaleX, point.yPx * scaleY)
+          }
+          ctx.stroke()
+
+          // Draw points as circles with white border
+          dataset.points.forEach(
+            (point: { x: number; y: number; xPx: number; yPx: number }) => {
+              const x = point.xPx * scaleX
+              const y = point.yPx * scaleY
+
+              // White border
+              ctx.beginPath()
+              ctx.arc(x, y, 5, 0, 2 * Math.PI)
+              ctx.fillStyle = 'white'
+              ctx.fill()
+
+              // Colored point on top
+              ctx.beginPath()
+              ctx.arc(x, y, 4, 0, 2 * Math.PI)
+              ctx.fillStyle = color
+              ctx.fill()
+            },
+          )
         }
       })
     },
@@ -621,6 +711,23 @@ export default defineComponent({
   watch: {
     csvContent() {
       this.parseCSVPreview()
+    },
+    showDataPoints() {
+      this.$nextTick(() => {
+        this.updatePreviewCanvas()
+      })
+    },
+    showImportDialog(newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          this.updatePreviewCanvas()
+        })
+      }
+    },
+    sortByX() {
+      this.$nextTick(() => {
+        this.updatePreviewCanvas()
+      })
     },
   },
 })
@@ -664,6 +771,26 @@ export default defineComponent({
   display: block;
 }
 
+.image-preview-container-large {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.preview-canvas-large {
+  width: 100%;
+  height: 550px;
+  display: block;
+}
+
+.preview-canvas-flexible {
+  width: 100%;
+  max-height: 600px;
+  display: block;
+  object-fit: contain;
+}
+
 .dataset-legend {
   display: flex;
   flex-direction: column;
@@ -682,5 +809,27 @@ export default defineComponent({
   height: 16px;
   border-radius: 50%;
   border: 1px solid #ccc;
+}
+
+.csv-json-textarea {
+  height: 100%;
+}
+
+.csv-json-textarea :deep(.v-input__control) {
+  height: 100%;
+}
+
+.csv-json-textarea :deep(.v-field) {
+  height: 100%;
+}
+
+.csv-json-textarea :deep(.v-field__field) {
+  height: 100%;
+  padding-top: 16px;
+}
+
+.csv-json-textarea :deep(textarea) {
+  height: 100% !important;
+  max-height: 100% !important;
 }
 </style>
