@@ -4,8 +4,10 @@ import { Coord } from '@/@types/types'
 export interface DatasetRepositoryInterface {
   datasets: DatasetInterface[]
   activeDatasetId: number
+  showAllDatasets: boolean
 
   get activeDataset(): DatasetInterface
+  get isViewAllMode(): boolean
   get nextPointId(): number
   get nextDatasetId(): number
   get lastDatasetId(): number
@@ -24,4 +26,6 @@ export interface DatasetRepositoryInterface {
     topLeftCoord: Coord,
     bottomRightCoord: Coord,
   ): void
+  toggleShowAllDatasets(): void
+  getDatasetColor(datasetId: number): string
 }

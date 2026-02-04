@@ -5,6 +5,7 @@ export interface CsvDataPoint {
 
 export interface CsvDataset {
   name: string
+  color?: string
   points: CsvDataPoint[]
 }
 

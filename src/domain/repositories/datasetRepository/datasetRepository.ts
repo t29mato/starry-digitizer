@@ -6,12 +6,22 @@ import { Coord } from '@/@types/types'
 export class DatasetRepository implements DatasetRepositoryInterface {
   datasets: DatasetInterface[]
   activeDatasetId = 1
+  showAllDatasets = false
 
   constructor() {
     this.datasets = [new Dataset('dataset 1', [], 1)]
   }
 
   get activeDataset(): DatasetInterface {
+    // Special case: activeDatasetId = 0 means "view all" mode
+    // Return the first dataset as a fallback (used for temp points only)
+    if (this.activeDatasetId === 0) {
+      if (this.datasets.length === 0) {
+        throw new Error('There are no datasets.')
+      }
+      return this.datasets[0]
+    }
+
     const targetDataset = this.datasets.find((dataset) => {
       return dataset.id === this.activeDatasetId
     })
@@ -19,6 +29,10 @@ export class DatasetRepository implements DatasetRepositoryInterface {
       throw new Error('There are no active datasets.')
     }
     return targetDataset
+  }
+
+  get isViewAllMode(): boolean {
+    return this.activeDatasetId === 0
   }
 
   get nextPointId(): number {
@@ -111,5 +125,29 @@ export class DatasetRepository implements DatasetRepositoryInterface {
       topLeftCoord,
       bottomRightCoord,
     )
+  }
+
+  toggleShowAllDatasets() {
+    this.showAllDatasets = !this.showAllDatasets
+  }
+
+  getDatasetColor(datasetId: number): string {
+    const dataset = this.datasets.find((d) => d.id === datasetId)
+    if (dataset?.color) {
+      return dataset.color
+    }
+
+    const colors = [
+      '#2196F3', // Blue
+      '#FF9800', // Orange
+      '#4CAF50', // Green
+      '#F44336', // Red
+      '#9C27B0', // Purple
+      '#00BCD4', // Cyan
+      '#FFEB3B', // Yellow
+      '#795548', // Brown
+    ]
+    const index = this.datasets.findIndex((d) => d.id === datasetId)
+    return colors[index % colors.length]
   }
 }
