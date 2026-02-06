@@ -51,12 +51,14 @@
 import { defineComponent } from 'vue'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { projectService } from '@/instanceStore/applicationServiceInstances'
+import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 export default defineComponent({
   data() {
     return {
       canvasHandler,
       projectService,
+      datasetRepository,
       saving: false,
       loading: false,
       loadSuccess: false,
@@ -107,6 +109,9 @@ export default defineComponent({
         await this.canvasHandler.initializeImageElement(imageData)
         this.canvasHandler.drawFitSizeImage()
         this.canvasHandler.setUploadImageUrl(imageData)
+
+        // Enable "View All Datasets" mode after loading project
+        this.datasetRepository.setActiveDataset(0)
 
         this.loadSuccess = true
         setTimeout(() => {
