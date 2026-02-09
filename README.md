@@ -1,43 +1,118 @@
+# Starry Digitizer
+
 [![codecov](https://codecov.io/gh/t29mato/starry-digitizer/graph/badge.svg?token=96EJTIFL79)](https://codecov.io/gh/t29mato/starry-digitizer)
+[![npm version](https://badge.fury.io/js/starry-digitizer.svg)](https://www.npmjs.com/package/starry-digitizer)
 
+A web-based plot digitizer tool for extracting numerical data from graph images. Upload an image of a graph, calibrate the axes, and extract data points with precision.
 
-## Why Starry?
+**Live Demo:** [https://starrydigitizer.vercel.app/](https://starrydigitizer.vercel.app/)
 
-StarryDigitizer was originally developed as part of the web system of [Starrydata project](https://starrydata.org/),
-which is aimed at building an open database of inorganic materials science experimental data,
-with the motivation to streamline the process of extracting graph data
-and to obtain the most suitable data format for handling in the Starrydata system.
+## Features
 
-Our goal is not only to benefit Starrydata but also to develop
-a valuable tool for anyone involved in collecting graph data.
+- **Image Upload** - Load graph images (PNG, JPG, etc.) directly in the browser
+- **Axis Calibration** - Set X and Y axis reference points with support for:
+  - Linear and logarithmic scales
+  - 2-point or 4-point calibration modes
+  - Graph tilt correction
+- **Multiple Datasets** - Manage multiple datasets with color coding
+- **Data Point Extraction**
+  - Manual point-by-point clicking
+  - Automatic extraction using color detection
+  - Line interpolation between points
+- **Magnifier** - Zoom in on cursor position for precise point placement
+- **Export Options**
+  - Copy data to clipboard as CSV
+  - Export/Import projects as ZIP files
+- **View All Datasets** - Overlay all datasets on the graph simultaneously
 
-## Why We Developed Our Own Plot Digitizer Tool
+## Quick Start
 
-Previously, Starrydata's data collection process involved extracting data points using the [WebPlotDigitizer](https://github.com/automeris-io/WebPlotDigitizer) and collecting only the XY coordinates in Starrydata. However, this method had the following issues:
+### Online Usage
 
-- XY axis information and graph image data were lost
-- Extracting data required opening a separate application, which was not optimal from a UI perspective
+Visit [https://starrydigitizer.vercel.app/](https://starrydigitizer.vercel.app/) to use the tool directly in your browser.
 
-To address these problems, we are developing our own Digitizer tool.
+### NPM Package
 
-## Development information
+Install the package to embed in your own application:
 
-### Vue 3 + TypeScript + Vite
+```bash
+npm install starry-digitizer
+```
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+```javascript
+import StarryDigitizer from 'starry-digitizer'
+import 'starry-digitizer/styles'
+```
 
-### Recommended IDE Setup
+### Local Development
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+```bash
+# Clone the repository
+git clone https://github.com/t29mato/starry-digitizer.git
+cd starry-digitizer
 
-### Type Support For `.vue` Imports in TS
+# Install dependencies
+yarn install
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+# Start development server
+yarn dev
+```
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+The development server runs at `http://localhost:8888`
 
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+## Usage Guide
 
+### Basic Workflow
+
+1. **Upload an Image** - Click "Upload Image" and select a graph image
+2. **Set Axis Points** - Click on the graph to define X1, X2, Y1, Y2 calibration points
+3. **Enter Axis Values** - Input the corresponding numerical values for each axis point
+4. **Extract Data** - Click on data points or use automatic extraction
+5. **Export** - Copy data to clipboard or save the project
+
+### Keyboard Shortcuts
+
+- **Arrow Keys** - Fine-tune selected axis/point position
+- **Delete** - Remove selected point
+
+## Development
+
+### Tech Stack
+
+- Vue 3 + TypeScript
+- Vite
+- Vuetify 3
+- OpenCV.js (for image processing)
+
+### Scripts
+
+```bash
+yarn dev              # Start development server
+yarn test             # Run unit tests
+yarn test:coverage    # Run tests with coverage
+yarn lint             # Run ESLint and type checking
+yarn app-prod-build   # Build for production
+yarn lib-build        # Build as library
+```
+
+### Testing
+
+```bash
+# Unit tests (Jest)
+yarn test
+
+# E2E tests (Cypress)
+yarn cypress:open
+```
+
+## Project Background
+
+Starry Digitizer was originally developed as part of the [Starrydata project](https://starrydata.org/), an open database for inorganic materials science experimental data. The tool was created to streamline the process of extracting graph data while preserving axis information and graph images.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues and pull requests.
+
+## License
+
+MIT License
