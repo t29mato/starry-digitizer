@@ -116,6 +116,23 @@
         color="primary"
         v-model="axisSetRepository.activeAxisSet.isVisible"
       ></v-checkbox>
+      <div class="mt-2">
+        <v-btn
+          size="small"
+          :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
+          @click="editAxes"
+        >
+          Edit Axes
+        </v-btn>
+        <v-btn
+          size="small"
+          class="ml-2"
+          :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
+          @click="clearAxisSet"
+        >
+          Clear XY Axes
+        </v-btn>
+      </div>
     </div>
   </div>
 </template>
@@ -123,9 +140,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import {
+  axisSetRepository,
+  datasetRepository,
+} from '@/instanceStore/repositoryInatances'
+import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
-import { POINT_MODE } from '@/constants'
+import { POINT_MODE, MANUAL_MODE } from '@/constants'
 
 export default defineComponent({
   computed: {
@@ -186,6 +207,8 @@ export default defineComponent({
   data() {
     return {
       axisSetRepository,
+      datasetRepository,
+      canvasHandler,
       //NOTE: initialize axis values as string because it sometimes is displayed like '1e+10'
       displayVal: {
         x1: '',
@@ -260,6 +283,24 @@ export default defineComponent({
           ? axisValue.toPrecision(1)
           : String(axisValue)
       })
+    },
+    exitViewAllModeIfNeeded() {
+      if (this.datasetRepository.isViewAllMode) {
+        // Exit View All Mode and activate the first dataset
+        const firstDataset = this.datasetRepository.datasets[0]
+        if (firstDataset) {
+          this.datasetRepository.setActiveDataset(firstDataset.id)
+        }
+      }
+    },
+    editAxes() {
+      this.exitViewAllModeIfNeeded()
+      this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
+    },
+    clearAxisSet() {
+      this.exitViewAllModeIfNeeded()
+      this.axisSetRepository.activeAxisSet.clearAxisCoords()
+      this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
     },
   },
   watch: {

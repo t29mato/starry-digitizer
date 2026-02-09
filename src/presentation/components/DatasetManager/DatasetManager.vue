@@ -39,7 +39,7 @@
         class="c__dataset-row"
       >
         <v-row class="ma-0">
-          <v-col cols="9" class="pa-0">
+          <v-col cols="8" class="pa-0">
             <v-list-item
               class="pl-2 c__dataset-item"
               link
@@ -77,6 +77,16 @@
               :disabled="dataset.points.length === 0"
               variant="text"
               class="mr-1"
+            ></v-btn>
+          </v-col>
+          <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
+            <v-btn
+              size="x-small"
+              icon="mdi-eraser"
+              @click="handleOnClickClearDatasetPoints(dataset.id)"
+              :disabled="dataset.points.length === 0"
+              variant="text"
+              title="Clear points"
             ></v-btn>
           </v-col>
           <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
@@ -260,6 +270,14 @@ export default defineComponent({
         .catch((err) =>
           console.error('Failed to copy dataset to clipboard.', err),
         )
+    },
+    handleOnClickClearDatasetPoints(datasetId: number) {
+      const dataset = this.datasetRepository.datasets.find(
+        (d) => d.id === datasetId,
+      )
+      if (!dataset) return
+      dataset.clearPoints()
+      this.interpolator.clearPreview()
     },
   },
 })
