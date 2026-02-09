@@ -49,14 +49,23 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { projectService } from '@/instanceStore/applicationServiceInstances'
+import {
+  canvasHandler,
+  projectService,
+} from '@/instanceStore/applicationServiceInstances'
+import {
+  datasetRepository,
+  axisSetRepository,
+} from '@/instanceStore/repositoryInatances'
+import { POINT_MODE } from '@/constants'
 
 export default defineComponent({
   data() {
     return {
       canvasHandler,
       projectService,
+      datasetRepository,
+      axisSetRepository,
       saving: false,
       loading: false,
       loadSuccess: false,
@@ -107,6 +116,23 @@ export default defineComponent({
         await this.canvasHandler.initializeImageElement(imageData)
         this.canvasHandler.drawFitSizeImage()
         this.canvasHandler.setUploadImageUrl(imageData)
+
+        // Remove empty "dataset 1" if it was created during initialization
+        const emptyDataset1 = this.datasetRepository.datasets.find(
+          (d) => d.id === 1 && d.name === 'dataset 1' && d.points.length === 0,
+        )
+        if (emptyDataset1 && this.datasetRepository.datasets.length > 1) {
+          this.datasetRepository.datasets =
+            this.datasetRepository.datasets.filter((d) => d.id !== 1)
+        }
+
+        // Enable "View All Datasets" mode after loading project
+        this.datasetRepository.setActiveDataset(0)
+
+        // Set all axis sets to 4 points mode
+        this.axisSetRepository.axisSets.forEach((axisSet) => {
+          axisSet.pointMode = POINT_MODE.FOUR_POINTS
+        })
 
         this.loadSuccess = true
         setTimeout(() => {

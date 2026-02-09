@@ -4,6 +4,7 @@ import { DatasetInterface } from './datasetInterface'
 
 export class Dataset implements DatasetInterface {
   name: string
+  color?: string
   points: Point[]
   id: number
   tempPoints: Point[] = []
@@ -13,10 +14,11 @@ export class Dataset implements DatasetInterface {
   axisSetId: number = 1
 
   pointsAreAdjusting = false
-  constructor(name: string, points: Point[], id: number) {
+  constructor(name: string, points: Point[], id: number, color?: string) {
     this.name = name
     this.points = points
     this.id = id
+    this.color = color
   }
 
   scaledPoints(scale: number): Point[] {

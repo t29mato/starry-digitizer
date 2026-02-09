@@ -57,6 +57,19 @@ export default defineComponent({
     document.removeEventListener('paste', this.onImagePasted)
   },
   methods: {
+    hasExistingData(): boolean {
+      // Check if axis is set
+      const hasAxisData =
+        this.axisSetRepository.activeAxisSet.hasXAxis ||
+        this.axisSetRepository.activeAxisSet.hasYAxis
+
+      // Check if any dataset has points
+      const hasDatasetPoints = this.datasetRepository.datasets.some(
+        (dataset) => dataset.points.length > 0,
+      )
+
+      return hasAxisData || hasDatasetPoints
+    },
     async updateImage(file: File) {
       try {
         if (!this.isValidFileType(file.type)) {
@@ -66,6 +79,16 @@ export default defineComponent({
             ).join(',')}`,
           )
           return
+        }
+
+        // Check if there's existing data and confirm reset
+        if (this.hasExistingData()) {
+          const confirmed = window.confirm(
+            'Loading a new image will reset all axis coordinates and datasets. Are you sure you want to continue?',
+          )
+          if (!confirmed) {
+            return
+          }
         }
 
         const fr = await this.readFile(file)
@@ -78,8 +101,18 @@ export default defineComponent({
         this.interpolator.isActive && this.interpolator.clearPreview()
         this.extractor.setSwatches(this.canvasHandler.colorSwatches)
         this.canvasHandler.setUploadImageUrl(fr.result)
-        this.axisSetRepository.activeAxisSet.clearAxisCoords()
-        this.datasetRepository.activeDataset.clearPoints()
+
+        // Reset all axis coordinates for all axis sets
+        this.axisSetRepository.axisSets.forEach((axisSet) => {
+          axisSet.clearAxisCoords()
+        })
+
+        // Reset all datasets and create a new default dataset
+        this.datasetRepository.clearAllDatasets()
+        this.datasetRepository.createNewDataset()
+        this.datasetRepository.setActiveDataset(
+          this.datasetRepository.lastDatasetId,
+        )
       } catch (e) {
         console.error('failed to update image', { cause: e })
       }

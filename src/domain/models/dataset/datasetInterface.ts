@@ -10,6 +10,7 @@ export type Points = Point[]
 export interface DatasetInterface {
   id: number
   name: string
+  color?: string
   axisSetId: number
   points: Point[]
   visiblePointIds: number[]

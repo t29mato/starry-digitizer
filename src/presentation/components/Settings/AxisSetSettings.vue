@@ -81,7 +81,7 @@
     <p class="text-red mb-2">{{ errorMessage }}</p>
     <div class="mb-2">
       <h5 class="c__AxisSetRepository-settings__point-mode__label">
-        Define the axes by the coordinates of:
+        Calibration mode:
       </h5>
       <v-radio-group
         row
@@ -297,16 +297,24 @@ export default defineComponent({
     },
     // Watch for individual axis value changes to update displayVal
     'axisSetRepository.activeAxisSet.x1.value'(newValue: number) {
-      this.displayVal.x1 = String(newValue)
+      if (!isNaN(newValue)) {
+        this.displayVal.x1 = String(newValue)
+      }
     },
     'axisSetRepository.activeAxisSet.x2.value'(newValue: number) {
-      this.displayVal.x2 = String(newValue)
+      if (!isNaN(newValue)) {
+        this.displayVal.x2 = String(newValue)
+      }
     },
     'axisSetRepository.activeAxisSet.y1.value'(newValue: number) {
-      this.displayVal.y1 = String(newValue)
+      if (!isNaN(newValue)) {
+        this.displayVal.y1 = String(newValue)
+      }
     },
     'axisSetRepository.activeAxisSet.y2.value'(newValue: number) {
-      this.displayVal.y2 = String(newValue)
+      if (!isNaN(newValue)) {
+        this.displayVal.y2 = String(newValue)
+      }
     },
   },
 })

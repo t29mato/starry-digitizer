@@ -114,6 +114,10 @@ export default defineComponent({
   methods: {
     // REFACTOR: modeに応じてpointなりpickColorなりを呼び出す形に変更する
     point(e: MouseEvent): void {
+      // INFO: View All mode is read-only
+      if (this.datasetRepository.isViewAllMode) {
+        return
+      }
       // IFNO: マスク描画モード中につき
       if (this.canvasHandler.isDrawingMask) {
         return
@@ -173,6 +177,7 @@ export default defineComponent({
       }
     },
     mouseDrag(coord: Coord) {
+      if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
       this.canvasHandler.mouseDrag(coord.xPx, coord.yPx)
@@ -193,6 +198,7 @@ export default defineComponent({
       }
     },
     mouseDown(e: MouseEvent) {
+      if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
@@ -200,6 +206,7 @@ export default defineComponent({
       this.canvasHandler.mouseDown(xPx, yPx)
     },
     mouseUp() {
+      if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
       this.canvasHandler.mouseUp()
@@ -223,6 +230,7 @@ export default defineComponent({
       }
     },
     keyDownHandler(e: KeyboardEvent) {
+      if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
       if (!this.shouldProcessKeyEvent(e)) {

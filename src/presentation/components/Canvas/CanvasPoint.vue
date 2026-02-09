@@ -67,6 +67,11 @@ export default defineComponent({
         return '#6a5acd'
       }
 
+      // Use dataset color if provided (for show all datasets mode)
+      if (this.datasetColor) {
+        return this.datasetColor
+      }
+
       return '#1e90ff'
     },
     borderRadius(): string {
@@ -125,6 +130,10 @@ export default defineComponent({
     isManuallyAdded: {
       type: Boolean,
       default: false,
+    },
+    datasetColor: {
+      type: String,
+      default: undefined,
     },
   },
   methods: {
