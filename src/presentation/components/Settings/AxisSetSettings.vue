@@ -81,7 +81,7 @@
     <p class="text-red mb-2">{{ errorMessage }}</p>
     <div class="mb-2">
       <h5 class="c__AxisSetRepository-settings__point-mode__label">
-        Define the axes by the coordinates of:
+        Calibration mode:
       </h5>
       <v-radio-group
         row
