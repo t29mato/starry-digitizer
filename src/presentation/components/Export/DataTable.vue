@@ -29,7 +29,10 @@ import 'handsontable/dist/handsontable.full.css'
 // @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
 import { Point } from '@/@types/types'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import {
+  canvasHandler,
+  magnifier,
+} from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -59,6 +62,7 @@ export default defineComponent({
   data() {
     return {
       canvasHandler,
+      magnifier,
       axisSetRepository,
       datasetRepository,
       key: 0,
@@ -83,6 +87,7 @@ export default defineComponent({
           x: this.axisSetRepository.activeAxisSet.xIsLogScale,
           y: this.axisSetRepository.activeAxisSet.yIsLogScale,
         },
+        this.magnifier.effectiveDigits,
       )
       return calculator.calculateXYValues(x, y)
     },

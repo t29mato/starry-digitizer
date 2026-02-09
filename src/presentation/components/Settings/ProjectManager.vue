@@ -37,10 +37,6 @@
       />
     </h4>
 
-    <v-alert v-if="loadSuccess" type="success" class="mt-2" density="compact">
-      Project loaded successfully!
-    </v-alert>
-
     <v-alert v-if="errorMessage" type="error" class="mt-2" density="compact">
       {{ errorMessage }}
     </v-alert>
@@ -68,7 +64,6 @@ export default defineComponent({
       axisSetRepository,
       saving: false,
       loading: false,
-      loadSuccess: false,
       errorMessage: '',
     }
   },
@@ -98,7 +93,6 @@ export default defineComponent({
 
     async onFileSelected(event: Event) {
       this.loading = true
-      this.loadSuccess = false
       this.errorMessage = ''
 
       try {
@@ -133,11 +127,6 @@ export default defineComponent({
         this.axisSetRepository.axisSets.forEach((axisSet) => {
           axisSet.pointMode = POINT_MODE.FOUR_POINTS
         })
-
-        this.loadSuccess = true
-        setTimeout(() => {
-          this.loadSuccess = false
-        }, 3000)
 
         // Reset file input
         target.value = ''

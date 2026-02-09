@@ -10,9 +10,13 @@ export default class AxisSetCalculator {
   constructor(
     axisSet: AxisSetInterface,
     isLogScale: { x: boolean; y: boolean },
+    effectiveDigits?: number,
   ) {
     this.#axisSet = axisSet
     this.#isLogScale = isLogScale
+    if (effectiveDigits !== undefined) {
+      this.effectiveDigits = effectiveDigits
+    }
   }
   calculateXYValues(xt: number, yt: number): { xV: string; yV: string } {
     if (
