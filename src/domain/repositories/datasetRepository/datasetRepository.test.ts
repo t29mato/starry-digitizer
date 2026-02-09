@@ -68,3 +68,60 @@ test('removeAllDatasets vs clearAllDatasets', () => {
   // activeDatasetId remains unchanged (still 1 from constructor)
   expect(repository2.activeDatasetId).toBe(1)
 })
+
+test('isViewAllMode returns true when activeDatasetId is 0', () => {
+  const repository = new DatasetRepository()
+  expect(repository.isViewAllMode).toBe(false)
+
+  repository.setActiveDataset(0)
+  expect(repository.isViewAllMode).toBe(true)
+
+  repository.setActiveDataset(1)
+  expect(repository.isViewAllMode).toBe(false)
+})
+
+test('activeDataset returns first dataset in view all mode', () => {
+  const repository = new DatasetRepository()
+  repository.addDataset(new Dataset('dataset 2', [], repository.nextDatasetId))
+
+  repository.setActiveDataset(0) // View all mode
+  // In view all mode, activeDataset returns the first dataset as fallback
+  expect(repository.activeDataset.id).toBe(1)
+})
+
+test('activeDataset throws error in view all mode with no datasets', () => {
+  const repository = new DatasetRepository()
+  repository.clearAllDatasets()
+  repository.setActiveDataset(0)
+
+  expect(() => repository.activeDataset).toThrow('There are no datasets.')
+})
+
+test('getDatasetColor returns dataset color if set', () => {
+  const repository = new DatasetRepository()
+  repository.datasets[0].color = '#FF0000'
+
+  expect(repository.getDatasetColor(1)).toBe('#FF0000')
+})
+
+test('getDatasetColor returns default color based on index', () => {
+  const repository = new DatasetRepository()
+  repository.addDataset(new Dataset('dataset 2', [], repository.nextDatasetId))
+  repository.addDataset(new Dataset('dataset 3', [], repository.nextDatasetId))
+
+  // Default colors based on index
+  expect(repository.getDatasetColor(1)).toBe('#2196F3') // Blue (index 0)
+  expect(repository.getDatasetColor(2)).toBe('#FF9800') // Orange (index 1)
+  expect(repository.getDatasetColor(3)).toBe('#4CAF50') // Green (index 2)
+})
+
+test('toggleShowAllDatasets toggles the flag', () => {
+  const repository = new DatasetRepository()
+  expect(repository.showAllDatasets).toBe(false)
+
+  repository.toggleShowAllDatasets()
+  expect(repository.showAllDatasets).toBe(true)
+
+  repository.toggleShowAllDatasets()
+  expect(repository.showAllDatasets).toBe(false)
+})
