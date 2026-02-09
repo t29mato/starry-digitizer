@@ -115,9 +115,8 @@ export default defineComponent({
           (d) => d.id === 1 && d.name === 'dataset 1' && d.points.length === 0,
         )
         if (emptyDataset1 && this.datasetRepository.datasets.length > 1) {
-          this.datasetRepository.datasets = this.datasetRepository.datasets.filter(
-            (d) => d.id !== 1,
-          )
+          this.datasetRepository.datasets =
+            this.datasetRepository.datasets.filter((d) => d.id !== 1)
         }
 
         // Enable "View All Datasets" mode after loading project
