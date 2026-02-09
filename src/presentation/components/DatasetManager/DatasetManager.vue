@@ -110,8 +110,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
+import {
+  canvasHandler,
+  interpolator,
+  magnifier,
+} from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { MASK_MODE } from '@/constants'
@@ -124,6 +127,7 @@ export default defineComponent({
     return {
       canvasHandler,
       interpolator,
+      magnifier,
       datasetRepository,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
@@ -244,6 +248,7 @@ export default defineComponent({
           x: this.axisSetRepository.activeAxisSet.xIsLogScale,
           y: this.axisSetRepository.activeAxisSet.yIsLogScale,
         },
+        this.magnifier.effectiveDigits,
       )
       return calculator.calculateXYValues(x, y)
     },

@@ -173,6 +173,7 @@ export default defineComponent({
           x: this.axisSetRepository.activeAxisSet.xIsLogScale,
           y: this.axisSetRepository.activeAxisSet.yIsLogScale,
         },
+        this.magnifier.effectiveDigits,
       )
       return calculator.calculateXYValues(
         this.canvasHandler.cursor.xPx,

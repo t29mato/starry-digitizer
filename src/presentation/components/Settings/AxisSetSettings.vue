@@ -102,14 +102,6 @@
         ></v-radio>
       </v-radio-group>
       <v-checkbox
-        v-if="pointModeIsFourPoints"
-        v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
-        label="Consider graph tilt"
-        density="compact"
-        hide-details
-        color="primary"
-      ></v-checkbox>
-      <v-checkbox
         label="Show axes marker"
         density="compact"
         hide-details
@@ -195,12 +187,6 @@ export default defineComponent({
       return (
         activeAxisSet.pointMode === POINT_MODE.TWO_POINTS &&
         activeAxisSet.hasAtLeastOneAxis
-      )
-    },
-    pointModeIsFourPoints() {
-      return (
-        this.axisSetRepository.activeAxisSet.pointMode ===
-        POINT_MODE.FOUR_POINTS
       )
     },
   },
