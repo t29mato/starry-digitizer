@@ -29,6 +29,23 @@ describe('AxisSetCalculator', () => {
     expect(result.yV).toBe('5.5e+0')
   })
 
+  it('should use custom effectiveDigits when provided in constructor', () => {
+    const calculator = new AxisSetCalculator(
+      axisSetMock,
+      { x: false, y: false },
+      6,
+    )
+    expect(calculator.effectiveDigits).toBe(6)
+  })
+
+  it('should use default effectiveDigits when not provided in constructor', () => {
+    const calculator = new AxisSetCalculator(axisSetMock, {
+      x: false,
+      y: false,
+    })
+    expect(calculator.effectiveDigits).toBe(4)
+  })
+
   it('should calculate XY values as NaN when no coordinates provided', () => {
     // @ts-ignore
     axisSetMock.x1.coord = null

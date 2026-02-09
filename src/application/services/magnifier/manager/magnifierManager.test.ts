@@ -21,4 +21,26 @@ describe('MagnifierManager', () => {
 
     expect(secondeInstance === firstInstance).toBe(false)
   })
+
+  test('setScale updates the scale value', () => {
+    const instance = magnifierManager.getNewInstance()
+    expect(instance.scale).toBe(5) // default value
+
+    instance.setScale(10)
+    expect(instance.scale).toBe(10)
+
+    instance.setScale(2)
+    expect(instance.scale).toBe(2)
+  })
+
+  test('setEffectiveDigits updates the effectiveDigits value', () => {
+    const instance = magnifierManager.getNewInstance()
+    expect(instance.effectiveDigits).toBe(4) // default value
+
+    instance.setEffectiveDigits(6)
+    expect(instance.effectiveDigits).toBe(6)
+
+    instance.setEffectiveDigits(2)
+    expect(instance.effectiveDigits).toBe(2)
+  })
 })
