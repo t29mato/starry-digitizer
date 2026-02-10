@@ -1,6 +1,6 @@
 {
   "name": "starry-digitizer",
-  "version": "1.12.5",
+  "version": "1.13.0",
   "type": "module",
   "files": [
     "library-build/dist"
