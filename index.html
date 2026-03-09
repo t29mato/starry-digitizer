@@ -5,6 +5,16 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Starry Digitizer</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9QDX98GT94"></script>
+    <script>
+      if (location.host === 'digitizer.starrydata.org') {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-9QDX98GT94');
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>
