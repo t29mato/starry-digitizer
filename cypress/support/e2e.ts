@@ -16,5 +16,12 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 
+// Dismiss AutoLineDigitizer promo dialog before each test
+beforeEach(() => {
+  cy.window().then((win) => {
+    win.localStorage.setItem('autoLineDigitizerDemoDismissed', 'true')
+  })
+})
+
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
