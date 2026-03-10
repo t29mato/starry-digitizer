@@ -92,7 +92,7 @@
         </v-btn>
         <v-col class="text-center text-white" cols="12">
           {{ new Date().getFullYear() }} — <strong>StarryDigitizer</strong
-          ><span class="ml-2 mt-1">{{ isProd ? version : "" }}</span>
+          ><span class="ml-2 mt-1">{{ isProd ? version : '' }}</span>
         </v-col>
       </v-row>
     </v-footer>
@@ -100,13 +100,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import StarryDigitizer from "@/presentation/components/StarryDigitizer.vue";
+import { defineComponent } from 'vue'
+import StarryDigitizer from '@/presentation/components/StarryDigitizer.vue'
 
-import { version } from "../package.json";
+import { version } from '../package.json'
 
 export default defineComponent({
-  name: "App",
+  name: 'App',
 
   components: {
     StarryDigitizer,
@@ -115,50 +115,50 @@ export default defineComponent({
   data: () => ({
     points: [],
     version,
-    promoEndDate: "2026-04-10",
+    promoEndDate: '2026-04-10',
     links: [
       {
-        text: "AutoLineDigitizer",
-        url: "https://t29mato.github.io/AutoLineDigitizer/",
+        text: 'AutoLineDigitizer',
+        url: 'https://t29mato.github.io/AutoLineDigitizer/',
       },
       {
-        text: "Release Note",
-        url: "https://github.com/t29mato/starry-digitizer/releases",
+        text: 'Release Note',
+        url: 'https://github.com/t29mato/starry-digitizer/releases',
       },
       {
-        text: "Document",
-        url: "https://starrydigitizer.readthedocs.io/",
+        text: 'Document',
+        url: 'https://starrydigitizer.readthedocs.io/',
       },
     ],
     showDemoDialog: false,
-    isProd: import.meta.env.MODE === "production",
+    isProd: import.meta.env.MODE === 'production',
   }),
   mounted() {
-    const dismissed = localStorage.getItem("autoLineDigitizerDemoDismissed");
+    const dismissed = localStorage.getItem('autoLineDigitizerDemoDismissed')
     if (!dismissed && this.isPromoActive) {
-      this.showDemoDialog = true;
+      this.showDemoDialog = true
     }
   },
   computed: {
     isPromoActive() {
-      return new Date() < new Date(this.promoEndDate);
+      return new Date() < new Date(this.promoEndDate)
     },
     deviceIsSmartphone() {
-      const ua = navigator.userAgent.toLowerCase();
+      const ua = navigator.userAgent.toLowerCase()
 
-      return /(iphone|android).*mobile/.test(ua);
+      return /(iphone|android).*mobile/.test(ua)
     },
   },
   methods: {
     importPoints(points: any) {
-      this.points = points;
+      this.points = points
     },
     dismissDemoDialog() {
-      this.showDemoDialog = false;
-      localStorage.setItem("autoLineDigitizerDemoDismissed", "true");
+      this.showDemoDialog = false
+      localStorage.setItem('autoLineDigitizerDemoDismissed', 'true')
     },
   },
-});
+})
 </script>
 <style lang="scss" scoped>
 .c {
