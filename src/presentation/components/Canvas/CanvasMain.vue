@@ -6,6 +6,8 @@
     @mousemove="mouseMove"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
+    @mouseenter="mouseEnter"
+    @mouseleave="mouseLeave"
   >
     <canvas id="imageCanvas"></canvas>
     <canvas
@@ -124,19 +126,30 @@ export default defineComponent({
       }
       const target = e.target as HTMLElement
       const isOnCanvasPoint = target.className === 'canvas-point'
+
+      // INFO: クリック座標を画像のオリジナル座標に変換
+      const xPx = isOnCanvasPoint
+        ? (e.offsetX + parseFloat(target.style.left) - offsetPx) /
+          this.canvasHandler.scale
+        : (e.offsetX - offsetPx) / this.canvasHandler.scale
+      const yPx = isOnCanvasPoint
+        ? (e.offsetY + parseFloat(target.style.top)) / this.canvasHandler.scale
+        : e.offsetY / this.canvasHandler.scale
+
+      // INFO: 画像範囲外のクリックを無視する
+      if (
+        xPx < 0 ||
+        yPx < 0 ||
+        xPx > this.canvasHandler.originalWidth ||
+        yPx > this.canvasHandler.originalHeight
+      ) {
+        return
+      }
+
       // INFO: canvas-point element上の時は、point edit modeになるので
       switch (this.canvasHandler.manualMode) {
         case 0:
-          this.datasetRepository.activeDataset.addPoint(
-            isOnCanvasPoint
-              ? (e.offsetX + parseFloat(target.style.left) - offsetPx) /
-                  this.canvasHandler.scale
-              : (e.offsetX - offsetPx) / this.canvasHandler.scale,
-            isOnCanvasPoint
-              ? (e.offsetY + parseFloat(target.style.top)) /
-                  this.canvasHandler.scale
-              : e.offsetY / this.canvasHandler.scale,
-          )
+          this.datasetRepository.activeDataset.addPoint(xPx, yPx)
           this.axisSetRepository.activeAxisSet.inactivateAxis()
           this.datasetRepository.activeDataset.addManuallyAddedPointId(
             this.datasetRepository.activeDataset.lastPointId,
@@ -156,8 +169,8 @@ export default defineComponent({
       }
       if (this.axisSetRepository.activeAxisSet.nextAxis) {
         this.axisSetRepository.activeAxisSet.addAxisCoord({
-          xPx: (e.offsetX - offsetPx) / this.canvasHandler.scale,
-          yPx: e.offsetY / this.canvasHandler.scale,
+          xPx,
+          yPx,
         })
         this.datasetRepository.activeDataset.inactivatePoints()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
@@ -185,17 +198,33 @@ export default defineComponent({
     mouseMove(e: MouseEvent) {
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
 
+      // INFO: カーソルが画像canvas要素の範囲内かどうかを判定
+      const cursorXPx = xPx / this.canvasHandler.scale
+      const cursorYPx = yPx / this.canvasHandler.scale
+      this.canvasHandler.isCursorOnCanvas =
+        cursorXPx >= 0 &&
+        cursorYPx >= 0 &&
+        cursorXPx <= this.canvasHandler.originalWidth &&
+        cursorYPx <= this.canvasHandler.originalHeight
+
       this.axisSetRepository.activeAxisSet.isAdjusting = false
       this.datasetRepository.activeDataset.pointsAreAdjusting = false
       this.canvasHandler.setCursor({
-        xPx: xPx / this.canvasHandler.scale,
-        yPx: yPx / this.canvasHandler.scale,
+        xPx: cursorXPx,
+        yPx: cursorYPx,
       })
       // INFO: 左クリックされていない状態
       const isClicking = e.buttons === 1
       if (isClicking) {
         this.mouseDrag({ xPx, yPx })
       }
+    },
+    mouseEnter() {
+      // INFO: 正確な判定はmouseMoveで行うが、初期値としてtrueにする
+      this.canvasHandler.isCursorOnCanvas = true
+    },
+    mouseLeave() {
+      this.canvasHandler.isCursorOnCanvas = false
     },
     mouseDown(e: MouseEvent) {
       if (this.datasetRepository.isViewAllMode) return

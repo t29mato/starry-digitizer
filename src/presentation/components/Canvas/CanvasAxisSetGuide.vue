@@ -46,8 +46,12 @@ export default defineComponent({
       )
     },
     isX1Y1LineVisible(): boolean {
+      // INFO: 軸が確定済みなら常に表示、未確定ならカーソルがキャンバス上にある時のみ表示
+      if (this.axisSetRepository.activeAxisSet.x1.coordIsFilled) {
+        return true
+      }
       return (
-        this.axisSetRepository.activeAxisSet.x1.coordIsFilled ||
+        this.canvasHandler.isCursorOnCanvas &&
         this.canvasHandler.scaledCursor.xPx !== 0
       )
     },

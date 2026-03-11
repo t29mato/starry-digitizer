@@ -6,6 +6,7 @@ export interface CanvasHandlerInterface {
   imageElement: HTMLImageElement
   scale: number
   cursor: Coord
+  isCursorOnCanvas: boolean
   manualMode: ManualMode
   maskMode: MaskMode
   rectangle: {

@@ -3,6 +3,7 @@
     <!-- INFO: right label -->
     <div
       v-if="
+        canvasHandler.isCursorOnCanvas &&
         !datasetRepository.isViewAllMode &&
         !(
           axisSetRepository.activeAxisSet.isAdjusting ||
@@ -103,6 +104,10 @@ export default defineComponent({
       return ''
     },
     isCursorGuideLinesActive(): boolean {
+      // INFO: カーソルがキャンバス外の場合は非表示
+      if (!this.canvasHandler.isCursorOnCanvas) {
+        return false
+      }
       //INFO: View All mode is read-only
       if (this.datasetRepository.isViewAllMode) {
         return false
