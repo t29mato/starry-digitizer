@@ -1,5 +1,11 @@
 <template>
-  <div v-if="axis.coordIsFilled || isActive || isNextAxis" v-show="isVisible">
+  <div
+    v-if="
+      axis.coordIsFilled ||
+      ((isActive || isNextAxis) && canvasHandler.isCursorOnCanvas)
+    "
+    v-show="isVisible"
+  >
     <!-- Click area (larger for easier interaction) -->
     <div
       v-if="

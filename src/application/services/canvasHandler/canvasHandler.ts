@@ -10,6 +10,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
   imageElement: HTMLImageElement
   scale = 1
   cursor: Coord = { xPx: 0, yPx: 0 }
+  isCursorOnCanvas = false
   rectangle = {
     startX: 0,
     startY: 0,
