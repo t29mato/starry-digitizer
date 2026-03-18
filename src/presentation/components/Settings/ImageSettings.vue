@@ -24,6 +24,13 @@
     >
       <v-icon start size="small">mdi-robot</v-icon>
       Auto Extract with AI
+      <v-badge
+        v-if="isPromoActive"
+        content="NEW"
+        color="red"
+        inline
+        class="ml-2"
+      />
     </v-btn>
 
     <v-alert v-if="aiErrorMessage" type="error" density="compact" class="mb-2">
@@ -88,6 +95,10 @@ export default defineComponent({
         !!this.canvasHandler.uploadImageUrl ||
         !!this.canvasHandler.imageElement.src
       )
+    },
+    isPromoActive() {
+      const promoEndDate = '2026-04-10'
+      return new Date() < new Date(promoEndDate)
     },
   },
 
