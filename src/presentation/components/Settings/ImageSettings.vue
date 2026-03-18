@@ -338,6 +338,9 @@ export default defineComponent({
         this.canvasHandler.scale = projectData.canvasHandler.scale
         this.canvasHandler.manualMode = projectData.canvasHandler.manualMode
 
+        // Redraw canvas to apply the correct scale
+        this.canvasHandler.drawFitSizeImage()
+
         const lineCount = projectData.datasets.filter(
           (d) => d.points.length > 0,
         ).length
