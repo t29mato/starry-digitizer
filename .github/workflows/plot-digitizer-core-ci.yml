@@ -1,0 +1,54 @@
+name: plot-digitizer-core CI
+
+# INFO: packages/plot-digitizer-core is intentionally NOT wired into the
+# root yarn workspace (see Phase 0 PR description / design doc section 3),
+# so it is installed and tested independently of the root `UnitTest` job in
+# vercel-preview-development.yaml.
+#
+# Enforces the CLAUDE.md requirement that CI must fail on:
+#   - lint errors
+#   - coverage below the agreed threshold (design doc section 6)
+#   - dependency-direction violations (design doc section 7)
+on:
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - 'packages/plot-digitizer-core/**'
+      - '.dependency-cruiser.cjs'
+      - '.github/workflows/plot-digitizer-core-ci.yml'
+
+jobs:
+  Core-Lint-And-Test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/plot-digitizer-core
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+      - name: Install packages
+        run: yarn install
+      - name: Static code analysis
+        run: yarn lint
+      - name: Unit test with coverage gate
+        run: yarn test:coverage
+
+  Dependency-Direction-Check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+          cache: 'yarn'
+      - name: Install root packages (for dependency-cruiser)
+        run: yarn
+      - name: Check dependency direction (core <-> app must never cross)
+        run: yarn depcruise
