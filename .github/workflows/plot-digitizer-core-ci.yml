@@ -17,6 +17,10 @@ on:
       - 'packages/plot-digitizer-core/**'
       - '.dependency-cruiser.cjs'
       - '.github/workflows/plot-digitizer-core-ci.yml'
+      # INFO: package.json owns the pinned `npx dependency-cruiser@<version>`
+      # used by the `depcruise` script — a version bump there must also
+      # re-run this check.
+      - 'package.json'
 
 jobs:
   Core-Lint-And-Test:
@@ -48,7 +52,11 @@ jobs:
         with:
           node-version: 22
           cache: 'yarn'
-      - name: Install root packages (for dependency-cruiser)
+      - name: Install root packages (so src/'s own imports, e.g. vue/vuetify, resolve)
         run: yarn
       - name: Check dependency direction (core <-> app must never cross)
+        # INFO: dependency-cruiser is intentionally NOT a root devDependency
+        # (see Phase 0 PR discussion) to avoid an unrelated yarn.lock
+        # rewrite. The `depcruise` script pins the exact version via
+        # `npx --yes dependency-cruiser@<version>` instead.
         run: yarn depcruise

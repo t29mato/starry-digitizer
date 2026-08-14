@@ -29,7 +29,7 @@
     "coverage:report": "browser-sync start --server \"coverage/lcov-report\"",
     "coverage": "npm run test:coverage && npm run coverage:report",
     "lint": "eslint src --ext .js,.ts,.vue && vue-tsc",
-    "depcruise": "depcruise --config .dependency-cruiser.cjs src packages/plot-digitizer-core/src"
+    "depcruise": "npx --yes dependency-cruiser@18.2.0 --config .dependency-cruiser.cjs src packages/plot-digitizer-core/src"
   },
   "dependencies": {
     "@handsontable/vue3": "^13.1.0",
@@ -59,7 +59,6 @@
     "cross-env": "^7.0.3",
     "cypress": "^13.1.0",
     "cypress-file-upload": "^5.0.8",
-    "dependency-cruiser": "^18.2.0",
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-jest": "^27.2.3",
