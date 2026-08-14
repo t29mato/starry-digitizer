@@ -1,25 +1,5 @@
-import { Coord } from '@/@types/types'
-import { AxisInterface } from './axisInterface'
-export class Axis implements AxisInterface {
-  name: string
-  value: number
-  coord: Coord
-  initialCoord = {
-    xPx: -999,
-    yPx: -999,
-  }
-
-  constructor(name: string, value: number, coord?: Coord) {
-    this.name = name
-    this.value = value
-    this.coord = coord || this.initialCoord
-  }
-
-  clearCoord() {
-    this.coord = this.initialCoord
-  }
-
-  get coordIsFilled(): boolean {
-    return this.coord.xPx + this.coord.yPx > 0
-  }
-}
+// INFO: Phase 1 (docs/design/plot-digitizer-architecture.md) — this class
+// has been moved to packages/plot-digitizer-core. This file re-exports it so
+// every existing `@/domain/models/axis/axis` import in this app keeps
+// working unchanged. Do not add logic here — edit the core package instead.
+export { Axis } from '@plot-digitizer/core'

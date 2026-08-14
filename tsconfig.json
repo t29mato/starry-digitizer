@@ -40,6 +40,9 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "@plot-digitizer/core": [
+        "packages/plot-digitizer-core/src/index.ts"
       ]
     },
     "lib": [

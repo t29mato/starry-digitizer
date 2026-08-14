@@ -1,31 +1,6 @@
-import { ConfirmerInterface } from './confirmerInterface'
-
-export class Confirmer implements ConfirmerInterface {
-  isActive: Boolean = false
-  message: String = ''
-
-  handleOnConfirm: Function = () => {}
-  handleOnCancel: Function = () => {}
-
-  activate({
-    message,
-    onConfirm,
-    onCancel,
-  }: {
-    message: String
-    onConfirm: Function
-    onCancel: Function
-  }): void {
-    this.message = message
-    this.handleOnConfirm = onConfirm
-    this.handleOnCancel = onCancel
-    this.isActive = true
-  }
-
-  inactivate(): void {
-    this.message = ''
-    this.handleOnConfirm = () => {}
-    this.handleOnCancel = () => {}
-    this.isActive = false
-  }
-}
+// INFO: Phase 1 (docs/design/plot-digitizer-architecture.md) — this class
+// has been moved to packages/plot-digitizer-core. This file re-exports it so
+// every existing `@/application/services/confirmer/confirmer` (and relative
+// `../confirmer`) import in this app keeps working unchanged. Do not add
+// logic here — edit the core package instead.
+export { Confirmer } from '@plot-digitizer/core'

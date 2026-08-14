@@ -1,24 +1,6 @@
-//TODO Re-consider where to place this logic: should move to domain repo with Points repository??
-
-import { Point } from '@/@types/types'
-
-export function getPointsTotalDistance(points: Point[]): number {
-  let previousPoint: undefined | Point = undefined
-  let totalDistance: number = 0
-
-  points.forEach((point) => {
-    if (previousPoint === undefined) {
-      previousPoint = point
-      return
-    }
-
-    const xDiff = point.xPx - previousPoint.xPx
-    const yDiff = point.yPx - previousPoint.yPx
-
-    totalDistance += Math.sqrt(xDiff * xDiff + yDiff * yDiff)
-
-    previousPoint = point
-  })
-
-  return totalDistance
-}
+// INFO: Phase 1 (docs/design/plot-digitizer-architecture.md) — this
+// function has been moved to packages/plot-digitizer-core. This file
+// re-exports it so every existing `@/application/utils/pointsUtils` import
+// in this app keeps working unchanged. Do not add logic here — edit the
+// core package instead.
+export { getPointsTotalDistance } from '@plot-digitizer/core'

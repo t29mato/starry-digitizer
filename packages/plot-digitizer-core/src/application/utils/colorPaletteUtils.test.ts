@@ -67,6 +67,41 @@ describe('extractColorSwatches', () => {
     expect(result).toContain('#000000')
   })
 
+  it('replaces the group representative when a later similar color is more saturated', () => {
+    // Same two reds as above, but in reverse scan order: the duller red is
+    // seen first (becomes the initial group representative), then the more
+    // saturated red arrives and must replace it.
+    const data = createImageData([
+      [200, 30, 30, 255], // duller red (seen first)
+      [250, 10, 10, 255], // vivid red (seen second, more saturated)
+      [0, 255, 0, 255], // green
+      [0, 0, 0, 255], // black
+    ])
+    const result = extractColorSwatches({
+      imageData: data,
+      maxSwatches: 5,
+      colorDiffThreshold: 60,
+    })
+    expect(result).toContain('#fa0a0a')
+    expect(result).not.toContain('#c81e1e')
+  })
+
+  it('stops collecting once maxSwatches is reached, even with more distinct colors available', () => {
+    const data = createImageData([
+      [255, 0, 0, 255],
+      [0, 255, 0, 255],
+      [0, 0, 255, 255],
+      [255, 255, 0, 255],
+      [255, 0, 255, 255],
+    ])
+    const result = extractColorSwatches({
+      imageData: data,
+      maxSwatches: 2,
+      colorDiffThreshold: 10,
+    })
+    expect(result).toHaveLength(2)
+  })
+
   it('ignores transparent pixels', () => {
     const data = createImageData([
       [255, 0, 0, 255],   // red
