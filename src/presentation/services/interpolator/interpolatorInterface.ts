@@ -1,5 +1,5 @@
 import { Coord } from '@/@types/types'
-import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
+import { HTMLCanvas } from '../../dom/HTMLCanvas'
 
 export interface InterpolatorInterface {
   isActive: boolean

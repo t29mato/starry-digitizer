@@ -1,23 +1,8 @@
-import { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
-import { Coord } from '@/@types/types'
-import ExtractStrategyInterface from '@/application/strategies/extractStrategies/extractStrategyInterface'
-
-export interface ExtractorInterface {
-  strategy: ExtractStrategyInterface
-  strategies: string[]
-  colorPicker: string
-  colors: { R: number; G: number; B: number }[][]
-  colorDistancePct: number
-  swatches: string[][]
-
-  setColorDistancePct(colorDistancePct: number): void
-  setStrategy(strategy: ExtractStrategyInterface): void
-  setColorPicker(color: string): void
-  setSwatches(colorSwatches: string[]): void
-
-  execute(canvasHandler: CanvasHandlerInterface): Coord[]
-
-  get targetColor(): { R: number; G: number; B: number }
-  get targetColorHex(): string
-  updateSwatches(colorSwatches: string[]): void
-}
+// INFO: Phase 2 (docs/design/plot-digitizer-architecture.md) — this
+// interface has been moved to packages/plot-digitizer-core, now that its
+// dependency on CanvasHandlerInterface has been replaced with the
+// DOM-agnostic PixelSourcePort. This file re-exports it so every existing
+// `@/application/services/extractor/extractorInterface` (and relative
+// `../extractorInterface`) import in this app keeps working unchanged. Do
+// not add logic here — edit the core package instead.
+export type { ExtractorInterface } from '@plot-digitizer/core'

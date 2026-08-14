@@ -4,7 +4,7 @@ import { AxisSetDTO } from '@/application/dto/axisSetDTO'
 import { DatasetDTO } from '@/application/dto/datasetDTO'
 import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
 import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
-import { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
+import { CanvasStatePort } from './canvasStatePort'
 import { Axis } from '@/domain/models/axis/axis'
 import { AxisSet } from '@/domain/models/axisSet/axisSet'
 import { Dataset } from '@/domain/models/dataset/dataset'
@@ -13,12 +13,12 @@ import JSZip from 'jszip'
 export class ProjectService implements ProjectServiceInterface {
   private axisSetRepository: AxisSetRepositoryInterface
   private datasetRepository: DatasetRepositoryInterface
-  private canvasHandler: CanvasHandlerInterface
+  private canvasHandler: CanvasStatePort
 
   constructor(
     axisSetRepository: AxisSetRepositoryInterface,
     datasetRepository: DatasetRepositoryInterface,
-    canvasHandler: CanvasHandlerInterface,
+    canvasHandler: CanvasStatePort,
   ) {
     this.axisSetRepository = axisSetRepository
     this.datasetRepository = datasetRepository

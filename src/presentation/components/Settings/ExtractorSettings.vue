@@ -110,6 +110,7 @@ import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { browserPixelSourceAdapter } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -171,7 +172,7 @@ export default defineComponent({
       this.axisSetRepository.activeAxisSet.inactivateAxis()
       try {
         this.datasetRepository.setPoints(
-          this.extractor.execute(this.canvasHandler),
+          this.extractor.execute(browserPixelSourceAdapter),
         )
         this.datasetRepository.sortPoints()
       } catch (e) {
