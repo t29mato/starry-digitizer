@@ -13,39 +13,6 @@
       font-size="0.8rem"
     ></v-file-input>
 
-    <v-btn
-      @click="extractLinesWithAI"
-      :disabled="!hasImage || aiExtracting"
-      :loading="aiExtracting"
-      color="primary"
-      size="small"
-      class="mb-2"
-      block
-    >
-      <v-icon start size="small">mdi-robot</v-icon>
-      Auto Extract with AI
-      <v-badge
-        v-if="isPromoActive"
-        content="NEW"
-        color="red"
-        inline
-        class="ml-2"
-      />
-    </v-btn>
-
-    <v-alert v-if="aiErrorMessage" type="error" density="compact" class="mb-2">
-      {{ aiErrorMessage }}
-    </v-alert>
-
-    <v-alert
-      v-if="aiSuccessMessage"
-      type="success"
-      density="compact"
-      class="mb-2"
-    >
-      {{ aiSuccessMessage }}
-    </v-alert>
-
     <div
       class="c_file-drag-area"
       :class="{ 'is-dragged-over': fileIsDraggedOver }"
@@ -61,14 +28,9 @@ import { defineComponent } from 'vue'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { autoLineDigitizerService } from '@/instanceStore/applicationServiceInstances'
 import { projectService } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
-import { Axis } from '@/domain/models/axis/axis'
-import { AxisSet } from '@/domain/models/axisSet/axisSet'
-import { Dataset } from '@/domain/models/dataset/dataset'
-import { POINT_MODE } from '@/constants'
 
 import { VALID_IMAGE_TYPES } from '@/presentation/constants'
 
@@ -80,26 +42,9 @@ export default defineComponent({
       axisSetRepository,
       datasetRepository,
       interpolator,
-      autoLineDigitizerService,
       projectService,
       fileIsDraggedOver: false,
-      aiExtracting: false,
-      aiErrorMessage: '',
-      aiSuccessMessage: '',
     }
-  },
-
-  computed: {
-    hasImage() {
-      return (
-        !!this.canvasHandler.uploadImageUrl ||
-        !!this.canvasHandler.imageElement.src
-      )
-    },
-    isPromoActive() {
-      const promoEndDate = '2026-04-10'
-      return new Date() < new Date(promoEndDate)
-    },
   },
 
   mounted() {
@@ -246,129 +191,6 @@ export default defineComponent({
       await this.updateImage(file)
 
       this.fileIsDraggedOver = false
-    },
-    async extractLinesWithAI() {
-      this.aiExtracting = true
-      this.aiErrorMessage = ''
-      this.aiSuccessMessage = ''
-
-      try {
-        let imageBase64 = ''
-
-        // Check if uploadImageUrl is a base64 data URL
-        if (
-          this.canvasHandler.uploadImageUrl &&
-          this.canvasHandler.uploadImageUrl.startsWith('data:image/')
-        ) {
-          console.log('Using uploadImageUrl (base64)')
-          imageBase64 = this.canvasHandler.uploadImageUrl
-        } else {
-          // Get image from the main canvas (for sample images or non-base64 sources)
-          console.log('Getting image from main canvas')
-          const mainCanvas = document.querySelector(
-            'canvas#imageCanvas',
-          ) as HTMLCanvasElement
-          if (!mainCanvas) {
-            throw new Error('Main canvas not found')
-          }
-
-          // Get image data from the existing canvas
-          imageBase64 = mainCanvas.toDataURL('image/png')
-          console.log('Converted to base64, length:', imageBase64.length)
-        }
-
-        if (!imageBase64) {
-          this.aiErrorMessage = 'Please upload an image first'
-          return
-        }
-
-        console.log('Calling API with image data length:', imageBase64.length)
-
-        // Call AutoLineDigitizer API
-        const projectData =
-          await this.autoLineDigitizerService.extractLines(imageBase64)
-
-        // Clear existing data
-        this.axisSetRepository.clearAllAxisSets()
-        this.datasetRepository.clearAllDatasets()
-
-        // Restore axis sets from ProjectDTO
-        for (const axisSetDTO of projectData.axisSets) {
-          const axisSet = new AxisSet(
-            new Axis('x1', axisSetDTO.x1.value, axisSetDTO.x1.coord),
-            new Axis('x2', axisSetDTO.x2.value, axisSetDTO.x2.coord),
-            new Axis('y1', axisSetDTO.y1.value, axisSetDTO.y1.coord),
-            new Axis('y2', axisSetDTO.y2.value, axisSetDTO.y2.coord),
-            new Axis('x2y2', -1, { xPx: -999, yPx: -999 }),
-            axisSetDTO.id,
-            axisSetDTO.name,
-          )
-          axisSet.xIsLogScale = axisSetDTO.xIsLogScale
-          axisSet.yIsLogScale = axisSetDTO.yIsLogScale
-          axisSet.considerGraphTilt = axisSetDTO.considerGraphTilt
-          axisSet.pointMode = axisSetDTO.pointMode
-          axisSet.isVisible = axisSetDTO.isVisible
-
-          this.axisSetRepository.axisSets.push(axisSet)
-        }
-
-        // Set active axis set
-        this.axisSetRepository.setActiveAxisSet(projectData.activeAxisSetId)
-
-        // Restore datasets from ProjectDTO
-        for (const datasetDTO of projectData.datasets) {
-          const dataset = new Dataset(
-            datasetDTO.name,
-            datasetDTO.points,
-            datasetDTO.id,
-          )
-          dataset.axisSetId = datasetDTO.axisSetId
-          dataset.visiblePointIds = datasetDTO.visiblePointIds
-          dataset.manuallyAddedPointIds = datasetDTO.manuallyAddedPointIds
-          this.datasetRepository.datasets.push(dataset)
-        }
-
-        // Remove empty "dataset 1" if it exists
-        const emptyDataset1 = this.datasetRepository.datasets.find(
-          (d) => d.id === 1 && d.name === 'dataset 1' && d.points.length === 0,
-        )
-        if (emptyDataset1 && this.datasetRepository.datasets.length > 1) {
-          this.datasetRepository.datasets =
-            this.datasetRepository.datasets.filter((d) => d.id !== 1)
-        }
-
-        // Set active dataset to "View All Datasets"
-        this.datasetRepository.setActiveDataset(0)
-
-        // Set all axis sets to 4 points mode
-        this.axisSetRepository.axisSets.forEach((axisSet) => {
-          axisSet.pointMode = POINT_MODE.FOUR_POINTS
-        })
-
-        // Restore canvas handler state
-        this.canvasHandler.scale = projectData.canvasHandler.scale
-        this.canvasHandler.manualMode = projectData.canvasHandler.manualMode
-
-        // Redraw canvas to apply the correct scale
-        this.canvasHandler.drawFitSizeImage()
-
-        const lineCount = projectData.datasets.filter(
-          (d) => d.points.length > 0,
-        ).length
-        this.aiSuccessMessage = `Successfully extracted ${lineCount} line(s) with AI!`
-
-        // Clear success message after 5 seconds
-        setTimeout(() => {
-          this.aiSuccessMessage = ''
-        }, 5000)
-      } catch (error) {
-        console.error('Error extracting lines with AI:', error)
-        this.aiErrorMessage = `Failed to extract lines: ${
-          (error as Error).message
-        }`
-      } finally {
-        this.aiExtracting = false
-      }
     },
   },
 })

@@ -5,6 +5,16 @@
   TypeScript/npmライブラリ「plot-digitizer」として切り出すための設計
 - 実装: **本ドキュメントのレビュー合格まで着手しない**(CLAUDE.md方針)
 
+> **2026-08-15 更新**: オーナー判断によりstarry-digitizerのAI抽出機能
+> (AutoLineDigitizer / Hugging Face Space連携)を撤去した(該当APIが
+> 常時503を返す状態になっていたため)。これに伴い、本ドキュメントが
+> 想定していた `AutoLineDigitizerService` / `HttpClientPort` /
+> `DigitizeWithAutoLineDigitizerUseCase` のcore移植(旧Phase 3の一部)は
+> **スコープアウト**した。AI抽出は将来、自前モデルによる
+> deep-digitizerとして再実装される可能性があるが、その際は改めて
+> 設計する。以下の本文中の該当記述は当時の設計として残しつつ、
+> Phase 3の節に撤去後の方針を明記している。
+
 ## 1. 調査範囲と現状(As-Is)まとめ
 
 調査対象: `src/domain`, `src/application`, `src/presentation`, `src/general`,
@@ -21,7 +31,7 @@
 | domain/services | `AxisSetCalculator` | なし。座標変換の純粋関数群 |
 | domain/repositories | `AxisSetRepository`, `DatasetRepository` | なし。配列操作のみ |
 | application/strategies | `LineExtract`, `SymbolExtractByArea`, `ExtractParent` | なし。`Uint8ClampedArray` を直接処理する純粋アルゴリズム |
-| application/services | `Extractor`, `CanvasHandler`, `Interpolator`, `Magnifier`, `Confirmer`, `ProjectService`, `AutoLineDigitizerService` | **混在**(詳細は2章) |
+| application/services | `Extractor`, `CanvasHandler`, `Interpolator`, `Magnifier`, `Confirmer`, `ProjectService`, ~~`AutoLineDigitizerService`~~(2026-08-15 撤去) | **混在**(詳細は2章) |
 | general/instanceStore | `InstanceManager`, シングルトンストア | Vueではないが、モジュールレベルの単一グローバル状態に依存 |
 | presentation | Vue 3 + Vuetify コンポーネント群、`HTMLCanvas`(DOM直叩き) | Vue/DOM に強結合(想定通り) |
 
@@ -51,7 +61,7 @@
 |---|---|---|
 | **A. Pure Core**(そのまま移動可) | `domain/models/*`, `domain/services/axisSetCalculator`, `domain/repositories/*`, `application/strategies/*`(LineExtract/SymbolExtractByArea/ExtractParent), `application/lib/CurveInterpolatorLib`, `application/utils/pointsUtils`, `application/utils/colorPaletteUtils`, `application/services/magnifier`, `application/services/confirmer` | Phase 1でファイル単位コピー。DOM/Vue importなし。`Uint8ClampedArray` 等プリミティブ入出力のみ |
 | **B. Port化が必要**(DOM結合をインターフェースで切る) | `application/services/canvasHandler`, `application/services/extractor`(CanvasHandlerInterfaceに依存), `application/services/interpolator`(描画部分) | Phase 2で `PixelSourcePort` 等を core 側に定義し、DOM実装をアプリ側アダプタへ追い出す |
-| **C. Infra(isomorphicだがI/Oを持つ)** | `application/services/autoLineDigitizerService`(fetch), `application/services/projectService`(ZIP/DTO変換部分) | Phase 3で `HttpClientPort` 等を介して core 側 infrastructure に移動。ただし `File`/`Blob`/`document.createElement('a')` によるダウンロードUIはアプリ側に残す |
+| **C. Infra(isomorphicだがI/Oを持つ)** | ~~`application/services/autoLineDigitizerService`(fetch)~~(2026-08-15 機能撤去によりスコープアウト), `application/services/projectService`(ZIP/DTO変換部分) | Phase 3で `SerializeProjectUseCase` 等を介して core 側 infrastructure に移動。ただし `File`/`Blob`/`document.createElement('a')` によるダウンロードUIはアプリ側に残す |
 | **D. Presentation専用**(切り出さない) | `presentation/**`, `HTMLCanvas`, `dragRectangleCalculator`, `mouseEventUtilities`, Vueコンポーネント全般 | 既存アプリに残置。core の Port実装(アダプタ)を提供する側になる |
 | **E. Vue専用の薄いグルー** | `instanceStore/*`, `general/instanceManager/*` | 既存アプリのDIコンテナとして残置。core 側は状態をシングルトンで持たず、利用側がインスタンス化する設計に変更 |
 
@@ -109,13 +119,11 @@ plot-digitizer/ (リポジトリルート)
 │       │   ├── domain/
 │       │   │   ├── models/           # Axis, AxisSet, Dataset (既存をほぼそのまま移植)
 │       │   │   └── services/         # AxisSetCalculator
-│       │   ├── application/
-│       │   │   ├── strategies/       # LineExtract, SymbolExtractByArea, ExtractParent
-│       │   │   ├── useCases/         # ExtractPointsUseCase, InterpolatePointsUseCase,
-│       │   │   │                     # SerializeProjectUseCase, DigitizeWithAutoLineDigitizerUseCase
-│       │   │   └── ports/            # PixelSourcePort, HttpClientPort (interfaceのみ)
-│       │   └── infrastructure/
-│       │       └── autoLineDigitizer/ # AutoLineDigitizerService (HttpClientPort実装をDIで受け取る)
+│       │   └── application/
+│       │       ├── strategies/       # LineExtract, SymbolExtractByArea, ExtractParent
+│       │       ├── useCases/         # ExtractPointsUseCase, InterpolatePointsUseCase,
+│       │       │                     # SerializeProjectUseCase
+│       │       └── ports/            # PixelSourcePort (interfaceのみ)
 │       ├── tests/
 │       └── package.json               # name: "plot-digitizer"
 ├── src/                                # 既存Vueアプリ(starry-digitizer) 変更後
@@ -135,12 +143,9 @@ flowchart TB
         direction TB
         D[Domain\nAxis / AxisSet / Dataset / AxisSetCalculator]
         A[Application\nUseCases + ExtractStrategies]
-        P["Ports (interfaces)\nPixelSourcePort / HttpClientPort"]
-        I["Infrastructure\nFetchHttpClient / AutoLineDigitizerService"]
+        P["Ports (interfaces)\nPixelSourcePort"]
         A -->|depends on| D
         A -->|depends on| P
-        I -->|implements| P
-        I -->|depends on| A
     end
 
     subgraph app["starry-digitizer (Vue app, 既存リポジトリ直下)"]
@@ -238,10 +243,6 @@ classDiagram
       +getMaskColors() Uint8ClampedArray
       +isDrawnMask: boolean
     }
-    class HttpClientPort {
-      <<interface>>
-      +postJson(url, body, timeoutMs) Promise~unknown~
-    }
 
     %% ==== application: use cases ====
     class ExtractPointsUseCase {
@@ -260,13 +261,6 @@ classDiagram
       +fromProjectDTO(dto) : {axisSets, datasets}
     }
 
-    %% ==== infrastructure ====
-    class AutoLineDigitizerService {
-      -HttpClientPort httpClient
-      +extractLines(imageBase64, options) Promise~ProjectDTO~
-    }
-    AutoLineDigitizerService --> HttpClientPort
-
     %% ==== app-side adapter (別リポジトリ配下 src/) ====
     class BrowserPixelSourceAdapter {
       -HTMLCanvasElement canvas
@@ -274,11 +268,6 @@ classDiagram
       +getMaskColors() Uint8ClampedArray
     }
     PixelSourcePort <|.. BrowserPixelSourceAdapter : implements (app側)
-
-    class FetchHttpClient {
-      +postJson(url, body, timeoutMs) Promise~unknown~
-    }
-    HttpClientPort <|.. FetchHttpClient : implements (core同梱デフォルト実装)
 ```
 
 ### 4.4 公開API(ファサード)案
@@ -290,11 +279,10 @@ npm利用者向けの最上位エクスポートは、既存の内部構造を�
 // packages/plot-digitizer-core/src/index.ts (イメージ)
 export { Axis, AxisSet, Dataset } from './domain/models'
 export { AxisSetCalculator } from './domain/services'
-export type { PixelSourcePort, HttpClientPort } from './application/ports'
+export type { PixelSourcePort } from './application/ports'
 export { ExtractPointsUseCase } from './application/useCases/extractPointsUseCase'
 export { InterpolatePointsUseCase } from './application/useCases/interpolatePointsUseCase'
 export { SerializeProjectUseCase } from './application/useCases/serializeProjectUseCase'
-export { AutoLineDigitizerService } from './infrastructure/autoLineDigitizer'
 export type { ProjectDTO, AxisSetDTO, DatasetDTO } from './application/dto'
 ```
 
@@ -336,13 +324,21 @@ Vueコンポーネントのみを担当する形に薄くなる。
 - **影響: 挙動不変を目標にリファクタ。Cypress E2Eで回帰確認必須。**
 
 ### Phase 3: Infra移植(分類C)
-- `AutoLineDigitizerService` を `HttpClientPort` 経由に変更しcoreへ移植
-  (fetchはisomorphicなためcore内デフォルト実装 `FetchHttpClient` を同梱可)。
+
+> **スコープ変更(2026-08-15)**: `AutoLineDigitizerService`(AI抽出/Hugging Face
+> Space連携)は、当該APIが常時503エラーを返す状態になったためオーナー判断で
+> starry-digitizer本体から**撤去済み**。これに伴い、本Phaseで予定していた
+> `AutoLineDigitizerService` の `HttpClientPort` 経由でのcore移植、および
+> `HttpClientPort` / `DigitizeWithAutoLineDigitizerUseCase` 自体の新設は
+> **スコープアウト**する。AI抽出機能は将来、自前モデルによる
+> **deep-digitizer**として再実装される可能性があるが、その際は改めて
+> 別途設計する(HttpClientPort相当のPortが必要になるかどうかも含め再検討)。
+
 - `ProjectService` のうち `ProjectDTO ⇄ ドメインモデル` 変換ロジック
   (`exportProject`のDTO組み立て、`loadProject`の復元処理)を
   `SerializeProjectUseCase` としてcoreへ移植。
   ZIP化・ダウンロード・`File`/`Blob`操作はアプリ側 `ProjectService` に残す。
-- **影響: AI機能・プロジェクト入出力のリグレッションテストを重点実施。**
+- **影響: プロジェクト入出力のリグレッションテストを重点実施。**
 
 ### Phase 4: 公開APIファサード確定 & 重複削除
 - `packages/plot-digitizer-core/src/index.ts` を確定し、SemVer 0.x系で
@@ -414,11 +410,13 @@ CI(GitHub Actions)で `npx depcruise` をlintジョブに追加し、違反時�
    この境界線で問題ないか。
 4. **ProjectService分割の粒度**: DTO変換ロジックのみcoreへ、ZIP/File操作はアプリ側、
    という切り分けで妥当か(JSZip自体はisomorphicなためcoreに含める案も検討可能)。
-5. **`AutoLineDigitizerService` のAPIエンドポイント**: 現状 `https://t29mato-
-   autolinedigitizer.hf.space/...` がハードコードされている。core化する際に
-   コンストラクタ引数化(利用者が任意のエンドポイントを指定可能に)する想定だが、
-   デフォルト値としてこのURLを残してよいか(公開npmパッケージに特定の外部APIを
-   デフォルト同梱することの妥当性)。
+5. ~~**`AutoLineDigitizerService` のAPIエンドポイント**~~: **対応不要になった
+   (2026-08-15)**。当該API(`https://t29mato-autolinedigitizer.hf.space/...`)
+   が常時503を返す状態となり、機能自体をstarry-digitizer本体から撤去した
+   ため、core移植の要否も含めて未決事項ではなくなった。将来deep-digitizer
+   として再実装する際は、この項目で懸念していた「公開npmパッケージへの
+   特定外部APIのデフォルト同梱は不適切」という論点自体は引き続き有効な
+   ので、その時点で再度議論する。
 
 ## 9. 次のアクション
 
