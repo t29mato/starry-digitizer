@@ -1,15 +1,7 @@
-import { Coord } from '@/@types/types'
-
-// INFO: Strategy Pattern
-export default interface ExtractStrategyInterface {
-  name: string
-  execute(
-    height: number,
-    width: number,
-    imageColors: Uint8ClampedArray,
-    maskColors: Uint8ClampedArray,
-    isDrawnMask: boolean,
-    targetColor: [number, number, number],
-    colorMatchThreshold: number,
-  ): Coord[]
-}
+// INFO: Phase 1 (docs/design/plot-digitizer-architecture.md) — this
+// interface has been moved to packages/plot-digitizer-core. This file
+// re-exports it (as the default export, to match every existing
+// `@/application/strategies/extractStrategies/extractStrategyInterface`
+// import in this app) so nothing else needs to change. Do not add logic
+// here — edit the core package instead.
+export type { ExtractStrategyInterface as default } from '@plot-digitizer/core'

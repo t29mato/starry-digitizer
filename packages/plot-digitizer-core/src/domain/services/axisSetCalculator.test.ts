@@ -430,4 +430,17 @@ describe('AxisSetCalculator', () => {
       expect(backToPixel?.yPx).toBeCloseTo(originalPixel.yPx, 0)
     })
   })
+
+  describe('numDigit', () => {
+    it('returns 0 for 0 (log10(0) is undefined, so this is a special case)', () => {
+      const calculator = new AxisSetCalculator(axisSetMock, { x: false, y: false })
+      expect(calculator.numDigit(0)).toBe(0)
+    })
+
+    it('returns the base-10 order of magnitude for a non-zero number', () => {
+      const calculator = new AxisSetCalculator(axisSetMock, { x: false, y: false })
+      expect(calculator.numDigit(100)).toBe(2)
+      expect(calculator.numDigit(-100)).toBe(2)
+    })
+  })
 })

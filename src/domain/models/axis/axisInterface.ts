@@ -1,18 +1,6 @@
-import { Coord } from '@/@types/types'
-
-/**
- * Axis domain model (Entity/Value Object)
- * Represents an axis with its value and coordinate in the domain
- */
-export interface AxisInterface {
-  name: string
-  value: number
-  coord: Coord
-  initialCoord: Coord
-
-  // Methods (behavior)
-  clearCoord(): void
-
-  // Computed properties
-  get coordIsFilled(): boolean
-}
+// INFO: Phase 1 (docs/design/plot-digitizer-architecture.md) — this
+// interface has been moved to packages/plot-digitizer-core. This file
+// re-exports it so every existing `@/domain/models/axis/axisInterface`
+// import in this app keeps working unchanged. Do not add logic here — edit
+// the core package instead.
+export type { AxisInterface } from '@plot-digitizer/core'

@@ -14,15 +14,24 @@ module.exports = {
   // (docs/design/plot-digitizer-architecture.md section 6):
   //   - core全体(domain+application) >= 90% がCIゲート
   //   - domain/models, domain/services は 95% を目標
-  // Per-path thresholds for domain/models and domain/services are added in
-  // Phase 1 once those directories contain real files — Jest errors out on
-  // a threshold entry that matches zero files.
   coverageThreshold: {
     global: {
       branches: 90,
       functions: 90,
       lines: 90,
       statements: 90,
+    },
+    './src/domain/models/**/*.ts': {
+      branches: 95,
+      functions: 95,
+      lines: 95,
+      statements: 95,
+    },
+    './src/domain/services/**/*.ts': {
+      branches: 95,
+      functions: 95,
+      lines: 95,
+      statements: 95,
     },
   },
 }

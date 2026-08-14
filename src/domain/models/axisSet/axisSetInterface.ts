@@ -1,49 +1,6 @@
-import { AxisInterface } from '../axis/axisInterface'
-import { Coord, PointMode } from '@/@types/types'
-
-// TODO: VectorはDatasetInterfaceでも利用しており共通Typeの場所を用意するべきか検討する
-export type Vector = {
-  direction: 'up' | 'down' | 'right' | 'left'
-  distancePx: number
-}
-
-/**
- * AxisSet domain model
- * Represents a set of axes with their relationships and transformations
- */
-export interface AxisSetInterface {
-  id: number
-  name: string
-  x1: AxisInterface // ← これがネストした複雑なオブジェクト
-  x2: AxisInterface
-  y1: AxisInterface
-  y2: AxisInterface
-  x2y2: AxisInterface
-  xIsLogScale: boolean
-  yIsLogScale: boolean
-  activeAxisName: string
-  pointMode: PointMode
-  considerGraphTilt: boolean
-  isAdjusting: boolean
-  isVisible: boolean
-
-  get hasAtLeastOneAxis(): boolean
-  get hasXAxis(): boolean
-  get hasYAxis(): boolean
-  get atLeastOneCoordOrValueIsChanged(): boolean
-  get activeAxis(): AxisInterface | null
-  get nextAxis(): AxisInterface | null
-  moveActiveAxis(vector: Vector): void
-  clearAxisCoords(): void
-  clearXAxisCoords(): void
-  clearYAxisCoords(): void
-  addAxisCoord(coord: Coord): void
-  inactivateAxis(): void
-  activateAxisByName(axisName: string): void
-  setX1Value(value: number): void
-  setX2Value(value: number): void
-  setY1Value(value: number): void
-  setY2Value(value: number): void
-  setXIsLogScale(value: boolean): void
-  setYIsLogScale(value: boolean): void
-}
+// INFO: Phase 1 (docs/design/plot-digitizer-architecture.md) — this
+// interface has been moved to packages/plot-digitizer-core. This file
+// re-exports it so every existing `@/domain/models/axisSet/axisSetInterface`
+// import in this app keeps working unchanged. Do not add logic here — edit
+// the core package instead.
+export type { AxisSetInterface, Vector } from '@plot-digitizer/core'
