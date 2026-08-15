@@ -5,41 +5,6 @@
       on a PC.
     </div>
     <v-main v-if="!deviceIsSmartphone">
-      <v-dialog v-model="showDemoDialog" max-width="600">
-        <v-card>
-          <v-card-title class="text-h6">
-            <v-icon color="primary" class="mr-2">mdi-robot</v-icon>
-            New: AI-Powered Auto Extract Feature
-          </v-card-title>
-          <v-card-text>
-            <v-alert type="info" variant="tonal" class="mb-2">
-              <div class="text-subtitle-2 mb-2">How to use:</div>
-              <ol class="ml-6">
-                <li class="mb-1">Upload or paste your graph image</li>
-                <li class="mb-1">Click the "Auto Extract with AI" button</li>
-                <li class="mb-1">Wait 10-20 seconds for processing</li>
-                <li>Review and refine the extracted data if needed</li>
-              </ol>
-            </v-alert>
-
-            <v-alert type="success" variant="tonal" density="compact">
-              <div class="text-caption">
-                🔒 Your images are sent to our AI server for processing but are
-                not stored or saved.
-              </div>
-            </v-alert>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn variant="outlined" @click="showDemoDialog = false"
-              >Remind me later</v-btn
-            >
-            <v-spacer />
-            <v-btn color="primary" variant="flat" @click="dismissDemoDialog"
-              >Got it, don't show again</v-btn
-            >
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
       <starry-digitizer :initialGraphImagePath="'/sample_graph_curve.png'" />
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
@@ -82,7 +47,6 @@ export default defineComponent({
   data: () => ({
     points: [],
     version,
-    promoEndDate: '2026-04-10',
     links: [
       {
         text: 'Release Note',
@@ -93,19 +57,9 @@ export default defineComponent({
         url: 'https://starrydigitizer.readthedocs.io/',
       },
     ],
-    showDemoDialog: false,
     isProd: import.meta.env.MODE === 'production',
   }),
-  mounted() {
-    const dismissed = localStorage.getItem('autoLineDigitizerDemoDismissed')
-    if (!dismissed && this.isPromoActive) {
-      this.showDemoDialog = true
-    }
-  },
   computed: {
-    isPromoActive() {
-      return new Date() < new Date(this.promoEndDate)
-    },
     deviceIsSmartphone() {
       const ua = navigator.userAgent.toLowerCase()
 
@@ -115,10 +69,6 @@ export default defineComponent({
   methods: {
     importPoints(points: any) {
       this.points = points
-    },
-    dismissDemoDialog() {
-      this.showDemoDialog = false
-      localStorage.setItem('autoLineDigitizerDemoDismissed', 'true')
     },
   },
 })

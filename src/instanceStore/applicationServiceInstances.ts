@@ -4,7 +4,6 @@ import { ExtractorManager } from '@/application/services/extractor/manager/extra
 import { InterpolatorManager } from '@/application/services/interpolator/manager/interpolatorManager'
 import { MagnifierManager } from '@/application/services/magnifier/manager/magnifierManager'
 import { ProjectService } from '@/application/services/projectService/projectService'
-import { AutoLineDigitizerService } from '@/application/services/autoLineDigitizer/autoLineDigitizerService'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -20,6 +19,3 @@ export const projectService = new ProjectService(
   datasetRepository,
   canvasHandler,
 )
-
-// AutoLineDigitizerService: Service for AI-powered line extraction
-export const autoLineDigitizerService = new AutoLineDigitizerService()
