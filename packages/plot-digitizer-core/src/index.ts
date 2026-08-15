@@ -3,9 +3,12 @@
 // Phase 1 (docs/design/plot-digitizer-architecture.md section 4.4) added
 // classification-A code (pure domain models + DOM-free application pieces).
 // Phase 2 added `PixelSourcePort` and moved `Extractor` onto it, now that it
-// no longer needs the DOM-coupled CanvasHandlerInterface. CanvasHandler
-// itself, Interpolator, ProjectService, and AutoLineDigitizerService remain
-// host-app (or later-phase) concerns.
+// no longer needs the DOM-coupled CanvasHandlerInterface. Phase 3 added
+// `SerializeProjectUseCase` (ProjectDTO ⇄ domain-model conversion, ported
+// out of the host app's ProjectService). AutoLineDigitizerService was
+// withdrawn from the product entirely (2026-08-15) and is not ported.
+// CanvasHandler itself, Interpolator, and the ZIP/File/Blob parts of
+// ProjectService remain host-app concerns.
 //
 // The host app (starry-digitizer, src/) does not import this package by its
 // npm name — it isn't published yet. It's resolved via a TS/bundler path
@@ -49,6 +52,20 @@ export type { ExtractorInterface } from './application/services/extractor/extrac
 
 // -- application/ports --------------------------------------------------------
 export type { PixelSourcePort } from './application/ports/pixelSourcePort'
+
+// -- application/useCases -------------------------------------------------
+export {
+  SerializeProjectUseCase,
+  type ToProjectDTOParams,
+  type FromProjectDTOResult,
+} from './application/useCases/serializeProjectUseCase'
+
+// -- application/dto --------------------------------------------------------
+export type { AxisDTO } from './application/dto/axisDTO'
+export type { AxisSetDTO } from './application/dto/axisSetDTO'
+export type { DatasetDTO } from './application/dto/datasetDTO'
+export type { CanvasStateDTO } from './application/dto/canvasStateDTO'
+export type { ProjectDTO } from './application/dto/projectDTO'
 
 // -- shared domain types/constants -------------------------------------------
 export type { Coord, Point, PointMode } from './domain/types'
