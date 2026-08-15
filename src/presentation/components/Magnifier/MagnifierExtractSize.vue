@@ -45,8 +45,8 @@
 import { defineComponent } from 'vue'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
-import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
-import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
+import { LineExtract } from '@plot-digitizer/core'
+import { SymbolExtractByArea } from '@plot-digitizer/core'
 
 export default defineComponent({
   data() {

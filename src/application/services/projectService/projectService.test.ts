@@ -3,9 +3,7 @@ import { ProjectService } from './projectService'
 import { CanvasStatePort } from './canvasStatePort'
 import { AxisSetRepository } from '@/domain/repositories/axisSetRepository/axisSetRepository'
 import { DatasetRepository } from '@/domain/repositories/datasetRepository/datasetRepository'
-import { Axis } from '@/domain/models/axis/axis'
-import { AxisSet } from '@/domain/models/axisSet/axisSet'
-import { Dataset } from '@/domain/models/dataset/dataset'
+import { Axis, AxisSet, Dataset } from '@plot-digitizer/core'
 import JSZip from 'jszip'
 
 describe('ProjectService', () => {

@@ -1,9 +1,8 @@
 import { ProjectServiceInterface } from './projectServiceInterface'
-import { ProjectDTO } from '@/application/dto/projectDTO'
 import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
 import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 import { CanvasStatePort } from './canvasStatePort'
-import { SerializeProjectUseCase } from '@plot-digitizer/core'
+import { ProjectDTO, SerializeProjectUseCase } from '@plot-digitizer/core'
 import { ManualMode } from '@/@types/types'
 import JSZip from 'jszip'
 

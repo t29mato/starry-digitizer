@@ -1,5 +1,5 @@
 import { expect } from '@jest/globals'
-import { Dataset } from '../../models/dataset/dataset'
+import { Dataset } from '@plot-digitizer/core'
 import { DatasetRepository } from './datasetRepository'
 
 test('next dataset ID', () => {

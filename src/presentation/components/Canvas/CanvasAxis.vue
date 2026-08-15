@@ -76,7 +76,7 @@
 import { defineComponent } from 'vue'
 
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { AxisInterface } from '@/domain/models/axis/axisInterface'
+import type { AxisInterface } from '@plot-digitizer/core'
 import {
   axisSetRepository,
   datasetRepository,

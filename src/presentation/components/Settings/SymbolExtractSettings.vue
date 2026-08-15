@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
+import { SymbolExtractByArea } from '@plot-digitizer/core'
 
 export default defineComponent({
   data() {

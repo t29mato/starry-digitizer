@@ -1,6 +1,5 @@
 import { InstanceManager } from '@/general/instanceManager/instanceManager'
-import { ConfirmerInterface } from '../confirmerInterface'
-import { Confirmer } from '../confirmer'
+import { Confirmer, ConfirmerInterface } from '@plot-digitizer/core'
 
 export class ConfirmerManager extends InstanceManager<ConfirmerInterface> {
   private instanceCreator = () => {

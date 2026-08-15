@@ -57,6 +57,31 @@ module.exports = {
       from: { path: '^src/application' },
       to: { path: '^src/presentation' },
     },
+    {
+      // INFO: Phase 4 (docs/design/plot-digitizer-architecture.md). These
+      // four directories were fully migrated to plot-digitizer-core in
+      // Phases 1-3 and are now empty — every file that used to live there
+      // is either genuinely core code, or an app-owned wrapper/adapter/port
+      // living elsewhere (domain/repositories, application/services/*/
+      // manager, presentation/adapters). Nothing legitimate belongs back
+      // under these four paths, so any file placed here that imports
+      // *anything* — a duplicate implementation, or a re-export wrapper
+      // pointing at plot-digitizer/core again — is exactly the regression
+      // this rule exists to catch. (dependency-cruiser can only flag a
+      // module once it has at least one dependency edge; a file with zero
+      // imports at all would slip past this, but that's not a realistic
+      // way to reintroduce domain/application logic.)
+      name: 'no-new-code-in-migrated-directories',
+      comment:
+        'src/domain/models, src/domain/services, src/application/strategies, and ' +
+        'src/application/dto were fully migrated to plot-digitizer-core — new pure ' +
+        'domain/application code belongs in the core package, not back here.',
+      severity: 'error',
+      from: {
+        path: '^src/(domain/models|domain/services|application/strategies|application/dto)',
+      },
+      to: {},
+    },
   ],
   options: {
     doNotFollow: {

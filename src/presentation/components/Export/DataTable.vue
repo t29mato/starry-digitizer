@@ -18,7 +18,7 @@ import { defineComponent } from 'vue'
 // TODO: TSの型宣言エラーが解消できずignore いずれ再度調査
 // @ts-ignore
 import colors from 'vuetify/lib/util/colors'
-import AxisSetCalculator from '@/domain/services/axisSetCalculator'
+import { AxisSetCalculator } from '@plot-digitizer/core'
 
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
@@ -112,4 +112,3 @@ export default defineComponent({
   },
 })
 </script>
-@/domain/services/axisSetCalculator @/domain/services/axisSetCalculator

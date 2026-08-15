@@ -137,7 +137,7 @@ import {
   datasetRepository,
 } from '@/instanceStore/repositoryInatances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
+import type { AxisSetInterface } from '@plot-digitizer/core'
 import { POINT_MODE, MANUAL_MODE } from '@/constants'
 
 export default defineComponent({
