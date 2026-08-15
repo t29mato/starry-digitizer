@@ -1,19 +1,21 @@
 import { ProjectServiceInterface } from './projectServiceInterface'
 import { ProjectDTO } from '@/application/dto/projectDTO'
-import { AxisSetDTO } from '@/application/dto/axisSetDTO'
-import { DatasetDTO } from '@/application/dto/datasetDTO'
 import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
 import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 import { CanvasStatePort } from './canvasStatePort'
-import { Axis } from '@/domain/models/axis/axis'
-import { AxisSet } from '@/domain/models/axisSet/axisSet'
-import { Dataset } from '@/domain/models/dataset/dataset'
+import { SerializeProjectUseCase } from '@plot-digitizer/core'
+import { ManualMode } from '@/@types/types'
 import JSZip from 'jszip'
 
 export class ProjectService implements ProjectServiceInterface {
   private axisSetRepository: AxisSetRepositoryInterface
   private datasetRepository: DatasetRepositoryInterface
   private canvasHandler: CanvasStatePort
+  // INFO: Phase 3 (docs/design/plot-digitizer-architecture.md) — the
+  // ProjectDTO ⇄ domain-model conversion itself now lives in core
+  // (SerializeProjectUseCase). This class keeps only the DOM/I-O parts:
+  // grabbing the uploaded image, ZIP packaging, and File/Blob handling.
+  private serializeProjectUseCase = new SerializeProjectUseCase()
 
   constructor(
     axisSetRepository: AxisSetRepositoryInterface,
@@ -38,58 +40,17 @@ export class ProjectService implements ProjectServiceInterface {
     }
 
     // Build project data (without image)
-    const projectData: ProjectDTO = {
+    const projectData: ProjectDTO = this.serializeProjectUseCase.toProjectDTO({
       version: '1.11.2', // TODO: Get from package.json
-      timestamp: new Date().toISOString(),
-      axisSets: this.axisSetRepository.axisSets.map(
-        (axisSet): AxisSetDTO => ({
-          id: axisSet.id,
-          name: axisSet.name,
-          // Extract AxisData (DTO) from AxisInterface (Entity)
-          x1: {
-            name: axisSet.x1.name,
-            value: axisSet.x1.value,
-            coord: axisSet.x1.coord,
-          },
-          x2: {
-            name: axisSet.x2.name,
-            value: axisSet.x2.value,
-            coord: axisSet.x2.coord,
-          },
-          y1: {
-            name: axisSet.y1.name,
-            value: axisSet.y1.value,
-            coord: axisSet.y1.coord,
-          },
-          y2: {
-            name: axisSet.y2.name,
-            value: axisSet.y2.value,
-            coord: axisSet.y2.coord,
-          },
-          xIsLogScale: axisSet.xIsLogScale,
-          yIsLogScale: axisSet.yIsLogScale,
-          considerGraphTilt: axisSet.considerGraphTilt,
-          pointMode: axisSet.pointMode,
-          isVisible: axisSet.isVisible,
-        }),
-      ),
+      axisSets: this.axisSetRepository.axisSets,
       activeAxisSetId: this.axisSetRepository.activeAxisSetId,
-      datasets: this.datasetRepository.datasets.map(
-        (dataset): DatasetDTO => ({
-          id: dataset.id,
-          name: dataset.name,
-          axisSetId: dataset.axisSetId,
-          points: dataset.points,
-          visiblePointIds: dataset.visiblePointIds,
-          manuallyAddedPointIds: dataset.manuallyAddedPointIds,
-        }),
-      ),
+      datasets: this.datasetRepository.datasets,
       activeDatasetId: this.datasetRepository.activeDataset.id,
-      canvasHandler: {
+      canvasState: {
         scale: this.canvasHandler.scale,
         manualMode: this.canvasHandler.manualMode,
       },
-    }
+    })
 
     // Create ZIP file
     const zip = new JSZip()
@@ -197,52 +158,32 @@ export class ProjectService implements ProjectServiceInterface {
     // Import project data from ZIP
     const { projectData, imageData } = await this.importProject(zipFile)
 
+    const restored = this.serializeProjectUseCase.fromProjectDTO(projectData)
+
     // Clear existing data
     this.axisSetRepository.clearAllAxisSets()
     this.datasetRepository.clearAllDatasets()
 
-    // Restore axis sets from DTO
-    for (const axisSetDTO of projectData.axisSets) {
-      const axisSet = new AxisSet(
-        new Axis('x1', axisSetDTO.x1.value, axisSetDTO.x1.coord),
-        new Axis('x2', axisSetDTO.x2.value, axisSetDTO.x2.coord),
-        new Axis('y1', axisSetDTO.y1.value, axisSetDTO.y1.coord),
-        new Axis('y2', axisSetDTO.y2.value, axisSetDTO.y2.coord),
-        new Axis('x2y2', -1, { xPx: -999, yPx: -999 }),
-        axisSetDTO.id,
-        axisSetDTO.name,
-      )
-      axisSet.xIsLogScale = axisSetDTO.xIsLogScale
-      axisSet.yIsLogScale = axisSetDTO.yIsLogScale
-      axisSet.considerGraphTilt = axisSetDTO.considerGraphTilt
-      axisSet.pointMode = axisSetDTO.pointMode
-      axisSet.isVisible = axisSetDTO.isVisible
-
+    // Restore axis sets
+    for (const axisSet of restored.axisSets) {
       this.axisSetRepository.axisSets.push(axisSet)
     }
 
     // Set active axis set
-    this.axisSetRepository.setActiveAxisSet(projectData.activeAxisSetId)
+    this.axisSetRepository.setActiveAxisSet(restored.activeAxisSetId)
 
-    // Restore datasets from DTO
-    for (const datasetDTO of projectData.datasets) {
-      const dataset = new Dataset(
-        datasetDTO.name,
-        datasetDTO.points,
-        datasetDTO.id,
-      )
-      dataset.axisSetId = datasetDTO.axisSetId
-      dataset.visiblePointIds = datasetDTO.visiblePointIds
-      dataset.manuallyAddedPointIds = datasetDTO.manuallyAddedPointIds
+    // Restore datasets
+    for (const dataset of restored.datasets) {
       this.datasetRepository.datasets.push(dataset)
     }
 
     // Set active dataset
-    this.datasetRepository.setActiveDataset(projectData.activeDatasetId)
+    this.datasetRepository.setActiveDataset(restored.activeDatasetId)
 
     // Restore canvas handler state
-    this.canvasHandler.scale = projectData.canvasHandler.scale
-    this.canvasHandler.manualMode = projectData.canvasHandler.manualMode
+    this.canvasHandler.scale = restored.canvasState.scale
+    this.canvasHandler.manualMode = restored.canvasState
+      .manualMode as ManualMode
 
     return imageData
   }
