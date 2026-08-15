@@ -41,6 +41,21 @@ jobs:
         run: yarn lint
       - name: Unit test with coverage gate
         run: yarn test:coverage
+      - name: Upload coverage to Codecov
+        # INFO: without this, Codecov's "project" total only ever saw the
+        # host app's src/**/*.ts coverage — since Phases 1-4 moved most of
+        # the previously-src/-resident domain/application logic (and its
+        # tests) here, that made the overall "project" check look like
+        # coverage was regressing even though the moved logic is still
+        # ~100% covered, just in a report Codecov never received. See
+        # codecov.yml (repo root) for the flag/carryforward config this
+        # pairs with.
+        uses: codecov/codecov-action@v4.2.0
+        with:
+          directory: packages/plot-digitizer-core/coverage
+          flags: plot-digitizer-core
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   Dependency-Direction-Check:
     runs-on: ubuntu-latest
