@@ -35,6 +35,10 @@ module.exports = {
 
     //INFO: exclude interfaces
     '!src/**/*Interface.ts',
+    //INFO: exclude ports (application-owned boundary interfaces, e.g.
+    //CanvasStatePort — same rationale as *Interface.ts above: no runtime
+    //logic to cover)
+    '!src/**/*Port.ts',
 
     //INFO: index.ts in the components folder are just the collections of component modules
     '!src/presentation/components/**/index.ts',

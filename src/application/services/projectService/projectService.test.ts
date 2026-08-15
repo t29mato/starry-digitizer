@@ -1,8 +1,8 @@
 import { expect, describe, it, beforeEach, jest } from '@jest/globals'
 import { ProjectService } from './projectService'
+import { CanvasStatePort } from './canvasStatePort'
 import { AxisSetRepository } from '@/domain/repositories/axisSetRepository/axisSetRepository'
 import { DatasetRepository } from '@/domain/repositories/datasetRepository/datasetRepository'
-import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { Axis } from '@/domain/models/axis/axis'
 import { AxisSet } from '@/domain/models/axisSet/axisSet'
 import { Dataset } from '@/domain/models/dataset/dataset'
@@ -12,16 +12,22 @@ describe('ProjectService', () => {
   let projectService: ProjectService
   let axisSetRepository: AxisSetRepository
   let datasetRepository: DatasetRepository
-  let canvasHandler: CanvasHandler
+  // INFO: a plain object is enough here — ProjectService only depends on the
+  // narrow CanvasStatePort (uploadImageUrl/scale/manualMode), not the full
+  // (presentation-layer) CanvasHandler. See canvasStatePort.ts.
+  let canvasHandler: CanvasStatePort
 
   beforeEach(() => {
     // Create fresh instances for each test
     axisSetRepository = new AxisSetRepository()
     datasetRepository = new DatasetRepository()
-    canvasHandler = new CanvasHandler()
-
-    // Mock uploadImageUrl to avoid canvas dependency
-    canvasHandler.uploadImageUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+    canvasHandler = {
+      // Mock uploadImageUrl to avoid canvas dependency
+      uploadImageUrl:
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      scale: 1,
+      manualMode: -1,
+    }
 
     projectService = new ProjectService(
       axisSetRepository,

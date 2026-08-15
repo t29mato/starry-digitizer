@@ -2,7 +2,7 @@
 import { CanvasHandlerInterface } from './canvasHandlerInterface'
 import { extractColorSwatches } from '@/application/utils/colorPaletteUtils'
 
-import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
+import { HTMLCanvas } from '../../dom/HTMLCanvas'
 import { MANUAL_MODE, MASK_MODE } from '@/constants'
 import { Coord, ManualMode, MaskMode } from '@/@types/types'
 export class CanvasHandler implements CanvasHandlerInterface {
@@ -204,35 +204,13 @@ export class CanvasHandler implements CanvasHandlerInterface {
     }
   }
 
-  get originalImageCanvasColors() {
-    const newCanvas = document.createElement('canvas')
-    newCanvas.setAttribute('width', String(this.originalWidth))
-    newCanvas.setAttribute('height', String(this.originalHeight))
-    const ctx = newCanvas.getContext('2d') as CanvasRenderingContext2D
-    ctx.drawImage(
-      this.imageElement,
-      0,
-      0,
-      this.originalWidth,
-      this.originalHeight,
-    )
-    return ctx.getImageData(0, 0, this.originalWidth, this.originalHeight).data
-  }
-
-  get originalSizeMaskCanvasColors() {
-    const newCanvas = document.createElement('canvas')
-    newCanvas.setAttribute('width', String(this.originalWidth))
-    newCanvas.setAttribute('height', String(this.originalHeight))
-    const ctx = newCanvas.getContext('2d') as CanvasRenderingContext2D
-    ctx.drawImage(
-      this.maskCanvas.element,
-      0,
-      0,
-      this.originalWidth,
-      this.originalHeight,
-    )
-    return ctx.getImageData(0, 0, this.originalWidth, this.originalHeight).data
-  }
+  // INFO: originalImageCanvasColors / originalSizeMaskCanvasColors used to
+  // live here but moved to BrowserPixelSourceAdapter
+  // (src/presentation/adapters/browserPixelSourceAdapter.ts) as part of
+  // Phase 2 (docs/design/plot-digitizer-architecture.md) — pixel *reading*
+  // is now behind plot-digitizer-core's PixelSourcePort. Mask *drawing*
+  // (this class) stays here per the design-review decision (design doc
+  // section 8 item 3).
 
   get colorSwatches() {
     if (!this.imageElement) {

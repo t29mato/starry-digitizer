@@ -20,8 +20,6 @@ export interface CanvasHandlerInterface {
   uploadImageUrl: string
   penToolSizePx: number
   eraserSizePx: number
-  get originalSizeMaskCanvasColors(): Uint8ClampedArray
-  get originalImageCanvasColors(): Uint8ClampedArray
   get colorSwatches(): string[]
   get isDrawingMask(): boolean
   get scaledCursor(): Coord
