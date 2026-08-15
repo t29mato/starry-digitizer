@@ -33,7 +33,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
+import { LineExtract } from '@plot-digitizer/core'
 
 export default defineComponent({
   data() {

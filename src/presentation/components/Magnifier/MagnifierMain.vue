@@ -120,7 +120,7 @@ import MagnifierPoints from './MagnifierPoints.vue'
 import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
-import AxisSetCalculator from '@/domain/services/axisSetCalculator'
+import { AxisSetCalculator } from '@plot-digitizer/core'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
@@ -243,4 +243,3 @@ $_white-outline-pos-value: calc(50% - #{$_white-outline-size} - 1px);
   }
 }
 </style>
-@/domain/services/axisSetCalculator

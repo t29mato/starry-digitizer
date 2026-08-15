@@ -1,6 +1,5 @@
 import { InstanceManager } from '@/general/instanceManager/instanceManager'
-import { MagnifierInterface } from '../magnifierInterface'
-import { Magnifier } from '../magnifier'
+import { Magnifier, MagnifierInterface } from '@plot-digitizer/core'
 
 export class MagnifierManager extends InstanceManager<MagnifierInterface> {
   private instanceCreator = () => {

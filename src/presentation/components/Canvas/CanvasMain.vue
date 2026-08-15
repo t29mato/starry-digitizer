@@ -52,7 +52,7 @@ import {
   CanvasCursor,
   CanvasAxisSetGuide,
 } from '.'
-import { Vector } from '@/domain/models/axisSet/axisSetInterface'
+import type { Vector } from '@plot-digitizer/core'
 import { Coord, Point } from '@/@types/types'
 
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
@@ -422,5 +422,3 @@ export default defineComponent({
   }
 }
 </style>
-@/domain/models/axisSet/AxisSetInterface
-@/domain/models/axisSet/axisSetInterface

@@ -1,4 +1,4 @@
-import { DatasetInterface } from '@/domain/models/dataset/datasetInterface'
+import type { DatasetInterface } from '@plot-digitizer/core'
 import { Coord } from '@/@types/types'
 
 export interface DatasetRepositoryInterface {

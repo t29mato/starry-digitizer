@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { AxisInterface } from '@/domain/models/axis/axisInterface'
+import type { AxisInterface } from '@plot-digitizer/core'
 import { defineComponent } from 'vue'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'

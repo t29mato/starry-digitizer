@@ -1,6 +1,6 @@
 {
   "name": "plot-digitizer",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Framework-agnostic TypeScript core for extracting numeric data points from graph/plot images. Extracted from starry-digitizer's domain/application layers. Not yet published — see docs/design/plot-digitizer-architecture.md.",
   "private": true,
   "type": "module",

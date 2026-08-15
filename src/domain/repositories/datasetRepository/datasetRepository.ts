@@ -1,5 +1,4 @@
-import { Dataset } from '@/domain/models/dataset/dataset'
-import { DatasetInterface } from '../../models/dataset/datasetInterface'
+import { Dataset, DatasetInterface } from '@plot-digitizer/core'
 import { DatasetRepositoryInterface } from './datasetRepositoryInterface'
 import { Coord } from '@/@types/types'
 

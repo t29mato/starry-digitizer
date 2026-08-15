@@ -1,6 +1,6 @@
 //TODO: Separate into multiple apps based on feature (so far, multiple features related to canvas are gethered at this class but it is not ideal)
 import { CanvasHandlerInterface } from './canvasHandlerInterface'
-import { extractColorSwatches } from '@/application/utils/colorPaletteUtils'
+import { extractColorSwatches } from '@plot-digitizer/core'
 
 import { HTMLCanvas } from '../../dom/HTMLCanvas'
 import { MANUAL_MODE, MASK_MODE } from '@/constants'

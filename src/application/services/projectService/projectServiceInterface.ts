@@ -1,4 +1,4 @@
-import { ProjectDTO } from '@/application/dto/projectDTO'
+import type { ProjectDTO } from '@plot-digitizer/core'
 
 export interface ProjectServiceInterface {
   /**

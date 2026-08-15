@@ -118,7 +118,7 @@ import {
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { MASK_MODE } from '@/constants'
-import AxisSetCalculator from '@/domain/services/axisSetCalculator'
+import { AxisSetCalculator } from '@plot-digitizer/core'
 import { Point } from '@/@types/types'
 
 export default defineComponent({

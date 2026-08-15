@@ -1,0 +1,40 @@
+# INFO: Fixes the "project coverage" red flag investigated in
+# docs/design/plot-digitizer-architecture.md's migration PRs (#241-#246).
+#
+# Root cause: packages/plot-digitizer-core has its own Jest run (own CI job,
+# .github/workflows/plot-digitizer-core-ci.yml) with ~100% coverage, but
+# that report was never uploaded to Codecov — only the host app's
+# src/**/*.ts coverage (from .github/workflows/vercel-preview-development.yaml)
+# was. Since Phases 1-4 moved most of the previously-src/-resident
+# domain/application logic (and its tests) into plot-digitizer-core, the
+# app-only report Codecov saw kept shrinking, even though the actual
+# tested-code total (app + core combined) is higher than before the
+# migration started. Flags below let both reports land on the same commit
+# and be summed into one "project" total; `carryforward: true` keeps a
+# flag's last known coverage active on commits that don't touch that flag's
+# paths (e.g. an app-only PR doesn't re-run core's tests), so the combined
+# total stays stable instead of periodically looking like core "vanished".
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+
+flags:
+  app:
+    paths:
+      - src/
+    carryforward: true
+  plot-digitizer-core:
+    paths:
+      - packages/plot-digitizer-core/src/
+    carryforward: true
+
+comment:
+  layout: 'reach,diff,flags,files'
+  behavior: default

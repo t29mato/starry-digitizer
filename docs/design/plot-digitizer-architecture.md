@@ -340,13 +340,27 @@ Vueコンポーネントのみを担当する形に薄くなる。
   ZIP化・ダウンロード・`File`/`Blob`操作はアプリ側 `ProjectService` に残す。
 - **影響: プロジェクト入出力のリグレッションテストを重点実施。**
 
-### Phase 4: 公開APIファサード確定 & 重複削除
+### Phase 4: 公開APIファサード確定 & 重複削除(完了・2026-08-15)
 - `packages/plot-digitizer-core/src/index.ts` を確定し、SemVer 0.x系で
   `npm run build` 相当のパッケージビルドを用意(公開はしない。7章参照)。
-- 既存 `src/domain`, `src/application` 内の re-export ラッパーを整理し、
-  アプリコード全体が `plot-digitizer` を直接importする形に統一。
-- **影響: 大規模だが機械的な import置換が中心。dependency-cruiserで
-  `src/domain`,`src/application` への新規追加をCIで禁止し、後戻りを防ぐ。**
+  バージョンは `0.1.0` とした(facade確定のマイルストーン)。Phase 0の
+  scaffold(`packageInfo.ts`)はこの時点で削除
+- 既存 `src/domain`, `src/application` 内の re-export ラッパー(計23
+  ファイル)を全て削除し、アプリコード全体が `@plot-digitizer/core` を
+  直接importする形に統一。空になった `src/domain/models`,
+  `src/domain/services`, `src/application/strategies`,
+  `src/application/dto` ディレクトリも削除。`src/domain/repositories`
+  (Phase 1でスコープ外とした部分)や各serviceの`manager/`サブディレクトリ
+  など、アプリ固有のコードは引き続き `@plot-digitizer/core` を
+  importして利用する(こちらは正当な依存であり禁止しない)
+- **影響: 23ファイル+約20箇所の消費側importパスを機械的に置換。
+  dependency-cruiserに `no-new-code-in-migrated-directories` ルールを
+  追加し、上記4ディレクトリへの新規ファイル追加(既存コードの再重複・
+  再ラッパー化)を機械的に禁止した。**
+  (制約: dependency-cruiserは依存エッジの検査ツールであり、import文を
+  一切持たない完全に自己完結したファイルの追加までは検知できない。
+  現実的な後退パターン(coreの再ラッパー化・再importでの重複)は
+  カバーする)
 
 ### Phase 5(参考、本ミッション範囲外): 独立リポジトリ化・npm公開の検討
 - 3-aの判定基準を満たした時点で司令塔に提案。承認後に着手(本ミッションには含めない)。

@@ -1,7 +1,9 @@
 import { InstanceManager } from '@/general/instanceManager/instanceManager'
-import { ExtractorInterface } from '../extractorInterface'
-import { Extractor } from '../extractor'
-import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
+import {
+  Extractor,
+  ExtractorInterface,
+  LineExtract,
+} from '@plot-digitizer/core'
 
 export class ExtractorManager extends InstanceManager<ExtractorInterface> {
   private instanceCreator = () => {

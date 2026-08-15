@@ -26,7 +26,13 @@ jobs:
       - name: coverage
         run: yarn test:coverage
       - name: Upload coverage to Codecov
+        # INFO: flags: app pairs with codecov.yml (repo root) — see that
+        # file's comment for why this matters (plot-digitizer-core's
+        # coverage is uploaded separately under the `plot-digitizer-core`
+        # flag by .github/workflows/plot-digitizer-core-ci.yml).
         uses: codecov/codecov-action@v4.2.0
+        with:
+          flags: app
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   E2E-Test:

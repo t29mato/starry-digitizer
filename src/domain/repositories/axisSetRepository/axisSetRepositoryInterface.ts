@@ -1,4 +1,4 @@
-import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
+import type { AxisSetInterface } from '@plot-digitizer/core'
 
 export interface AxisSetRepositoryInterface {
   axisSets: AxisSetInterface[]
