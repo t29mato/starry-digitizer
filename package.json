@@ -34,6 +34,7 @@
   "dependencies": {
     "@handsontable/vue3": "^13.1.0",
     "@mdi/font": "^7.2.96",
+    "@vercel/analytics": "^2.0.1",
     "browser-sync": "^3.0.2",
     "curve-interpolator": "^3.3.0",
     "handsontable": "^13.1.0",

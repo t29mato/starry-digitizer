@@ -18,6 +18,8 @@ import * as directives from 'vuetify/directives'
 import colors from 'vuetify/lib/util/colors'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
+import { inject as injectAnalytics } from '@vercel/analytics'
+
 import { interpolator } from './instanceStore/applicationServiceInstances'
 
 //INFO: initialize application services
@@ -45,6 +47,18 @@ const vuetify = createVuetify({
     },
   },
 })
+
+/*
+ * 訪問数を数える(Vercel Web Analytics)。
+ *
+ * **ここはアプリの入り口(`src/main.ts`)だけ。**このリポジトリは
+ * `library-build/entry.ts` からライブラリも配布しているので、そちらには入れない。
+ * **人の作ったページに、こちらの計測を紛れ込ませることになる。**
+ *
+ * Cookieを置かず、個人を追わないので同意バナーは要らない。
+ * 開発中は何も送らない。
+ */
+injectAnalytics()
 
 const app = createApp(App).use(vuetify)
 app.mount('#app')
