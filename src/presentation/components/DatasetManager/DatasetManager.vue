@@ -39,7 +39,7 @@
         class="c__dataset-row"
       >
         <v-row class="ma-0">
-          <v-col cols="8" class="pa-0">
+          <v-col cols="7" class="pa-0">
             <v-list-item
               class="pl-2 c__dataset-item"
               link
@@ -73,10 +73,22 @@
             <v-btn
               size="x-small"
               icon="mdi-content-copy"
-              @click="copyDatasetToClipboard(dataset.id)"
+              @click="copyDatasetToClipboard(dataset.id, 'csv')"
               :disabled="dataset.points.length === 0"
               variant="text"
               class="mr-1"
+              title="Copy as CSV"
+            ></v-btn>
+          </v-col>
+          <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
+            <v-btn
+              size="x-small"
+              icon="mdi-code-json"
+              @click="copyDatasetToClipboard(dataset.id, 'json')"
+              :disabled="dataset.points.length === 0"
+              variant="text"
+              class="mr-1"
+              title="Copy as JSON"
             ></v-btn>
           </v-col>
           <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
@@ -114,12 +126,14 @@ import {
   canvasHandler,
   interpolator,
   magnifier,
+  historyManager,
 } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { MASK_MODE } from '@/constants'
 import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 import { Point } from '@/@types/types'
+import { toCsv, toJson } from '@/application/utils/exportFormatUtils'
 
 export default defineComponent({
   components: {},
@@ -128,6 +142,7 @@ export default defineComponent({
       canvasHandler,
       interpolator,
       magnifier,
+      historyManager,
       datasetRepository,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
@@ -193,6 +208,7 @@ export default defineComponent({
     handleOnClickAddDatasetButton() {
       if (!this.shouldContinueSwitchDataset()) return
 
+      this.historyManager.capture()
       this.datasetRepository.createNewDataset()
 
       this.datasetRepository.lastDataset.setAxisSetId(
@@ -219,6 +235,7 @@ export default defineComponent({
       ) && this.removeDataset(targetDataset.id)
     },
     removeDataset(datasetId: number) {
+      this.historyManager.capture()
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.removeDataset(datasetId)
     },
@@ -238,6 +255,7 @@ export default defineComponent({
       ) && this.removeAllDatasets()
     },
     removeAllDatasets() {
+      this.historyManager.capture()
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.removeAllDatasets()
     },
@@ -252,26 +270,25 @@ export default defineComponent({
       )
       return calculator.calculateXYValues(x, y)
     },
-    convertToCsv(data: string[][]): string {
-      const CSV_DELIMITER = ','
-      const rows = data.map((row) => row.join(CSV_DELIMITER))
-      return rows.join('\n')
-    },
-    copyDatasetToClipboard(datasetId: number) {
+    copyDatasetToClipboard(datasetId: number, format: 'csv' | 'json') {
       const dataset = this.datasetRepository.datasets.find(
         (d) => d.id === datasetId,
       )
       if (!dataset || dataset.points.length === 0) return
 
-      const data = dataset.points.map((point: Point) => {
+      const rows = dataset.points.map((point: Point) => {
         const { xV, yV } = this.calculateXY(point.xPx, point.yPx)
-        return [xV, yV]
+        return { X: xV, Y: yV }
       })
 
-      const csv = this.convertToCsv(data)
+      const text = format === 'json' ? toJson(rows) : toCsv(rows)
       navigator.clipboard
-        .writeText(csv)
-        .then(() => console.log('Dataset copied to clipboard successfully.'))
+        .writeText(text)
+        .then(() =>
+          console.log(
+            `Dataset copied to clipboard successfully as ${format.toUpperCase()}.`,
+          ),
+        )
         .catch((err) =>
           console.error('Failed to copy dataset to clipboard.', err),
         )
@@ -281,6 +298,7 @@ export default defineComponent({
         (d) => d.id === datasetId,
       )
       if (!dataset) return
+      this.historyManager.capture()
       dataset.clearPoints()
       this.interpolator.clearPreview()
     },

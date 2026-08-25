@@ -29,6 +29,7 @@ import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { projectService } from '@/instanceStore/applicationServiceInstances'
+import { historyManager } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -43,6 +44,7 @@ export default defineComponent({
       datasetRepository,
       interpolator,
       projectService,
+      historyManager,
       fileIsDraggedOver: false,
     }
   },
@@ -116,6 +118,12 @@ export default defineComponent({
         this.datasetRepository.setActiveDataset(
           this.datasetRepository.lastDatasetId,
         )
+
+        // INFO: undo/redo history is scoped to axisSets/datasets on the
+        // current image (see docs/design/ux-ideas-implementation-design.md)
+        // — snapshots from the previous image no longer make sense once the
+        // image itself has changed, so drop them.
+        this.historyManager.clear()
       } catch (e) {
         console.error('failed to update image', { cause: e })
       }
