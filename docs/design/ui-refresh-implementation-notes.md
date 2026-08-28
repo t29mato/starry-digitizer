@@ -20,6 +20,13 @@
 - **フッターの色**: 本番/非本番でフッター色を変える既存の仕組み(`isProd ? 'primary' : 'orange'`)は「今どの環境を見ているか」をひと目で示す安全装置として機能している可能性があるため、色分け自体は維持しつつ薄い1行の帯に縮小するに留めた(完全な単色ニュートラル化はしない)
 - **「Try with sample」リンクへの格下げ**、アイコンボタン全数へのツールチップ監査: 変更範囲を抑えるため今回は対象外
 
+## オーナーフィードバック反映(2026-08-29)
+
+オーナーがプレビューを確認し、HQ経由で以下が確定した:
+
+- **ロゴA案(星座モチーフ)を採用**。`docs/design/brand/starry-logo.svg` および各サイズPNGをアプリバーのロゴ・favicon(`index.html`)に組み込んだ。B案/C案の素材(`starry-logo-b*`, `starry-logo-c*`)は不採用のためブランチから削除
+- **アコーディオンは廃止**。①〜④のグルーピングと配置(Extractor Settingsを左サイドバー③に置く等、Phase 1の配置)はそのまま維持しつつ、`v-expansion-panels` によるクリックで開閉する構造をやめ、常に全ステップが表示された状態の静的な見出し(番号のみ、完了チェックのトグルなし)に変更した
+
 ## 完了条件の担保
 
 - 既存Cypress E2E(`spec.cy.ts`, `spec.interpolation.cy.ts`, `spec.data-table.cy.ts`, `spec.upload-figure-image.cy.ts`, `spec.multiplyAxesValues.cy.ts`)を移動前後でローカル実行し、全通過を確認する

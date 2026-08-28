@@ -11,7 +11,10 @@
         class="c__app-bar"
         height="48"
       >
-        <span class="c__app-bar__logo">✦ StarryDigitizer</span>
+        <span class="c__app-bar__logo"
+          ><img src="/logo.svg" alt="" width="24" height="24" />
+          StarryDigitizer</span
+        >
         <project-manager class="c__app-bar__project-manager"></project-manager>
         <v-spacer></v-spacer>
         <span v-if="appVerAndBuildInfo" class="c__app-bar__version">{{
@@ -125,11 +128,18 @@ export default defineComponent({
     border-bottom: 1px solid #e0e0e0;
 
     &__logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       font-size: 14px;
       font-weight: 600;
       margin-left: 12px;
       margin-right: 16px;
       white-space: nowrap;
+
+      img {
+        border-radius: 4px;
+      }
     }
 
     &__project-manager {
