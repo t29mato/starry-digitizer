@@ -39,7 +39,7 @@
         class="c__dataset-row"
       >
         <v-row class="ma-0">
-          <v-col cols="7" class="pa-0">
+          <v-col cols="8" class="pa-0">
             <v-list-item
               class="pl-2 c__dataset-item"
               link
@@ -73,22 +73,10 @@
             <v-btn
               size="x-small"
               icon="mdi-content-copy"
-              @click="copyDatasetToClipboard(dataset.id, 'csv')"
+              @click="copyDatasetToClipboard(dataset.id)"
               :disabled="dataset.points.length === 0"
               variant="text"
               class="mr-1"
-              title="Copy as CSV"
-            ></v-btn>
-          </v-col>
-          <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
-            <v-btn
-              size="x-small"
-              icon="mdi-code-json"
-              @click="copyDatasetToClipboard(dataset.id, 'json')"
-              :disabled="dataset.points.length === 0"
-              variant="text"
-              class="mr-1"
-              title="Copy as JSON"
             ></v-btn>
           </v-col>
           <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
@@ -133,7 +121,6 @@ import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { MASK_MODE } from '@/constants'
 import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 import { Point } from '@/@types/types'
-import { toCsv, toJson } from '@/application/utils/exportFormatUtils'
 
 export default defineComponent({
   components: {},
@@ -270,25 +257,26 @@ export default defineComponent({
       )
       return calculator.calculateXYValues(x, y)
     },
-    copyDatasetToClipboard(datasetId: number, format: 'csv' | 'json') {
+    convertToCsv(data: string[][]): string {
+      const CSV_DELIMITER = ','
+      const rows = data.map((row) => row.join(CSV_DELIMITER))
+      return rows.join('\n')
+    },
+    copyDatasetToClipboard(datasetId: number) {
       const dataset = this.datasetRepository.datasets.find(
         (d) => d.id === datasetId,
       )
       if (!dataset || dataset.points.length === 0) return
 
-      const rows = dataset.points.map((point: Point) => {
+      const data = dataset.points.map((point: Point) => {
         const { xV, yV } = this.calculateXY(point.xPx, point.yPx)
-        return { X: xV, Y: yV }
+        return [xV, yV]
       })
 
-      const text = format === 'json' ? toJson(rows) : toCsv(rows)
+      const csv = this.convertToCsv(data)
       navigator.clipboard
-        .writeText(text)
-        .then(() =>
-          console.log(
-            `Dataset copied to clipboard successfully as ${format.toUpperCase()}.`,
-          ),
-        )
+        .writeText(csv)
+        .then(() => console.log('Dataset copied to clipboard successfully.'))
         .catch((err) =>
           console.error('Failed to copy dataset to clipboard.', err),
         )

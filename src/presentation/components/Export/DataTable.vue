@@ -8,10 +8,7 @@
       height="30vh"
       class="overflow-y-auto"
     ></hot-table>
-    <v-btn class="mt-1" @click="copyDataAsCsv" size="small">Copy as CSV</v-btn>
-    <v-btn class="mt-1 ml-2" @click="copyDataAsJson" size="small"
-      >Copy as JSON</v-btn
-    >
+    <v-btn class="mt-1" @click="copyData" size="small">Copy to Clipboard</v-btn>
   </div>
 </template>
 
@@ -32,7 +29,6 @@ import 'handsontable/dist/handsontable.full.css'
 // @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
 import { Point } from '@/@types/types'
-import { toCsv, toJson } from '@/application/utils/exportFormatUtils'
 import {
   canvasHandler,
   magnifier,
@@ -95,21 +91,13 @@ export default defineComponent({
       )
       return calculator.calculateXYValues(x, y)
     },
-    copyToClipboard(text: string, formatLabel: string) {
+    copyData() {
+      const data = this.tableData.map((row: any) => [row.X, row.Y])
+      const csv = data.map((row: any[]) => row.join(',')).join('\n')
       navigator.clipboard
-        .writeText(text)
-        .then(() =>
-          console.log(
-            `Data copied to clipboard successfully as ${formatLabel}.`,
-          ),
-        )
+        .writeText(csv)
+        .then(() => console.log('Data copied to clipboard successfully.'))
         .catch((err) => console.error('Failed to copy data to clipboard.', err))
-    },
-    copyDataAsCsv() {
-      this.copyToClipboard(toCsv(this.tableData), 'CSV')
-    },
-    copyDataAsJson() {
-      this.copyToClipboard(toJson(this.tableData), 'JSON')
     },
   },
   watch: {
