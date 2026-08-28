@@ -99,7 +99,10 @@
         <div></div>
       </div>
     </div>
-    <span>x: {{ xyValue.xV }}, y: {{ xyValue.yV }}</span>
+    <div class="c__magnifier__readout">
+      <span>x: {{ displayValue(xyValue.xV) }}</span>
+      <span>y: {{ displayValue(xyValue.yV) }}</span>
+    </div>
     <magnifier-settings
       :shouldShowSettingsDialog="shouldShowSettingsDialog"
       :toggleSettingsDialog="toggleSettingsDialog"
@@ -182,6 +185,12 @@ export default defineComponent({
     },
   },
   methods: {
+    // INFO: docs/design/ui-refresh-implementation-notes.md — display-only
+    // formatting. AxisSetCalculator's calculation itself (xyValue) is
+    // untouched; this just decides how to print a non-finite result.
+    displayValue(value: string): string {
+      return /^-?Infinity$|^NaN$/.test(value) ? '—' : value
+    },
     toggleSettingsDialog(): void {
       this.shouldShowSettingsDialog = !this.shouldShowSettingsDialog
     },
@@ -204,6 +213,18 @@ export default defineComponent({
 $_white-outline-size: 24px;
 $_white-outline-pos-value: calc(50% - #{$_white-outline-size} - 1px);
 .c__magnifier {
+  &__readout {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+    padding: 6px 8px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
   &__white-outlines {
     pointer-events: none;
 
