@@ -39,6 +39,7 @@
     "handsontable": "^13.1.0",
     "jszip": "^3.10.1",
     "opencv.js": "^1.2.1",
+    "pdfjs-dist": "^6.2.108",
     "tesseract.js": "^6.0.1",
     "vue": "^3.3.4",
     "vuetify": "^3.3.13"
