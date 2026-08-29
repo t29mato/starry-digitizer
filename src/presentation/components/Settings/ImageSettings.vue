@@ -2,9 +2,9 @@
   <div>
     <v-file-input
       id="fileInput"
-      accept="image/*"
+      accept="image/*,application/pdf"
       @change="onImageUploaded"
-      label="Choose an image"
+      label="Choose an image or PDF"
       :single-line="true"
       :clearable="false"
       hide-details
@@ -33,6 +33,12 @@ import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 import { VALID_IMAGE_TYPES } from '@/presentation/constants'
+import { isPdfFile } from '@/application/utils/fileTypeUtils'
+import { PdfPageRenderer } from '@/application/services/pdfImport/pdfPageRenderer'
+
+// INFO: docs/design/pdf-import-design.md — no repository dependencies, so a
+// plain module-local instance is enough (same rationale as AxisOcrReader).
+const pdfPageRenderer = new PdfPageRenderer()
 
 export default defineComponent({
   data() {
@@ -75,11 +81,12 @@ export default defineComponent({
     },
     async updateImage(file: File) {
       try {
-        if (!this.isValidFileType(file.type)) {
+        const isPdf = isPdfFile(file)
+        if (!isPdf && !this.isValidFileType(file.type)) {
           alert(
             `Please upload an image in one of the following formats: ${VALID_IMAGE_TYPES.flatMap(
               (type) => type.extensions,
-            ).join(',')}`,
+            ).join(',')}, or a PDF`,
           )
           return
         }
@@ -94,16 +101,19 @@ export default defineComponent({
           }
         }
 
-        const fr = await this.readFile(file)
-        if (typeof fr.result !== 'string') {
-          throw new Error('file is not string type')
-        }
+        // INFO: PDFs are rendered (page 1 only, see docs/design/
+        // pdf-import-design.md) to the same data:image/png;base64,... shape
+        // FileReader.readAsDataURL() produces for images, so every step
+        // below is common to both.
+        const dataUrl = isPdf
+          ? await pdfPageRenderer.renderFirstPageAsDataUrl(file)
+          : await this.readImageAsDataUrl(file)
 
-        await this.canvasHandler.initializeImageElement(fr.result)
+        await this.canvasHandler.initializeImageElement(dataUrl)
         this.canvasHandler.drawFitSizeImage()
         this.interpolator.isActive && this.interpolator.clearPreview()
         this.extractor.setSwatches(this.canvasHandler.colorSwatches)
-        this.canvasHandler.setUploadImageUrl(fr.result)
+        this.canvasHandler.setUploadImageUrl(dataUrl)
 
         // Reset all axis coordinates for all axis sets
         this.axisSetRepository.axisSets.forEach((axisSet) => {
@@ -169,6 +179,13 @@ export default defineComponent({
         fr.addEventListener('error', (error) => reject(error))
         fr.readAsDataURL(file)
       })
+    },
+    async readImageAsDataUrl(file: File): Promise<string> {
+      const fr = await this.readFile(file)
+      if (typeof fr.result !== 'string') {
+        throw new Error('file is not string type')
+      }
+      return fr.result
     },
     loadImage(src: string): Promise<HTMLImageElement> {
       return new Promise((resolve, reject) => {
