@@ -6,7 +6,7 @@
     </div>
     <v-app-bar :color="isProd ? 'primary' : 'orange'" density="compact" flat>
       <v-img
-        src="@/assets/logo.svg"
+        :src="logo"
         alt="StarryDigitizer"
         max-width="24"
         max-height="24"
@@ -59,6 +59,7 @@
 import { defineComponent } from 'vue'
 import StarryDigitizer from '@/presentation/components/StarryDigitizer.vue'
 import PwaUpdatePrompt from '@/presentation/components/Generals/PWAUpdatePrompt.vue'
+import logo from '@/assets/logo.svg'
 
 import { version } from '../package.json'
 
@@ -73,6 +74,7 @@ export default defineComponent({
   data: () => ({
     points: [],
     version,
+    logo,
     headerLinks: [
       {
         text: 'Document',
