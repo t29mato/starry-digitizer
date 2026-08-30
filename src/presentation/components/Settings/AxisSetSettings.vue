@@ -134,17 +134,14 @@
         >
           Auto-fill values (OCR)
         </v-btn>
-        <v-icon
-          v-if="ocrWarningMessage"
-          color="warning"
-          size="small"
-          class="ml-1"
-        >
-          mdi-information-outline
-          <v-tooltip activator="parent" location="top">
-            {{ ocrWarningMessage }}
-          </v-tooltip>
-        </v-icon>
+        <v-tooltip v-if="ocrWarningMessage" location="top">
+          <template v-slot:activator="{ props }">
+            <v-icon v-bind="props" color="warning" size="small" class="ml-1">
+              mdi-information-outline
+            </v-icon>
+          </template>
+          {{ ocrWarningMessage }}
+        </v-tooltip>
       </div>
       <p v-if="ocrErrorMessage" class="text-red mt-1">
         {{ ocrErrorMessage }}
