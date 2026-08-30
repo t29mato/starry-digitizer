@@ -64,6 +64,10 @@ import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { historyManager } from '@/instanceStore/applicationServiceInstances'
+import {
+  saveProjectAndDownload,
+  triggerLoadProjectDialog,
+} from '@/application/utils/projectFileOperations'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { MANUAL_MODE } from '@/constants'
@@ -265,11 +269,20 @@ export default defineComponent({
     keyDownHandler(e: KeyboardEvent) {
       if (this.confirmer.isActive) return
 
-      // INFO: Undo/Redo is intentionally handled before the isViewAllMode
-      // guard below — it's a global action, not a canvas-editing one, and
-      // "View All" mode is exactly where you'd want to undo your way back
-      // out of a mistake made in a specific dataset.
+      // INFO: Undo/Redo, File (save/load), and zoom are intentionally
+      // handled before the isViewAllMode guard below — they're global
+      // actions/view controls, not canvas-editing ones, and should keep
+      // working even while "View All" mode is showing every dataset at
+      // once (undo is exactly how you'd back out of a mistake from there).
       if (this.handleHistoryShortcut(e)) {
+        return
+      }
+
+      if (this.handleFileShortcut(e)) {
+        return
+      }
+
+      if (this.handleZoomShortcut(e)) {
         return
       }
 
@@ -307,6 +320,65 @@ export default defineComponent({
         this.historyManager.undo()
       }
       return true
+    },
+    handleFileShortcut(e: KeyboardEvent): boolean {
+      if (this.isTypingTarget(e)) {
+        return false
+      }
+      if (!(e.metaKey || e.ctrlKey)) {
+        return false
+      }
+
+      const key = e.key.toLowerCase()
+      if (key === 's') {
+        e.preventDefault()
+        saveProjectAndDownload()
+        return true
+      }
+      if (key === 'o') {
+        e.preventDefault()
+        triggerLoadProjectDialog()
+        return true
+      }
+      return false
+    },
+    // INFO: No modifier key here (mirrors the 'a'/'e'/'d' mode-switch keys
+    // below) since Cmd/Ctrl+Plus/Minus/0 are reserved by the browser itself
+    // for page zoom and can't be overridden from a web page.
+    handleZoomShortcut(e: KeyboardEvent): boolean {
+      if (this.isTypingTarget(e)) {
+        return false
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey) {
+        return false
+      }
+
+      switch (e.key) {
+        case '+':
+        case '=':
+          e.preventDefault()
+          this.canvasHandler.scaleUp()
+          this.interpolator.resizeCanvas()
+          return true
+        case '-':
+          e.preventDefault()
+          this.canvasHandler.scaleDown()
+          this.interpolator.resizeCanvas()
+          return true
+        case '0':
+          e.preventDefault()
+          this.canvasHandler.drawOriginalSizeImage()
+          this.interpolator.resizeCanvas()
+          return true
+        case 'f':
+        case 'F':
+          e.preventDefault()
+          this.canvasHandler.drawFitSizeImage()
+          this.interpolator.resizeCanvas()
+          return true
+        default:
+          return false
+      }
     },
     shouldProcessKeyEvent(e: KeyboardEvent): boolean {
       // Skip if editing content or in input fields

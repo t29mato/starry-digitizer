@@ -2,7 +2,9 @@
 describe('undo/redo', () => {
   beforeEach(() => {
     cy.visit('/')
-    cy.get('#reset-canvas-scale').click()
+    // INFO: Reset to 100% zoom — the header button was replaced by the
+    // View menu / '0' keyboard shortcut (issue #148).
+    cy.get('body').trigger('keydown', { key: '0' })
   })
 
   it('undoes and redoes a point addition with the Ctrl/Cmd+Z shortcut', () => {
@@ -32,9 +34,20 @@ describe('undo/redo', () => {
     cy.get('.canvas-point').should('have.length', 1)
   })
 
-  it('undoes and redoes via the Undo/Redo header buttons', () => {
-    cy.get('[title^="Undo"]').should('be.disabled')
-    cy.get('[title^="Redo"]').should('be.disabled')
+  it('undoes and redoes via the Edit menu', () => {
+    // INFO: Undo/Redo moved from header buttons into the App.vue menu bar's
+    // Edit menu (issue #148). ".v-list-item" alone also matches unrelated
+    // items (axis set / dataset name fields), so scope by visible text.
+    cy.contains('.v-btn', 'Edit').click()
+    cy.contains('.v-list-item', 'Undo').should(
+      'have.class',
+      'v-list-item--disabled',
+    )
+    cy.contains('.v-list-item', 'Redo').should(
+      'have.class',
+      'v-list-item--disabled',
+    )
+    cy.get('body').type('{esc}')
 
     cy.get('#canvasWrapper')
       .click(50, 390)
@@ -43,14 +56,17 @@ describe('undo/redo', () => {
       .click(250, 150)
 
     cy.get('.canvas-point').should('have.length', 2)
-    cy.get('[title^="Undo"]').should('be.enabled')
 
-    cy.get('[title^="Undo"]').click()
+    cy.contains('.v-btn', 'Edit').click()
+    cy.contains('.v-list-item', 'Undo')
+      .should('not.have.class', 'v-list-item--disabled')
+      .click()
     cy.get('.canvas-point').should('have.length', 1)
-    cy.get('[title^="Redo"]').should('be.enabled')
 
-    cy.get('[title^="Redo"]').click()
+    cy.contains('.v-btn', 'Edit').click()
+    cy.contains('.v-list-item', 'Redo')
+      .should('not.have.class', 'v-list-item--disabled')
+      .click()
     cy.get('.canvas-point').should('have.length', 2)
-    cy.get('[title^="Redo"]').should('be.disabled')
   })
 })
