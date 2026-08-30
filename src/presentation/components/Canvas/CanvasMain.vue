@@ -63,12 +63,10 @@ import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { historyManager } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { MANUAL_MODE } from '@/constants'
-
-// INFO: to adjust the exact position the user clicked.
-const offsetPx = 1
 
 export default defineComponent({
   components: {
@@ -89,6 +87,7 @@ export default defineComponent({
       confirmer,
       extractor,
       canvasHandler,
+      historyManager,
       axisSetRepository,
       datasetRepository,
     }
@@ -128,13 +127,10 @@ export default defineComponent({
       const isOnCanvasPoint = target.className === 'canvas-point'
 
       // INFO: クリック座標を画像のオリジナル座標に変換
-      const xPx = isOnCanvasPoint
-        ? (e.offsetX + parseFloat(target.style.left) - offsetPx) /
-          this.canvasHandler.scale
-        : (e.offsetX - offsetPx) / this.canvasHandler.scale
-      const yPx = isOnCanvasPoint
-        ? (e.offsetY + parseFloat(target.style.top)) / this.canvasHandler.scale
-        : e.offsetY / this.canvasHandler.scale
+      // (クリック対象が既存プロット上かどうかに関わらず同じ計算式を使う)
+      const canvasCoord = getMouseCoordFromMouseEvent(e)
+      const xPx = canvasCoord.xPx / this.canvasHandler.scale
+      const yPx = canvasCoord.yPx / this.canvasHandler.scale
 
       // INFO: 画像範囲外のクリックを無視する
       if (
@@ -149,6 +145,7 @@ export default defineComponent({
       // INFO: canvas-point element上の時は、point edit modeになるので
       switch (this.canvasHandler.manualMode) {
         case 0:
+          this.historyManager.capture()
           this.datasetRepository.activeDataset.addPoint(xPx, yPx)
           this.axisSetRepository.activeAxisSet.inactivateAxis()
           this.datasetRepository.activeDataset.addManuallyAddedPointId(
@@ -168,6 +165,7 @@ export default defineComponent({
         return
       }
       if (this.axisSetRepository.activeAxisSet.nextAxis) {
+        this.historyManager.capture()
         this.axisSetRepository.activeAxisSet.addAxisCoord({
           xPx,
           yPx,
@@ -259,8 +257,17 @@ export default defineComponent({
       }
     },
     keyDownHandler(e: KeyboardEvent) {
-      if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
+
+      // INFO: Undo/Redo is intentionally handled before the isViewAllMode
+      // guard below — it's a global action, not a canvas-editing one, and
+      // "View All" mode is exactly where you'd want to undo your way back
+      // out of a mistake made in a specific dataset.
+      if (this.handleHistoryShortcut(e)) {
+        return
+      }
+
+      if (this.datasetRepository.isViewAllMode) return
 
       if (!this.shouldProcessKeyEvent(e)) {
         return
@@ -269,17 +276,35 @@ export default defineComponent({
       e.preventDefault()
       this.handleKeyEvent(e)
     },
-    shouldProcessKeyEvent(e: KeyboardEvent): boolean {
+    isTypingTarget(e: KeyboardEvent): boolean {
       const target = e.target as Element
 
-      // Skip if editing content
       if (target.hasAttribute('contentEditable')) {
+        return true
+      }
+
+      const targetName = target.nodeName
+      return targetName === 'INPUT' || targetName === 'TEXTAREA'
+    },
+    handleHistoryShortcut(e: KeyboardEvent): boolean {
+      if (this.isTypingTarget(e)) {
+        return false
+      }
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') {
         return false
       }
 
-      // Skip if in input fields
-      const targetName = target.nodeName
-      if (targetName === 'INPUT' || targetName === 'TEXTAREA') {
+      e.preventDefault()
+      if (e.shiftKey) {
+        this.historyManager.redo()
+      } else {
+        this.historyManager.undo()
+      }
+      return true
+    },
+    shouldProcessKeyEvent(e: KeyboardEvent): boolean {
+      // Skip if editing content or in input fields
+      if (this.isTypingTarget(e)) {
         return false
       }
 
@@ -340,6 +365,7 @@ export default defineComponent({
         this.datasetRepository.activeDataset.hasActive() &&
         (key === 'Backspace' || key === 'Delete')
       ) {
+        this.historyManager.capture()
         this.datasetRepository.activeDataset.clearActivePoints()
 
         if (this.interpolator.isActive) {
@@ -359,6 +385,19 @@ export default defineComponent({
       const vector: Vector = {
         direction: this.getDirectionFromKey(key),
         distancePx: shiftKeyPressed ? 10 : 1,
+      }
+
+      // INFO: only capture history when something is actually about to move
+      // — otherwise every stray arrow-key press with nothing selected would
+      // push a no-op snapshot onto the undo stack.
+      const hasActiveAxis = Boolean(
+        this.axisSetRepository.activeAxisSet.activeAxis &&
+          this.axisSetRepository.activeAxisSet.activeAxis.coord,
+      )
+      const hasActivePoints =
+        this.datasetRepository.activeDataset.pointsAreActive
+      if (hasActiveAxis || hasActivePoints) {
+        this.historyManager.capture()
       }
 
       this.moveActiveAxis(vector)

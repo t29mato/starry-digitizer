@@ -124,7 +124,28 @@
         >
           Clear XY Axes
         </v-btn>
+        <v-btn
+          size="small"
+          class="ml-2"
+          :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
+          :loading="ocrIsRunning"
+          @click="handleOnClickAutoDetectAxisValues"
+          title="OCR the numbers near each axis marker and fill in its value"
+        >
+          Auto-fill values (OCR)
+        </v-btn>
       </div>
+      <p v-if="ocrErrorMessage" class="text-red mt-1">
+        {{ ocrErrorMessage }}
+      </p>
+      <v-alert
+        v-if="ocrWarningMessage"
+        type="warning"
+        density="compact"
+        class="mt-1"
+      >
+        {{ ocrWarningMessage }}
+      </v-alert>
     </div>
   </div>
 </template>
@@ -139,6 +160,17 @@ import {
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { POINT_MODE, MANUAL_MODE } from '@/constants'
+import { AxisOcrReader } from '@/application/services/axisOcr/axisOcrReader'
+import {
+  AXIS_NAMES,
+  matchOcrWordsToAxisValues,
+} from '@/application/utils/axisOcrMatcher'
+
+// INFO: docs/design/auto-axis-detection-design.md — a single reader
+// instance is reused across clicks (readWords() is stateless per-call, no
+// need to route this through instanceStore/applicationServiceInstances.ts
+// for a component-local, dependency-free wrapper).
+const axisOcrReader = new AxisOcrReader()
 
 export default defineComponent({
   computed: {
@@ -206,6 +238,9 @@ export default defineComponent({
         axisSetId: number
         axisName: 'x1' | 'x2' | 'y1' | 'y2'
       }[],
+      ocrIsRunning: false,
+      ocrErrorMessage: '',
+      ocrWarningMessage: '',
     }
   },
   created() {
@@ -282,6 +317,77 @@ export default defineComponent({
     editAxes() {
       this.exitViewAllModeIfNeeded()
       this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
+    },
+    setAxisValue(axisName: 'x1' | 'x2' | 'y1' | 'y2', value: number) {
+      const activeAxisSet = this.axisSetRepository.activeAxisSet
+      switch (axisName) {
+        case 'x1':
+          activeAxisSet.setX1Value(value)
+          return
+        case 'x2':
+          activeAxisSet.setX2Value(value)
+          return
+        case 'y1':
+          activeAxisSet.setY1Value(value)
+          return
+        case 'y2':
+          activeAxisSet.setY2Value(value)
+          return
+      }
+    },
+    async handleOnClickAutoDetectAxisValues() {
+      this.ocrErrorMessage = ''
+      this.ocrWarningMessage = ''
+
+      if (!this.canvasHandler.imageElement) {
+        this.ocrErrorMessage = 'No image is loaded.'
+        return
+      }
+
+      this.ocrIsRunning = true
+      try {
+        const activeAxisSet = this.axisSetRepository.activeAxisSet
+        const axisCoords = Object.fromEntries(
+          AXIS_NAMES.map((axisName) => [
+            axisName,
+            activeAxisSet[axisName].coordIsFilled
+              ? activeAxisSet[axisName].coord
+              : undefined,
+          ]),
+        )
+
+        const words = await axisOcrReader.readWords(
+          this.canvasHandler.imageElement,
+        )
+        const matches = matchOcrWordsToAxisValues(words, axisCoords)
+
+        if (Object.keys(matches).length === 0) {
+          this.ocrErrorMessage =
+            'No axis labels were recognized near the axis markers. Please enter the values manually.'
+          return
+        }
+
+        AXIS_NAMES.forEach((axisName) => {
+          const value = matches[axisName]
+          if (value !== undefined) {
+            this.setAxisValue(axisName, value)
+          }
+        })
+
+        // INFO: OCR accuracy check (real-chart-bench, 41 verified figures,
+        // 2026-08-30) found ~78% per-axis accuracy but a recurring failure
+        // mode: decimal points getting dropped (e.g. "0.4" read as "4").
+        // Surface that as a standing warning rather than silently trusting
+        // the auto-filled numbers.
+        this.ocrWarningMessage =
+          'Auto-filled values may be inaccurate — decimal points are sometimes misread (e.g. "0.4" detected as "4"). Please double-check each value before proceeding.'
+      } catch (e) {
+        console.error('failed to auto-detect axis values', { cause: e })
+        this.ocrErrorMessage =
+          'Auto-detection failed. Please enter the values manually.'
+      } finally {
+        this.ocrIsRunning = false
+      }
     },
     clearAxisSet() {
       this.exitViewAllModeIfNeeded()

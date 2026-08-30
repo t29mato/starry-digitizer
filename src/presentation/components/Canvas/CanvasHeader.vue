@@ -6,6 +6,23 @@
     </div>
     <div class="d-flex justify-end mt-1" style="margin-left: auto">
       <div class="ml-2">
+        <v-btn
+          size="x-small"
+          @click="handleOnClickUndoButton"
+          :disabled="!historyManager.canUndo"
+          title="Undo (Ctrl/Cmd+Z)"
+          ><v-icon>mdi-undo</v-icon></v-btn
+        >
+        <v-btn
+          size="x-small"
+          class="ml-2"
+          @click="handleOnClickRedoButton"
+          :disabled="!historyManager.canRedo"
+          title="Redo (Ctrl/Cmd+Shift+Z)"
+          ><v-icon>mdi-redo</v-icon></v-btn
+        >
+      </div>
+      <div class="ml-2">
         <v-btn size="x-small" @click="handleOnClickScaleDownButton"
           ><v-icon>mdi-minus</v-icon></v-btn
         >
@@ -33,6 +50,7 @@ import { defineComponent } from 'vue'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { historyManager } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -41,6 +59,7 @@ export default defineComponent({
     return {
       interpolator,
       canvasHandler,
+      historyManager,
       axisSetRepository,
       datasetRepository,
     }
@@ -57,6 +76,12 @@ export default defineComponent({
     },
   },
   methods: {
+    handleOnClickUndoButton() {
+      this.historyManager.undo()
+    },
+    handleOnClickRedoButton() {
+      this.historyManager.redo()
+    },
     handleOnClickScaleUpButton() {
       this.canvasHandler.scaleUp()
       this.interpolator.resizeCanvas()

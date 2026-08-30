@@ -4,7 +4,7 @@ import { ExtractorManager } from '@/application/services/extractor/manager/extra
 import { InterpolatorManager } from '@/application/services/interpolator/manager/interpolatorManager'
 import { MagnifierManager } from '@/application/services/magnifier/manager/magnifierManager'
 import { ProjectService } from '@/application/services/projectService/projectService'
-import { AutoLineDigitizerService } from '@/application/services/autoLineDigitizer/autoLineDigitizerService'
+import { HistoryManager } from '@/application/services/historyManager/historyManager'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -21,5 +21,11 @@ export const projectService = new ProjectService(
   canvasHandler,
 )
 
-// AutoLineDigitizerService: Service for AI-powered line extraction
-export const autoLineDigitizerService = new AutoLineDigitizerService()
+// HistoryManager: Directly instantiated (not via Manager/InstanceManager) so
+// it always operates on the same axisSetRepository/datasetRepository
+// singletons — same rationale as ProjectService above. See docs/design/
+// ux-ideas-implementation-design.md.
+export const historyManager = new HistoryManager(
+  axisSetRepository,
+  datasetRepository,
+)

@@ -16,12 +16,5 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 
-// Dismiss AI feature demo dialog before each test
-beforeEach(() => {
-  cy.window().then((win) => {
-    win.localStorage.setItem('autoLineDigitizerDemoDismissed', 'true')
-  })
-})
-
 // Alternatively you can use CommonJS syntax:
 // require('./commands')

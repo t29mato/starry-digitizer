@@ -1,0 +1,7 @@
+{
+  "1.14.0": [
+    "Starry Digitizer can now be installed as an app (PWA): add it to your home screen or dock from the browser menu.",
+    "When a new version is deployed, this popup lets you see what changed and reload to update.",
+    "New logo and app icon: reading a starred data point off chart axes, drawn with golden-ratio proportions."
+  ]
+}
