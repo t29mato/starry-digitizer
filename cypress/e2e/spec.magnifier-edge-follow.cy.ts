@@ -11,6 +11,36 @@ describe('magnifier follows cursor beyond the canvas edge (#255)', () => {
     cy.get(magnifierImage).should('have.attr', 'src').and('not.be.empty')
   })
 
+  // INFO: 端から halfSize/scale px 以内では translate 値が負になり、
+  // 以前は `--Npx` という不正なCSSになってMagnifierが固まっていた
+  it('keeps following near the left edge of the image', () => {
+    cy.get('#imageCanvas').then(($canvas) => {
+      const rect = $canvas[0].getBoundingClientRect()
+      const y = Math.round(rect.top + 100)
+
+      cy.get('body').trigger('mousemove', {
+        clientX: Math.round(rect.left + 100),
+        clientY: y,
+        force: true,
+      })
+      cy.get(magnifierImage)
+        .invoke('attr', 'style')
+        .then((styleInside) => {
+          // INFO: 左端ギリギリ(translate値が負になる領域)でも追従する
+          cy.get('body').trigger('mousemove', {
+            clientX: Math.round(rect.left + 5),
+            clientY: y,
+            force: true,
+          })
+          cy.get(magnifierImage)
+            .invoke('attr', 'style')
+            .should((styleNearEdge) => {
+              expect(styleNearEdge).not.to.eq(styleInside)
+            })
+        })
+    })
+  })
+
   it('keeps following outside the wrapper and clamps at the image edge', () => {
     cy.get('#canvasWrapper').then(($wrapper) => {
       const rect = $wrapper[0].getBoundingClientRect()

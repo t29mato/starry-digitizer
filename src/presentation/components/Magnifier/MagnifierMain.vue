@@ -166,7 +166,6 @@ export default defineComponent({
       xV: string
       yV: string
     } {
-      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
       const calculator = new AxisSetCalculator(
         this.axisSetRepository.activeAxisSet,
         {
@@ -175,10 +174,18 @@ export default defineComponent({
         },
         this.magnifier.effectiveDigits,
       )
-      return calculator.calculateXYValues(
+      const values = calculator.calculateXYValues(
         this.canvasHandler.cursor.xPx,
         this.canvasHandler.cursor.yPx,
       )
+      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
+      if (values.xV === 'NaN' || values.yV === 'NaN') {
+        return {
+          xV: `${Math.max(Math.round(this.canvasHandler.cursor.xPx), 0)}px`,
+          yV: `${Math.max(Math.round(this.canvasHandler.cursor.yPx), 0)}px`,
+        }
+      }
+      return values
     },
   },
   methods: {
