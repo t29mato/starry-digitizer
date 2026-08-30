@@ -88,12 +88,15 @@ export default defineComponent({
       historyManager,
       axisSetRepository,
       datasetRepository,
+      // INFO: 直前のmousemoveでカーソルが画像内にいたかどうか。
+      // 画像から出た最初のイベントで端にクランプするために使う
+      cursorWasOnImage: false,
     }
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler)
-    // INFO: canvasWrapperの外に出てもMagnifierが追従を続けられるよう、
-    // mousemoveはdocumentで拾う (#255)
+    // INFO: 画像の端を越えた瞬間のイベントも拾ってMagnifierを端で
+    // 止められるよう、mousemoveはdocumentで拾う (#255)
     document.addEventListener('mousemove', this.mouseMove)
 
     this.interpolator.setGuideCanvas(new HTMLCanvas('interpolationGuideCanvas'))
@@ -206,6 +209,11 @@ export default defineComponent({
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
       const cursorXPx = xPx / this.canvasHandler.scale
       const cursorYPx = yPx / this.canvasHandler.scale
+      const isOnImage =
+        cursorXPx >= 0 &&
+        cursorYPx >= 0 &&
+        cursorXPx <= this.canvasHandler.originalWidth &&
+        cursorYPx <= this.canvasHandler.originalHeight
 
       // INFO: カーソルがcanvasWrapper内かつ画像canvas要素の範囲内かどうかを判定
       const wrapperRect = wrapper.getBoundingClientRect()
@@ -214,18 +222,22 @@ export default defineComponent({
         e.clientX <= wrapperRect.right &&
         e.clientY >= wrapperRect.top &&
         e.clientY <= wrapperRect.bottom
-      this.canvasHandler.isCursorOnCanvas =
-        isInsideWrapper &&
-        cursorXPx >= 0 &&
-        cursorYPx >= 0 &&
-        cursorXPx <= this.canvasHandler.originalWidth &&
-        cursorYPx <= this.canvasHandler.originalHeight
+      this.canvasHandler.isCursorOnCanvas = isInsideWrapper && isOnImage
+
+      const isClicking = e.buttons === 1
+
+      // INFO: 画像の外ではMagnifierを動かさない(気が散るため)。
+      // 画像から出た最初のイベントだけは端にクランプした位置へ更新し、
+      // Magnifierが画像の端でぴったり止まって見えるようにする (#255)。
+      // ドラッグ中(範囲選択・マスク描画)は例外として追従を続ける
+      if (!isOnImage && !isClicking && !this.cursorWasOnImage) {
+        return
+      }
+      this.cursorWasOnImage = isOnImage
 
       this.axisSetRepository.activeAxisSet.isAdjusting = false
       this.datasetRepository.activeDataset.pointsAreAdjusting = false
 
-      // INFO: 画像の範囲にクランプすることで、カーソルが画像の外に出ても
-      // Magnifierが画像の端で自然に止まって見えるようにする (#255)
       const clampedXPx = Math.min(
         Math.max(cursorXPx, 0),
         this.canvasHandler.originalWidth,
@@ -238,8 +250,6 @@ export default defineComponent({
         xPx: clampedXPx,
         yPx: clampedYPx,
       })
-      // INFO: 左クリックされていない状態
-      const isClicking = e.buttons === 1
       if (isClicking) {
         this.mouseDrag({
           xPx: clampedXPx * this.canvasHandler.scale,

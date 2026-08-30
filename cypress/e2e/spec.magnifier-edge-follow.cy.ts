@@ -1,8 +1,9 @@
 /* eslint-disable jest/expect-expect */
 // INFO: #255 グラフ画像の端に近づくと拡大鏡(Magnifier)が追従を止める、の回帰テスト
-// mousemoveはdocumentにバインドされているため、canvasWrapperの外でも
-// Magnifierが追従を続け、カーソル座標は画像の端でクランプされる
-describe('magnifier follows cursor beyond the canvas edge (#255)', () => {
+// - 画像内では端ギリギリまで追従する(以前は端の手前で固まっていた)
+// - 画像から出た瞬間に端にクランプされ、画像外では動かない(気が散るため)
+// - 画像内に戻ると追従を再開する
+describe('magnifier follow behavior around the image edge (#255)', () => {
   const magnifierImage = 'img[alt="the image you uploaded"]'
 
   beforeEach(() => {
@@ -41,47 +42,63 @@ describe('magnifier follows cursor beyond the canvas edge (#255)', () => {
     })
   })
 
-  it('keeps following outside the wrapper and clamps at the image edge', () => {
-    cy.get('#canvasWrapper').then(($wrapper) => {
-      const rect = $wrapper[0].getBoundingClientRect()
+  it('clamps at the image edge and stays still outside the image', () => {
+    cy.get('#imageCanvas').then(($canvas) => {
+      const rect = $canvas[0].getBoundingClientRect()
       const outsideX = Math.round(rect.right + 100)
       const y1 = Math.round(rect.top + 100)
       const y2 = Math.round(rect.top + 200)
 
+      // INFO: 画像内 → 画像外に出ると、端にクランプした位置へ更新される
       cy.get('body').trigger('mousemove', {
-        clientX: outsideX,
+        clientX: Math.round(rect.right - 50),
         clientY: y1,
         force: true,
       })
       cy.get(magnifierImage)
         .invoke('attr', 'style')
-        .then((styleAtY1) => {
-          // INFO: ラッパーの外でもマウスのY移動に追従して表示が更新される
+        .then((styleInside) => {
           cy.get('body').trigger('mousemove', {
             clientX: outsideX,
-            clientY: y2,
+            clientY: y1,
             force: true,
           })
           cy.get(magnifierImage)
             .invoke('attr', 'style')
-            .should((styleAtY2) => {
-              expect(styleAtY2).not.to.eq(styleAtY1)
+            .should((styleClamped) => {
+              expect(styleClamped).not.to.eq(styleInside)
             })
 
-          // INFO: X方向はすでに画像の右端を越えているため、さらに右へ動かしても
-          // カーソルは画像の端にクランプされ表示は変わらない
+          // INFO: 画像外にいる間はマウスを動かしてもMagnifierは動かない
           cy.get(magnifierImage)
             .invoke('attr', 'style')
             .then((styleClamped) => {
               cy.get('body').trigger('mousemove', {
-                clientX: outsideX + 300,
+                clientX: outsideX,
+                clientY: y2,
+                force: true,
+              })
+              cy.get('body').trigger('mousemove', {
+                clientX: outsideX + 200,
                 clientY: y2,
                 force: true,
               })
               cy.get(magnifierImage)
                 .invoke('attr', 'style')
-                .should((styleFurtherRight) => {
-                  expect(styleFurtherRight).to.eq(styleClamped)
+                .should((styleStillOutside) => {
+                  expect(styleStillOutside).to.eq(styleClamped)
+                })
+
+              // INFO: 画像内に戻ると追従を再開する
+              cy.get('body').trigger('mousemove', {
+                clientX: Math.round(rect.right - 100),
+                clientY: y2,
+                force: true,
+              })
+              cy.get(magnifierImage)
+                .invoke('attr', 'style')
+                .should((styleBackInside) => {
+                  expect(styleBackInside).not.to.eq(styleClamped)
                 })
             })
         })
