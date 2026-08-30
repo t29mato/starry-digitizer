@@ -9,7 +9,11 @@
       width: size,
       height: size,
       'background-color': backgroundColor,
-      border: '1px solid white',
+      // INFO: 白一色の縁取りだと白背景(または明るい背景色)のグラフで見えなく
+      // なるため、白+黒の二重リングにして、明暗どちらの背景でも最低限どちらか
+      // の縁でコントラストを確保する。box-shadowはレイアウトに影響しないため
+      // borderの代わりに使う。
+      'box-shadow': '0 0 0 1px white, 0 0 0 2px black',
       'border-radius': borderRadius,
       visibility: isVisible ? 'visible' : 'hidden',
       opacity: opacity,

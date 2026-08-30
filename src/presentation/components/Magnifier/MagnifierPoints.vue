@@ -29,7 +29,11 @@
         width: innerSize,
         height: innerSize,
         'background-color': backgroundColor,
-        border: `${1}px solid white`,
+        // INFO: 白一色の縁取りだと明るい背景(白背景や、今回のようなマスクの
+        // ハイライト色)で見えなくなるため、白+黒の二重リングにする。外側divに
+        // scale(magnifier.scale)がかかっているため、リング自体の見た目の太さも
+        // scaleに依存してしまわないよう innerBoxShadow 側で 1/scale している。
+        'box-shadow': innerBoxShadow,
         'border-radius': borderRadius,
         visibility: isVisible ? 'visible' : 'hidden',
         opacity: opacity,
@@ -122,6 +126,11 @@ export default defineComponent({
     },
     innerOffset(): string {
       return -this.effectiveMarkerSizePx / 2 / this.magnifier.scale + 'px'
+    },
+    innerBoxShadow(): string {
+      const whiteRingPx = 1 / this.magnifier.scale
+      const blackRingPx = 2 / this.magnifier.scale
+      return `0 0 0 ${whiteRingPx}px white, 0 0 0 ${blackRingPx}px black`
     },
     zIndex(): string {
       if (this.isTemporary) {
