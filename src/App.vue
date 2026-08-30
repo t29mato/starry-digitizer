@@ -28,12 +28,14 @@
         </v-col>
       </v-row>
     </v-footer>
+    <pwa-update-prompt />
   </v-app>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 import StarryDigitizer from '@/presentation/components/StarryDigitizer.vue'
+import PwaUpdatePrompt from '@/presentation/components/Generals/PWAUpdatePrompt.vue'
 
 import { version } from '../package.json'
 
@@ -42,6 +44,7 @@ export default defineComponent({
 
   components: {
     StarryDigitizer,
+    PwaUpdatePrompt,
   },
 
   data: () => ({
