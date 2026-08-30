@@ -27,7 +27,6 @@
           >
         </template>
       </v-tooltip>
-
     </h4>
 
     <v-alert v-if="errorMessage" type="error" class="mt-2" density="compact">
