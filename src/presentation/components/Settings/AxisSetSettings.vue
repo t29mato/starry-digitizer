@@ -134,18 +134,18 @@
         >
           Auto-fill values (OCR)
         </v-btn>
+        <v-tooltip location="top">
+          <template v-slot:activator="{ props }">
+            <v-icon v-bind="props" color="warning" size="small" class="ml-1">
+              mdi-information-outline
+            </v-icon>
+          </template>
+          {{ ocrWarningMessage }}
+        </v-tooltip>
       </div>
       <p v-if="ocrErrorMessage" class="text-red mt-1">
         {{ ocrErrorMessage }}
       </p>
-      <v-alert
-        v-if="ocrWarningMessage"
-        type="warning"
-        density="compact"
-        class="mt-1"
-      >
-        {{ ocrWarningMessage }}
-      </v-alert>
     </div>
   </div>
 </template>
@@ -240,7 +240,13 @@ export default defineComponent({
       }[],
       ocrIsRunning: false,
       ocrErrorMessage: '',
-      ocrWarningMessage: '',
+      // INFO: OCR accuracy check (real-chart-bench, 41 verified figures,
+      // 2026-08-30) found ~78% per-axis accuracy but a recurring failure
+      // mode: decimal points getting dropped (e.g. "0.4" read as "4").
+      // Shown as a standing hint icon next to the button (always visible,
+      // not just after a run) rather than silently trusting the numbers.
+      ocrWarningMessage:
+        'Auto-filled values may be inaccurate — decimal points are sometimes misread (e.g. "0.4" detected as "4"). Please double-check each value before proceeding.',
     }
   },
   created() {
@@ -337,7 +343,6 @@ export default defineComponent({
     },
     async handleOnClickAutoDetectAxisValues() {
       this.ocrErrorMessage = ''
-      this.ocrWarningMessage = ''
 
       if (!this.canvasHandler.imageElement) {
         this.ocrErrorMessage = 'No image is loaded.'
@@ -373,14 +378,6 @@ export default defineComponent({
             this.setAxisValue(axisName, value)
           }
         })
-
-        // INFO: OCR accuracy check (real-chart-bench, 41 verified figures,
-        // 2026-08-30) found ~78% per-axis accuracy but a recurring failure
-        // mode: decimal points getting dropped (e.g. "0.4" read as "4").
-        // Surface that as a standing warning rather than silently trusting
-        // the auto-filled numbers.
-        this.ocrWarningMessage =
-          'Auto-filled values may be inaccurate — decimal points are sometimes misread (e.g. "0.4" detected as "4"). Please double-check each value before proceeding.'
       } catch (e) {
         console.error('failed to auto-detect axis values', { cause: e })
         this.ocrErrorMessage =
