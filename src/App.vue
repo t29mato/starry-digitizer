@@ -5,12 +5,12 @@
       on a PC.
     </div>
     <v-app-bar :color="isProd ? 'primary' : 'orange'" density="compact" flat>
-      <v-img
+      <img
         :src="logo"
         alt="StarryDigitizer"
-        max-width="24"
-        max-height="24"
-        class="ml-4 mr-2 flex-grow-0"
+        width="24"
+        height="24"
+        class="ml-4 mr-2"
       />
       <v-app-bar-title class="text-white">StarryDigitizer</v-app-bar-title>
       <v-spacer />
