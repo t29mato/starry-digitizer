@@ -197,16 +197,13 @@ export default defineComponent({
     // INFO: documentにバインドされているため、canvasWrapperの外でも呼ばれる (#255)
     mouseMove(e: MouseEvent) {
       const wrapper = document.getElementById('canvasWrapper')
-      const imageCanvas = document.getElementById('imageCanvas')
-      if (!wrapper || !imageCanvas) {
+      if (!wrapper) {
         return
       }
 
-      // INFO: e.offsetX/targetはcanvasWrapper外の要素を指しうるため、
-      // imageCanvasのbounding rect基準でcanvas上の座標を求める
-      const canvasRect = imageCanvas.getBoundingClientRect()
-      const xPx = e.clientX - canvasRect.left - offsetPx
-      const yPx = e.clientY - canvasRect.top
+      // INFO: getMouseCoordFromMouseEventはimageCanvasのbounding rect基準で
+      // 座標を求めるため、canvasWrapper外のイベントでも正しく計算できる
+      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
       const cursorXPx = xPx / this.canvasHandler.scale
       const cursorYPx = yPx / this.canvasHandler.scale
 
