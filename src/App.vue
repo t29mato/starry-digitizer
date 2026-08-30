@@ -96,6 +96,19 @@ import {
 
 import { version } from '../package.json'
 
+type MenuItem = {
+  text: string
+  shortcut?: string
+  href?: string
+  disabled?: boolean
+  action?: () => void
+}
+
+type Menu = {
+  title: string
+  items: MenuItem[]
+}
+
 export default defineComponent({
   name: 'App',
 
@@ -131,7 +144,7 @@ export default defineComponent({
     // #148 — Undo/Redo and zoom used to be buttons above the canvas; they
     // now live here (plus their existing keyboard shortcuts) so the canvas
     // gets that screen space back.
-    menus() {
+    menus(): Menu[] {
       return [
         {
           title: 'File',
