@@ -8,6 +8,7 @@
       cursor: cursor,
       width: size,
       height: size,
+      'box-sizing': 'border-box',
       'background-color': backgroundColor,
       border: '1px solid white',
       'border-radius': borderRadius,
