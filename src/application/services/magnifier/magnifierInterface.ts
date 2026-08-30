@@ -4,7 +4,9 @@ export interface MagnifierInterface {
   crosshairSizePx: number
   sizePx: number
   effectiveDigits: number
+  markerSizePx: number
 
   setScale(scale: number): void
   setEffectiveDigits(digits: number): void
+  setMarkerSizePx(sizePx: number): void
 }
