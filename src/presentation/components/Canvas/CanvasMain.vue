@@ -3,11 +3,8 @@
     id="canvasWrapper"
     class="c__canvas-wrapper"
     @click="click"
-    @mousemove="mouseMove"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
-    @mouseenter="mouseEnter"
-    @mouseleave="mouseLeave"
   >
     <canvas id="imageCanvas"></canvas>
     <canvas
@@ -78,8 +75,9 @@ export default defineComponent({
   props: {
     imagePath: String,
   },
-  beforeDestroy() {
+  beforeUnmount() {
     document.removeEventListener('keydown', this.keyDownHandler)
+    document.removeEventListener('mousemove', this.mouseMove)
   },
   data() {
     return {
@@ -90,10 +88,16 @@ export default defineComponent({
       historyManager,
       axisSetRepository,
       datasetRepository,
+      // INFO: 直前のmousemoveでカーソルが画像内にいたかどうか。
+      // 画像から出た最初のイベントで端にクランプするために使う
+      cursorWasOnImage: false,
     }
   },
   async mounted() {
-    document.addEventListener('keydown', this.keyDownHandler.bind(this))
+    document.addEventListener('keydown', this.keyDownHandler)
+    // INFO: 画像の端を越えた瞬間のイベントも拾ってMagnifierを端で
+    // 止められるよう、mousemoveはdocumentで拾う (#255)
+    document.addEventListener('mousemove', this.mouseMove)
 
     this.interpolator.setGuideCanvas(new HTMLCanvas('interpolationGuideCanvas'))
 
@@ -193,36 +197,65 @@ export default defineComponent({
 
       this.canvasHandler.mouseDrag(coord.xPx, coord.yPx)
     },
+    // INFO: documentにバインドされているため、canvasWrapperの外でも呼ばれる (#255)
     mouseMove(e: MouseEvent) {
-      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
+      const wrapper = document.getElementById('canvasWrapper')
+      if (!wrapper) {
+        return
+      }
 
-      // INFO: カーソルが画像canvas要素の範囲内かどうかを判定
+      // INFO: getMouseCoordFromMouseEventはimageCanvasのbounding rect基準で
+      // 座標を求めるため、canvasWrapper外のイベントでも正しく計算できる
+      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
       const cursorXPx = xPx / this.canvasHandler.scale
       const cursorYPx = yPx / this.canvasHandler.scale
-      this.canvasHandler.isCursorOnCanvas =
+      const isOnImage =
         cursorXPx >= 0 &&
         cursorYPx >= 0 &&
         cursorXPx <= this.canvasHandler.originalWidth &&
         cursorYPx <= this.canvasHandler.originalHeight
 
+      // INFO: カーソルがcanvasWrapper内かつ画像canvas要素の範囲内かどうかを判定
+      const wrapperRect = wrapper.getBoundingClientRect()
+      const isInsideWrapper =
+        e.clientX >= wrapperRect.left &&
+        e.clientX <= wrapperRect.right &&
+        e.clientY >= wrapperRect.top &&
+        e.clientY <= wrapperRect.bottom
+      this.canvasHandler.isCursorOnCanvas = isInsideWrapper && isOnImage
+
+      const isClicking = e.buttons === 1
+
+      // INFO: 画像の外ではMagnifierを動かさない(気が散るため)。
+      // 画像から出た最初のイベントだけは端にクランプした位置へ更新し、
+      // Magnifierが画像の端でぴったり止まって見えるようにする (#255)。
+      // ドラッグ中(範囲選択・マスク描画)は例外として追従を続ける
+      if (!isOnImage && !isClicking && !this.cursorWasOnImage) {
+        return
+      }
+      this.cursorWasOnImage = isOnImage
+
       this.axisSetRepository.activeAxisSet.isAdjusting = false
       this.datasetRepository.activeDataset.pointsAreAdjusting = false
+
+      const clampedXPx = Math.min(
+        Math.max(cursorXPx, 0),
+        this.canvasHandler.originalWidth,
+      )
+      const clampedYPx = Math.min(
+        Math.max(cursorYPx, 0),
+        this.canvasHandler.originalHeight,
+      )
       this.canvasHandler.setCursor({
-        xPx: cursorXPx,
-        yPx: cursorYPx,
+        xPx: clampedXPx,
+        yPx: clampedYPx,
       })
-      // INFO: 左クリックされていない状態
-      const isClicking = e.buttons === 1
       if (isClicking) {
-        this.mouseDrag({ xPx, yPx })
+        this.mouseDrag({
+          xPx: clampedXPx * this.canvasHandler.scale,
+          yPx: clampedYPx * this.canvasHandler.scale,
+        })
       }
-    },
-    mouseEnter() {
-      // INFO: 正確な判定はmouseMoveで行うが、初期値としてtrueにする
-      this.canvasHandler.isCursorOnCanvas = true
-    },
-    mouseLeave() {
-      this.canvasHandler.isCursorOnCanvas = false
     },
     mouseDown(e: MouseEvent) {
       if (this.datasetRepository.isViewAllMode) return

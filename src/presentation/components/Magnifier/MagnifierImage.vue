@@ -1,5 +1,7 @@
 <template>
   <div>
+    <!-- INFO: 端付近ではtranslate値が負になるため、`-${...}` 形式だと
+         `--Npx` という不正なCSSになりMagnifierが固まる (#255) -->
     <img
       :src="canvasHandler.uploadImageUrl"
       alt="the image you uploaded"
@@ -7,9 +9,9 @@
         position: 'absolute',
         top: 0,
         left: 0,
-        transform: `scale(${magnifier.scale}) translate(-${
-          canvasHandler.cursor.xPx - halfSize / magnifier.scale
-        }px, -${canvasHandler.cursor.yPx - halfSize / magnifier.scale}px)`,
+        transform: `scale(${magnifier.scale}) translate(${
+          halfSize / magnifier.scale - canvasHandler.cursor.xPx
+        }px, ${halfSize / magnifier.scale - canvasHandler.cursor.yPx}px)`,
         'transform-origin': 'top left',
       }"
     />
@@ -20,13 +22,11 @@
         top: 0,
         left: 0,
         opacity: 0.5,
-        transform: `scale(${
-          magnifier.scale / canvasHandler.scale
-        }) translate(-${
-          (canvasHandler.cursor.xPx - halfSize / magnifier.scale) *
+        transform: `scale(${magnifier.scale / canvasHandler.scale}) translate(${
+          (halfSize / magnifier.scale - canvasHandler.cursor.xPx) *
           canvasHandler.scale
-        }px, -${
-          (canvasHandler.cursor.yPx - halfSize / magnifier.scale) *
+        }px, ${
+          (halfSize / magnifier.scale - canvasHandler.cursor.yPx) *
           canvasHandler.scale
         }px)`,
         'transform-origin': 'top left',
@@ -39,13 +39,11 @@
         top: 0,
         left: 0,
         opacity: 0.5,
-        transform: `scale(${
-          magnifier.scale / canvasHandler.scale
-        }) translate(-${
-          (canvasHandler.cursor.xPx - halfSize / magnifier.scale) *
+        transform: `scale(${magnifier.scale / canvasHandler.scale}) translate(${
+          (halfSize / magnifier.scale - canvasHandler.cursor.xPx) *
           canvasHandler.scale
-        }px, -${
-          (canvasHandler.cursor.yPx - halfSize / magnifier.scale) *
+        }px, ${
+          (halfSize / magnifier.scale - canvasHandler.cursor.yPx) *
           canvasHandler.scale
         }px)`,
         'transform-origin': 'top left',
