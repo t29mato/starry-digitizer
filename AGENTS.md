@@ -1,42 +1,42 @@
 # AGENTS.md
 
-このリポジトリで作業するAIエージェント向けの実務メモ。「新しくワークスペースを立ち上げた時にデプロイ方法が分からない」を防ぐためのもの。運用ルール(ブランチ運用の是非、本番リリース可否など)は `CLAUDE.md` が正で、本ファイルはその下で実際に何が・どのトリガーで・どこにデプロイされるかを説明する。
+Practical notes for AI agents working in this repository, so a new workspace doesn't have to rediscover "how does deployment actually work" from scratch. `CLAUDE.md` is the source of truth for operating rules (what's allowed on which branch, whether a production release is allowed, etc.); this file explains what actually gets deployed where, and by which trigger, underneath those rules.
 
-## セットアップ
+## Setup
 
 - Node.js 22
-- パッケージマネージャ: **yarn**(CIは全てyarnを使用)。`package-lock.json` も存在するが、CI/デプロイの実体はyarn。混在させない。
+- Package manager: **yarn** (every CI job uses yarn). A `package-lock.json` also exists in the repo, but the CI/deploy pipeline is yarn-based — don't mix the two.
   ```bash
   yarn install
-  yarn dev          # 開発サーバー起動 http://localhost:8888
+  yarn dev          # start the dev server at http://localhost:8888
   yarn lint         # eslint + vue-tsc
   yarn test         # jest
   yarn test:coverage
-  yarn cypress:open # Cypress E2E(ローカル)
+  yarn cypress:open # Cypress E2E (local)
   ```
 
-## デプロイの自動化(GitHub Actions × Vercel)
+## Deployment automation (GitHub Actions × Vercel)
 
-3本のworkflowが全て `.github/workflows/vercel-*.yaml` にあり、それぞれ別トリガー・別環境。
+All three workflows live under `.github/workflows/vercel-*.yaml`, each with its own trigger and target environment.
 
-| トリガー | 環境 | ジョブの流れ | workflowファイル |
+| Trigger | Environment | Job flow | Workflow file |
 |---|---|---|---|
-| 任意ブランチへの **PR作成/更新** | Vercel Preview(PRごと) | UnitTest(lint+test+coverage→Codecov) → Deploy-Preview → Slack通知。E2E(Cypress)は **base branchがmainの時のみ** 実行([#211](https://github.com/t29mato/starry-digitizer/issues/211)参照) | `vercel-preview-development.yaml` |
-| **developへのpush**(PRマージ含む) | Vercel Preview(develop固定URL) | UnitTest → Deploy-Develop → Slack通知 | `vercel-develop-deployment.yaml` |
-| `v[0-9]+.[0-9]+.[0-9]+` 形式の **タグをpush** | 本番(Vercel Production) + npm公開 | UnitTest, E2E-Test → (バージョン一致検証) → Deploy-Production-on-Vercel と Publish-Production-on-NPM を並列実行 → Slack通知 | `vercel-production-deployment.yaml` |
+| **PR opened/updated** against any branch | Vercel Preview (per PR) | UnitTest (lint + test + coverage → Codecov) → Deploy-Preview → Slack notification. E2E (Cypress) only runs when **the PR's base branch is `main`** (see [#211](https://github.com/t29mato/starry-digitizer/issues/211)) | `vercel-preview-development.yaml` |
+| **Push to `develop`** (including PR merges) | Vercel Preview (fixed develop URL) | UnitTest → Deploy-Develop → Slack notification | `vercel-develop-deployment.yaml` |
+| **Tag push** matching `v[0-9]+.[0-9]+.[0-9]+` | Production (Vercel) + npm publish | UnitTest, E2E-Test → (version-match check) → Deploy-Production-on-Vercel and Publish-Production-on-NPM run in parallel → Slack notification | `vercel-production-deployment.yaml` |
 
-補足:
-- 本番デプロイ・npm公開のジョブはどちらも「タグ名のバージョン」と `package.json` の `version` が一致しているかを検証してから実行する(不一致ならジョブがfailする)。
-- Vercelの認証情報は `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` / `VERCEL_TOKEN` の repo secrets。ローカルでVercel CLIを直接使う場合は `vercel link` で作られる `.vercel/`(git管理外)にプロジェクト情報が入る。Vercelプロジェクト名: `starrydigitizer`。
-- Slack通知先は `DIGITIZER_DEV_SLACK_WEBHOOK`。
+Notes:
+- Both the production-deploy and npm-publish jobs first verify that the tag's version matches `package.json`'s `version` field; the job fails if they don't match.
+- Vercel credentials are the repo secrets `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` / `VERCEL_TOKEN`. If you use the Vercel CLI locally, `vercel link` creates a git-ignored `.vercel/` directory holding the project link info. Vercel project name: `starrydigitizer`.
+- Slack notifications go to the `DIGITIZER_DEV_SLACK_WEBHOOK` webhook.
 
-## このリポジトリでの制約(CLAUDE.mdより、要点のみ)
+## Constraints specific to this repo (summarized from CLAUDE.md)
 
-- **タグ作成・GitHub Release・npm公開・mainへの反映(本番リリース)はAIエージェントが自分の判断で行わない。** 上表の通りタグpushが本番デプロイ+npm公開の引き金になるため、タグを打つ行為そのものが実質「本番リリース」であることに注意。人間の承認を経ること。
-- **mainへの直接pushは禁止。** `develop` を基点に featureブランチ → `develop` へのPRのみで進める。
-- 詳細・背景は `CLAUDE.md` を参照。
+- **AI agents must not create tags, cut a GitHub Release, publish to npm, or land changes on `main` on their own judgment.** Since pushing a tag is exactly what triggers the production deploy + npm publish above, creating a tag *is* effectively shipping to production. This requires human approval.
+- **Direct pushes to `main` are prohibited.** Work off `develop`: feature branch → PR into `develop` only.
+- See `CLAUDE.md` for full details and rationale.
 
-## 参考
+## See also
 
-- `README.md`: プロダクト概要・機能一覧・使い方
-- `CLAUDE.md`: このリポジトリで作業するAIエージェント(ワーカー)向けの運用ルール・品質方針
+- `README.md`: product overview, features, usage
+- `CLAUDE.md`: operating rules and quality policy for AI agents (workers) in this repo
