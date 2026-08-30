@@ -65,9 +65,6 @@ import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { MANUAL_MODE } from '@/constants'
 
-// INFO: to adjust the exact position the user clicked.
-const offsetPx = 1
-
 export default defineComponent({
   components: {
     CanvasAxisSet,
@@ -131,13 +128,10 @@ export default defineComponent({
       const isOnCanvasPoint = target.className === 'canvas-point'
 
       // INFO: クリック座標を画像のオリジナル座標に変換
-      const xPx = isOnCanvasPoint
-        ? (e.offsetX + parseFloat(target.style.left) - offsetPx) /
-          this.canvasHandler.scale
-        : (e.offsetX - offsetPx) / this.canvasHandler.scale
-      const yPx = isOnCanvasPoint
-        ? (e.offsetY + parseFloat(target.style.top)) / this.canvasHandler.scale
-        : e.offsetY / this.canvasHandler.scale
+      // (クリック対象が既存プロット上かどうかに関わらず同じ計算式を使う)
+      const canvasCoord = getMouseCoordFromMouseEvent(e)
+      const xPx = canvasCoord.xPx / this.canvasHandler.scale
+      const yPx = canvasCoord.yPx / this.canvasHandler.scale
 
       // INFO: 画像範囲外のクリックを無視する
       if (
