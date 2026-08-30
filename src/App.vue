@@ -4,29 +4,27 @@
       This application is not supported on smartphones. <br />Please access here
       on a PC.
     </div>
-    <v-app-bar :color="isProd ? 'primary' : 'orange'" density="compact" flat>
-      <img
-        :src="logo"
-        alt="StarryDigitizer"
-        width="24"
-        height="24"
-        class="ml-4 mr-2"
-      />
-      <v-app-bar-title class="text-white">StarryDigitizer</v-app-bar-title>
-      <v-spacer />
-      <v-btn
-        v-for="link in headerLinks"
-        :key="link.url"
-        color="white"
-        variant="text"
-        class="mr-2 text-none"
-        :href="link.url"
-        target="_blank"
-        size="small"
-      >
-        {{ link.text }}
-      </v-btn>
-    </v-app-bar>
+    <v-menu v-if="!deviceIsSmartphone">
+      <template v-slot:activator="{ props }">
+        <v-btn
+          icon="mdi-menu"
+          size="small"
+          variant="elevated"
+          class="c__menu-button"
+          v-bind="props"
+        />
+      </template>
+      <v-list density="compact">
+        <v-list-item
+          v-for="link in headerLinks"
+          :key="link.url"
+          :href="link.url"
+          target="_blank"
+        >
+          <v-list-item-title>{{ link.text }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
     <v-main v-if="!deviceIsSmartphone">
       <starry-digitizer :initialGraphImagePath="'/sample_graph_curve.png'" />
     </v-main>
@@ -59,7 +57,6 @@
 import { defineComponent } from 'vue'
 import StarryDigitizer from '@/presentation/components/StarryDigitizer.vue'
 import PwaUpdatePrompt from '@/presentation/components/Generals/PWAUpdatePrompt.vue'
-import logo from '@/assets/logo.svg'
 
 import { version } from '../package.json'
 
@@ -74,7 +71,6 @@ export default defineComponent({
   data: () => ({
     points: [],
     version,
-    logo,
     headerLinks: [
       {
         text: 'Document',
@@ -105,6 +101,13 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .c {
+  &__menu-button {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 1005;
+  }
+
   &__unsupported-device-screen {
     position: fixed;
     top: 0;
