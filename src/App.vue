@@ -4,13 +4,36 @@
       This application is not supported on smartphones. <br />Please access here
       on a PC.
     </div>
+    <v-app-bar :color="isProd ? 'primary' : 'orange'" density="compact" flat>
+      <v-img
+        src="@/assets/logo.svg"
+        alt="StarryDigitizer"
+        max-width="24"
+        max-height="24"
+        class="ml-4 mr-2 flex-grow-0"
+      />
+      <v-app-bar-title class="text-white">StarryDigitizer</v-app-bar-title>
+      <v-spacer />
+      <v-btn
+        v-for="link in headerLinks"
+        :key="link.url"
+        color="white"
+        variant="text"
+        class="mr-2 text-none"
+        :href="link.url"
+        target="_blank"
+        size="small"
+      >
+        {{ link.text }}
+      </v-btn>
+    </v-app-bar>
     <v-main v-if="!deviceIsSmartphone">
       <starry-digitizer :initialGraphImagePath="'/sample_graph_curve.png'" />
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
         <v-btn
-          v-for="link in links"
+          v-for="link in footerLinks"
           :key="link.url"
           color="white"
           variant="text"
@@ -50,14 +73,16 @@ export default defineComponent({
   data: () => ({
     points: [],
     version,
-    links: [
-      {
-        text: 'Release Note',
-        url: 'https://github.com/t29mato/starry-digitizer/releases',
-      },
+    headerLinks: [
       {
         text: 'Document',
         url: 'https://starrydigitizer.readthedocs.io/',
+      },
+    ],
+    footerLinks: [
+      {
+        text: 'Release Note',
+        url: 'https://github.com/t29mato/starry-digitizer/releases',
       },
     ],
     isProd: import.meta.env.MODE === 'production',
