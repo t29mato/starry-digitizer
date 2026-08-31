@@ -1,11 +1,16 @@
 <template>
-  <!-- INFO: プロットデータ -->
+  <!-- INFO: プロットデータ
+    2重のdivに分けている理由: 外側divは既存通りcursor追従の座標変換(scale
+    + translate)を担い、内側divはそのscaleを打ち消すサイズ・オフセットを
+    持つことで、拡大鏡のズーム倍率(magnifier.scale)に依存しない見た目の
+    マーカーサイズ(effectiveMarkerSizePx)を実現している。#12: 密集した点の
+    マーカー同士が拡大鏡のズームに比例して肥大化し、視認性が下がる問題への対応。
+  -->
   <div
-    class="magnifier-points"
     :style="{
       position: 'absolute',
-      top: top,
-      left: left,
+      top: `${yPx * magnifier.scale}px`,
+      left: `${xPx * magnifier.scale}px`,
       transform: `scale(${magnifier.scale}) translate(-${
         canvasHandler.cursor.xPx - magnifierHalfSize / magnifier.scale
       }px, -${
@@ -13,16 +18,29 @@
       }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',
-      width: size,
-      height: size,
-      'background-color': backgroundColor,
-      border: `${1}px solid white`,
-      'border-radius': borderRadius,
-      visibility: isVisible ? 'visible' : 'hidden',
-      opacity: opacity,
-      zIndex: zIndex,
     }"
-  ></div>
+  >
+    <div
+      class="magnifier-points"
+      :style="{
+        position: 'absolute',
+        top: innerOffset,
+        left: innerOffset,
+        width: innerSize,
+        height: innerSize,
+        'background-color': backgroundColor,
+        // INFO: 白一色の縁取りだと明るい背景(白背景や、今回のようなマスクの
+        // ハイライト色)で見えなくなるため、白+黒の二重リングにする。外側divに
+        // scale(magnifier.scale)がかかっているため、リング自体の見た目の太さも
+        // scaleに依存してしまわないよう innerBoxShadow 側で 1/scale している。
+        'box-shadow': innerBoxShadow,
+        'border-radius': borderRadius,
+        visibility: isVisible ? 'visible' : 'hidden',
+        opacity: opacity,
+        zIndex: zIndex,
+      }"
+    ></div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -87,30 +105,32 @@ export default defineComponent({
 
       return '50%'
     },
-    size(): string {
-      if (this.isTemporary) {
-        return this.tempPointSizePx + 'px'
-      }
-
-      return this.pointSizePx + 'px'
-    },
-    top(): string {
+    // INFO: 拡大鏡内でのマーカー表示サイズ。magnifier.markerSizePx(通常点の
+    // 設定値)を基準に、一時点は本体キャンバスでの比率(tempPointSizePx /
+    // pointSizePx)を保ったまま縮小する。
+    effectiveMarkerSizePx(): number {
       if (this.isTemporary) {
         return (
-          (this.yPx - this.tempPointSizePx / 2) * this.magnifier.scale + 'px'
+          (this.magnifier.markerSizePx * this.tempPointSizePx) /
+          this.pointSizePx
         )
       }
 
-      return (this.yPx - this.pointSizePx / 2) * this.magnifier.scale + 'px'
+      return this.magnifier.markerSizePx
     },
-    left(): string {
-      if (this.isTemporary) {
-        return (
-          (this.xPx - this.tempPointSizePx / 2) * this.magnifier.scale + 'px'
-        )
-      }
-
-      return (this.xPx - this.pointSizePx / 2) * this.magnifier.scale + 'px'
+    // INFO: 外側divには既に magnifier.scale の transform がかかっているため、
+    // 内側divのサイズ・オフセットをあらかじめ 1/scale しておくことで、
+    // 最終的な見た目のサイズが scale に依存しない effectiveMarkerSizePx になる。
+    innerSize(): string {
+      return this.effectiveMarkerSizePx / this.magnifier.scale + 'px'
+    },
+    innerOffset(): string {
+      return -this.effectiveMarkerSizePx / 2 / this.magnifier.scale + 'px'
+    },
+    innerBoxShadow(): string {
+      const whiteRingPx = 1 / this.magnifier.scale
+      const blackRingPx = 2 / this.magnifier.scale
+      return `0 0 0 ${whiteRingPx}px white, 0 0 0 ${blackRingPx}px black`
     },
     zIndex(): string {
       if (this.isTemporary) {

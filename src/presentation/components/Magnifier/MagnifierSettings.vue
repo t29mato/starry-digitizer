@@ -35,6 +35,21 @@
             </v-col>
           </v-row>
           <v-row>
+            <v-col cols="6" class="py-2">
+              <v-text-field
+                :model-value="magnifier.markerSizePx"
+                type="number"
+                label="Marker size (px)"
+                @change="onChangeMarkerSizePx"
+                :error="markerSizeError.length > 0"
+                :error-messages="markerSizeError"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row>
             <v-col class="py-1">
               <v-checkbox
                 v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
@@ -65,6 +80,7 @@ export default defineComponent({
       magnifier,
       axisSetRepository,
       effectiveDigitsError: '',
+      markerSizeError: '',
     }
   },
   props: {
@@ -97,6 +113,15 @@ export default defineComponent({
         return
       }
       this.magnifier.setEffectiveDigits(digits)
+    },
+    onChangeMarkerSizePx(event: Event) {
+      const sizePx = Number((<HTMLInputElement>event.target).value)
+      this.markerSizeError = ''
+      if (sizePx < 1) {
+        this.markerSizeError = 'Value must be at least 1'
+        return
+      }
+      this.magnifier.setMarkerSizePx(sizePx)
     },
   },
 })

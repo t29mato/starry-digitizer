@@ -43,4 +43,16 @@ describe('MagnifierManager', () => {
     instance.setEffectiveDigits(2)
     expect(instance.effectiveDigits).toBe(2)
   })
+
+  test('setMarkerSizePx updates the markerSizePx value independently of scale', () => {
+    const instance = magnifierManager.getNewInstance()
+    expect(instance.markerSizePx).toBe(10) // default value, matches STYLE.POINT_SIZE_PX
+
+    instance.setMarkerSizePx(4)
+    expect(instance.markerSizePx).toBe(4)
+    expect(instance.scale).toBe(5) // unaffected by marker size change
+
+    instance.setMarkerSizePx(20)
+    expect(instance.markerSizePx).toBe(20)
+  })
 })
