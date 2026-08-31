@@ -30,21 +30,32 @@
           </v-btn>
         </template>
         <v-list density="compact" min-width="220">
-          <v-list-item
-            v-for="item in menu.items"
-            :key="item.text"
-            :href="item.href"
-            :target="item.href ? '_blank' : undefined"
-            :disabled="item.disabled"
-            @click="item.action"
-          >
-            <div class="d-flex justify-space-between" style="gap: 24px">
-              <span>{{ item.text }}</span>
-              <span v-if="item.shortcut" class="text-medium-emphasis">{{
-                item.shortcut
-              }}</span>
-            </div>
-          </v-list-item>
+          <template v-for="(item, index) in menu.items">
+            <v-divider
+              v-if="item.divider"
+              :key="'divider-' + index"
+            ></v-divider>
+            <v-list-item
+              v-else
+              :key="index"
+              :href="item.href"
+              :target="item.href ? '_blank' : undefined"
+              :disabled="item.disabled"
+              @click="item.action"
+            >
+              <template v-if="item.checked !== undefined" v-slot:prepend>
+                <v-icon size="small" class="mr-1" style="width: 16px">{{
+                  item.checked ? 'mdi-check' : ''
+                }}</v-icon>
+              </template>
+              <div class="d-flex justify-space-between" style="gap: 24px">
+                <span>{{ item.text }}</span>
+                <span v-if="item.shortcut" class="text-medium-emphasis">{{
+                  item.shortcut
+                }}</span>
+              </div>
+            </v-list-item>
+          </template>
         </v-list>
       </v-menu>
     </v-app-bar>
@@ -53,19 +64,6 @@
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
-        <v-btn
-          v-for="link in footerLinks"
-          :key="link.url"
-          color="white"
-          variant="text"
-          rounded
-          class="my-2 text-none"
-          :href="link.url"
-          target="_blank"
-          size="small"
-        >
-          {{ link.text }}
-        </v-btn>
         <v-col class="text-center text-white" cols="12">
           {{ new Date().getFullYear() }} — <strong>StarryDigitizer</strong
           ><span class="ml-2 mt-1">{{ isProd ? version : '' }}</span>
@@ -75,6 +73,7 @@
     <v-snackbar v-model="showError" color="error" timeout="4000">
       {{ errorMessage }}
     </v-snackbar>
+    <keyboard-shortcuts-dialog v-model="showKeyboardShortcuts" />
     <pwa-update-prompt />
   </v-app>
 </template>
@@ -83,6 +82,7 @@
 import { defineComponent } from 'vue'
 import StarryDigitizer from '@/presentation/components/StarryDigitizer.vue'
 import PwaUpdatePrompt from '@/presentation/components/Generals/PWAUpdatePrompt.vue'
+import KeyboardShortcutsDialog from '@/presentation/components/Generals/KeyboardShortcutsDialog.vue'
 import logo from '@/assets/logo.svg'
 import {
   canvasHandler,
@@ -90,9 +90,15 @@ import {
   interpolator,
 } from '@/instanceStore/applicationServiceInstances'
 import {
+  axisSetRepository,
+  datasetRepository,
+} from '@/instanceStore/repositoryInatances'
+import {
   saveProjectAndDownload,
   triggerLoadProjectDialog,
 } from '@/application/utils/projectFileOperations'
+import { copyActiveDatasetToClipboard } from '@/application/utils/dataExport'
+import { toggleInterpolation } from '@/application/utils/interpolationToggle'
 
 import { version } from '../package.json'
 
@@ -101,6 +107,8 @@ type MenuItem = {
   shortcut?: string
   href?: string
   disabled?: boolean
+  checked?: boolean
+  divider?: boolean
   action?: () => void
 }
 
@@ -115,6 +123,7 @@ export default defineComponent({
   components: {
     StarryDigitizer,
     PwaUpdatePrompt,
+    KeyboardShortcutsDialog,
   },
 
   data: () => ({
@@ -124,15 +133,12 @@ export default defineComponent({
     canvasHandler,
     historyManager,
     interpolator,
-    footerLinks: [
-      {
-        text: 'Release Note',
-        url: 'https://github.com/t29mato/starry-digitizer/releases',
-      },
-    ],
+    axisSetRepository,
+    datasetRepository,
     isProd: import.meta.env.MODE === 'production',
     showError: false,
     errorMessage: '',
+    showKeyboardShortcuts: false,
   }),
   computed: {
     deviceIsSmartphone() {
@@ -158,6 +164,11 @@ export default defineComponent({
               text: 'Load Project',
               shortcut: '⌘O',
               action: this.handleLoadProject,
+            },
+            { text: 'divider', divider: true },
+            {
+              text: 'Copy Data to Clipboard',
+              action: this.handleCopyData,
             },
           ],
         },
@@ -189,6 +200,18 @@ export default defineComponent({
               action: this.handleResetZoom,
             },
             { text: 'Fit', shortcut: 'F', action: this.handleFit },
+            { text: 'divider', divider: true },
+            {
+              text: 'Show Axes Marker',
+              checked: this.axisSetRepository.activeAxisSet.isVisible,
+              action: this.handleToggleAxesMarker,
+            },
+            {
+              text: 'Interpolation',
+              checked: this.interpolator.isActive,
+              disabled: this.datasetRepository.isViewAllMode,
+              action: this.handleToggleInterpolation,
+            },
           ],
         },
         {
@@ -197,6 +220,17 @@ export default defineComponent({
             {
               text: 'Document',
               href: 'https://starrydigitizer.readthedocs.io/',
+            },
+            {
+              text: 'Release Note',
+              href: 'https://github.com/t29mato/starry-digitizer/releases',
+            },
+            { text: 'divider', divider: true },
+            {
+              text: 'Keyboard Shortcuts',
+              action: () => {
+                this.showKeyboardShortcuts = true
+              },
             },
           ],
         },
@@ -219,6 +253,12 @@ export default defineComponent({
         this.showErrorSnackbar(result.errorMessage)
       }
     },
+    async handleCopyData() {
+      const result = await copyActiveDatasetToClipboard()
+      if (!result.success) {
+        this.showErrorSnackbar(result.errorMessage)
+      }
+    },
     handleZoomIn() {
       this.canvasHandler.scaleUp()
       this.interpolator.resizeCanvas()
@@ -234,6 +274,13 @@ export default defineComponent({
     handleFit() {
       this.canvasHandler.drawFitSizeImage()
       this.interpolator.resizeCanvas()
+    },
+    handleToggleAxesMarker() {
+      this.axisSetRepository.activeAxisSet.isVisible =
+        !this.axisSetRepository.activeAxisSet.isVisible
+    },
+    handleToggleInterpolation() {
+      toggleInterpolation(!this.interpolator.isActive)
     },
     showErrorSnackbar(message?: string) {
       this.errorMessage = message ?? 'An error occurred'
