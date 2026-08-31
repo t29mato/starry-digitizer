@@ -2,7 +2,6 @@
   <v-container fluid class="pa-1">
     <div class="c__wrapper">
       <div class="c__left-sidebar">
-        <project-manager></project-manager>
         <image-settings></image-settings>
         <axis-set-manager></axis-set-manager>
         <axis-set-settings></axis-set-settings>
@@ -37,12 +36,7 @@
 import { defineComponent } from 'vue'
 import { MagnifierMain } from '@/presentation/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
-import {
-  AxisSetSettings,
-  ExtractorSettings,
-  ImageSettings,
-  ProjectManager,
-} from './Settings'
+import { AxisSetSettings, ExtractorSettings, ImageSettings } from './Settings'
 import { DatasetManager } from './DatasetManager'
 import { AxisSetManager } from './AxisSetManager'
 import { version } from '../../../package.json'
@@ -61,7 +55,6 @@ export default defineComponent({
     DatasetManager,
     ExtractorSettings,
     ImageSettings,
-    ProjectManager,
     ConfirmerBar,
   },
   props: {
