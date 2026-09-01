@@ -4,7 +4,9 @@ describe('template spec', () => {
   beforeEach(() => {
     cy.visit('/')
 
-    cy.get('#reset-canvas-scale').click()
+    // INFO: Reset to 100% zoom — the header button was replaced by the
+    // View menu / '0' keyboard shortcut (issue #148).
+    cy.get('body').trigger('keydown', { key: '0' })
   })
 
   //INFO: アンカーポイントと仮で補間された点の区別ができないのでその合計数を検証

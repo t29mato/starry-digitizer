@@ -106,7 +106,6 @@ import SymbolExtractByArea from '@/application/strategies/extractStrategies/symb
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
@@ -114,6 +113,7 @@ import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
+import { toggleInterpolation } from '@/application/utils/interpolationToggle'
 
 export default defineComponent({
   components: {
@@ -182,33 +182,7 @@ export default defineComponent({
     },
     //INFO: isActive: booleanであるが、@updateでtsエラーになるのでanyとしている
     handleOnClickInterpolatiorSwitch(isActive: any) {
-      this.interpolator.setIsActive(isActive)
-
-      if (isActive) {
-        this.interpolator.updatePreview()
-      } else {
-        //NOTE: A temporary workaround to ensure that data points remain after turning off the interpolation function. A redesign is essential.
-        const dataset = this.datasetRepository.activeDataset
-        const addedPointIds: number[] = []
-        dataset.points
-          .filter((p) => dataset.manuallyAddedPointIds.includes(p.id))
-          .forEach((p) => {
-            dataset.addPoint(p.xPx, p.yPx)
-            addedPointIds.push(dataset.lastPointId)
-          })
-
-        this.interpolator.clearPreview()
-
-        //NOTE: A temporary workaround to ensure that data points remain after turning off the interpolation function. A redesign is essential.
-        addedPointIds.forEach((pId) => {
-          dataset.addManuallyAddedPointId(pId)
-        })
-      }
-
-      //HACK: Since tempPoints are not drawn, force rendering as a temporary measure. Fundamental solution required
-      forceRenderCanvasPoints(this.datasetRepository)
-
-      addLocalStorageData('isInterpolatorActive', String(isActive))
+      toggleInterpolation(isActive)
     },
     handleOnConfirmInterpolation() {
       if (

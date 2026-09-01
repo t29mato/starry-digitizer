@@ -18,7 +18,6 @@ import { defineComponent } from 'vue'
 // TODO: TSの型宣言エラーが解消できずignore いずれ再度調査
 // @ts-ignore
 import colors from 'vuetify/lib/util/colors'
-import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
@@ -28,13 +27,16 @@ import 'handsontable/dist/handsontable.full.css'
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
-import { Point } from '@/@types/types'
 import {
   canvasHandler,
   magnifier,
 } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import {
+  getActiveDatasetTableData,
+  copyRowsToClipboard,
+} from '@/application/utils/dataExport'
 
 registerAllModules()
 
@@ -44,19 +46,10 @@ export default defineComponent({
   },
   computed: {
     tableData() {
-      if (this.datasetRepository.activeDataset.points.length > 0) {
-        return this.datasetRepository.activeDataset.points.map(
-          (point: Point) => {
-            // @ts-ignore calculateXY methods is defined apparently
-            const { xV, yV } = this.calculateXY(point.xPx, point.yPx)
-            return {
-              X: xV,
-              Y: yV,
-            }
-          },
-        )
-      }
-      return [{ X: null, Y: null }]
+      // INFO: depends on datasetRepository/axisSetRepository (reactive
+      // singletons) so this stays reactive despite reading them via the
+      // shared getActiveDatasetTableData() helper rather than `this.*`
+      return getActiveDatasetTableData()
     },
   },
   data() {
@@ -79,25 +72,11 @@ export default defineComponent({
     }
   },
   methods: {
-    calculateXY(x: number, y: number): { xV: string; yV: string } {
-      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      const calculator = new AxisSetCalculator(
-        this.axisSetRepository.activeAxisSet,
-        {
-          x: this.axisSetRepository.activeAxisSet.xIsLogScale,
-          y: this.axisSetRepository.activeAxisSet.yIsLogScale,
-        },
-        this.magnifier.effectiveDigits,
-      )
-      return calculator.calculateXYValues(x, y)
-    },
-    copyData() {
-      const data = this.tableData.map((row: any) => [row.X, row.Y])
-      const csv = data.map((row: any[]) => row.join(',')).join('\n')
-      navigator.clipboard
-        .writeText(csv)
-        .then(() => console.log('Data copied to clipboard successfully.'))
-        .catch((err) => console.error('Failed to copy data to clipboard.', err))
+    async copyData() {
+      // INFO: passes this component's own tableData (which Handsontable
+      // may have mutated via in-cell edits), not a fresh recomputation —
+      // see the comment on copyRowsToClipboard in dataExport.ts.
+      await copyRowsToClipboard(this.tableData)
     },
   },
   watch: {
@@ -112,4 +91,3 @@ export default defineComponent({
   },
 })
 </script>
-@/domain/services/axisSetCalculator @/domain/services/axisSetCalculator

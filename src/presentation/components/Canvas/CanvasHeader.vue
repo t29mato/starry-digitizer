@@ -4,62 +4,25 @@
       Dataset: <span>{{ currentDatasetName }}</span> / XY Axes:
       <span>{{ axisSetRepository.activeAxisSet.name }}</span>
     </div>
-    <div class="d-flex justify-end mt-1" style="margin-left: auto">
-      <div class="ml-2">
-        <v-btn
-          size="x-small"
-          @click="handleOnClickUndoButton"
-          :disabled="!historyManager.canUndo"
-          title="Undo (Ctrl/Cmd+Z)"
-          ><v-icon>mdi-undo</v-icon></v-btn
-        >
-        <v-btn
-          size="x-small"
-          class="ml-2"
-          @click="handleOnClickRedoButton"
-          :disabled="!historyManager.canRedo"
-          title="Redo (Ctrl/Cmd+Shift+Z)"
-          ><v-icon>mdi-redo</v-icon></v-btn
-        >
-      </div>
-      <div class="ml-2">
-        <v-btn size="x-small" @click="handleOnClickScaleDownButton"
-          ><v-icon>mdi-minus</v-icon></v-btn
-        >
-        <v-btn size="x-small" class="ml-2" @click="handleOnClickScaleUpButton"
-          ><v-icon>mdi-plus</v-icon></v-btn
-        >
-        <v-btn
-          id="reset-canvas-scale"
-          size="x-small"
-          class="ml-2"
-          @click="handleOnClickResetScaleButton"
-          >100%</v-btn
-        >
-        <v-btn size="x-small" class="ml-2" @click="handleOnClickFitButton"
-          >Fit</v-btn
-        >
-      </div>
-      <span class="mb-1">{{ showCanvasScale }}</span>
-    </div>
+    <span class="mb-1">{{ showCanvasScale }}</span>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { historyManager } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
+// INFO: Undo/Redo and zoom controls used to live here as buttons. They now
+// live in the App.vue menu bar (Edit/View) plus their existing keyboard
+// shortcuts, so this header only shows read-only canvas status and stays
+// out of the way of the graph image.
 export default defineComponent({
   data() {
     return {
-      interpolator,
       canvasHandler,
-      historyManager,
       axisSetRepository,
       datasetRepository,
     }
@@ -73,30 +36,6 @@ export default defineComponent({
         return 'All Datasets (View Only)'
       }
       return this.datasetRepository.activeDataset.name
-    },
-  },
-  methods: {
-    handleOnClickUndoButton() {
-      this.historyManager.undo()
-    },
-    handleOnClickRedoButton() {
-      this.historyManager.redo()
-    },
-    handleOnClickScaleUpButton() {
-      this.canvasHandler.scaleUp()
-      this.interpolator.resizeCanvas()
-    },
-    handleOnClickScaleDownButton() {
-      this.canvasHandler.scaleDown()
-      this.interpolator.resizeCanvas()
-    },
-    handleOnClickResetScaleButton() {
-      this.canvasHandler.drawOriginalSizeImage()
-      this.interpolator.resizeCanvas()
-    },
-    handleOnClickFitButton() {
-      this.canvasHandler.drawFitSizeImage()
-      this.interpolator.resizeCanvas()
     },
   },
 })
