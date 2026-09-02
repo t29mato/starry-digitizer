@@ -113,8 +113,6 @@ import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
-import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
-
 export default defineComponent({
   components: {
     SymbolExtractSettings,
@@ -180,35 +178,39 @@ export default defineComponent({
         this.isExtracting = false
       }
     },
-    //INFO: isActive: booleanであるが、@updateでtsエラーになるのでanyとしている
+    //INFO: isActive is a boolean, but it's typed as any because @update causes a TS error
     handleOnClickInterpolatiorSwitch(isActive: any) {
       this.interpolator.setIsActive(isActive)
 
-      if (isActive) {
-        this.interpolator.updatePreview()
-      } else {
-        //NOTE: A temporary workaround to ensure that data points remain after turning off the interpolation function. A redesign is essential.
-        const dataset = this.datasetRepository.activeDataset
-        const addedPointIds: number[] = []
-        dataset.points
-          .filter((p) => dataset.manuallyAddedPointIds.includes(p.id))
-          .forEach((p) => {
-            dataset.addPoint(p.xPx, p.yPx)
-            addedPointIds.push(dataset.lastPointId)
+      // INFO: updatePreview()/clearPreview() can throw (e.g. if the guide
+      // canvas isn't initialized yet). Persisting the toggle to localStorage
+      // is wrapped in `finally` so a failure in the preview logic below
+      // never leaves the persisted flag out of sync with the (already
+      // reactively-applied) isActive state.
+      try {
+        if (isActive) {
+          this.interpolator.updatePreview()
+        } else {
+          //NOTE: A temporary workaround to ensure that data points remain after turning off the interpolation function. A redesign is essential.
+          const dataset = this.datasetRepository.activeDataset
+          const addedPointIds: number[] = []
+          dataset.points
+            .filter((p) => dataset.manuallyAddedPointIds.includes(p.id))
+            .forEach((p) => {
+              dataset.addPoint(p.xPx, p.yPx)
+              addedPointIds.push(dataset.lastPointId)
+            })
+
+          this.interpolator.clearPreview()
+
+          //NOTE: A temporary workaround to ensure that data points remain after turning off the interpolation function. A redesign is essential.
+          addedPointIds.forEach((pId) => {
+            dataset.addManuallyAddedPointId(pId)
           })
-
-        this.interpolator.clearPreview()
-
-        //NOTE: A temporary workaround to ensure that data points remain after turning off the interpolation function. A redesign is essential.
-        addedPointIds.forEach((pId) => {
-          dataset.addManuallyAddedPointId(pId)
-        })
+        }
+      } finally {
+        addLocalStorageData('isInterpolatorActive', String(isActive))
       }
-
-      //HACK: Since tempPoints are not drawn, force rendering as a temporary measure. Fundamental solution required
-      forceRenderCanvasPoints(this.datasetRepository)
-
-      addLocalStorageData('isInterpolatorActive', String(isActive))
     },
     handleOnConfirmInterpolation() {
       if (
@@ -237,9 +239,6 @@ export default defineComponent({
     handleOnUpdateInterpolatorInterval(value: any) {
       this.interpolator.updateInterval(parseFloat(value))
       this.interpolator.updatePreview()
-
-      //HACK: Since tempPoints are not drawn, force rendering as a temporary measure. Fundamental solution required
-      forceRenderCanvasPoints(this.datasetRepository)
     },
   },
 })
