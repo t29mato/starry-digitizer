@@ -1,6 +1,9 @@
 <template>
   <div class="d-flex justify-space-between align-center flex-wrap">
-    <div class="c__current-dataset-and-axis">
+    <div
+      class="c__current-dataset-and-axis"
+      :title="`Dataset: ${currentDatasetName} / XY Axes: ${axisSetRepository.activeAxisSet.name}`"
+    >
       Dataset: <span>{{ currentDatasetName }}</span> / XY Axes:
       <span>{{ axisSetRepository.activeAxisSet.name }}</span>
     </div>
@@ -107,6 +110,10 @@ export default defineComponent({
     font-size: 0.9rem;
     color: rgb(73, 73, 73);
     margin-right: 40px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 0;
 
     span {
       font-weight: bold;
