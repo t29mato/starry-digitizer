@@ -110,6 +110,7 @@ import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { historyManager } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -128,6 +129,7 @@ export default defineComponent({
       confirmer,
       extractor,
       canvasHandler,
+      historyManager,
       axisSetRepository,
       datasetRepository,
       isExtracting: false,
@@ -170,6 +172,11 @@ export default defineComponent({
       this.isExtracting = true
       this.axisSetRepository.activeAxisSet.inactivateAxis()
       try {
+        // INFO: (#274) capture before overwriting points so RUN is undoable
+        // — without this, Undo silently skips this mutation and jumps to
+        // whatever the previous captured snapshot was (e.g. a preceding
+        // dataset-clear), which reads as "Undo goes back two steps".
+        this.historyManager.capture()
         this.datasetRepository.setPoints(
           this.extractor.execute(this.canvasHandler),
         )
