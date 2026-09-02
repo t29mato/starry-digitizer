@@ -91,6 +91,30 @@
       <mask-settings></mask-settings>
       <color-settings></color-settings>
     </div>
+
+    <!-- INFO: Asks the user whether RUN should replace or append to existing
+         points, rather than silently overwriting them (#280). -->
+    <v-dialog v-model="isRunConfirmDialogOpen" max-width="420px">
+      <v-card>
+        <v-card-title class="text-h6">Replace existing points?</v-card-title>
+        <v-card-text>
+          The active dataset already has
+          {{ datasetRepository.activeDataset.points.length }} point(s). Choose
+          whether automatic extraction should replace them or append the newly
+          extracted points.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn @click="isRunConfirmDialogOpen = false">Cancel</v-btn>
+          <v-btn color="primary" variant="text" @click="runExtraction('append')"
+            >Append</v-btn
+          >
+          <v-btn color="primary" @click="runExtraction('replace')"
+            >Replace</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -110,6 +134,7 @@ import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { historyManager } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -128,9 +153,11 @@ export default defineComponent({
       confirmer,
       extractor,
       canvasHandler,
+      historyManager,
       axisSetRepository,
       datasetRepository,
       isExtracting: false,
+      isRunConfirmDialogOpen: false,
     }
   },
   props: {
@@ -166,13 +193,30 @@ export default defineComponent({
           this.extractor.setStrategy(LineExtract.instance)
       }
     },
-    async extractPoints() {
+    extractPoints() {
+      // INFO: RUN used to silently overwrite existing points (#280). Ask the
+      // user to choose replace vs. append when the active dataset already
+      // has points; run straight away otherwise (nothing to lose).
+      if (this.datasetRepository.activeDataset.points.length > 0) {
+        this.isRunConfirmDialogOpen = true
+        return
+      }
+      this.runExtraction('replace')
+    },
+    async runExtraction(mode: 'replace' | 'append') {
+      this.isRunConfirmDialogOpen = false
       this.isExtracting = true
       this.axisSetRepository.activeAxisSet.inactivateAxis()
       try {
-        this.datasetRepository.setPoints(
-          this.extractor.execute(this.canvasHandler),
-        )
+        this.historyManager.capture()
+        const extractedCoords = this.extractor.execute(this.canvasHandler)
+        if (mode === 'append') {
+          extractedCoords.forEach((coord) => {
+            this.datasetRepository.activeDataset.addPoint(coord.xPx, coord.yPx)
+          })
+        } else {
+          this.datasetRepository.setPoints(extractedCoords)
+        }
         this.datasetRepository.sortPoints()
       } catch (e) {
         console.error('failed to extractPoints', { cause: e })
