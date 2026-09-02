@@ -171,8 +171,11 @@ export default defineComponent({
       this.axisSetRepository.setActiveAxisSet(
         this.datasetRepository.activeDataset.axisSetId,
       )
-      // INFO: データセットが変えた時はマスクをクリアすることが多いので。
-      this.canvasHandler.clearMask()
+      // INFO: Selection Area (mask) is drawn on the shared image canvas, not
+      // per-dataset, so it must survive switching/adding datasets (#279).
+      // Only the active drawing tool (Pen/Box/Eraser) is reset here; the
+      // drawn mask itself is left untouched. Use the "Clear" button in
+      // MaskSettings to explicitly discard it.
       this.canvasHandler.maskMode = MASK_MODE.UNSET
     },
     handleOnClickDataset(id: number) {
@@ -189,7 +192,7 @@ export default defineComponent({
 
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.setActiveDataset(0)
-      this.canvasHandler.clearMask()
+      // INFO: Keep the Selection Area (mask) intact; see activateDataset (#279).
       this.canvasHandler.maskMode = MASK_MODE.UNSET
     },
     handleOnClickAddDatasetButton() {
