@@ -113,8 +113,6 @@ import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
-import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
-
 export default defineComponent({
   components: {
     SymbolExtractSettings,
@@ -180,7 +178,7 @@ export default defineComponent({
         this.isExtracting = false
       }
     },
-    //INFO: isActive: booleanであるが、@updateでtsエラーになるのでanyとしている
+    //INFO: isActive is a boolean, but it's typed as any because @update causes a TS error
     handleOnClickInterpolatiorSwitch(isActive: any) {
       this.interpolator.setIsActive(isActive)
 
@@ -204,9 +202,6 @@ export default defineComponent({
           dataset.addManuallyAddedPointId(pId)
         })
       }
-
-      //HACK: Since tempPoints are not drawn, force rendering as a temporary measure. Fundamental solution required
-      forceRenderCanvasPoints(this.datasetRepository)
 
       addLocalStorageData('isInterpolatorActive', String(isActive))
     },
@@ -237,9 +232,6 @@ export default defineComponent({
     handleOnUpdateInterpolatorInterval(value: any) {
       this.interpolator.updateInterval(parseFloat(value))
       this.interpolator.updatePreview()
-
-      //HACK: Since tempPoints are not drawn, force rendering as a temporary measure. Fundamental solution required
-      forceRenderCanvasPoints(this.datasetRepository)
     },
   },
 })
