@@ -11,6 +11,11 @@ export class CanvasHandler implements CanvasHandlerInterface {
   scale = 1
   cursor: Coord = { xPx: 0, yPx: 0 }
   isCursorOnCanvas = false
+  // INFO: true while a point is being drag-moved in EDIT mode (CanvasPoint).
+  // Lets CanvasMain's own mousemove/mouseup handlers skip their rectangle-
+  // select drag handling so the two gestures don't fight over the same
+  // mouse-down-move-up sequence
+  isDraggingPoint = false
   rectangle = {
     startX: 0,
     startY: 0,

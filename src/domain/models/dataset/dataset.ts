@@ -155,6 +155,17 @@ export class Dataset implements DatasetInterface {
     }
   }
 
+  // INFO: Sets a point's absolute position, used for drag-to-move in EDIT
+  // mode (as opposed to moveActivePoint's relative keyboard-driven vector)
+  movePointTo(id: number, xPx: number, yPx: number): void {
+    const point = this.points.find((point) => point.id === id)
+
+    if (!point) return
+
+    point.xPx = xPx
+    point.yPx = yPx
+  }
+
   addTempPoint(xPx: number, yPx: number) {
     this.tempPoints.push({
       id: this.nextTempPointId,

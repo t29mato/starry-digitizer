@@ -250,7 +250,10 @@ export default defineComponent({
         xPx: clampedXPx,
         yPx: clampedYPx,
       })
-      if (isClicking) {
+      // INFO: while a point is being drag-moved (CanvasPoint), skip the
+      // rectangle-select drag handling below so the two gestures started
+      // from the same mousedown don't fight each other (#273)
+      if (isClicking && !this.canvasHandler.isDraggingPoint) {
         this.mouseDrag({
           xPx: clampedXPx * this.canvasHandler.scale,
           yPx: clampedYPx * this.canvasHandler.scale,
@@ -270,6 +273,13 @@ export default defineComponent({
       if (this.confirmer.isActive) return
 
       this.canvasHandler.mouseUp()
+
+      // INFO: if this mouseup ends a point drag (CanvasPoint), skip the
+      // rectangle-select finalization below — the mousedown that started it
+      // never reached canvasHandler.mouseDown (stopPropagation), so
+      // canvasHandler.rectangle still holds a stale value from a previous
+      // drag (#273)
+      if (this.canvasHandler.isDraggingPoint) return
 
       // INFO: EDITモードの場合にpointの複数選択を行う
       if (this.canvasHandler.manualMode === 1) {

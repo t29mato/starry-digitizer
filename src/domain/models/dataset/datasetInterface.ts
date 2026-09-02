@@ -32,6 +32,7 @@ export interface DatasetInterface {
   addPoint(xPx: number, yPx: number): void
   addTempPoint(xPx: number, yPx: number): void
   moveActivePoint(vector: Vector): void
+  movePointTo(id: number, xPx: number, yPx: number): void
   switchActivatedPoint(id: number): void
   addActivatedPoint(id: number): void
   hasActive(): boolean

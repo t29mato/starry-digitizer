@@ -7,6 +7,7 @@ export interface CanvasHandlerInterface {
   scale: number
   cursor: Coord
   isCursorOnCanvas: boolean
+  isDraggingPoint: boolean
   manualMode: ManualMode
   maskMode: MaskMode
   rectangle: {
