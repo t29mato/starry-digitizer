@@ -15,6 +15,7 @@
       <div class="c__main-area">
         <canvas-header></canvas-header>
         <confirmer-bar></confirmer-bar>
+        <notification-snackbar></notification-snackbar>
         <canvas-main :imagePath="initialGraphImagePath"></canvas-main>
         <canvas-footer></canvas-footer>
       </div>
@@ -47,6 +48,7 @@ import { DatasetManager } from './DatasetManager'
 import { AxisSetManager } from './AxisSetManager'
 import { version } from '../../../package.json'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'
+import NotificationSnackbar from '@/presentation/components/Generals/NotificationSnackbar.vue'
 import DataTable from '@/presentation/components/Export/DataTable.vue'
 
 export default defineComponent({
@@ -63,6 +65,7 @@ export default defineComponent({
     ImageSettings,
     ProjectManager,
     ConfirmerBar,
+    NotificationSnackbar,
   },
   props: {
     // should be imported by require function

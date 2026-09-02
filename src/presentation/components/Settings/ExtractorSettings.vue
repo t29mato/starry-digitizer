@@ -110,6 +110,7 @@ import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { notifier } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -170,12 +171,17 @@ export default defineComponent({
       this.isExtracting = true
       this.axisSetRepository.activeAxisSet.inactivateAxis()
       try {
-        this.datasetRepository.setPoints(
-          this.extractor.execute(this.canvasHandler),
-        )
+        const points = this.extractor.execute(this.canvasHandler)
+        this.datasetRepository.setPoints(points)
         this.datasetRepository.sortPoints()
+
+        const pointLabel = points.length === 1 ? 'point' : 'points'
+        notifier.success(
+          `${this.extractor.strategy.name}: ${points.length} ${pointLabel} extracted`,
+        )
       } catch (e) {
         console.error('failed to extractPoints', { cause: e })
+        notifier.error(`${this.extractor.strategy.name}: extraction failed`)
       } finally {
         this.isExtracting = false
       }

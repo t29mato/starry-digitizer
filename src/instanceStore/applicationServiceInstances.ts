@@ -3,6 +3,7 @@ import { ConfirmerManager } from '@/application/services/confirmer/manager/confi
 import { ExtractorManager } from '@/application/services/extractor/manager/extractorManager'
 import { InterpolatorManager } from '@/application/services/interpolator/manager/interpolatorManager'
 import { MagnifierManager } from '@/application/services/magnifier/manager/magnifierManager'
+import { NotifierManager } from '@/application/services/notifier/manager/notifierManager'
 import { ProjectService } from '@/application/services/projectService/projectService'
 import { HistoryManager } from '@/application/services/historyManager/historyManager'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
@@ -13,6 +14,7 @@ export const extractor = new ExtractorManager().getInstance()
 export const confirmer = new ConfirmerManager().getInstance()
 export const canvasHandler = new CanvasHandlerManager().getInstance()
 export const magnifier = new MagnifierManager().getInstance()
+export const notifier = new NotifierManager().getInstance()
 
 // ProjectService: Directly instantiated to ensure same canvasHandler instance
 export const projectService = new ProjectService(

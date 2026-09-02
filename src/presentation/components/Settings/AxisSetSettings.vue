@@ -157,7 +157,10 @@ import {
   axisSetRepository,
   datasetRepository,
 } from '@/instanceStore/repositoryInatances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import {
+  canvasHandler,
+  notifier,
+} from '@/instanceStore/applicationServiceInstances'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { POINT_MODE, MANUAL_MODE } from '@/constants'
 import { AxisOcrReader } from '@/application/services/axisOcr/axisOcrReader'
@@ -364,6 +367,7 @@ export default defineComponent({
         if (Object.keys(matches).length === 0) {
           this.ocrErrorMessage =
             'No axis labels were recognized near the axis markers. Please enter the values manually.'
+          notifier.warning('OCR: no text found near the axis markers')
           return
         }
 
@@ -381,10 +385,15 @@ export default defineComponent({
         // the auto-filled numbers.
         this.ocrWarningMessage =
           'Auto-filled values may be inaccurate — decimal points are sometimes misread (e.g. "0.4" detected as "4"). Please double-check each value before proceeding.'
+
+        const matchCount = Object.keys(matches).length
+        const axisLabel = matchCount === 1 ? 'axis value' : 'axis values'
+        notifier.success(`OCR: filled ${matchCount} ${axisLabel}`)
       } catch (e) {
         console.error('failed to auto-detect axis values', { cause: e })
         this.ocrErrorMessage =
           'Auto-detection failed. Please enter the values manually.'
+        notifier.error('OCR: auto-detection failed')
       } finally {
         this.ocrIsRunning = false
       }

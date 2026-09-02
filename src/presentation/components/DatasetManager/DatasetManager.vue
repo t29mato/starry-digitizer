@@ -115,6 +115,7 @@ import {
   interpolator,
   magnifier,
   historyManager,
+  notifier,
 } from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
@@ -276,10 +277,17 @@ export default defineComponent({
       const csv = this.convertToCsv(data)
       navigator.clipboard
         .writeText(csv)
-        .then(() => console.log('Dataset copied to clipboard successfully.'))
-        .catch((err) =>
-          console.error('Failed to copy dataset to clipboard.', err),
-        )
+        .then(() => {
+          console.log('Dataset copied to clipboard successfully.')
+          const pointLabel = dataset.points.length === 1 ? 'point' : 'points'
+          notifier.success(
+            `Copied ${dataset.points.length} ${pointLabel} to clipboard`,
+          )
+        })
+        .catch((err) => {
+          console.error('Failed to copy dataset to clipboard.', err)
+          notifier.error('Failed to copy dataset to clipboard')
+        })
     },
     handleOnClickClearDatasetPoints(datasetId: number) {
       const dataset = this.datasetRepository.datasets.find(
