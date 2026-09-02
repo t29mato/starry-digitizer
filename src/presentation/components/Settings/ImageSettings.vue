@@ -102,7 +102,15 @@ export default defineComponent({
         }
 
         await this.canvasHandler.initializeImageElement(fr.result)
+
+        // INFO: Auto-fit the image to the viewport right after it finishes
+        // loading, mirroring exactly what the "Fit" button / F shortcut
+        // does (#285). Wait a tick so the canvas wrapper has settled to its
+        // final layout size before we measure it for the fit calculation.
+        await this.$nextTick()
         this.canvasHandler.drawFitSizeImage()
+        this.interpolator.resizeCanvas()
+
         this.interpolator.isActive && this.interpolator.clearPreview()
         this.extractor.setSwatches(this.canvasHandler.colorSwatches)
         this.canvasHandler.setUploadImageUrl(fr.result)

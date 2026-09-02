@@ -80,6 +80,14 @@ export default class AxisSetCalculator {
             Math.log10(c),
         )
       : ((yq - yc) / (yd - yc)) * (d - c) + c
+
+    // INFO: 軸の2点が同一ピクセル座標にある(=キャリブレーションが不正)場合、
+    // ゼロ除算でInfinity/NaNになりうる。既存のNaNフォールバックに乗せて
+    // 呼び出し側(Magnifier等)がpx座標表示に切り替えられるようにする (#286)
+    if (!Number.isFinite(xV) || !Number.isFinite(yV)) {
+      return { xV: 'NaN', yV: 'NaN' }
+    }
+
     const xEffectiveDigits = this.calculateEffectiveDigits(
       this.#axisSet.x2.value,
       this.#axisSet.x1.value,

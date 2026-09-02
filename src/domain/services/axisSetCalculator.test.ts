@@ -103,6 +103,30 @@ describe('AxisSetCalculator', () => {
     expect(result.yV).toBe('NaN')
   })
 
+  // INFO: #286 - x1/x2の座標が同一ピクセルにある(不正なキャリブレーション)場合、
+  // ゼロ除算でInfinityになりうるが、NaNフォールバックに正規化されるべき
+  it('should calculate XY values as NaN when x1 and x2 share the same pixel coordinate', () => {
+    axisSetMock.x2.coord = { ...axisSetMock.x1.coord }
+    const calculator = new AxisSetCalculator(axisSetMock, {
+      x: false,
+      y: false,
+    })
+    const result = calculator.calculateXYValues(500, 500)
+    expect(result.xV).toBe('NaN')
+    expect(result.yV).toBe('NaN')
+  })
+
+  it('should calculate XY values as NaN when y1 and y2 share the same pixel coordinate', () => {
+    axisSetMock.y2.coord = { ...axisSetMock.y1.coord }
+    const calculator = new AxisSetCalculator(axisSetMock, {
+      x: false,
+      y: false,
+    })
+    const result = calculator.calculateXYValues(500, 500)
+    expect(result.xV).toBe('NaN')
+    expect(result.yV).toBe('NaN')
+  })
+
   it('should calculate XY values correctly with logarithmic scale on x-axis', () => {
     const calculator = new AxisSetCalculator(axisSetMock, { x: true, y: false })
     const result = calculator.calculateXYValues(500, 500)

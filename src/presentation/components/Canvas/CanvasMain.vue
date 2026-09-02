@@ -185,6 +185,13 @@ export default defineComponent({
     click(e: MouseEvent): void {
       if (this.confirmer.isActive) return
 
+      // INFO: a click with no preceding mousemove (e.g. tab-focus + click,
+      // or a click that lands exactly where the cursor already was) never
+      // triggers the mousemove handler, so the Magnifier stays stuck on the
+      // previous position. Update the cursor here too so the Magnifier is
+      // always in sync right after a click (#292)
+      this.mouseMove(e)
+
       this.point(e)
 
       if (this.interpolator.isActive) {

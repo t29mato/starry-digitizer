@@ -15,6 +15,7 @@
       density="compact"
       class="mb-2"
       divided
+      mandatory
       :border="true"
     >
       <v-btn color="primary" size="small" class="pa-1"> Add (A) </v-btn>
@@ -150,11 +151,13 @@ export default defineComponent({
   },
   methods: {
     changeManualMode(value: any) {
-      this.datasetRepository.activeDataset.inactivatePoints()
+      // INFO: `mandatory` on v-btn-toggle keeps one option always selected,
+      // so re-clicking the active ADD/EDIT/DELETE button is a no-op instead
+      // of falling into an unlabeled "no mode" state (#288)
       if (value === undefined) {
-        this.canvasHandler.setManualMode(-1)
         return
       }
+      this.datasetRepository.activeDataset.inactivatePoints()
       this.canvasHandler.setManualMode(value)
     },
     setExtractStrategy(strategy: any) {

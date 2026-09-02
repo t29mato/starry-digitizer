@@ -90,16 +90,34 @@
         color="primary"
         hide-details
       >
-        <v-radio
-          label="2 Points"
-          :value="0"
-          :disabled="twoPointsRadioIsDisabled"
-        ></v-radio>
-        <v-radio
-          label="4 Points"
-          :value="1"
-          :disabled="fourPointsRadioIsDisabled"
-        ></v-radio>
+        <v-tooltip
+          :disabled="!twoPointsRadioIsDisabled"
+          text="Clear the current axes first to switch calibration mode"
+        >
+          <template v-slot:activator="{ props }">
+            <span v-bind="props">
+              <v-radio
+                label="2 Points"
+                :value="0"
+                :disabled="twoPointsRadioIsDisabled"
+              ></v-radio>
+            </span>
+          </template>
+        </v-tooltip>
+        <v-tooltip
+          :disabled="!fourPointsRadioIsDisabled"
+          text="Clear the current axes first to switch calibration mode"
+        >
+          <template v-slot:activator="{ props }">
+            <span v-bind="props">
+              <v-radio
+                label="4 Points"
+                :value="1"
+                :disabled="fourPointsRadioIsDisabled"
+              ></v-radio>
+            </span>
+          </template>
+        </v-tooltip>
       </v-radio-group>
       <v-checkbox
         label="Show axes marker"
