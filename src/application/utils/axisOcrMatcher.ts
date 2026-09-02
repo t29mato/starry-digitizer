@@ -74,9 +74,57 @@ const bboxCenter = (bbox: OcrBbox): Coord => ({
 const distance = (a: Coord, b: Coord): number =>
   Math.hypot(a.xPx - b.xPx, a.yPx - b.yPx)
 
-// INFO: each axis independently picks its own nearest numeric word — see
-// "known limitations" in the design doc for why a single word can end up
-// matching more than one axis.
+// Where a tick label is expected to sit relative to its axis marker.
+// x-axis (x1/x2) tick labels are printed below the axis line; y-axis
+// (y1/y2) tick labels are printed to the left of it. This matters because
+// in 2-point calibration mode x1 and y1 (and x2/y2) are placed at the same
+// pixel position, so a plain nearest-word search can't tell them apart and
+// ends up assigning the x-axis label to y1 too (see #277).
+const AXIS_LABEL_DIRECTION: Record<AxisName, 'below' | 'left'> = {
+  x1: 'below',
+  x2: 'below',
+  y1: 'left',
+  y2: 'left',
+}
+
+// Small slack (original image px) so a label whose bbox center lands just
+// barely on the "wrong" side of the marker (e.g. bbox padding, a slightly
+// tilted scan) isn't excluded outright.
+const DIRECTION_TOLERANCE_PX = 20
+
+// A word counts as being in a given direction from the axis coord only if
+// that direction is also the *dominant* offset — i.e. a word mostly below
+// the marker (small horizontal drift) counts for "below", but a word far to
+// the side (even if technically not above) does not. Without this, a
+// y-axis label sitting to the left-and-slightly-below a marker would still
+// satisfy a plain "below" half-plane check and could be picked for x1, and
+// vice versa for an x-axis label under a "left" check for y1 — which is
+// exactly how x1/y1 sharing a pixel position (2-point calibration mode)
+// used to cross-match the wrong label (see #277).
+const isInAxisLabelDirection = (
+  axisName: AxisName,
+  coord: Coord,
+  wordCenter: Coord,
+): boolean => {
+  const dx = wordCenter.xPx - coord.xPx
+  const dy = wordCenter.yPx - coord.yPx
+
+  if (AXIS_LABEL_DIRECTION[axisName] === 'below') {
+    return (
+      dy >= -DIRECTION_TOLERANCE_PX &&
+      dy >= Math.abs(dx) - DIRECTION_TOLERANCE_PX
+    )
+  }
+  return (
+    dx <= DIRECTION_TOLERANCE_PX &&
+    Math.abs(dx) >= Math.abs(dy) - DIRECTION_TOLERANCE_PX
+  )
+}
+
+// INFO: each axis independently picks its own nearest numeric word (among
+// those on its expected side, see isInAxisLabelDirection above) — see
+// "known limitations" in the design doc for why a single word can still end
+// up matching more than one axis.
 export const matchOcrWordsToAxisValues = (
   words: OcrWord[],
   axisCoords: Partial<Record<AxisName, Coord | undefined>>,
@@ -96,9 +144,16 @@ export const matchOcrWordsToAxisValues = (
       continue
     }
 
-    let nearest = numericWords[0]
+    const candidates = numericWords.filter(({ word }) =>
+      isInAxisLabelDirection(axisName, coord, bboxCenter(word.bbox)),
+    )
+    if (candidates.length === 0) {
+      continue
+    }
+
+    let nearest = candidates[0]
     let nearestDistance = distance(coord, bboxCenter(nearest.word.bbox))
-    for (const candidate of numericWords.slice(1)) {
+    for (const candidate of candidates.slice(1)) {
       const candidateDistance = distance(coord, bboxCenter(candidate.word.bbox))
       if (candidateDistance < nearestDistance) {
         nearest = candidate
