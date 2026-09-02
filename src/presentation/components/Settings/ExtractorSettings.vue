@@ -81,6 +81,23 @@
       prefix="Algorithm: "
       :disabled="datasetRepository.isViewAllMode"
     ></v-select>
+    <div class="d-flex align-center">
+      <h5>Clip to Axes</h5>
+      <v-switch
+        id="switch-clip-to-axes"
+        class="ml-3"
+        color="primary"
+        :model-value="extractor.clipToAxes"
+        @update:model-value="handleOnClickClipToAxesSwitch"
+        hide-details
+        density="compact"
+        :disabled="datasetRepository.isViewAllMode"
+      ></v-switch>
+    </div>
+    <div class="text-caption mb-2" style="color: #999">
+      Ignores points outside the calibrated axes (labels, legend). Only applies
+      once x1/x2/y1/y2 are all set.
+    </div>
     <div v-if="!datasetRepository.isViewAllMode">
       <div v-if="extractor.strategy.name === 'Symbol Extract'">
         <symbol-extract-settings></symbol-extract-settings>
@@ -171,7 +188,10 @@ export default defineComponent({
       this.axisSetRepository.activeAxisSet.inactivateAxis()
       try {
         this.datasetRepository.setPoints(
-          this.extractor.execute(this.canvasHandler),
+          this.extractor.execute(
+            this.canvasHandler,
+            this.axisSetRepository.activeAxisSet,
+          ),
         )
         this.datasetRepository.sortPoints()
       } catch (e) {
@@ -179,6 +199,9 @@ export default defineComponent({
       } finally {
         this.isExtracting = false
       }
+    },
+    handleOnClickClipToAxesSwitch(value: any) {
+      this.extractor.setClipToAxes(!!value)
     },
     //INFO: isActive: booleanであるが、@updateでtsエラーになるのでanyとしている
     handleOnClickInterpolatiorSwitch(isActive: any) {

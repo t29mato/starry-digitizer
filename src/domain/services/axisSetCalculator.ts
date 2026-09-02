@@ -164,3 +164,44 @@ export default class AxisSetCalculator {
     return { xPx, yPx }
   }
 }
+
+// INFO: The pixel-space rectangle spanned by the calibrated x1/x2/y1/y2 axes.
+// Used to clip extraction results (e.g. legend glyphs, axis labels) to the
+// plotted data area. See https://github.com/t29mato/starry-digitizer/issues/278
+export type PixelBoundingBox = {
+  xPxMin: number
+  xPxMax: number
+  yPxMin: number
+  yPxMax: number
+}
+
+/**
+ * Returns the pixel-space bounding box formed by the x1/x2/y1/y2 axis
+ * coordinates, or null when the axis set is not fully calibrated yet
+ * (i.e. at least one of the four axes has no pixel coordinate assigned).
+ *
+ * Handles either axis direction: x1 is not guaranteed to be left of x2,
+ * nor y1 above y2, so the box bounds are derived via min/max rather than
+ * assuming a fixed ordering.
+ */
+export function getAxisSetPixelBoundingBox(
+  axisSet: AxisSetInterface,
+): PixelBoundingBox | null {
+  const axes = [axisSet.x1, axisSet.x2, axisSet.y1, axisSet.y2]
+  const isFullyCalibrated = axes.every(
+    (axis) => axis.coord && axis.coord.xPx >= 0 && axis.coord.yPx >= 0,
+  )
+  if (!isFullyCalibrated) {
+    return null
+  }
+
+  const xPxValues = [axisSet.x1.coord.xPx, axisSet.x2.coord.xPx]
+  const yPxValues = [axisSet.y1.coord.yPx, axisSet.y2.coord.yPx]
+
+  return {
+    xPxMin: Math.min(...xPxValues),
+    xPxMax: Math.max(...xPxValues),
+    yPxMin: Math.min(...yPxValues),
+    yPxMax: Math.max(...yPxValues),
+  }
+}
