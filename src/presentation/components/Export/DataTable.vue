@@ -32,6 +32,7 @@ import { Point } from '@/@types/types'
 import {
   canvasHandler,
   magnifier,
+  notifier,
 } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
@@ -92,12 +93,20 @@ export default defineComponent({
       return calculator.calculateXYValues(x, y)
     },
     copyData() {
+      const pointCount = this.datasetRepository.activeDataset.points.length
       const data = this.tableData.map((row: any) => [row.X, row.Y])
       const csv = data.map((row: any[]) => row.join(',')).join('\n')
       navigator.clipboard
         .writeText(csv)
-        .then(() => console.log('Data copied to clipboard successfully.'))
-        .catch((err) => console.error('Failed to copy data to clipboard.', err))
+        .then(() => {
+          console.log('Data copied to clipboard successfully.')
+          const pointLabel = pointCount === 1 ? 'point' : 'points'
+          notifier.success(`Copied ${pointCount} ${pointLabel} to clipboard`)
+        })
+        .catch((err) => {
+          console.error('Failed to copy data to clipboard.', err)
+          notifier.error('Failed to copy data to clipboard')
+        })
     },
   },
   watch: {
