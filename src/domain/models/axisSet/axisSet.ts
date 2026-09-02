@@ -12,7 +12,7 @@ export class AxisSet implements AxisSetInterface {
   x2: AxisInterface
   y1: AxisInterface
   y2: AxisInterface
-  x2y2: AxisInterface //x2, y2を同時調整するために使う仮想軸
+  x2y2: AxisInterface // virtual axis used to adjust x2 and y2 simultaneously
   xIsLogScale = false
   yIsLogScale = false
   activeAxisName = ''
@@ -96,7 +96,7 @@ export class AxisSet implements AxisSetInterface {
   }
 
   get nextAxis(): AxisInterface | null {
-    //INFO: 以下の条件の時はx2,y2を同時に定義するモードに入る
+    //INFO: enter the mode that defines x2 and y2 simultaneously when the following condition is met
     if (this.pointMode === POINT_MODE.TWO_POINTS && this.hasOnlyX1Y1AxisSet) {
       return this.x2y2
     }
@@ -186,7 +186,7 @@ export class AxisSet implements AxisSetInterface {
 
     this.activeAxisName = this.nextAxis.name
 
-    //INFO: a. 2点定義モードで、、x1を定義する時は同時にy1を定義して終了する
+    //INFO: a. in two-point definition mode, defining x1 also defines y1 at the same time and finishes
     if (
       this.activeAxisName === 'x1' &&
       this.pointMode === POINT_MODE.TWO_POINTS
@@ -196,7 +196,7 @@ export class AxisSet implements AxisSetInterface {
       return
     }
 
-    //INFO: b. x2, y2同時定義モードの場合は両方定義して終了する
+    //INFO: b. in x2/y2 simultaneous definition mode, define both and finish
     if (this.activeAxisName === 'x2y2') {
       this.x2y2.coord = Object.assign(coord)
       this.x2.coord = { xPx: coord.xPx, yPx: this.x1.coord.yPx }
@@ -204,7 +204,7 @@ export class AxisSet implements AxisSetInterface {
       return
     }
 
-    //INFO: a, bのどちらでもない場合は定義すべき軸のみ定義する
+    //INFO: if neither a nor b applies, define only the axis that should be defined
     this.nextAxis.coord = coord
   }
 

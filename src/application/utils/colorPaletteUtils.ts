@@ -1,12 +1,12 @@
 // colorPaletteUtils.ts
-// 画像データから代表色（カラーパレット）を抽出するユーティリティ
-// 白・グレー系除外、同系色グループ化、彩度優先、黒系含む
+// Utility for extracting representative colors (color palette) from image data
+// Excludes white/gray tones, groups similar colors, prioritizes saturation, includes black tones
 
 function isWhite(r: number, g: number, b: number): boolean {
   return r > 200 && g > 200 && b > 200
 }
 
-// 彩度だけ返す関数にリネーム
+// Renamed to a function that returns saturation only
 function getSaturation(r: number, g: number, b: number): number {
   r /= 255
   g /= 255
@@ -49,7 +49,7 @@ function buildColorMap(
     const a = imageData[i + 3]
     if (a < 128) continue
     if (isWhite(r, g, b)) continue
-    // グレーも黒も除外しない
+    // Do not exclude gray or black
     const s = getSaturation(r, g, b)
     const hex =
       '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('')
@@ -93,7 +93,7 @@ export function extractColorSwatches({
   colorDiffThreshold = 60,
 }: ExtractColorSwatchesOptions): string[] {
   const colorMap = buildColorMap(imageData)
-  // 彩度優先をやめ、出現数順のみでソート
+  // Stop prioritizing saturation and sort only by occurrence count
   const sorted = Array.from(colorMap.entries()).sort(
     (a, b) => b[1].count - a[1].count,
   )

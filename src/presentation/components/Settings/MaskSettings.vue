@@ -81,7 +81,7 @@ export default defineComponent({
     },
     clearMask() {
       this.canvasHandler.clearMask()
-      // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
+      // INFO: After the mask is cleared, nothing is drawn, so the eraser tool is no longer needed.
       if (this.canvasHandler.maskMode === MASK_MODE.ERASER) {
         this.canvasHandler.maskMode = MASK_MODE.UNSET
       }

@@ -297,7 +297,7 @@ export default defineComponent({
         const displayKey = axisName as keyof typeof this.displayVal
         const axisValue = axisSet[axisName].value
 
-        // Exponential表示の条件に基づき、表示値を設定
+        // Set the display value based on the exponential display condition
         this.displayVal[displayKey] = this.axesToDisplayValAsExponential.find(
           (axis) => axis.axisSetId === axisSet.id && axis.axisName === axisName,
         )

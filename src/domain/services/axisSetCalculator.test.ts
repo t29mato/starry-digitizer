@@ -58,8 +58,8 @@ describe('AxisSetCalculator', () => {
     expect(result.yV).toBe('NaN')
   })
 
-  // INFO: 未配置の軸のcoordはinitialCoord {-999, -999} (truthy) のため、
-  // 以前はゼロ除算でInfinityが返っていた
+  // INFO: an unplaced axis's coord is initialCoord {-999, -999} (truthy), so
+  // previously this returned Infinity due to division by zero
   it('should calculate XY values as NaN when axes are not placed yet', () => {
     const unplacedAxisSet = new AxisSet(
       new Axis('x1', 0),

@@ -144,7 +144,7 @@ export default defineComponent({
       this.updateImage(file)
     },
     onImagePasted(event: ClipboardEvent) {
-      // INFO: 入力フィールドにカーソルが当たってる場合はスルー
+      // INFO: Skip if the cursor is focused on an input field
       const targetName = (event.target as Element).nodeName
       if (targetName === 'INPUT' || targetName === 'TEXTAREA') {
         return

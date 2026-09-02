@@ -19,7 +19,7 @@ describe('extractColorSwatches', () => {
       [120, 120, 120, 255], [125, 125, 125, 255],
       [130, 130, 130, 255], [128, 128, 128, 255],
     ])
-    // グレーは近い色として1色にまとめられる
+    // Grays are grouped together into a single close color
     expect(extractColorSwatches({ imageData: data, maxSwatches: 5 })).toEqual([
       '#787878',
     ])
@@ -39,7 +39,7 @@ describe('extractColorSwatches', () => {
       [0, 255, 0, 255],   // green
       [0, 0, 255, 255],   // blue
       [255, 255, 255, 255], // white (ignored)
-      [128, 128, 128, 255], // gray (含める)
+      [128, 128, 128, 255], // gray (included)
       [0, 0, 0, 255],     // black
     ])
     const result = extractColorSwatches({ imageData: data, maxSwatches: 6, colorDiffThreshold: 10 })

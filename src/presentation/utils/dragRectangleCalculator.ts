@@ -1,6 +1,6 @@
 import { Coord } from '@/@types/types'
 
-// 右下から左上にドラッグした時でもabsoluteな四角形を作る関数
+// Function that builds an absolute rectangle even when dragging from bottom-right to top-left
 export function getRectCoordsFromDragCoords(
   dragStartCoord: Coord,
   dragEndCoord: Coord,

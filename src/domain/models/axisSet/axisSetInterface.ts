@@ -1,7 +1,7 @@
 import { AxisInterface } from '../axis/axisInterface'
 import { Coord, PointMode } from '@/@types/types'
 
-// TODO: VectorはDatasetInterfaceでも利用しており共通Typeの場所を用意するべきか検討する
+// TODO: Vector is also used in DatasetInterface, consider providing a shared type location for it
 export type Vector = {
   direction: 'up' | 'down' | 'right' | 'left'
   distancePx: number
@@ -14,7 +14,7 @@ export type Vector = {
 export interface AxisSetInterface {
   id: number
   name: string
-  x1: AxisInterface // ← これがネストした複雑なオブジェクト
+  x1: AxisInterface // <- this is a nested complex object
   x2: AxisInterface
   y1: AxisInterface
   y2: AxisInterface

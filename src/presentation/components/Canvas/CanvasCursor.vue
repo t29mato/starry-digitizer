@@ -104,7 +104,7 @@ export default defineComponent({
       return ''
     },
     isCursorGuideLinesActive(): boolean {
-      // INFO: カーソルがキャンバス外の場合は非表示
+      // INFO: Hide when the cursor is outside the canvas
       if (!this.canvasHandler.isCursorOnCanvas) {
         return false
       }
@@ -113,7 +113,7 @@ export default defineComponent({
         return false
       }
 
-      //INFO: 軸定義後でプロットのいずれのモードでもないときは表示しない
+      //INFO: Hide when the axis is already defined and no plot mode is active
       if (
         this.canvasHandler.manualMode === MANUAL_MODE.UNSET &&
         this.axisSetRepository.activeAxisSet.y2.coordIsFilled
@@ -121,12 +121,12 @@ export default defineComponent({
         return false
       }
 
-      // //INFO: マスク操作中の場合は表示しない
+      // //INFO: Hide while mask editing is in progress
       if (this.canvasHandler.maskMode !== MASK_MODE.UNSET) {
         return false
       }
 
-      //INFO: EDIT, DELETEモードの場合は表示しない
+      //INFO: Hide in EDIT or DELETE mode
       if (
         this.canvasHandler.manualMode !== MANUAL_MODE.UNSET &&
         this.canvasHandler.manualMode !== MANUAL_MODE.ADD
@@ -168,7 +168,7 @@ export default defineComponent({
     },
   },
   methods: {
-    //INFO: computedではリアクティブにならなかったのでmethodとしている
+    //INFO: Implemented as a method instead of computed because computed did not stay reactive
     getImageCanvasSize(): { w: number; h: number } {
       const imageCanvas = document.getElementById('imageCanvas')
 

@@ -1,5 +1,5 @@
 <template>
-  <!-- INFO: プロットデータ -->
+  <!-- INFO: Plot data -->
   <div
     class="magnifier-points"
     :style="{
@@ -79,7 +79,7 @@ export default defineComponent({
       return '#1e90ff'
     },
     borderRadius(): string {
-      //TODO: 本来はinterpolatorのanchor pointsであるべきものを、暫定的にpointで表現しているので、最終的にここは消したい
+      //TODO: This should originally be the interpolator's anchor points, but it's temporarily represented as point, so this should eventually be removed
 
       if (this.isManuallyAdded && this.interpolator.isActive) {
         return '0'

@@ -84,7 +84,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
       case MASK_MODE.PEN:
         this.drawPenMask(xPx, yPx, this.penToolSizePx)
         break
-      case MASK_MODE.BOX: // INFO: マウスドラッグ中は選択範囲を仮描画
+      case MASK_MODE.BOX: // INFO: temporarily draw the selection area while dragging the mouse
         this.drawDraggedArea()
         break
       case MASK_MODE.ERASER:
@@ -99,7 +99,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
     this.rectangle.endX = xPx
     this.rectangle.endY = yPx
 
-    //INFO: 現在のモードがmanual modeかmask modeかで処理を分岐
+    //INFO: branch processing depending on whether the current mode is manual mode or mask mode
     if (this.manualMode !== MANUAL_MODE.UNSET) {
       this.mouseDragInManualMode()
       return
@@ -142,8 +142,8 @@ export class CanvasHandler implements CanvasHandlerInterface {
     if (this.cursor.xPx === 0) {
       ctx.moveTo(xPx, yPx)
     } else {
-      // HACK: Firefox v107.0, Google Chrome v108.0.5359.124では問題ないが、
-      // HACK: Safari v15.3でなんらか数値計算をしない限り線が描画されないため対応
+      // HACK: This is fine on Firefox v107.0 and Google Chrome v108.0.5359.124, but
+      // HACK: on Safari v15.3 the line is not drawn unless some numerical calculation is done, so this works around that
       ctx.moveTo(this.scaledCursor.xPx + 0.0001, this.scaledCursor.yPx + 0.0001)
     }
     ctx.lineTo(xPx, yPx)
@@ -162,9 +162,9 @@ export class CanvasHandler implements CanvasHandlerInterface {
     if (this.scaledCursor.xPx === 0) {
       ctx.moveTo(xPx, yPx)
     } else {
-      // HACK: Firefox v107.0, Google Chrome v108.0.5359.124では問題ないが、
-      // HACK: Safari v15.3でなんらか数値計算をしない限り線が描画されないため対応
-      // HACK: Edgeでも116.0.1938.69でも同様に描画されなかった
+      // HACK: This is fine on Firefox v107.0 and Google Chrome v108.0.5359.124, but
+      // HACK: on Safari v15.3 the line is not drawn unless some numerical calculation is done, so this works around that
+      // HACK: On Edge (116.0.1938.69) the line also was not drawn in the same way
       ctx.moveTo(this.scaledCursor.xPx + 0.0001, this.scaledCursor.yPx + 0.0001)
     }
     ctx.lineTo(xPx, yPx)
@@ -238,14 +238,14 @@ export class CanvasHandler implements CanvasHandlerInterface {
     if (!this.imageElement) {
       throw new Error('imageElement is undefined.')
     }
-    // 画像全体のピクセルデータを取得
+    // Get the pixel data for the entire image
     const canvas = document.createElement('canvas')
     canvas.width = this.imageElement.width
     canvas.height = this.imageElement.height
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     ctx.drawImage(this.imageElement, 0, 0)
     const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
-    // ユーティリティ関数で代表色抽出
+    // Extract representative colors using a utility function
     return extractColorSwatches({
       imageData: data,
       maxSwatches: 10,
@@ -316,7 +316,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
     const wrapperHeightPx = this.canvasWrapper.offsetHeight
     const widthScale = wrapperWidthPx / this.originalWidth
     const heightScale = wrapperHeightPx / this.originalHeight
-    const scale = Math.min(widthScale, heightScale) - 0.01 // INFO: 0.01を引くことで、画像がはみ出さないようにする
+    const scale = Math.min(widthScale, heightScale) - 0.01 // INFO: subtract 0.01 so the image does not overflow
     const fitWidth = this.originalWidth * scale
     const fitHeight = this.originalHeight * scale
     this.resize(fitWidth, fitHeight)

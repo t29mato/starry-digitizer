@@ -15,17 +15,17 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-// TODO: TSの型宣言エラーが解消できずignore いずれ再度調査
+// TODO: Ignoring because the TS type declaration error couldn't be resolved; investigate again later
 // @ts-ignore
 import colors from 'vuetify/lib/util/colors'
 import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 
-// TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
+// TODO: Ignoring because the TS type declaration error couldn't be resolved; may be related to resolvePackageJsonExports. Investigate again later
 // @ts-ignore
 import { HotTable } from '@handsontable/vue3'
 import 'handsontable/dist/handsontable.full.css'
 
-// TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
+// TODO: Ignoring because the TS type declaration error couldn't be resolved; may be related to resolvePackageJsonExports. Investigate again later
 // @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
 import { Point } from '@/@types/types'
@@ -80,7 +80,7 @@ export default defineComponent({
   },
   methods: {
     calculateXY(x: number, y: number): { xV: string; yV: string } {
-      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
+      // INFO: If the axis values aren't determined yet, show the pixel values as-is
       const calculator = new AxisSetCalculator(
         this.axisSetRepository.activeAxisSet,
         {

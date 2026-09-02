@@ -1,6 +1,6 @@
 <template>
   <v-row class="ma-0">
-    <!--  TODO: pxはappendixで追加する -->
+    <!--  TODO: Add px in the appendix -->
     <v-col class="pa-0 mr-2">
       <v-text-field
         :model-value="lineExtract.dxPx"

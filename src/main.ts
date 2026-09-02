@@ -13,7 +13,7 @@ import { createVuetify } from 'vuetify'
 import './vuetify-style.css'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
-// TODO: TSの型宣言エラーが解消できずignore いずれ再度調査
+// TODO: could not resolve the TS type declaration error, ignoring for now; investigate again later
 // @ts-ignore
 import colors from 'vuetify/lib/util/colors'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'

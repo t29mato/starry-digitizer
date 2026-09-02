@@ -22,7 +22,7 @@ export default defineComponent({
     }
   },
   computed: {
-    // INFO: 十字線を作成する箱の横幅
+    // INFO: Width of the box used to draw the crosshair line
     width(): number {
       return (this.magnifier.sizePx - this.magnifier.crosshairSizePx) / 2
     },
