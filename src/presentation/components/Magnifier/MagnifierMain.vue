@@ -121,6 +121,7 @@ import MagnifierSettings from './MagnifierSettings.vue'
 import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
 import AxisSetCalculator from '@/domain/services/axisSetCalculator'
+import { formatCoordValue } from '@/presentation/utils/formatCoordValue'
 
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
@@ -179,13 +180,16 @@ export default defineComponent({
         this.canvasHandler.cursor.yPx,
       )
       // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
-      if (values.xV === 'NaN' || values.yV === 'NaN') {
+      if (values.xV === null || values.yV === null) {
         return {
           xV: `${Math.max(Math.round(this.canvasHandler.cursor.xPx), 0)}px`,
           yV: `${Math.max(Math.round(this.canvasHandler.cursor.yPx), 0)}px`,
         }
       }
-      return values
+      return {
+        xV: formatCoordValue(values.xV, calculator.xEffectiveDigits),
+        yV: formatCoordValue(values.yV, calculator.yEffectiveDigits),
+      }
     },
   },
   methods: {
@@ -250,4 +254,3 @@ $_white-outline-pos-value: calc(50% - #{$_white-outline-size} - 1px);
   }
 }
 </style>
-@/domain/services/axisSetCalculator
