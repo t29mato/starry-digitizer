@@ -22,6 +22,11 @@ export class CanvasHandler implements CanvasHandlerInterface {
   penToolSizePx = 50
   eraserSizePx = 30
   uploadImageUrl = ''
+  // INFO: Previous point of the pen/eraser stroke currently being drawn, used
+  // to connect consecutive pointer positions with a line segment instead of
+  // only painting a dot at each event. `null` means no stroke is in progress
+  // (#272).
+  lastMaskDrawPoint: Coord | null = null
 
   constructor() {
     this.imageElement = new Image()
@@ -70,6 +75,16 @@ export class CanvasHandler implements CanvasHandlerInterface {
   mouseDown(xPx: number, yPx: number) {
     this.rectangle.startX = xPx
     this.rectangle.startY = yPx
+
+    // INFO: start a new pen/eraser stroke and paint/erase immediately so a
+    // single click (pointerdown without a following drag) still has an
+    // effect, matching how pen/eraser tools are expected to work (#272)
+    this.lastMaskDrawPoint = null
+    if (this.maskMode === MASK_MODE.PEN) {
+      this.drawPenMask(xPx, yPx, this.penToolSizePx)
+    } else if (this.maskMode === MASK_MODE.ERASER) {
+      this.drawEraserMask(xPx, yPx, this.eraserSizePx)
+    }
   }
 
   mouseDragInManualMode() {
@@ -113,6 +128,8 @@ export class CanvasHandler implements CanvasHandlerInterface {
 
   mouseUp() {
     this.clearTempMask()
+    // INFO: the pen/eraser stroke ends here; the next one starts fresh
+    this.lastMaskDrawPoint = null
 
     if (this.maskMode === MASK_MODE.BOX) {
       this.drawBoxMask()
@@ -139,18 +156,19 @@ export class CanvasHandler implements CanvasHandlerInterface {
     const ctx = this.maskCanvas.context
     ctx.strokeStyle = '#ffff00ff' // INFO: yellow
     ctx.beginPath()
-    if (this.cursor.xPx === 0) {
-      ctx.moveTo(xPx, yPx)
-    } else {
-      // HACK: Firefox v107.0, Google Chrome v108.0.5359.124では問題ないが、
-      // HACK: Safari v15.3でなんらか数値計算をしない限り線が描画されないため対応
-      ctx.moveTo(this.scaledCursor.xPx + 0.0001, this.scaledCursor.yPx + 0.0001)
-    }
+    // INFO: draw a line segment from the previous point of this stroke to
+    // the current point so dragging paints continuously along the path
+    // instead of only at isolated dots (#272)
+    const fromPoint = this.lastMaskDrawPoint ?? { xPx, yPx }
+    // HACK: Firefox v107.0, Google Chrome v108.0.5359.124では問題ないが、
+    // HACK: Safari v15.3でなんらか数値計算をしない限り線が描画されないため対応
+    ctx.moveTo(fromPoint.xPx + 0.0001, fromPoint.yPx + 0.0001)
     ctx.lineTo(xPx, yPx)
     ctx.lineCap = 'round'
     ctx.lineWidth = penSize
     ctx.stroke()
     this.isDrawnMask = true
+    this.lastMaskDrawPoint = { xPx, yPx }
     this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
@@ -159,19 +177,20 @@ export class CanvasHandler implements CanvasHandlerInterface {
     ctx.globalCompositeOperation = 'destination-out'
     ctx.strokeStyle = '#000000' // INFO: black
     ctx.beginPath()
-    if (this.scaledCursor.xPx === 0) {
-      ctx.moveTo(xPx, yPx)
-    } else {
-      // HACK: Firefox v107.0, Google Chrome v108.0.5359.124では問題ないが、
-      // HACK: Safari v15.3でなんらか数値計算をしない限り線が描画されないため対応
-      // HACK: Edgeでも116.0.1938.69でも同様に描画されなかった
-      ctx.moveTo(this.scaledCursor.xPx + 0.0001, this.scaledCursor.yPx + 0.0001)
-    }
+    // INFO: draw a line segment from the previous point of this stroke to
+    // the current point so dragging erases continuously along the path
+    // instead of only at isolated dots (#272)
+    const fromPoint = this.lastMaskDrawPoint ?? { xPx, yPx }
+    // HACK: Firefox v107.0, Google Chrome v108.0.5359.124では問題ないが、
+    // HACK: Safari v15.3でなんらか数値計算をしない限り線が描画されないため対応
+    // HACK: Edgeでも116.0.1938.69でも同様に描画されなかった
+    ctx.moveTo(fromPoint.xPx + 0.0001, fromPoint.yPx + 0.0001)
     ctx.lineTo(xPx, yPx)
     ctx.lineCap = 'round'
     ctx.lineWidth = penSize
     ctx.stroke()
     this.isDrawnMask = true
+    this.lastMaskDrawPoint = { xPx, yPx }
     ctx.globalCompositeOperation = 'source-over'
     this.magnifierMaskCanvas.context.clearRect(
       0,

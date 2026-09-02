@@ -26,18 +26,20 @@
       :model-value="canvasHandler.penToolSizePx"
       @change="onChangePenToolSizePx"
       type="number"
-      hide-details
       label="Pen Size"
+      variant="outlined"
       density="compact"
+      hide-details="auto"
     ></v-text-field>
     <v-text-field
       v-if="maskModeIsEraser"
       :model-value="canvasHandler.eraserSizePx"
       @change="onChangeEraserSizePx"
       type="number"
-      hide-details
       label="Eraser Size (px)"
+      variant="outlined"
       density="compact"
+      hide-details="auto"
     ></v-text-field>
   </div>
 </template>
