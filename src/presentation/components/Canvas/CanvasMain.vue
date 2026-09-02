@@ -317,7 +317,26 @@ export default defineComponent({
       }
 
       const targetName = target.nodeName
-      return targetName === 'INPUT' || targetName === 'TEXTAREA'
+      if (targetName !== 'INPUT' && targetName !== 'TEXTAREA') {
+        return false
+      }
+
+      // INFO: <input type="number"> fields (Pen/Eraser Size, Interpolation
+      // Interval, ...) only ever accept digits and a few control keys
+      // natively — a letter key like 'a'/'e'/'d' never produces a character
+      // there. Left-over focus in one of these size inputs (e.g. after
+      // switching Selection Area to Eraser) shouldn't be able to swallow a
+      // single-letter mode shortcut. Non-letter keys (arrows, Backspace,
+      // Delete, ...) still defer to the field's native editing behavior (#276).
+      if (
+        targetName === 'INPUT' &&
+        (target as HTMLInputElement).type === 'number' &&
+        /^[a-zA-Z]$/.test(e.key)
+      ) {
+        return false
+      }
+
+      return true
     },
     handleHistoryShortcut(e: KeyboardEvent): boolean {
       if (this.isTypingTarget(e)) {
@@ -490,7 +509,11 @@ export default defineComponent({
     -webkit-user-drag: none;
     outline: solid 1px gray;
     overflow: auto;
-    height: 80vh;
+    // INFO: fills whatever space is left in the (now height-constrained)
+    // main area instead of a fixed 80vh, which used to ignore the header/
+    // footer/sidebars and push the whole page past 100vh (#276).
+    flex: 1 1 auto;
+    min-height: 0;
   }
 }
 </style>
