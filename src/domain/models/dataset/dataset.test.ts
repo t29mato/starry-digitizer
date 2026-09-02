@@ -158,6 +158,29 @@ test('move points', () => {
     yPx: 10,
   })
 })
+
+test('move a point to an absolute position', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+  dataset.addPoint(0, 0)
+  dataset.addPoint(10, 10)
+
+  dataset.movePointTo(1, 5, 8)
+
+  expect(dataset.points).toEqual([
+    { id: 1, xPx: 5, yPx: 8 },
+    { id: 2, xPx: 10, yPx: 10 },
+  ])
+})
+
+test('move a point to an absolute position does nothing when the id does not exist', () => {
+  const dataset = new Dataset('dataset 1', [], 1)
+  dataset.addPoint(0, 0)
+
+  dataset.movePointTo(999, 5, 8)
+
+  expect(dataset.points).toEqual([{ id: 1, xPx: 0, yPx: 0 }])
+})
+
 test('scale points', () => {
   const dataset = new Dataset(
     'dataset 1',
