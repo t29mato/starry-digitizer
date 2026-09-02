@@ -35,28 +35,56 @@
       ></v-switch>
     </div>
 
-    <div v-if="interpolator.isActive" class="d-flex align-end mt-1 mb-2">
-      <v-text-field
-        id="interpolation-interval"
-        class="mr-4"
-        :model-value="interpolator.interval"
-        @update:model-value="handleOnUpdateInterpolatorInterval"
-        prefix="Interval: "
-        suffix="px"
-        type="number"
-        min="2"
-        step="1"
-        max="30"
+    <div v-if="interpolator.isActive" class="mt-1 mb-2">
+      <v-btn-toggle
+        id="interpolation-interval-unit"
+        :model-value="interpolator.intervalUnit"
+        @update:model-value="handleOnUpdateIntervalUnit"
         density="compact"
-        hide-details
-      ></v-text-field>
-      <v-btn
-        id="confirm-interpolation"
-        @click="handleOnConfirmInterpolation"
-        size="small"
-        color="primary"
-        >Confirm</v-btn
+        class="mb-1"
+        divided
+        mandatory
+        :border="true"
       >
+        <v-btn value="px" size="small" class="pa-1">px</v-btn>
+        <v-btn
+          value="dataUnit"
+          size="small"
+          class="pa-1"
+          :disabled="!interpolator.isDataUnitIntervalAvailable"
+          >Data Unit</v-btn
+        >
+      </v-btn-toggle>
+      <div
+        v-if="!interpolator.isDataUnitIntervalAvailable"
+        class="text-caption mb-1"
+        style="color: #999"
+      >
+        Data unit intervals require a calibrated, linear-scale x-axis.
+      </div>
+      <div class="d-flex align-end">
+        <v-text-field
+          id="interpolation-interval"
+          class="mr-4"
+          :model-value="interpolator.interval"
+          @update:model-value="handleOnUpdateInterpolatorInterval"
+          prefix="Interval: "
+          :suffix="interpolator.intervalUnit === 'px' ? 'px' : 'data unit'"
+          type="number"
+          :min="interpolator.intervalUnit === 'px' ? 2 : 0"
+          :max="interpolator.intervalUnit === 'px' ? 30 : undefined"
+          step="1"
+          density="compact"
+          hide-details
+        ></v-text-field>
+        <v-btn
+          id="confirm-interpolation"
+          @click="handleOnConfirmInterpolation"
+          size="small"
+          color="primary"
+          >Confirm</v-btn
+        >
+      </div>
     </div>
     <div class="d-flex align-center mb-1">
       <h4 class="mb-0">Automatic Extraction</h4>
@@ -236,6 +264,21 @@ export default defineComponent({
     },
     handleOnUpdateInterpolatorInterval(value: any) {
       this.interpolator.updateInterval(parseFloat(value))
+      this.interpolator.updatePreview()
+
+      //HACK: Since tempPoints are not drawn, force rendering as a temporary measure. Fundamental solution required
+      forceRenderCanvasPoints(this.datasetRepository)
+    },
+    //INFO: value: IntervalUnit ('px' | 'dataUnit'), but @update:model-value types it loosely as any
+    handleOnUpdateIntervalUnit(value: any) {
+      if (value === undefined) {
+        // NOTE: v-btn-toggle emits undefined if the currently active button
+        // is clicked again; `mandatory` should prevent this, but guard just
+        // in case so the interval unit is never left unset.
+        return
+      }
+
+      this.interpolator.updateIntervalUnit(value)
       this.interpolator.updatePreview()
 
       //HACK: Since tempPoints are not drawn, force rendering as a temporary measure. Fundamental solution required

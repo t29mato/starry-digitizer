@@ -3,17 +3,61 @@ import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
 import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
 import { getPointsTotalDistance } from '../../utils/pointsUtils'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import {
+  convertDataUnitIntervalToPx,
+  isXAxisCalibratedForDataUnitInterval,
+  IntervalUnit,
+} from '../../utils/intervalUnitConverter'
+import {
+  axisSetRepository,
+  datasetRepository,
+} from '@/instanceStore/repositoryInatances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { Coord, Point } from '@/@types/types'
 
 export class Interpolator implements InterpolatorInterface {
   public isActive: boolean = false
+  // INFO: interpretation depends on intervalUnit -- px distance when 'px',
+  // x-axis data-unit distance when 'dataUnit' (see intervalPx getter below)
   public interval: number = 10
+  public intervalUnit: IntervalUnit = 'px'
   public interpolatedCoords: Coord[] = []
   public interpolatedCoordsForGuideline: Coord[] = []
   public guideCanvas?: HTMLCanvas
   public magnifierCanvas?: HTMLCanvas
+
+  // Whether the 'dataUnit' interval unit can currently be used, i.e. the
+  // x-axis is calibrated with a usable (non-log) linear scale.
+  public get isDataUnitIntervalAvailable(): boolean {
+    return isXAxisCalibratedForDataUnitInterval(axisSetRepository.activeAxisSet)
+  }
+
+  // The interval value actually fed into the interpolation math, always in
+  // px. In 'px' mode this is just `interval`. In 'dataUnit' mode, `interval`
+  // is interpreted as an x-axis data-unit distance and converted to an
+  // equivalent px distance using the calibrated x-axis scale. Falls back to
+  // treating `interval` as px (with a console warning) if the x-axis is not
+  // calibrated -- the settings UI is expected to disable 'dataUnit'
+  // selection in that case, so this is only a defensive fallback.
+  private get intervalPx(): number {
+    if (this.intervalUnit === 'px') {
+      return this.interval
+    }
+
+    const convertedIntervalPx = convertDataUnitIntervalToPx(
+      axisSetRepository.activeAxisSet,
+      this.interval,
+    )
+
+    if (convertedIntervalPx === null) {
+      console.warn(
+        'Interpolator: x-axis is not calibrated for data-unit interval mode; falling back to interpreting the interval value as px.',
+      )
+      return this.interval
+    }
+
+    return convertedIntervalPx
+  }
 
   private clearInterpolatedCoords(): void {
     this.interpolatedCoords = []
@@ -51,7 +95,7 @@ export class Interpolator implements InterpolatorInterface {
 
     const segments = Math.max(
       Math.floor(
-        manualPointsTotalDistance / (this.interval * Math.sqrt(2)), //INFO: intervalが10の時、点同士の間隔がおよそ16pxになるようにした比例式
+        manualPointsTotalDistance / (this.intervalPx * Math.sqrt(2)), //INFO: intervalが10の時、点同士の間隔がおよそ16pxになるようにした比例式
       ),
       1,
     )
@@ -154,6 +198,10 @@ export class Interpolator implements InterpolatorInterface {
 
   public updateInterval(interval: number) {
     this.interval = interval
+  }
+
+  public updateIntervalUnit(intervalUnit: IntervalUnit) {
+    this.intervalUnit = intervalUnit
   }
 
   public updatePreview(): void {
