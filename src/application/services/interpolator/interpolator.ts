@@ -1,4 +1,5 @@
 import { InterpolatorInterface } from './interpolatorInterface'
+import { InterpolatorCanvasInterface } from '@/presentation/dom/InterpolatorCanvasInterface'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
 import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
@@ -12,38 +13,23 @@ export class Interpolator implements InterpolatorInterface {
   public interval: number = 10
   public interpolatedCoords: Coord[] = []
   public interpolatedCoordsForGuideline: Coord[] = []
-  public guideCanvas?: HTMLCanvas
-  public magnifierCanvas?: HTMLCanvas
+
+  // INFO: All canvas-drawing logic lives in InterpolatorCanvas (presentation
+  // layer), injected here by constructor injection so this class stays free
+  // of DOM/canvas concerns and is easier to unit test. See #111.
+  constructor(private interpolatorCanvas: InterpolatorCanvasInterface) {}
+
+  public get guideCanvas(): HTMLCanvas | undefined {
+    return this.interpolatorCanvas.guideCanvas
+  }
+
+  public get magnifierCanvas(): HTMLCanvas | undefined {
+    return this.interpolatorCanvas.magnifierCanvas
+  }
 
   private clearInterpolatedCoords(): void {
     this.interpolatedCoords = []
     this.interpolatedCoordsForGuideline = []
-  }
-
-  private clearGuideCanvasContext(): void {
-    if (!this.guideCanvas) {
-      throw new Error('interpolator guide canvas is not set')
-    }
-
-    this.guideCanvas.context.clearRect(
-      0,
-      0,
-      this.guideCanvas.element.width,
-      this.guideCanvas.element.height,
-    )
-  }
-
-  private clearMagnifierCanvasContext(): void {
-    if (!this.magnifierCanvas) {
-      throw new Error('interpolator guide canvas is not set')
-    }
-
-    this.magnifierCanvas.context.clearRect(
-      0,
-      0,
-      this.magnifierCanvas.element.width,
-      this.magnifierCanvas.element.height,
-    )
   }
 
   private setInterpolatedCoords(anchorPoints: Point[]) {
@@ -51,13 +37,13 @@ export class Interpolator implements InterpolatorInterface {
 
     const segments = Math.max(
       Math.floor(
-        manualPointsTotalDistance / (this.interval * Math.sqrt(2)), //INFO: intervalが10の時、点同士の間隔がおよそ16pxになるようにした比例式
+        manualPointsTotalDistance / (this.interval * Math.sqrt(2)), //INFO: proportional formula so that when interval is 10, the spacing between points is about 16px
       ),
       1,
     )
 
     const guidelineSegments = Math.max(
-      Math.floor(manualPointsTotalDistance / 4), //INFO: 補助線は常に高精度の曲線にする
+      Math.floor(manualPointsTotalDistance / 4), //INFO: the guideline should always be a high-precision curve
       1,
     )
 
@@ -70,63 +56,23 @@ export class Interpolator implements InterpolatorInterface {
     this.interpolatedCoordsForGuideline = interpForGuidelineCoords
   }
 
-  private drawInterpolationLineOnGuideCanvas() {
-    if (!this.guideCanvas) {
-      throw new Error('interpolator guide canvas is not set')
-    }
-
-    this.clearGuideCanvasContext()
-
-    this.guideCanvas.context.beginPath()
-
-    this.guideCanvas.context.lineWidth = 3
-    this.guideCanvas.context.strokeStyle = '#ffd700'
-    this.guideCanvas.context.moveTo(
-      this.interpolatedCoordsForGuideline[0].xPx * canvasHandler.scale,
-      this.interpolatedCoordsForGuideline[0].yPx * canvasHandler.scale,
-    )
-
-    for (let i = 1; i < this.interpolatedCoordsForGuideline.length; i++) {
-      this.guideCanvas.context.lineTo(
-        this.interpolatedCoordsForGuideline[i].xPx * canvasHandler.scale,
-        this.interpolatedCoordsForGuideline[i].yPx * canvasHandler.scale,
-      )
-    }
-
-    this.guideCanvas.context.stroke()
-
-    this.magnifierCanvas?.context.drawImage(
-      this.guideCanvas.element,
-      0,
-      0,
-      this.guideCanvas.element.width,
-      this.guideCanvas.element.height,
-    )
-  }
-
-  //TODO: canvas操作系は独立したapplicationとして、各serviceのcanvasを一括でそうさできたほうがいいかも
   public resizeCanvas(): void {
-    if (!this.guideCanvas || !this.magnifierCanvas) return
+    if (
+      !this.interpolatorCanvas.guideCanvas ||
+      !this.interpolatorCanvas.magnifierCanvas
+    )
+      return
 
     const newWidth = canvasHandler.originalWidth * canvasHandler.scale
     const newHeight = canvasHandler.originalHeight * canvasHandler.scale
 
-    this.guideCanvas.element.width = newWidth
-    this.guideCanvas.element.height = newHeight
-
-    this.magnifierCanvas.element.width = newWidth
-    this.magnifierCanvas.element.height = newHeight
-
-    this.magnifierCanvas.context.drawImage(
-      this.guideCanvas.element,
-      0,
-      0,
-      newWidth,
-      newHeight,
-    )
+    this.interpolatorCanvas.resize(newWidth, newHeight)
 
     if (this.interpolatedCoords.length) {
-      this.drawInterpolationLineOnGuideCanvas()
+      this.interpolatorCanvas.drawInterpolationLineOnGuideCanvas(
+        this.interpolatedCoordsForGuideline,
+        canvasHandler.scale,
+      )
     }
   }
 
@@ -145,11 +91,11 @@ export class Interpolator implements InterpolatorInterface {
   }
 
   public setGuideCanvas(guideCanvas: HTMLCanvas): void {
-    this.guideCanvas = guideCanvas
+    this.interpolatorCanvas.setGuideCanvas(guideCanvas)
   }
 
   public setMagnifierCanvas(magnifierCanvas: HTMLCanvas): void {
-    this.magnifierCanvas = magnifierCanvas
+    this.interpolatorCanvas.setMagnifierCanvas(magnifierCanvas)
   }
 
   public updateInterval(interval: number) {
@@ -167,8 +113,8 @@ export class Interpolator implements InterpolatorInterface {
       activeDataset.manuallyAddedPointIds.includes(point.id),
     )
 
-    this.clearGuideCanvasContext()
-    this.clearMagnifierCanvasContext()
+    this.interpolatorCanvas.clearGuideCanvasContext()
+    this.interpolatorCanvas.clearMagnifierCanvasContext()
 
     activeDataset.tempPoints.forEach((tempPoint) => {
       activeDataset.clearTempPoint(tempPoint.id)
@@ -180,7 +126,10 @@ export class Interpolator implements InterpolatorInterface {
 
     this.setInterpolatedCoords(anchorPoints)
 
-    this.drawInterpolationLineOnGuideCanvas()
+    this.interpolatorCanvas.drawInterpolationLineOnGuideCanvas(
+      this.interpolatedCoordsForGuideline,
+      canvasHandler.scale,
+    )
 
     this.interpolatedCoords.forEach((coord: Coord) => {
       activeDataset.addTempPoint(coord.xPx, coord.yPx)
@@ -198,8 +147,8 @@ export class Interpolator implements InterpolatorInterface {
       activeDataset.clearPoint(pId),
     )
 
-    this.clearGuideCanvasContext()
-    this.clearMagnifierCanvasContext()
+    this.interpolatorCanvas.clearGuideCanvasContext()
+    this.interpolatorCanvas.clearMagnifierCanvasContext()
     this.clearInterpolatedCoords()
   }
 }
