@@ -120,6 +120,7 @@ import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { MASK_MODE } from '@/constants'
 import AxisSetCalculator from '@/domain/services/axisSetCalculator'
+import { formatCoordValue } from '@/presentation/utils/formatCoordValue'
 import { Point } from '@/@types/types'
 
 export default defineComponent({
@@ -255,7 +256,17 @@ export default defineComponent({
         },
         this.magnifier.effectiveDigits,
       )
-      return calculator.calculateXYValues(x, y)
+      const { xV, yV } = calculator.calculateXYValues(x, y)
+      return {
+        xV:
+          xV === null
+            ? 'NaN'
+            : formatCoordValue(xV, calculator.xEffectiveDigits),
+        yV:
+          yV === null
+            ? 'NaN'
+            : formatCoordValue(yV, calculator.yEffectiveDigits),
+      }
     },
     convertToCsv(data: string[][]): string {
       const CSV_DELIMITER = ','

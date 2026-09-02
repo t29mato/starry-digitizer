@@ -25,8 +25,8 @@ describe('AxisSetCalculator', () => {
       y: false,
     })
     const result = calculator.calculateXYValues(500, 500)
-    expect(result.xV).toBe('5.5e+0')
-    expect(result.yV).toBe('5.5e+0')
+    expect(result.xV).toBe(5.5)
+    expect(result.yV).toBe(5.5)
   })
 
   it('should use custom effectiveDigits when provided in constructor', () => {
@@ -54,8 +54,8 @@ describe('AxisSetCalculator', () => {
       y: false,
     })
     const result = calculator.calculateXYValues(500, 500)
-    expect(result.xV).toBe('NaN')
-    expect(result.yV).toBe('NaN')
+    expect(result.xV).toBeNull()
+    expect(result.yV).toBeNull()
   })
 
   // INFO: 未配置の軸のcoordはinitialCoord {-999, -999} (truthy) のため、
@@ -75,8 +75,8 @@ describe('AxisSetCalculator', () => {
       y: false,
     })
     const result = calculator.calculateXYValues(500, 500)
-    expect(result.xV).toBe('NaN')
-    expect(result.yV).toBe('NaN')
+    expect(result.xV).toBeNull()
+    expect(result.yV).toBeNull()
     expect(calculator.calculatePixelCoordinates(0.5, 0.5)).toBeNull()
   })
 
@@ -87,8 +87,8 @@ describe('AxisSetCalculator', () => {
       y: false,
     })
     const result = calculator.calculateXYValues(500, 500)
-    expect(result.xV).toBe('NaN')
-    expect(result.yV).toBe('NaN')
+    expect(result.xV).toBeNull()
+    expect(result.yV).toBeNull()
   })
 
   // Add more test cases as required
@@ -99,29 +99,29 @@ describe('AxisSetCalculator', () => {
       y: false,
     })
     const result = calculator.calculateXYValues(500, 500)
-    expect(result.xV).toBe('NaN')
-    expect(result.yV).toBe('NaN')
+    expect(result.xV).toBeNull()
+    expect(result.yV).toBeNull()
   })
 
   it('should calculate XY values correctly with logarithmic scale on x-axis', () => {
     const calculator = new AxisSetCalculator(axisSetMock, { x: true, y: false })
     const result = calculator.calculateXYValues(500, 500)
-    expect(result.xV).toBe('3.1623e+0')
-    expect(result.yV).toBe('5.5e+0')
+    expect(result.xV).toBe(3.1623)
+    expect(result.yV).toBe(5.5)
   })
 
   it('should calculate XY values correctly with logarithmic scale on y-axis', () => {
     const calculator = new AxisSetCalculator(axisSetMock, { x: false, y: true })
     const result = calculator.calculateXYValues(500, 500)
-    expect(result.xV).toBe('5.5e+0')
-    expect(result.yV).toBe('3.1623e+0')
+    expect(result.xV).toBe(5.5)
+    expect(result.yV).toBe(3.1623)
   })
 
   it('should calculate XY values correctly with logarithmic scale on both axisSet', () => {
     const calculator = new AxisSetCalculator(axisSetMock, { x: true, y: true })
     const result = calculator.calculateXYValues(500, 500)
-    expect(result.xV).toBe('3.1623e+0')
-    expect(result.yV).toBe('3.1623e+0')
+    expect(result.xV).toBe(3.1623)
+    expect(result.yV).toBe(3.1623)
   })
 
   it('should calculate XY values with higher precision when effective digits are increased', () => {
@@ -131,8 +131,8 @@ describe('AxisSetCalculator', () => {
     })
     calculator.effectiveDigits = 6
     const result = calculator.calculateXYValues(500, 500)
-    expect(result.xV).toBe('5.5e+0')
-    expect(result.yV).toBe('5.5e+0')
+    expect(result.xV).toBe(5.5)
+    expect(result.yV).toBe(5.5)
   })
 
   // INFO: fix the following issue https://github.com/t29mato/starry-digitizer/issues/17
@@ -179,7 +179,7 @@ describe('AxisSetCalculator', () => {
       y: false,
     })
     const result = calculator.calculateXYValues(plot.xPx, plot.yPx)
-    expect(result).toStrictEqual({ xV: '1.997e+2', yV: '2.035e+1' })
+    expect(result).toStrictEqual({ xV: 199.7, yV: 20.35 })
   })
 
   // INFO: fix the following issue https://github.com/t29mato/starry-digitizer/issues/17
@@ -226,7 +226,7 @@ describe('AxisSetCalculator', () => {
       y: false,
     })
     const result = calculator.calculateXYValues(plot.xPx, plot.yPx)
-    expect(result).toStrictEqual({ xV: '2.01e+2', yV: '2.042e+1' })
+    expect(result).toStrictEqual({ xV: 201, yV: 20.42 })
   })
 
   describe('calculatePixelCoordinates', () => {
@@ -359,8 +359,8 @@ describe('AxisSetCalculator', () => {
       
       // Forward transformation: pixel → real values
       const realValues = calculator.calculateXYValues(originalPixel.xPx, originalPixel.yPx)
-      const xReal = parseFloat(realValues.xV.replace('e+0', ''))
-      const yReal = parseFloat(realValues.yV.replace('e+0', ''))
+      const xReal = realValues.xV as number
+      const yReal = realValues.yV as number
       
       // Reverse transformation: real values → pixel
       const backToPixel = calculator.calculatePixelCoordinates(xReal, yReal)
@@ -423,8 +423,8 @@ describe('AxisSetCalculator', () => {
       
       // Forward: pixel → real values
       const realValues = calculator.calculateXYValues(originalPixel.xPx, originalPixel.yPx)
-      const xReal = parseFloat(realValues.xV.replace('e+0', ''))
-      const yReal = parseFloat(realValues.yV.replace('e+0', ''))
+      const xReal = realValues.xV as number
+      const yReal = realValues.yV as number
       
       // Reverse: real values → pixel
       const backToPixel = calculator.calculatePixelCoordinates(xReal, yReal)
@@ -442,8 +442,8 @@ describe('AxisSetCalculator', () => {
       
       // Forward: pixel → real values (with log scale)
       const realValues = calculator.calculateXYValues(originalPixel.xPx, originalPixel.yPx)
-      const xReal = parseFloat(realValues.xV.replace('e+0', ''))
-      const yReal = parseFloat(realValues.yV.replace('e+0', ''))
+      const xReal = realValues.xV as number
+      const yReal = realValues.yV as number
       
       // Reverse: real values → pixel (with log scale)
       const backToPixel = calculator.calculatePixelCoordinates(xReal, yReal)

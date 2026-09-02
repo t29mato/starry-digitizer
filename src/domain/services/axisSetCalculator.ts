@@ -29,15 +29,22 @@ export default class AxisSetCalculator {
     ].every((axis) => axis.coord && axis.coord.xPx >= 0 && axis.coord.yPx >= 0)
   }
 
-  calculateXYValues(xt: number, yt: number): { xV: string; yV: string } {
+  // INFO: xV/yV are returned as rounded numbers rather than display strings.
+  // Turning a value into a display string (plain decimal vs exponential,
+  // trailing-zero padding, ...) is a presentation concern, not a domain one
+  // - see src/presentation/utils/formatCoordValue.ts for that step.
+  calculateXYValues(
+    xt: number,
+    yt: number,
+  ): { xV: number; yV: number } | { xV: null; yV: null } {
     if (!this.#allAxisCoordsAreFilled) {
-      return { xV: 'NaN', yV: 'NaN' }
+      return { xV: null, yV: null }
     }
     if (
       this.#axisSet.x1.value === this.#axisSet.x2.value ||
       this.#axisSet.y1.value === this.#axisSet.y2.value
     ) {
-      return { xV: 'NaN', yV: 'NaN' }
+      return { xV: null, yV: null }
     }
 
     const [xa, ya, xb, yb, a, b, xc, yc, xd, yd, c, d] = [
@@ -80,22 +87,29 @@ export default class AxisSetCalculator {
             Math.log10(c),
         )
       : ((yq - yc) / (yd - yc)) * (d - c) + c
-    const xEffectiveDigits = this.calculateEffectiveDigits(
+    const xPrecised = parseFloat(xV.toPrecision(this.xEffectiveDigits))
+    const yPrecised = parseFloat(yV.toPrecision(this.yEffectiveDigits))
+    return {
+      xV: xPrecised,
+      yV: yPrecised,
+    }
+  }
+
+  // INFO: how many significant digits are meaningful for this axis depends
+  // on the magnitude of its value range, not just the user's "effective
+  // digits" setting, hence the extra digits computed from numDigit() below.
+  get xEffectiveDigits(): number {
+    return this.calculateEffectiveDigits(
       this.#axisSet.x2.value,
       this.#axisSet.x1.value,
     )
-    const yEffectiveDigits = this.calculateEffectiveDigits(
+  }
+
+  get yEffectiveDigits(): number {
+    return this.calculateEffectiveDigits(
       this.#axisSet.y2.value,
       this.#axisSet.y1.value,
     )
-    const xPrecised = parseFloat(xV.toPrecision(xEffectiveDigits))
-    const yPrecised = parseFloat(yV.toPrecision(yEffectiveDigits))
-    const xExponential = xPrecised.toExponential()
-    const yExponential = yPrecised.toExponential()
-    return {
-      xV: xExponential,
-      yV: yExponential,
-    }
   }
 
   numDigit(num: number): number {
