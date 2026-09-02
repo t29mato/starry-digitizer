@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { CanvasHandlerManager } from '@/application/services/canvasHandler/manager/canvasHandlerManager'
 import { ConfirmerManager } from '@/application/services/confirmer/manager/confirmerManager'
 import { ExtractorManager } from '@/application/services/extractor/manager/extractorManager'
@@ -8,11 +9,15 @@ import { HistoryManager } from '@/application/services/historyManager/historyMan
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
-export const interpolator = new InterpolatorManager().getInstance()
-export const extractor = new ExtractorManager().getInstance()
-export const confirmer = new ConfirmerManager().getInstance()
-export const canvasHandler = new CanvasHandlerManager().getInstance()
-export const magnifier = new MagnifierManager().getInstance()
+// INFO: Wrapped with reactive() here at the source — see the same note in
+// repositoryInatances.ts and issue #122. Keeps application-layer code (which
+// imports these singletons directly) and Vue components (which reach them
+// via `data()`) on the same reactive proxy.
+export const interpolator = reactive(new InterpolatorManager().getInstance())
+export const extractor = reactive(new ExtractorManager().getInstance())
+export const confirmer = reactive(new ConfirmerManager().getInstance())
+export const canvasHandler = reactive(new CanvasHandlerManager().getInstance())
+export const magnifier = reactive(new MagnifierManager().getInstance())
 
 // ProjectService: Directly instantiated to ensure same canvasHandler instance
 export const projectService = new ProjectService(
