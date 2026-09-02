@@ -19,6 +19,14 @@
       @dragleave="dragLeave"
       @drop="dropFile"
     ></div>
+
+    <confirm-dialog
+      v-model="confirmDialogShow"
+      title="Load new image?"
+      message="Loading a new image will reset all axis coordinates and datasets. Are you sure you want to continue?"
+      confirm-color="error"
+      @confirm="handleConfirmDialogConfirm"
+    ></confirm-dialog>
   </div>
 </template>
 
@@ -34,8 +42,12 @@ import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
 import { VALID_IMAGE_TYPES } from '@/presentation/constants'
+import ConfirmDialog from '@/presentation/components/Generals/ConfirmDialog.vue'
 
 export default defineComponent({
+  components: {
+    ConfirmDialog,
+  },
   data() {
     return {
       extractor,
@@ -46,6 +58,12 @@ export default defineComponent({
       projectService,
       historyManager,
       fileIsDraggedOver: false,
+      // INFO: replaces window.confirm() (#270). `show` is a separate
+      // top-level field — see NOTE in DatasetManager.vue.
+      confirmDialogShow: false,
+      confirmDialog: {
+        onConfirm: null as (() => void) | null,
+      },
     }
   },
 
@@ -76,26 +94,32 @@ export default defineComponent({
       return hasAxisData || hasDatasetPoints
     },
     async updateImage(file: File) {
+      if (!this.isValidFileType(file.type)) {
+        alert(
+          `Please upload an image in one of the following formats: ${VALID_IMAGE_TYPES.flatMap(
+            (type) => type.extensions,
+          ).join(',')}`,
+        )
+        return
+      }
+
+      // Check if there's existing data and confirm reset — replaces
+      // window.confirm() (#270)
+      if (this.hasExistingData()) {
+        this.confirmDialog.onConfirm = () => this.applyNewImage(file)
+        this.confirmDialogShow = true
+        return
+      }
+
+      await this.applyNewImage(file)
+    },
+    handleConfirmDialogConfirm() {
+      const onConfirm = this.confirmDialog.onConfirm
+      this.confirmDialog.onConfirm = null
+      onConfirm && onConfirm()
+    },
+    async applyNewImage(file: File) {
       try {
-        if (!this.isValidFileType(file.type)) {
-          alert(
-            `Please upload an image in one of the following formats: ${VALID_IMAGE_TYPES.flatMap(
-              (type) => type.extensions,
-            ).join(',')}`,
-          )
-          return
-        }
-
-        // Check if there's existing data and confirm reset
-        if (this.hasExistingData()) {
-          const confirmed = window.confirm(
-            'Loading a new image will reset all axis coordinates and datasets. Are you sure you want to continue?',
-          )
-          if (!confirmed) {
-            return
-          }
-        }
-
         const fr = await this.readFile(file)
         if (typeof fr.result !== 'string') {
           throw new Error('file is not string type')

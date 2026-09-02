@@ -104,6 +104,14 @@
     </div>
 
     <!-- TODO: モーダル上でデータセットを選べるようにする -->
+
+    <confirm-dialog
+      v-model="confirmDialogShow"
+      :title="confirmDialog.title"
+      :message="confirmDialog.message"
+      :confirm-color="confirmDialog.confirmColor"
+      @confirm="handleConfirmDialogConfirm"
+    ></confirm-dialog>
   </div>
 </template>
 
@@ -121,9 +129,12 @@ import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { MASK_MODE } from '@/constants'
 import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 import { Point } from '@/@types/types'
+import ConfirmDialog from '@/presentation/components/Generals/ConfirmDialog.vue'
 
 export default defineComponent({
-  components: {},
+  components: {
+    ConfirmDialog,
+  },
   data() {
     return {
       canvasHandler,
@@ -136,6 +147,20 @@ export default defineComponent({
       sortOrder: 'ascending',
       sortOrders: ['ascending', 'descending'],
       axisSetRepository,
+      // INFO: replaces window.confirm() (#270) — a single pending
+      // confirmation shared by every destructive/disruptive action in this
+      // component, since only one can be shown at a time anyway.
+      // NOTE: `show` is kept as its own top-level field (rather than nested
+      // inside confirmDialog) — vue-tsc can't type-check a v-model bound to
+      // a nested property of the same object that other props on the same
+      // tag are also read from.
+      confirmDialogShow: false,
+      confirmDialog: {
+        title: 'Confirm',
+        message: '',
+        confirmColor: 'primary',
+        onConfirm: null as (() => void) | null,
+      },
     }
   },
   props: {
@@ -157,12 +182,37 @@ export default defineComponent({
     },
   },
   methods: {
-    shouldContinueSwitchDataset(): boolean {
-      if (this.datasetRepository.activeDataset.tempPoints.length === 0)
-        return true
+    // INFO: replaces window.confirm() (#270). Runs `proceed` immediately
+    // when there is nothing to lose, otherwise defers it to the Confirm
+    // button's click via confirmDialog.onConfirm.
+    openConfirmDialog(
+      message: string,
+      onConfirm: () => void,
+      options: { title?: string; confirmColor?: string } = {},
+    ) {
+      this.confirmDialog = {
+        title: options.title ?? 'Confirm',
+        message,
+        confirmColor: options.confirmColor ?? 'primary',
+        onConfirm,
+      }
+      this.confirmDialogShow = true
+    },
+    handleConfirmDialogConfirm() {
+      const onConfirm = this.confirmDialog.onConfirm
+      this.confirmDialog.onConfirm = null
+      onConfirm && onConfirm()
+    },
+    confirmSwitchDataset(proceed: () => void) {
+      if (this.datasetRepository.activeDataset.tempPoints.length === 0) {
+        proceed()
+        return
+      }
 
-      return window.confirm(
+      this.openConfirmDialog(
         'There are unconfirmed interpolated points. Do you want to discard them and switch to a different dataset?',
+        proceed,
+        { title: 'Switch dataset?' },
       )
     },
     activateDataset(id: number) {
@@ -176,33 +226,29 @@ export default defineComponent({
       this.canvasHandler.maskMode = MASK_MODE.UNSET
     },
     handleOnClickDataset(id: number) {
-      if (
-        id === this.datasetRepository.activeDatasetId ||
-        !this.shouldContinueSwitchDataset()
-      )
-        return
+      if (id === this.datasetRepository.activeDatasetId) return
 
-      this.activateDataset(id)
+      this.confirmSwitchDataset(() => this.activateDataset(id))
     },
     handleOnClickViewAll() {
-      if (!this.shouldContinueSwitchDataset()) return
-
-      this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.setActiveDataset(0)
-      this.canvasHandler.clearMask()
-      this.canvasHandler.maskMode = MASK_MODE.UNSET
+      this.confirmSwitchDataset(() => {
+        this.interpolator.isActive && this.interpolator.clearPreview()
+        this.datasetRepository.setActiveDataset(0)
+        this.canvasHandler.clearMask()
+        this.canvasHandler.maskMode = MASK_MODE.UNSET
+      })
     },
     handleOnClickAddDatasetButton() {
-      if (!this.shouldContinueSwitchDataset()) return
+      this.confirmSwitchDataset(() => {
+        this.historyManager.capture()
+        this.datasetRepository.createNewDataset()
 
-      this.historyManager.capture()
-      this.datasetRepository.createNewDataset()
+        this.datasetRepository.lastDataset.setAxisSetId(
+          this.axisSetRepository.activeAxisSetId,
+        )
 
-      this.datasetRepository.lastDataset.setAxisSetId(
-        this.axisSetRepository.activeAxisSetId,
-      )
-
-      this.activateDataset(this.datasetRepository.lastDatasetId)
+        this.activateDataset(this.datasetRepository.lastDatasetId)
+      })
     },
     handleOnClickRemoveDatasetButton(datasetId?: number) {
       const targetDataset = datasetId
@@ -217,9 +263,11 @@ export default defineComponent({
         return
       }
 
-      window.confirm(
+      this.openConfirmDialog(
         `Are you sure to delete '${targetDataset.name}'? This operation is irreversible.`,
-      ) && this.removeDataset(targetDataset.id)
+        () => this.removeDataset(targetDataset.id),
+        { title: 'Delete dataset?', confirmColor: 'error' },
+      )
     },
     removeDataset(datasetId: number) {
       this.historyManager.capture()
@@ -237,9 +285,11 @@ export default defineComponent({
         return
       }
 
-      window.confirm(
+      this.openConfirmDialog(
         `Are you sure to delete all ${this.datasetRepository.datasets.length} datasets? This will remove ${totalPoints} data points. This operation is irreversible.`,
-      ) && this.removeAllDatasets()
+        () => this.removeAllDatasets(),
+        { title: 'Delete all datasets?', confirmColor: 'error' },
+      )
     },
     removeAllDatasets() {
       this.historyManager.capture()
@@ -286,9 +336,18 @@ export default defineComponent({
         (d) => d.id === datasetId,
       )
       if (!dataset) return
-      this.historyManager.capture()
-      dataset.clearPoints()
-      this.interpolator.clearPreview()
+
+      // INFO: (#289) this used to run instantly with zero confirmation,
+      // even with many points on screen
+      this.openConfirmDialog(
+        `Are you sure you want to clear all ${dataset.points.length} points in '${dataset.name}'?`,
+        () => {
+          this.historyManager.capture()
+          dataset.clearPoints()
+          this.interpolator.clearPreview()
+        },
+        { title: 'Clear dataset points?', confirmColor: 'error' },
+      )
     },
   },
 })

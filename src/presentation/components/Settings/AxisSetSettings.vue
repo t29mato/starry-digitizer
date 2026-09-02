@@ -147,6 +147,14 @@
         {{ ocrWarningMessage }}
       </v-alert>
     </div>
+
+    <confirm-dialog
+      v-model="confirmDialogShow"
+      :title="confirmDialog.title"
+      :message="confirmDialog.message"
+      confirm-color="error"
+      @confirm="handleConfirmDialogConfirm"
+    ></confirm-dialog>
   </div>
 </template>
 
@@ -157,7 +165,10 @@ import {
   axisSetRepository,
   datasetRepository,
 } from '@/instanceStore/repositoryInatances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import {
+  canvasHandler,
+  historyManager,
+} from '@/instanceStore/applicationServiceInstances'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { POINT_MODE, MANUAL_MODE } from '@/constants'
 import { AxisOcrReader } from '@/application/services/axisOcr/axisOcrReader'
@@ -165,6 +176,7 @@ import {
   AXIS_NAMES,
   matchOcrWordsToAxisValues,
 } from '@/application/utils/axisOcrMatcher'
+import ConfirmDialog from '@/presentation/components/Generals/ConfirmDialog.vue'
 
 // INFO: docs/design/auto-axis-detection-design.md — a single reader
 // instance is reused across clicks (readWords() is stateless per-call, no
@@ -173,6 +185,9 @@ import {
 const axisOcrReader = new AxisOcrReader()
 
 export default defineComponent({
+  components: {
+    ConfirmDialog,
+  },
   computed: {
     errorMessage(): string {
       if (this.axisSetRepository.activeAxisSet.xIsLogScale) {
@@ -227,6 +242,7 @@ export default defineComponent({
       axisSetRepository,
       datasetRepository,
       canvasHandler,
+      historyManager,
       //NOTE: initialize axis values as string because it sometimes is displayed like '1e+10'
       displayVal: {
         x1: '',
@@ -241,6 +257,15 @@ export default defineComponent({
       ocrIsRunning: false,
       ocrErrorMessage: '',
       ocrWarningMessage: '',
+      // INFO: replaces instant, un-confirmed CLEAR XY AXES execution (#289).
+      // `show` is a separate top-level field — see NOTE in
+      // DatasetManager.vue.
+      confirmDialogShow: false,
+      confirmDialog: {
+        title: 'Clear XY axes?',
+        message:
+          'Are you sure you want to clear the XY axes? This will remove all axis calibration coordinates.',
+      },
     }
   },
   created() {
@@ -390,7 +415,14 @@ export default defineComponent({
       }
     },
     clearAxisSet() {
+      this.confirmDialogShow = true
+    },
+    // INFO: (#289) confirmed via ConfirmDialog instead of executing
+    // instantly; (#274) captures history so this is undoable, same as
+    // dataset-clear/dataset-delete already do.
+    handleConfirmDialogConfirm() {
       this.exitViewAllModeIfNeeded()
+      this.historyManager.capture()
       this.axisSetRepository.activeAxisSet.clearAxisCoords()
       this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
     },

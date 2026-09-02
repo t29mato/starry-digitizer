@@ -109,6 +109,43 @@ describe('HistoryManager', () => {
     expect(historyManager.canRedo).toBe(false)
   })
 
+  // INFO: (#274) regression test for the reported repro — add 3 manual
+  // points, clear the dataset, run auto-extraction (setPoints), then undo
+  // once. This only passes if every one of those three mutations captures
+  // its own snapshot; if any call site forgets to (as extractPoints() did),
+  // undo silently skips ahead to an earlier snapshot instead of the one
+  // right before the last mutation.
+  test('undo after clear + re-extraction returns to the just-cleared (empty) state, not further back', () => {
+    const { datasetRepository, historyManager } = setup()
+
+    // 1. add 3 manual points
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(2, 2)
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(3, 3)
+    expect(datasetRepository.activeDataset.points).toHaveLength(3)
+
+    // 2. clear the dataset via its eraser icon (0 points)
+    historyManager.capture()
+    datasetRepository.activeDataset.clearPoints()
+    expect(datasetRepository.activeDataset.points).toHaveLength(0)
+
+    // 3. RUN auto-extraction (e.g. 31 points) — must also capture
+    historyManager.capture()
+    datasetRepository.setPoints(
+      Array.from({ length: 31 }, (_, i) => ({ xPx: i, yPx: i })),
+    )
+    expect(datasetRepository.activeDataset.points).toHaveLength(31)
+
+    // 4. undo once — expected: back to 0 points (the just-cleared state),
+    // not back to the pre-clear 3 manual points
+    historyManager.undo()
+
+    expect(datasetRepository.activeDataset.points).toHaveLength(0)
+  })
+
   test('drops the oldest snapshot once the history exceeds its cap', () => {
     const { datasetRepository, historyManager } = setup()
     const CAP = 50

@@ -44,22 +44,38 @@
       </v-list-item>
     </v-list>
     <!-- TODO: モーダル上でデータセットを選べるようにする -->
+
+    <confirm-dialog
+      v-model="confirmDialogShow"
+      :title="confirmDialog.title"
+      :message="confirmDialog.message"
+      confirm-color="error"
+      @confirm="handleConfirmDialogConfirm"
+    ></confirm-dialog>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import {
+  canvasHandler,
+  historyManager,
+} from '@/instanceStore/applicationServiceInstances'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { MANUAL_MODE } from '@/constants'
+import ConfirmDialog from '@/presentation/components/Generals/ConfirmDialog.vue'
 
 export default defineComponent({
+  components: {
+    ConfirmDialog,
+  },
   data() {
     return {
       canvasHandler,
+      historyManager,
       interpolator,
       axisSetRepository,
       datasetRepository,
@@ -67,6 +83,14 @@ export default defineComponent({
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
       sortOrders: ['ascending', 'descending'],
+      // INFO: replaces window.confirm() (#270). `show` is a separate
+      // top-level field — see NOTE in DatasetManager.vue.
+      confirmDialogShow: false,
+      confirmDialog: {
+        title: 'Confirm',
+        message: '',
+        onConfirm: null as (() => void) | null,
+      },
     }
   },
   computed: {
@@ -99,9 +123,20 @@ export default defineComponent({
       this.activateAxisSet(this.axisSetRepository.lastAxisSetId)
     },
     removeActiveAxisSet() {
+      this.historyManager.capture()
       this.axisSetRepository.removeAxisSet(
         this.axisSetRepository.activeAxisSetId,
       )
+    },
+    // INFO: replaces window.confirm() (#270)
+    openConfirmDialog(message: string, onConfirm: () => void, title: string) {
+      this.confirmDialog = { title, message, onConfirm }
+      this.confirmDialogShow = true
+    },
+    handleConfirmDialogConfirm() {
+      const onConfirm = this.confirmDialog.onConfirm
+      this.confirmDialog.onConfirm = null
+      onConfirm && onConfirm()
     },
     handleOnClickRemoveAxisSetButton() {
       //TODO: Move these logics to domain service and add test...
@@ -122,34 +157,36 @@ export default defineComponent({
           ? this.axisSetRepository.axisSets[1]
           : previousAxisSet || this.axisSetRepository.axisSets[0]
 
-      // Early return if the user cancels the confirmation dialog
-      if (targetAxisSet.atLeastOneCoordOrValueIsChanged) {
-        const confirmMessage = `Are you sure to remove '${
-          this.axisSetRepository.activeAxisSet.name
-        }'? After the removal, '${
-          alternativeAxisSet.name
-        }' will be applied to the following datasets: ${datasetsConnectedToTargetAxisSet
-          .map((dataset) => dataset.name)
-          .toString()}`
+      const proceed = () => {
+        this.removeActiveAxisSet()
 
-        if (!window.confirm(confirmMessage)) {
-          return
+        datasetsConnectedToTargetAxisSet.forEach((dataset) => {
+          dataset.setAxisSetId(alternativeAxisSet.id)
+        })
+
+        this.axisSetRepository.setActiveAxisSet(alternativeAxisSet.id)
+
+        if (alternativeAxisSet.nextAxis) {
+          this.canvasHandler.manualMode = MANUAL_MODE.UNSET
+        } else {
+          this.canvasHandler.manualMode = MANUAL_MODE.ADD
         }
       }
 
-      this.removeActiveAxisSet()
-
-      datasetsConnectedToTargetAxisSet.forEach((dataset) => {
-        dataset.setAxisSetId(alternativeAxisSet.id)
-      })
-
-      this.axisSetRepository.setActiveAxisSet(alternativeAxisSet.id)
-
-      if (alternativeAxisSet.nextAxis) {
-        this.canvasHandler.manualMode = MANUAL_MODE.UNSET
-      } else {
-        this.canvasHandler.manualMode = MANUAL_MODE.ADD
+      if (!targetAxisSet.atLeastOneCoordOrValueIsChanged) {
+        proceed()
+        return
       }
+
+      const confirmMessage = `Are you sure to remove '${
+        this.axisSetRepository.activeAxisSet.name
+      }'? After the removal, '${
+        alternativeAxisSet.name
+      }' will be applied to the following datasets: ${datasetsConnectedToTargetAxisSet
+        .map((dataset) => dataset.name)
+        .toString()}`
+
+      this.openConfirmDialog(confirmMessage, proceed, 'Remove axis set?')
     },
   },
 })
