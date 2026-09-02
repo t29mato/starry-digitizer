@@ -22,6 +22,22 @@
       <v-btn color="primary" size="small" class="pa-1"> Delete (D) </v-btn>
     </v-btn-toggle>
     <div class="d-flex align-center">
+      <h5>Snap to Symbol</h5>
+      <v-switch
+        id="switch-snap-to-symbol"
+        class="ml-3"
+        color="primary"
+        :model-value="canvasHandler.snapToSymbolEnabled"
+        @update:model-value="handleOnClickSnapToSymbolSwitch"
+        hide-details
+        density="compact"
+        :disabled="datasetRepository.isViewAllMode"
+      ></v-switch>
+    </div>
+    <div class="text-caption mb-2" style="color: #999">
+      When adding a point, snap to the nearest same-colored symbol's center
+    </div>
+    <div class="d-flex align-center">
       <h5>Interpolation</h5>
       <v-switch
         id="switch-interpolation"
@@ -156,6 +172,11 @@ export default defineComponent({
         return
       }
       this.canvasHandler.setManualMode(value)
+    },
+    //INFO: isEnabled: booleanであるが、@updateでtsエラーになるのでanyとしている
+    handleOnClickSnapToSymbolSwitch(isEnabled: any) {
+      this.canvasHandler.setSnapToSymbolEnabled(isEnabled)
+      addLocalStorageData('isSnapToSymbolEnabled', String(isEnabled))
     },
     setExtractStrategy(strategy: any) {
       switch (strategy) {

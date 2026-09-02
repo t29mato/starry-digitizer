@@ -18,10 +18,14 @@ import * as directives from 'vuetify/directives'
 import colors from 'vuetify/lib/util/colors'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
-import { interpolator } from './instanceStore/applicationServiceInstances'
+import {
+  interpolator,
+  canvasHandler,
+} from './instanceStore/applicationServiceInstances'
 
 //INFO: initialize application services
 interpolator.initialize()
+canvasHandler.initializeSnapToSymbolEnabled()
 
 const vuetify = createVuetify({
   components,

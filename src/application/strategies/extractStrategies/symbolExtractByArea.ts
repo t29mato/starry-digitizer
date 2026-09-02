@@ -1,6 +1,11 @@
 import ExtractStrategyInterface from './extractStrategyInterface'
 import { ExtractParent } from './extractParent'
 import { Coord } from '@/@types/types'
+import {
+  floodFillBlob,
+  centroidOfPixels,
+  diameterFromPixelCount,
+} from '@/application/utils/symbolBlobDetection'
 
 export default class SymbolExtractByArea
   extends ExtractParent
@@ -34,6 +39,12 @@ export default class SymbolExtractByArea
     const visitedArea: boolean[][] = [...Array(height)].map(() =>
       Array(width).fill(false),
     )
+    const bounds = {
+      minX: 0,
+      minY: 0,
+      maxXExclusive: width,
+      maxYExclusive: height,
+    }
     if (isDrawnMask) {
       for (let h = 0; h < height; h++) {
         for (let w = 0; w < width; w++) {
@@ -74,60 +85,17 @@ export default class SymbolExtractByArea
         )
         visitedArea[h][w] = true
         if (isMatch) {
-          const pixels: Coord[] = [
-            {
-              xPx: w,
-              yPx: h,
-            },
-          ]
-          let pixelsIndex = 0
-          while (pixelsIndex < pixels.length) {
-            // nh = next height, nw = next width
-            for (
-              let nh = pixels[pixelsIndex].yPx - 1;
-              nh <= pixels[pixelsIndex].yPx + 1;
-              nh++
-            ) {
-              for (
-                let nw = pixels[pixelsIndex].xPx - 1;
-                nw <= pixels[pixelsIndex].xPx + 1;
-                nw++
-              ) {
-                if (nh < 0 || nw < 0 || nh >= height || nw >= width) {
-                  continue
-                }
-                if (visitedArea[nh][nw]) {
-                  continue
-                }
-                // count++
-                const [r, g, b] = imageColors.slice(
-                  (nh * width + nw) * 4,
-                  (nh * width + nw + 1) * 4,
-                )
-                if (
-                  this.matchColor([r, g, b], targetColor, colorMatchThreshold)
-                ) {
-                  pixels.push({
-                    xPx: nw,
-                    yPx: nh,
-                  })
-                  visitedArea[nh][nw] = true
-                }
-              }
-            }
-            pixelsIndex++
-          }
-          const xPxTotal = pixels.reduce((prev, cur) => {
-            return prev + cur.xPx
-          }, 0)
-          const yPxTotal = pixels.reduce((prev, cur) => {
-            return prev + cur.yPx
-          }, 0)
-          const area = pixels.length
-          // area = πr^2
-          // r = √(area / π)
-          // diameter = r * 2
-          const diameter = Math.sqrt(area / Math.PI) * 2
+          const pixels = floodFillBlob(
+            w,
+            h,
+            width,
+            imageColors,
+            targetColor,
+            colorMatchThreshold,
+            visitedArea,
+            bounds,
+          )
+          const diameter = diameterFromPixelCount(pixels.length)
           if (
             this.minDiameterPx <= diameter &&
             diameter <= this.maxDiameterPx
@@ -135,9 +103,10 @@ export default class SymbolExtractByArea
             // To avoid gaps between calculation and rendering
             // INFO: In manual, pixels are limited to moving one pixel at a time.
             const offsetPx = 0.5
+            const centroid = centroidOfPixels(pixels)
             coords.push({
-              xPx: parseFloat((xPxTotal / pixels.length + offsetPx).toFixed(1)),
-              yPx: parseFloat((yPxTotal / pixels.length + offsetPx).toFixed(1)),
+              xPx: parseFloat((centroid.xPx + offsetPx).toFixed(1)),
+              yPx: parseFloat((centroid.yPx + offsetPx).toFixed(1)),
             })
           }
         }

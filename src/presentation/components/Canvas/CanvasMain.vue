@@ -54,6 +54,8 @@ import { Coord, Point } from '@/@types/types'
 
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
+import { findNearestSymbolCentroid } from '@/application/utils/symbolSnapping'
+import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
@@ -148,14 +150,19 @@ export default defineComponent({
 
       // INFO: canvas-point element上の時は、point edit modeになるので
       switch (this.canvasHandler.manualMode) {
-        case 0:
+        case 0: {
           this.historyManager.capture()
-          this.datasetRepository.activeDataset.addPoint(xPx, yPx)
+          const snappedCoord = this.getSnappedCoord(xPx, yPx)
+          this.datasetRepository.activeDataset.addPoint(
+            snappedCoord.xPx,
+            snappedCoord.yPx,
+          )
           this.axisSetRepository.activeAxisSet.inactivateAxis()
           this.datasetRepository.activeDataset.addManuallyAddedPointId(
             this.datasetRepository.activeDataset.lastPointId,
           )
           return
+        }
         case 1:
           // INFO: CanvasPoint Component -> Click method
           return
@@ -180,6 +187,39 @@ export default defineComponent({
           this.canvasHandler.manualMode = MANUAL_MODE.ADD
         }
         return
+      }
+    },
+    // INFO: "Snap to symbol" (#283, opt-in, off by default): when enabled,
+    // a manually-added point is moved to the centroid of the nearest
+    // same-colored symbol/blob under the click, reusing Symbol Extract's
+    // own blob-detection logic. Falls back to the raw click position when
+    // the toggle is off, no blob is found nearby, or detection fails.
+    getSnappedCoord(xPx: number, yPx: number): Coord {
+      if (!this.canvasHandler.snapToSymbolEnabled) {
+        return { xPx, yPx }
+      }
+      try {
+        const snappedCoord = findNearestSymbolCentroid(
+          xPx,
+          yPx,
+          this.canvasHandler.originalWidth,
+          this.canvasHandler.originalHeight,
+          this.canvasHandler.originalImageCanvasColors,
+          [
+            this.extractor.targetColor.R,
+            this.extractor.targetColor.G,
+            this.extractor.targetColor.B,
+          ],
+          this.extractor.colorDistancePct,
+          {
+            minDiameterPx: SymbolExtractByArea.instance.minDiameterPx,
+            maxDiameterPx: SymbolExtractByArea.instance.maxDiameterPx,
+          },
+        )
+        return snappedCoord ?? { xPx, yPx }
+      } catch (e) {
+        console.error('failed to snap point to symbol', { cause: e })
+        return { xPx, yPx }
       }
     },
     click(e: MouseEvent): void {
