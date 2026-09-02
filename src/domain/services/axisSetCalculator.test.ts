@@ -1,5 +1,5 @@
 import { expect } from '@jest/globals'
-import AxisSetCalculator from './axisSetCalculator'
+import AxisSetCalculator, { getAxisSetPixelBoundingBox } from './axisSetCalculator'
 import { Axis } from '../models/axis/axis'
 import { AxisSet } from '../models/axisSet/axisSet'
 import { AxisSetInterface } from '../models/axisSet/axisSetInterface'
@@ -450,6 +450,63 @@ describe('AxisSetCalculator', () => {
       
       expect(backToPixel?.xPx).toBeCloseTo(originalPixel.xPx, 0)
       expect(backToPixel?.yPx).toBeCloseTo(originalPixel.yPx, 0)
+    })
+  })
+
+  describe('getAxisSetPixelBoundingBox', () => {
+    it('returns the bounding box when the axis set is fully calibrated', () => {
+      const box = getAxisSetPixelBoundingBox(axisSetMock)
+      expect(box).toEqual({
+        xPxMin: 0,
+        xPxMax: 1000,
+        yPxMin: 0,
+        yPxMax: 1000,
+      })
+    })
+
+    it('handles axes defined in either direction (x1 right of x2, y1 above y2)', () => {
+      const reversedAxisSet = new AxisSet(
+        new Axis('x1', 1, { xPx: 1000, yPx: 0 }),
+        new Axis('x2', 10, { xPx: 0, yPx: 0 }),
+        new Axis('y1', 1, { xPx: 0, yPx: 0 }),
+        new Axis('y2', 10, { xPx: 0, yPx: 1000 }),
+        new Axis('x1y1', -1, { xPx: 0, yPx: 0 }),
+        1,
+        'Reversed Axes',
+      )
+      const box = getAxisSetPixelBoundingBox(reversedAxisSet)
+      expect(box).toEqual({
+        xPxMin: 0,
+        xPxMax: 1000,
+        yPxMin: 0,
+        yPxMax: 1000,
+      })
+    })
+
+    it('returns null when an axis has not been placed yet', () => {
+      const unplacedAxisSet = new AxisSet(
+        new Axis('x1', 0),
+        new Axis('x2', 1),
+        new Axis('y1', 0),
+        new Axis('y2', 1),
+        new Axis('x1y1', -1),
+        1,
+        'XY Axes 1',
+      )
+      expect(getAxisSetPixelBoundingBox(unplacedAxisSet)).toBeNull()
+    })
+
+    it('returns null when only some axes are placed', () => {
+      const partiallyPlacedAxisSet = new AxisSet(
+        new Axis('x1', 0, { xPx: 0, yPx: 0 }),
+        new Axis('x2', 1),
+        new Axis('y1', 0, { xPx: 0, yPx: 1000 }),
+        new Axis('y2', 1),
+        new Axis('x1y1', -1),
+        1,
+        'XY Axes 1',
+      )
+      expect(getAxisSetPixelBoundingBox(partiallyPlacedAxisSet)).toBeNull()
     })
   })
 })

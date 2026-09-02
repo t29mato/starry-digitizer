@@ -3,6 +3,8 @@ import { CanvasHandlerInterface } from '../canvasHandler/canvasHandlerInterface'
 import { ExtractorInterface } from './extractorInterface'
 import ExtractStrategyInterface from '../../strategies/extractStrategies/extractStrategyInterface'
 import { Coord } from '@/@types/types'
+import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
+import { getAxisSetPixelBoundingBox } from '@/domain/services/axisSetCalculator'
 
 export class Extractor implements ExtractorInterface {
   strategy: ExtractStrategyInterface
@@ -11,6 +13,9 @@ export class Extractor implements ExtractorInterface {
   colors = [] as { R: number; G: number; B: number }[][]
   colorDistancePct = 1
   swatches = [...Array(5)].map(() => []) as string[][]
+  // INFO: default ON so newly extracted points can't include legend/label
+  // glyphs outside the calibrated axes' pixel rectangle (issue #278)
+  clipToAxes = true
 
   constructor(strategy: ExtractStrategyInterface) {
     this.strategy = strategy
@@ -32,8 +37,15 @@ export class Extractor implements ExtractorInterface {
     this.updateSwatches(colorSwatches)
   }
 
-  execute(canvasHandler: CanvasHandlerInterface): Coord[] {
-    return this.strategy.execute(
+  setClipToAxes(clipToAxes: boolean): void {
+    this.clipToAxes = clipToAxes
+  }
+
+  execute(
+    canvasHandler: CanvasHandlerInterface,
+    axisSet?: AxisSetInterface,
+  ): Coord[] {
+    const points = this.strategy.execute(
       canvasHandler.imageElement.height,
       canvasHandler.imageElement.width,
       canvasHandler.originalImageCanvasColors,
@@ -41,6 +53,25 @@ export class Extractor implements ExtractorInterface {
       canvasHandler.isDrawnMask,
       [this.targetColor.R, this.targetColor.G, this.targetColor.B],
       this.colorDistancePct,
+    )
+
+    if (!this.clipToAxes || !axisSet) {
+      return points
+    }
+
+    // INFO: only clip when the axis set is fully calibrated; otherwise the
+    // pixel rectangle is unknown and points are left untouched.
+    const boundingBox = getAxisSetPixelBoundingBox(axisSet)
+    if (!boundingBox) {
+      return points
+    }
+
+    return points.filter(
+      (point) =>
+        point.xPx >= boundingBox.xPxMin &&
+        point.xPx <= boundingBox.xPxMax &&
+        point.yPx >= boundingBox.yPxMin &&
+        point.yPx <= boundingBox.yPxMax,
     )
   }
 
