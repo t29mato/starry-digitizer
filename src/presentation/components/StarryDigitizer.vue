@@ -108,14 +108,22 @@ $l_mainAreaSideMargin: 10px;
 .c {
   &__wrapper {
     display: flex;
+    // INFO: fill the height-constrained v-container (see App.vue) so the
+    // sidebars below can scroll internally instead of growing the page (#276)
+    height: 100%;
+    min-height: 0;
   }
 
   &__left-sidebar {
     width: $l_leftSidebarWidth;
+    height: 100%;
+    overflow-y: auto;
   }
 
   &__right-sidebar {
     width: $l_rightSidebarWidth;
+    height: 100%;
+    overflow-y: auto;
   }
 
   &__main-area {
@@ -127,6 +135,11 @@ $l_mainAreaSideMargin: 10px;
             (#{$l_mainAreaSideMargin * 2})
         )
     );
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 }
 </style>

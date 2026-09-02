@@ -23,12 +23,16 @@ a:hover {
   color: #535bf2;
 }
 
+/* INFO: Fixed to the viewport height (not min-height) with overflow hidden
+   so the whole page never scrolls — the leftover Vite-template
+   `display: flex; place-items: center` centering plus unconstrained
+   min-height let content grow past 100vh and scroll the page (#276).
+   Panels that need to scroll do so internally (see StarryDigitizer.vue). */
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 h1 {
@@ -59,11 +63,11 @@ button:focus-visible {
   padding: 2em;
 }
 
+/* INFO: fill the fixed-height body instead of the old Vite-template
+   centered/padded box, whose 2rem top+bottom padding alone pushed content
+   past the viewport height (#276) */
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  height: 100%;
 }
 
 @media (prefers-color-scheme: light) {

@@ -96,4 +96,29 @@ export default defineComponent({
     overflow: hidden;
   }
 }
+
+// INFO: Vuetify's default `.v-application__wrap` only sets a *min*-height of
+// 100vh and `v-main` doesn't shrink (flex: 1 0 auto), so any page whose
+// content is even slightly taller than the viewport grows the whole page
+// past 100vh and the browser scrolls it. That whole-page scroll shifted the
+// canvas' bounding rect under the cursor, desyncing subsequent clicks (#276).
+// Pin the app to exactly the viewport height and let v-main shrink so only
+// the panels that actually need it (see StarryDigitizer.vue) scroll.
+:deep(.v-application__wrap) {
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+:deep(.v-main) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+:deep(.v-main > .v-container) {
+  height: 100%;
+  min-height: 0;
+}
 </style>
