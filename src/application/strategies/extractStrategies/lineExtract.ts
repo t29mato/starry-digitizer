@@ -55,9 +55,9 @@ export default class LineExtract
         }
       }
     }
-    // TODO: never usedのため一旦コメントアウトしている
+    // TODO: commented out for now since it is never used
     // let count = 0
-    // INFO: 線グラフは左から右なので横から探す
+    // INFO: line graphs go from left to right, so search from the horizontal direction
     for (let w = 0; w < width; w++) {
       for (let h = 0; h < height; h++) {
         if (visitedArea[h][w]) {
@@ -132,7 +132,7 @@ export default class LineExtract
           // To avoid gaps between calculation and rendering
           // INFO: In manual, pixels are limited to moving one pixel at a time.
           const offsetPx = 0.5
-          // TODO: ここで桁数を指定する必要ない。表示時のみ対応でOK。
+          // TODO: no need to specify the number of digits here. Handling it only at display time is fine.
           coords.push({
             xPx: parseFloat((xPxTotal / pixels.length + offsetPx).toFixed(1)),
             yPx: parseFloat((yPxTotal / pixels.length + offsetPx).toFixed(1)),

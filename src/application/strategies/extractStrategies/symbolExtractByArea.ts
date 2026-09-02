@@ -56,7 +56,7 @@ export default class SymbolExtractByArea
       }
     }
 
-    // TODO: never usedのため一旦コメントアウトしている
+    // TODO: commented out for now since it is never used
     // let count = 0
     for (let h = 0; h < height; h++) {
       for (let w = 0; w < width; w++) {

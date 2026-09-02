@@ -12,7 +12,7 @@ export abstract class ExtractParent {
       100
     return diffRatio < matchRatio
   }
-  // TODO: 背景色をスキップするか選択できるようにする
+  // TODO: allow choosing whether to skip the background color
   isOnMask(r: number, g: number, b: number, a: number): boolean {
     return r === 255 && g === 255 && b === 0 && a > 0
   }

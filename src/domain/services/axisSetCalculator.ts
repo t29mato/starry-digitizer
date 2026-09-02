@@ -2,7 +2,7 @@
 import { AxisSetInterface } from '../models/axisSet/axisSetInterface'
 
 export default class AxisSetCalculator {
-  // INFO: 画像のサイズが1,000pxで1px未満の細かい調整はできず分解能4桁と考えたため
+  // INFO: assumed 4 effective digits since the image size is 1,000px and adjustments finer than 1px aren't possible
   effectiveDigits: number = 4
 
   #axisSet: AxisSetInterface
@@ -18,8 +18,8 @@ export default class AxisSetCalculator {
       this.effectiveDigits = effectiveDigits
     }
   }
-  // INFO: 軸が未配置の場合、coordはinitialCoord {-999, -999} (truthy) のため、
-  // 存在チェックに加えて座標が非負(=実際に配置済み)であることを判定する
+  // INFO: when an axis is not yet placed, coord is initialCoord {-999, -999} (truthy), so
+  // in addition to the existence check, determine whether the coordinate is non-negative (= actually placed)
   get #allAxisCoordsAreFilled(): boolean {
     return [
       this.#axisSet.x1,

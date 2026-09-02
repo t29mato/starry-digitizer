@@ -43,7 +43,7 @@
         </v-row>
       </v-list-item>
     </v-list>
-    <!-- TODO: モーダル上でデータセットを選べるようにする -->
+    <!-- TODO: Allow selecting a dataset within the modal -->
   </div>
 </template>
 

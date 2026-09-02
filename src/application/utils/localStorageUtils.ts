@@ -1,6 +1,6 @@
 import { LOCAL_STORAGE_GLOBAL_KEY } from '@/constants'
 
-//TODO: どうテストする？
+//TODO: how should this be tested?
 
 const addLocalStorageData = (key: string, value: string): void => {
   const storageData: string =
@@ -36,7 +36,7 @@ const removeLocalStorageData = (key: string): void => {
 }
 
 const getLocalStorageDataByKey = (key: string): string => {
-  //TODO: テスト時にエラー回避するためのworkaround しかるべき方針を考える
+  //TODO: workaround to avoid errors during testing; think of a proper approach
   if (typeof localStorage !== 'object') {
     return ''
   }

@@ -81,7 +81,7 @@ export class Dataset implements DatasetInterface {
     this.activePointIds.push(id)
   }
 
-  //INFO クリックされたpointがactiveな場合はinactiveにし、そうでない場合はactive状態に追加する
+  //INFO if the clicked point is active, deactivate it; otherwise, add it as active
   toggleActivatedPoint(toggledId: number) {
     if (this.activePointIds.includes(toggledId)) {
       const activePointIds = this.activePointIds.filter((id) => {

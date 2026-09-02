@@ -19,13 +19,13 @@
         <canvas-footer></canvas-footer>
       </div>
       <div class="c__right-sidebar">
-        <!-- TODO: 有効数字を追加する -->
+        <!-- TODO: Add significant figures -->
         <magnifier-main></magnifier-main>
         <extractor-settings
           :initialExtractorStrategy="initialExtractorStrategy"
         ></extractor-settings>
         <p class="text-caption text-right">
-          <!-- INFO: vバージョン#actionsのビルド番号 -->
+          <!-- INFO: Build number from the v-version #actions -->
           {{ appVerAndBuildInfo }}
         </p>
       </div>

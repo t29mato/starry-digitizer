@@ -30,7 +30,7 @@ export default defineComponent({
     }
   },
   methods: {
-    //INFO: computedではリアクティブにならなかったのでmethodとしている
+    //INFO: Implemented as a method instead of computed because computed did not stay reactive
     getImageCanvasSize(): { w: number; h: number } {
       const imageCanvas = document.getElementById('imageCanvas')
 
@@ -46,7 +46,7 @@ export default defineComponent({
       )
     },
     isX1Y1LineVisible(): boolean {
-      // INFO: 軸が確定済みなら常に表示、未確定ならカーソルがキャンバス上にある時のみ表示
+      // INFO: Always show once the axis is fixed; if not fixed yet, show only while the cursor is on the canvas
       if (this.axisSetRepository.activeAxisSet.x1.coordIsFilled) {
         return true
       }
@@ -73,7 +73,7 @@ export default defineComponent({
       }
     },
     X1Y1VerticalLineStyle(): CSSProperties {
-      //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
+      //INFO: Syncs with the cursor before the axis is fixed, and with the axis after it is fixed
       const styleLeftNum = this.axisSetRepository.activeAxisSet.x1.coordIsFilled
         ? this.axisSetRepository.activeAxisSet.x1.coord.xPx *
           this.canvasHandler.scale
@@ -89,7 +89,7 @@ export default defineComponent({
     },
 
     X2Y2HorizontalLineStyle(): CSSProperties {
-      //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
+      //INFO: Syncs with the cursor before the axis is fixed, and with the axis after it is fixed
       const styleTopNum = this.axisSetRepository.activeAxisSet.x2y2
         .coordIsFilled
         ? this.axisSetRepository.activeAxisSet.x2y2.coord.yPx *
@@ -105,7 +105,7 @@ export default defineComponent({
       }
     },
     X2Y2VerticalLineStyle(): CSSProperties {
-      //INFO: 軸決定前はカーソルに同期し、軸決定後は軸に同期する
+      //INFO: Syncs with the cursor before the axis is fixed, and with the axis after it is fixed
       const styleLeftNum = this.axisSetRepository.activeAxisSet.x2y2
         .coordIsFilled
         ? this.axisSetRepository.activeAxisSet.x2y2.coord.xPx *

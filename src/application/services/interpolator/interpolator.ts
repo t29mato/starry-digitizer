@@ -51,13 +51,13 @@ export class Interpolator implements InterpolatorInterface {
 
     const segments = Math.max(
       Math.floor(
-        manualPointsTotalDistance / (this.interval * Math.sqrt(2)), //INFO: intervalが10の時、点同士の間隔がおよそ16pxになるようにした比例式
+        manualPointsTotalDistance / (this.interval * Math.sqrt(2)), //INFO: proportional formula so that when interval is 10, the spacing between points is about 16px
       ),
       1,
     )
 
     const guidelineSegments = Math.max(
-      Math.floor(manualPointsTotalDistance / 4), //INFO: 補助線は常に高精度の曲線にする
+      Math.floor(manualPointsTotalDistance / 4), //INFO: the guideline should always be a high-precision curve
       1,
     )
 
@@ -104,7 +104,7 @@ export class Interpolator implements InterpolatorInterface {
     )
   }
 
-  //TODO: canvas操作系は独立したapplicationとして、各serviceのcanvasを一括でそうさできたほうがいいかも
+  //TODO: it might be better to make canvas operations an independent application so each service's canvas can be operated on collectively
   public resizeCanvas(): void {
     if (!this.guideCanvas || !this.magnifierCanvas) return
 

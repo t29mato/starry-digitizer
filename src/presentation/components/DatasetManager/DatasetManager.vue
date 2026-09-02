@@ -103,7 +103,7 @@
       </div>
     </div>
 
-    <!-- TODO: モーダル上でデータセットを選べるようにする -->
+    <!-- TODO: Allow selecting a dataset within the modal -->
   </div>
 </template>
 
@@ -171,7 +171,7 @@ export default defineComponent({
       this.axisSetRepository.setActiveAxisSet(
         this.datasetRepository.activeDataset.axisSetId,
       )
-      // INFO: データセットが変えた時はマスクをクリアすることが多いので。
+      // INFO: Clear the mask, since changing the dataset usually requires it
       this.canvasHandler.clearMask()
       this.canvasHandler.maskMode = MASK_MODE.UNSET
     },

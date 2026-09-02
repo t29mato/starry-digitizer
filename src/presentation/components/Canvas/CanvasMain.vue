@@ -88,15 +88,15 @@ export default defineComponent({
       historyManager,
       axisSetRepository,
       datasetRepository,
-      // INFO: 直前のmousemoveでカーソルが画像内にいたかどうか。
-      // 画像から出た最初のイベントで端にクランプするために使う
+      // INFO: Whether the cursor was inside the image on the previous mousemove.
+      // Used to clamp to the edge on the first event after leaving the image
       cursorWasOnImage: false,
     }
   },
   async mounted() {
     document.addEventListener('keydown', this.keyDownHandler)
-    // INFO: 画像の端を越えた瞬間のイベントも拾ってMagnifierを端で
-    // 止められるよう、mousemoveはdocumentで拾う (#255)
+    // INFO: Listen for mousemove on document (instead of the image) so we also catch
+    // the event where the cursor crosses the image edge, letting the Magnifier stop right at the edge (#255)
     document.addEventListener('mousemove', this.mouseMove)
 
     this.interpolator.setGuideCanvas(new HTMLCanvas('interpolationGuideCanvas'))
@@ -110,33 +110,33 @@ export default defineComponent({
       this.canvasHandler.setUploadImageUrl(this.imagePath)
       this.extractor.setSwatches(this.canvasHandler.colorSwatches)
 
-      //TODO: interpolation canvasをinterpolator appに移譲したのでここで呼んでいるがcanvas初期化一連を行うapplicationにまとめたい
+      //TODO: The interpolation canvas has been delegated to the interpolator app so it's called here, but it should eventually be consolidated into the application that handles the whole canvas initialization sequence
       this.interpolator.resizeCanvas()
     } finally {
       //
     }
   },
   methods: {
-    // REFACTOR: modeに応じてpointなりpickColorなりを呼び出す形に変更する
+    // REFACTOR: Change this to call point or pickColor depending on the mode
     point(e: MouseEvent): void {
       // INFO: View All mode is read-only
       if (this.datasetRepository.isViewAllMode) {
         return
       }
-      // IFNO: マスク描画モード中につき
+      // IFNO: While in mask drawing mode
       if (this.canvasHandler.isDrawingMask) {
         return
       }
       const target = e.target as HTMLElement
       const isOnCanvasPoint = target.className === 'canvas-point'
 
-      // INFO: クリック座標を画像のオリジナル座標に変換
-      // (クリック対象が既存プロット上かどうかに関わらず同じ計算式を使う)
+      // INFO: Convert the click coordinates to the image's original coordinates
+      // (uses the same formula regardless of whether the click target is an existing plot)
       const canvasCoord = getMouseCoordFromMouseEvent(e)
       const xPx = canvasCoord.xPx / this.canvasHandler.scale
       const yPx = canvasCoord.yPx / this.canvasHandler.scale
 
-      // INFO: 画像範囲外のクリックを無視する
+      // INFO: Ignore clicks outside the image bounds
       if (
         xPx < 0 ||
         yPx < 0 ||
@@ -146,7 +146,7 @@ export default defineComponent({
         return
       }
 
-      // INFO: canvas-point element上の時は、point edit modeになるので
+      // INFO: When on a canvas-point element, this becomes point edit mode
       switch (this.canvasHandler.manualMode) {
         case 0:
           this.historyManager.capture()
@@ -175,7 +175,7 @@ export default defineComponent({
           yPx,
         })
         this.datasetRepository.activeDataset.inactivatePoints()
-        // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
+        // INFO: Automatically switch to plot-add mode once all axes have been set
         if (!this.axisSetRepository.activeAxisSet.nextAxis) {
           this.canvasHandler.manualMode = MANUAL_MODE.ADD
         }
@@ -197,15 +197,15 @@ export default defineComponent({
 
       this.canvasHandler.mouseDrag(coord.xPx, coord.yPx)
     },
-    // INFO: documentにバインドされているため、canvasWrapperの外でも呼ばれる (#255)
+    // INFO: Bound to document, so this is also called outside canvasWrapper (#255)
     mouseMove(e: MouseEvent) {
       const wrapper = document.getElementById('canvasWrapper')
       if (!wrapper) {
         return
       }
 
-      // INFO: getMouseCoordFromMouseEventはimageCanvasのbounding rect基準で
-      // 座標を求めるため、canvasWrapper外のイベントでも正しく計算できる
+      // INFO: getMouseCoordFromMouseEvent computes coordinates based on imageCanvas's
+      // bounding rect, so it works correctly even for events outside canvasWrapper
       const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
       const cursorXPx = xPx / this.canvasHandler.scale
       const cursorYPx = yPx / this.canvasHandler.scale
@@ -215,7 +215,7 @@ export default defineComponent({
         cursorXPx <= this.canvasHandler.originalWidth &&
         cursorYPx <= this.canvasHandler.originalHeight
 
-      // INFO: カーソルがcanvasWrapper内かつ画像canvas要素の範囲内かどうかを判定
+      // INFO: Determine whether the cursor is within canvasWrapper and within the image canvas element's bounds
       const wrapperRect = wrapper.getBoundingClientRect()
       const isInsideWrapper =
         e.clientX >= wrapperRect.left &&
@@ -226,10 +226,10 @@ export default defineComponent({
 
       const isClicking = e.buttons === 1
 
-      // INFO: 画像の外ではMagnifierを動かさない(気が散るため)。
-      // 画像から出た最初のイベントだけは端にクランプした位置へ更新し、
-      // Magnifierが画像の端でぴったり止まって見えるようにする (#255)。
-      // ドラッグ中(範囲選択・マスク描画)は例外として追従を続ける
+      // INFO: Don't move the Magnifier outside the image (it's distracting).
+      // Only on the first event after leaving the image, update to a position clamped
+      // to the edge, so the Magnifier appears to stop exactly at the image edge (#255).
+      // During drag (range selection / mask drawing), keep following as an exception
       if (!isOnImage && !isClicking && !this.cursorWasOnImage) {
         return
       }
@@ -271,7 +271,7 @@ export default defineComponent({
 
       this.canvasHandler.mouseUp()
 
-      // INFO: EDITモードの場合にpointの複数選択を行う
+      // INFO: In EDIT mode, select multiple points
       if (this.canvasHandler.manualMode === 1) {
         const rect = this.canvasHandler.rectangle
         const scale = this.canvasHandler.scale

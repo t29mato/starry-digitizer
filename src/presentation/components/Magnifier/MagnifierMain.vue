@@ -152,7 +152,7 @@ export default defineComponent({
     // magnifierHalfSize(): number {
     //   return this.magnifier.sizePx / 2
     // },
-    // INFO: 小数点ありのピクセル表示するとユーザーを混乱させるので表示上は切り上げ
+    // INFO: Displaying pixel values with decimals would confuse users, so round up for display
     // canvasCursorCeil(): {
     //   xPx: number
     //   yPx: number
@@ -178,7 +178,7 @@ export default defineComponent({
         this.canvasHandler.cursor.xPx,
         this.canvasHandler.cursor.yPx,
       )
-      // INFO: 軸の値が未決定の場合は、ピクセルをそのまま表示
+      // INFO: If the axis values are not yet determined, display the pixel values as-is
       if (values.xV === 'NaN' || values.yV === 'NaN') {
         return {
           xV: `${Math.max(Math.round(this.canvasHandler.cursor.xPx), 0)}px`,

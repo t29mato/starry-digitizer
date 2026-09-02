@@ -1,7 +1,7 @@
 <template>
   <div>
-    <!-- INFO: 端付近ではtranslate値が負になるため、`-${...}` 形式だと
-         `--Npx` という不正なCSSになりMagnifierが固まる (#255) -->
+    <!-- INFO: Near the edges the translate value becomes negative, so using the
+         `-${...}` format would produce invalid CSS like `--Npx`, freezing the Magnifier (#255) -->
     <img
       :src="canvasHandler.uploadImageUrl"
       alt="the image you uploaded"

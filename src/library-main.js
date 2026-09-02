@@ -1,20 +1,19 @@
-// vue コンポーネントのインポート
+// Import the Vue component
 import Main from './presentation/components/Main.vue'
 
-// Vue.use() によって実行される install 関数を定義
+// Define the install function executed by Vue.use()
 export function install(Vue) {
   if (install.installed) return
   install.installed = true
   Vue.component(Main, Main)
 }
 
-// Vue.use() のためのモジュール定義を作成
 // Create module definition for Vue.use()
 const plugin = {
   install,
 }
 
-// vue が見つかった場合に自動インストールする (ブラウザで <script> タグを用いた場合等)
+// Automatically install when Vue is found (e.g. when used via a <script> tag in a browser)
 let GlobalVue = null
 if (typeof window !== 'undefined') {
   GlobalVue = window.Vue
@@ -25,5 +24,5 @@ if (GlobalVue) {
   GlobalVue.use(plugin)
 }
 
-// (npm/webpack 等で) モジュールとして利用させるためコンポーネントを export する
+// Export the component so it can be used as a module (e.g. via npm/webpack)
 export default Main
