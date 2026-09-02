@@ -20,6 +20,7 @@ export interface CanvasHandlerInterface {
   uploadImageUrl: string
   penToolSizePx: number
   eraserSizePx: number
+  snapToSymbolEnabled: boolean
   get originalSizeMaskCanvasColors(): Uint8ClampedArray
   get originalImageCanvasColors(): Uint8ClampedArray
   get colorSwatches(): string[]
@@ -52,4 +53,6 @@ export interface CanvasHandlerInterface {
   setMaskMode(mode: number): void
   setPenToolSizePx(size: number): void
   setEraserSizePx(size: number): void
+  setSnapToSymbolEnabled(enabled: boolean): void
+  initializeSnapToSymbolEnabled(): void
 }

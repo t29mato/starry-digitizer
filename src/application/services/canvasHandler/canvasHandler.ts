@@ -5,6 +5,7 @@ import { extractColorSwatches } from '@/application/utils/colorPaletteUtils'
 import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
 import { MANUAL_MODE, MASK_MODE } from '@/constants'
 import { Coord, ManualMode, MaskMode } from '@/@types/types'
+import { getLocalStorageDataByKey } from '@/application/utils/localStorageUtils'
 export class CanvasHandler implements CanvasHandlerInterface {
   isDrawnMask = false
   imageElement: HTMLImageElement
@@ -22,6 +23,9 @@ export class CanvasHandler implements CanvasHandlerInterface {
   penToolSizePx = 50
   eraserSizePx = 30
   uploadImageUrl = ''
+  // INFO: opt-in, defaults to off so existing manual point-adding behavior
+  // is unchanged for existing users (#283)
+  snapToSymbolEnabled = false
 
   constructor() {
     this.imageElement = new Image()
@@ -396,5 +400,21 @@ export class CanvasHandler implements CanvasHandlerInterface {
 
   setEraserSizePx(size: number) {
     this.eraserSizePx = size
+  }
+
+  setSnapToSymbolEnabled(enabled: boolean) {
+    this.snapToSymbolEnabled = enabled
+  }
+
+  // INFO: restores the persisted "snap to symbol" preference (localStorage),
+  // mirroring how Interpolator.initialize() restores isInterpolatorActive
+  initializeSnapToSymbolEnabled() {
+    const isEnabled = getLocalStorageDataByKey('isSnapToSymbolEnabled')
+
+    if (isEnabled === 'true') {
+      this.snapToSymbolEnabled = true
+    } else if (isEnabled === 'false') {
+      this.snapToSymbolEnabled = false
+    }
   }
 }
