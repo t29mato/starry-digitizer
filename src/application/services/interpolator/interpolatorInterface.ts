@@ -6,8 +6,6 @@ export interface InterpolatorInterface {
   interval: number
   interpolatedCoords: Coord[]
   interpolatedCoordsForGuideline: Coord[]
-  guideCanvas?: HTMLCanvas
-  magnifierCanvas?: HTMLCanvas
   initialize(): void
   setIsActive(isActive: boolean): void
   resizeCanvas(): void
