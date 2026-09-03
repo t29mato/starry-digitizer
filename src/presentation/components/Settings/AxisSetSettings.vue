@@ -1,41 +1,31 @@
 <template>
   <div>
-    <table>
+    <table class="c__AxisSetRepository-settings__table">
       <tbody>
         <tr>
           <td class="pl-0 pr-1" style="width: 42%">
-            <div class="c__AxisSetRepository-settings__axis-field">
-              <span class="c__AxisSetRepository-settings__axis-field__prefix"
-                >x1:</span
-              >
-              <sd-text-field
-                :model-value="displayVal.x1"
-                @update:model-value="displayVal.x1 = String($event)"
-                id="x1-value"
-                :disabled="options.readonly"
-                type="text"
-                variant="underlined"
-                @click="selectAll"
-              >
-              </sd-text-field>
-            </div>
+            <sd-text-field
+              :model-value="displayVal.x1"
+              @update:model-value="displayVal.x1 = String($event)"
+              id="x1-value"
+              prefix="x1:"
+              :disabled="options.readonly"
+              type="text"
+              @click="selectAll"
+            >
+            </sd-text-field>
           </td>
           <td class="pl-0 pr-1" style="width: 42%">
-            <div class="c__AxisSetRepository-settings__axis-field">
-              <span class="c__AxisSetRepository-settings__axis-field__prefix"
-                >x2:</span
-              >
-              <sd-text-field
-                :model-value="displayVal.x2"
-                @update:model-value="displayVal.x2 = String($event)"
-                id="x2-value"
-                :disabled="options.readonly"
-                type="text"
-                variant="underlined"
-                @click="selectAll"
-              >
-              </sd-text-field>
-            </div>
+            <sd-text-field
+              :model-value="displayVal.x2"
+              @update:model-value="displayVal.x2 = String($event)"
+              id="x2-value"
+              prefix="x2:"
+              :disabled="options.readonly"
+              type="text"
+              @click="selectAll"
+            >
+            </sd-text-field>
           </td>
           <td>
             <span class="c__AxisSetRepository-settings__hint">Log</span>
@@ -54,38 +44,28 @@
         </tr>
         <tr>
           <td class="pl-0 pr-1">
-            <div class="c__AxisSetRepository-settings__axis-field">
-              <span class="c__AxisSetRepository-settings__axis-field__prefix"
-                >y1:</span
-              >
-              <sd-text-field
-                :model-value="displayVal.y1"
-                @update:model-value="displayVal.y1 = String($event)"
-                id="y1-value"
-                :disabled="options.readonly"
-                type="text"
-                variant="underlined"
-                @click="selectAll"
-              >
-              </sd-text-field>
-            </div>
+            <sd-text-field
+              :model-value="displayVal.y1"
+              @update:model-value="displayVal.y1 = String($event)"
+              id="y1-value"
+              prefix="y1:"
+              :disabled="options.readonly"
+              type="text"
+              @click="selectAll"
+            >
+            </sd-text-field>
           </td>
           <td class="pl-0 pr-1">
-            <div class="c__AxisSetRepository-settings__axis-field">
-              <span class="c__AxisSetRepository-settings__axis-field__prefix"
-                >y2:</span
-              >
-              <sd-text-field
-                :model-value="displayVal.y2"
-                @update:model-value="displayVal.y2 = String($event)"
-                id="y2-value"
-                :disabled="options.readonly"
-                type="text"
-                variant="underlined"
-                @click="selectAll"
-              >
-              </sd-text-field>
-            </div>
+            <sd-text-field
+              :model-value="displayVal.y2"
+              @update:model-value="displayVal.y2 = String($event)"
+              id="y2-value"
+              prefix="y2:"
+              :disabled="options.readonly"
+              type="text"
+              @click="selectAll"
+            >
+            </sd-text-field>
           </td>
           <td><span class="c__AxisSetRepository-settings__hint">Log</span></td>
           <td>
@@ -538,24 +518,21 @@ export default defineComponent({
 <style lang="scss" scoped>
 .c {
   &__AxisSetRepository-settings {
-    &__hint {
-      display: block;
-      font-size: 0.75rem;
-      transform: translateY(-8px);
-      padding-top: 13px;
-      vertical-align: middle;
+    &__table {
+      width: 100%;
+      border-spacing: 0;
+      td {
+        padding: 2px 0;
+        vertical-align: middle;
+      }
     }
 
-    &__axis-field {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-
-      &__prefix {
-        font-size: 0.75rem;
-        color: var(--sd-text-medium, rgba(0, 0, 0, 0.6));
-        white-space: nowrap;
-      }
+    &__hint {
+      display: block;
+      padding: 0 2px 0 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
     }
 
     &__ocr-warning {
@@ -567,10 +544,12 @@ export default defineComponent({
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
 
       &__label {
+        margin: 6px 0 2px;
         font-size: 0.75rem;
+        font-weight: 500;
       }
     }
   }

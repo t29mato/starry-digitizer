@@ -26,13 +26,9 @@
         </tbody>
       </table>
     </div>
-    <sd-button
-      v-if="options.features.csvExport"
-      class="mt-1"
-      @click="copyData"
-      size="small"
-      >Copy to Clipboard</sd-button
-    >
+    <div v-if="options.features.csvExport" class="mt-1">
+      <sd-button @click="copyData" size="small">Copy to Clipboard</sd-button>
+    </div>
   </div>
 </template>
 
@@ -119,22 +115,26 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .c__table-wrapper {
+  display: inline-block;
+  max-width: 100%;
   max-height: 30vh;
-  overflow-y: auto;
-  border: 1px solid var(--sd-border, rgba(0, 0, 0, 0.24));
+  overflow: auto;
 }
 
 .sd-table {
-  width: 100%;
   border-collapse: collapse;
   font-size: 0.75rem;
 
   th,
   td {
-    padding: 2px 6px;
+    min-width: 50px;
+    padding: 3px 6px;
     border: 1px solid var(--sd-border, rgba(0, 0, 0, 0.24));
     text-align: right;
     white-space: nowrap;
+  }
+  td:empty::after {
+    content: '\00a0';
   }
 
   th {

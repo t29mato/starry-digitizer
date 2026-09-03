@@ -4,7 +4,8 @@
       <sd-text-field
         :model-value="lineExtract.dxPx"
         @update:model-value="inputDxDyPx"
-        label="ΔX (px)"
+        prefix="ΔX:"
+        suffix="px"
         type="number"
         class="ma-0"
         id="line-extract-dx"
@@ -15,7 +16,8 @@
       <sd-text-field
         :model-value="lineExtract.dyPx"
         @update:model-value="inputDxDyPx"
-        label="ΔY (px)"
+        prefix="ΔY:"
+        suffix="px"
         type="number"
         class="ma-0"
         id="line-extract-dy"

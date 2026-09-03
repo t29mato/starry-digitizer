@@ -36,7 +36,8 @@
       :model-value="canvasHandler.penToolSizePx"
       @change="onChangePenToolSizePx"
       type="number"
-      label="Pen Size"
+      prefix="Pen Size:"
+      suffix="px"
       :disabled="options.readonly"
     ></sd-text-field>
     <sd-text-field
@@ -44,7 +45,8 @@
       :model-value="canvasHandler.eraserSizePx"
       @change="onChangeEraserSizePx"
       type="number"
-      label="Eraser Size (px)"
+      prefix="Eraser Size:"
+      suffix="px"
       :disabled="options.readonly"
     ></sd-text-field>
   </div>

@@ -32,6 +32,7 @@
       <sd-checkbox
         id="switch-interpolation"
         class="ml-3"
+        switch
         :model-value="interpolator.isActive"
         @update:model-value="handleOnClickInterpolatiorSwitch"
         :disabled="options.readonly || datasetRepository.isViewAllMode"
@@ -44,7 +45,8 @@
         class="mr-4"
         :model-value="interpolator.interval"
         @update:model-value="handleOnUpdateInterpolatorInterval"
-        label="Interval (px)"
+        prefix="Interval:"
+        suffix="px"
         type="number"
         min="2"
         step="1"
@@ -80,7 +82,7 @@
       @update:model-value="setExtractStrategy"
       :model-value="extractor.strategy.name"
       :items="extractor.strategies"
-      label="Algorithm"
+      prefix="Algorithm:"
       :disabled="options.readonly || datasetRepository.isViewAllMode"
     ></sd-select>
     <div v-if="!datasetRepository.isViewAllMode">

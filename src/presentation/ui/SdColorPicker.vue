@@ -1,30 +1,32 @@
 <template>
-  <div class="sd-color" :class="{ 'sd-color--disabled': disabled }">
-    <input
+  <label class="sd-color" :class="{ 'sd-color--disabled': disabled }">
+    <span
       class="sd-color__swatch"
+      :style="{ backgroundColor: hex6 }"
+      :title="modelValue"
+    ></span>
+    <sd-icon class="sd-color__icon" :path="mdiPalette" :size="20" />
+    <!-- INFO: the native color input is what actually opens the picker; it is
+         visually hidden but stays in the DOM (tests can set its value). -->
+    <input
+      class="sd-color__input"
       type="color"
       :value="hex6"
       :disabled="disabled"
       v-bind="$attrs"
       @input="onPick"
     />
-    <sd-text-field
-      class="sd-color__hex"
-      :model-value="modelValue"
-      :disabled="disabled"
-      placeholder="#rrggbbaa"
-      @update:model-value="onType"
-    />
-  </div>
+  </label>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import SdTextField from './SdTextField.vue'
+import { mdiPalette } from '@mdi/js'
+import SdIcon from './SdIcon.vue'
 
-// INFO: replacement for <v-color-picker mode="hexa">: the native color input
-// (6-digit hex) plus a text field for the 8-digit #rrggbbaa the extractor
-// stores. Alpha is preserved from the text field when the swatch changes.
+// INFO: replacement for the <v-color-picker> swatch + palette icon the app
+// showed: a colour chip and a palette icon that open the native picker. The
+// extractor stores #rrggbbaa; alpha is preserved when a new colour is picked.
 defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(
@@ -43,32 +45,37 @@ function onPick(event: Event) {
   const alpha = /^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})$/.exec(props.modelValue)?.[1]
   emit('update:modelValue', `${rgb}${alpha ?? 'ff'}`)
 }
-
-function onType(value: string | number) {
-  emit('update:modelValue', String(value))
-}
 </script>
 
 <style scoped lang="scss">
 .sd-color {
-  display: flex;
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  cursor: pointer;
 
   &__swatch {
-    width: 40px;
-    height: 32px;
-    padding: 0;
-    border: 1px solid var(--sd-border, rgba(0, 0, 0, 0.24));
-    border-radius: var(--sd-radius, 4px);
-    background: transparent;
-    cursor: pointer;
+    display: inline-block;
+    width: 44px;
+    height: 18px;
+    border-radius: 2px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
   }
-  &__hex {
-    flex: 1;
+  &__icon {
+    color: var(--sd-text, rgba(0, 0, 0, 0.87));
+  }
+  &__input {
+    position: absolute;
+    inset: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
   }
   &--disabled {
-    opacity: 0.6;
+    opacity: 0.5;
+    cursor: default;
   }
 }
 </style>
