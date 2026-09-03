@@ -4,82 +4,100 @@
       <tbody>
         <tr>
           <td class="pl-0 pr-1" style="width: 42%">
-            <v-text-field
-              v-model="displayVal.x1"
-              id="x1-value"
-              :disabled="options.readonly"
-              type="text"
-              prefix="x1: "
-              hide-details
-              density="compact"
-              @click="$event.target.select()"
-            >
-            </v-text-field>
+            <div class="c__AxisSetRepository-settings__axis-field">
+              <span class="c__AxisSetRepository-settings__axis-field__prefix"
+                >x1:</span
+              >
+              <sd-text-field
+                :model-value="displayVal.x1"
+                @update:model-value="displayVal.x1 = String($event)"
+                id="x1-value"
+                :disabled="options.readonly"
+                type="text"
+                variant="underlined"
+                @click="selectAll"
+              >
+              </sd-text-field>
+            </div>
           </td>
           <td class="pl-0 pr-1" style="width: 42%">
-            <v-text-field
-              v-model="displayVal.x2"
-              id="x2-value"
-              :disabled="options.readonly"
-              type="text"
-              prefix="x2: "
-              hide-details
-              density="compact"
-              @click="$event.target.select()"
-            >
-            </v-text-field>
+            <div class="c__AxisSetRepository-settings__axis-field">
+              <span class="c__AxisSetRepository-settings__axis-field__prefix"
+                >x2:</span
+              >
+              <sd-text-field
+                :model-value="displayVal.x2"
+                @update:model-value="displayVal.x2 = String($event)"
+                id="x2-value"
+                :disabled="options.readonly"
+                type="text"
+                variant="underlined"
+                @click="selectAll"
+              >
+              </sd-text-field>
+            </div>
           </td>
           <td>
             <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
           <td>
-            <v-checkbox
-              color="primary"
-              v-model="axisSetRepository.activeAxisSet.xIsLogScale"
+            <sd-checkbox
+              :model-value="axisSetRepository.activeAxisSet.xIsLogScale"
+              @update:model-value="
+                axisSetRepository.activeAxisSet.xIsLogScale = Boolean($event)
+              "
               id="x-is-log"
+              data-cy="x-is-log"
               :disabled="options.readonly"
-              hide-details
-              density="compact"
-            ></v-checkbox>
+            ></sd-checkbox>
           </td>
         </tr>
         <tr>
           <td class="pl-0 pr-1">
-            <v-text-field
-              v-model="displayVal.y1"
-              id="y1-value"
-              :disabled="options.readonly"
-              prefix="y1: "
-              type="text"
-              hide-details
-              density="compact"
-              @click="$event.target.select()"
-            >
-            </v-text-field>
+            <div class="c__AxisSetRepository-settings__axis-field">
+              <span class="c__AxisSetRepository-settings__axis-field__prefix"
+                >y1:</span
+              >
+              <sd-text-field
+                :model-value="displayVal.y1"
+                @update:model-value="displayVal.y1 = String($event)"
+                id="y1-value"
+                :disabled="options.readonly"
+                type="text"
+                variant="underlined"
+                @click="selectAll"
+              >
+              </sd-text-field>
+            </div>
           </td>
           <td class="pl-0 pr-1">
-            <v-text-field
-              v-model="displayVal.y2"
-              id="y2-value"
-              :disabled="options.readonly"
-              prefix="y2: "
-              type="text"
-              hide-details
-              density="compact"
-              @click="$event.target.select()"
-            >
-            </v-text-field>
+            <div class="c__AxisSetRepository-settings__axis-field">
+              <span class="c__AxisSetRepository-settings__axis-field__prefix"
+                >y2:</span
+              >
+              <sd-text-field
+                :model-value="displayVal.y2"
+                @update:model-value="displayVal.y2 = String($event)"
+                id="y2-value"
+                :disabled="options.readonly"
+                type="text"
+                variant="underlined"
+                @click="selectAll"
+              >
+              </sd-text-field>
+            </div>
           </td>
           <td><span class="c__AxisSetRepository-settings__hint">Log</span></td>
           <td>
-            <v-checkbox
-              color="primary"
-              v-model="axisSetRepository.activeAxisSet.yIsLogScale"
+            <sd-checkbox
+              :model-value="axisSetRepository.activeAxisSet.yIsLogScale"
+              @update:model-value="
+                axisSetRepository.activeAxisSet.yIsLogScale = Boolean($event)
+              "
               id="y-is-log"
+              data-cy="y-is-log"
               :disabled="options.readonly"
-              density="compact"
-              hide-details
-            ></v-checkbox>
+            ></sd-checkbox>
           </td>
         </tr>
       </tbody>
@@ -89,34 +107,38 @@
       <h5 class="c__AxisSetRepository-settings__point-mode__label">
         Calibration mode:
       </h5>
-      <v-radio-group
-        row
-        v-model.number="axisSetRepository.activeAxisSet.pointMode"
-        inline
-        color="primary"
-        hide-details
-        :disabled="options.readonly"
+      <!-- INFO: the radios are built from SdCheckbox (type="radio") rather
+           than SdRadioGroup so each <input> can carry its own data-cy hook;
+           SdRadioGroup takes its radios as data and has no per-option attr
+           passthrough. The DOM is otherwise identical (label.sd-check). -->
+      <div
+        class="c__AxisSetRepository-settings__point-mode"
+        data-cy="calibration-mode"
       >
-        <v-radio
-          label="2 Points"
-          :value="0"
-          :disabled="options.readonly || twoPointsRadioIsDisabled"
-        ></v-radio>
-        <v-radio
-          label="4 Points"
-          :value="1"
-          :disabled="options.readonly || fourPointsRadioIsDisabled"
-        ></v-radio>
-      </v-radio-group>
-      <v-checkbox
+        <sd-checkbox
+          v-for="option in pointModeOptions"
+          :key="option.value"
+          type="radio"
+          name="calibration-mode"
+          :value="option.value"
+          :label="option.label"
+          :data-cy="option.dataCy"
+          :data-value="option.value"
+          :disabled="option.disabled"
+          :model-value="axisSetRepository.activeAxisSet.pointMode"
+          @update:model-value="setPointMode"
+        ></sd-checkbox>
+      </div>
+      <sd-checkbox
         label="Show axes marker"
-        density="compact"
-        hide-details
-        color="primary"
-        v-model="axisSetRepository.activeAxisSet.isVisible"
-      ></v-checkbox>
-      <div class="mt-2">
-        <v-btn
+        data-cy="show-axes-marker"
+        :model-value="axisSetRepository.activeAxisSet.isVisible"
+        @update:model-value="
+          axisSetRepository.activeAxisSet.isVisible = Boolean($event)
+        "
+      ></sd-checkbox>
+      <div class="mt-2 d-flex align-center flex-wrap">
+        <sd-button
           size="small"
           :disabled="
             options.readonly ||
@@ -125,8 +147,8 @@
           @click="editAxes"
         >
           Edit Axes
-        </v-btn>
-        <v-btn
+        </sd-button>
+        <sd-button
           size="small"
           class="ml-2"
           :disabled="
@@ -136,28 +158,31 @@
           @click="clearAxisSet"
         >
           Clear XY Axes
-        </v-btn>
-        <v-btn
+        </sd-button>
+        <sd-button
           size="small"
           class="ml-2"
           :disabled="
             options.readonly ||
-            !axisSetRepository.activeAxisSet.hasAtLeastOneAxis
+            !axisSetRepository.activeAxisSet.hasAtLeastOneAxis ||
+            ocrIsRunning
           "
-          :loading="ocrIsRunning"
           @click="handleOnClickAutoDetectAxisValues"
           title="OCR the numbers near each axis marker and fill in its value"
         >
-          Auto-fill values (OCR)
-        </v-btn>
-        <v-tooltip location="top">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="warning" size="small" class="ml-1">
-              mdi-information-outline
-            </v-icon>
-          </template>
-          {{ ocrWarningMessage }}
-        </v-tooltip>
+          {{
+            ocrIsRunning ? 'Auto-fill values (OCR)…' : 'Auto-fill values (OCR)'
+          }}
+        </sd-button>
+        <sd-tooltip :text="ocrWarningMessage" class="ml-1">
+          <sd-icon
+            class="c__AxisSetRepository-settings__ocr-warning"
+            :path="mdiInformationOutline"
+            :size="16"
+            tabindex="0"
+            :title="ocrWarningMessage"
+          />
+        </sd-tooltip>
       </div>
       <p v-if="ocrErrorMessage" class="text-red mt-1">
         {{ ocrErrorMessage }}
@@ -178,8 +203,24 @@ import {
   AXIS_NAMES,
   matchOcrWordsToAxisValues,
 } from '@/application/utils/axisOcrMatcher'
+import { mdiInformationOutline } from '@mdi/js'
+import {
+  SdButton,
+  SdCheckbox,
+  SdIcon,
+  SdTextField,
+  SdTooltip,
+} from '@/presentation/ui'
+import type { SdRadioOption } from '@/presentation/ui'
 
 export default defineComponent({
+  components: {
+    SdButton,
+    SdCheckbox,
+    SdIcon,
+    SdTextField,
+    SdTooltip,
+  },
   setup() {
     const { axisSetRepository, datasetRepository, canvasHandler } =
       useDigitizerContext()
@@ -234,9 +275,28 @@ export default defineComponent({
         activeAxisSet.hasAtLeastOneAxis
       )
     },
+    // INFO: SdRadioGroup takes its radios as data instead of child elements,
+    // so the per-option disabling lives here.
+    pointModeOptions(): (SdRadioOption & { dataCy: string })[] {
+      return [
+        {
+          label: '2 Points',
+          value: POINT_MODE.TWO_POINTS,
+          dataCy: 'calibration-mode-2',
+          disabled: this.options.readonly || this.twoPointsRadioIsDisabled,
+        },
+        {
+          label: '4 Points',
+          value: POINT_MODE.FOUR_POINTS,
+          dataCy: 'calibration-mode-4',
+          disabled: this.options.readonly || this.fourPointsRadioIsDisabled,
+        },
+      ]
+    },
   },
   data() {
     return {
+      mdiInformationOutline,
       //NOTE: initialize axis values as string because it sometimes is displayed like '1e+10'
       displayVal: {
         x1: '',
@@ -266,6 +326,15 @@ export default defineComponent({
     this.displayVal.y2 = String(this.y2Axis.value)
   },
   methods: {
+    setPointMode(value: string | number | boolean) {
+      this.axisSetRepository.activeAxisSet.pointMode =
+        Number(value) === POINT_MODE.FOUR_POINTS
+          ? POINT_MODE.FOUR_POINTS
+          : POINT_MODE.TWO_POINTS
+    },
+    selectAll(event: Event) {
+      ;(event.target as HTMLInputElement).select()
+    },
     parseExponentialValue(value: string): string {
       // Handle '^' notation as actual exponentiation (e.g., 2^3 = 8)
       if (value.includes('^')) {
@@ -477,7 +546,29 @@ export default defineComponent({
       vertical-align: middle;
     }
 
+    &__axis-field {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+
+      &__prefix {
+        font-size: 0.75rem;
+        color: var(--sd-text-medium, rgba(0, 0, 0, 0.6));
+        white-space: nowrap;
+      }
+    }
+
+    &__ocr-warning {
+      color: var(--sd-warning, #fb8c00);
+      cursor: help;
+    }
+
     &__point-mode {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+
       &__label {
         font-size: 0.75rem;
       }

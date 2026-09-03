@@ -29,11 +29,4 @@ export interface ProjectServiceInterface {
     projectData: ProjectDTO
     imageData: string
   }>
-
-  /**
-   * Download ZIP file to user's computer
-   * @param zipBlob - The ZIP blob to download
-   * @param filename - Optional filename (auto-generated if not provided)
-   */
-  downloadZip(zipBlob: Blob, filename?: string): void
 }

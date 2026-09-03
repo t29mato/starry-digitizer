@@ -90,6 +90,7 @@ Vue+Vuetify を React ページに載せる追加コストは概ね 120〜150KB 
 2. **変更通知の穴を認識しておく**。今すぐ Observer を入れる必要はないが、「Vue の `reactive()` がエンジンの通知機構を代替している」ことを `digitizerContext.ts` のコメントに明記し、ドメインクラスへの直接変更を新たに増やさない。
 3. **(a) のマウントラッパーをサンプルとして 1 つ置く**(`examples/` に framework-less の `mount(el, props)` 例)。React ホストの可否をコード 50 行で判断できるようにする。
 4. **Handsontable の再検討**。フレームワークに関係なく最大の依存(420KB gzip、13 系は商用ライセンスキー要)。CSV 表示だけなら `<table>` で足りる可能性が高い。
+   - 2026-09-03 検討結果: 利用している機能は X/Y の表示・列ソート・Copy のみ(セル編集は状態に反映されない)。`v-table` への置き換えは追加依存ゼロで可能だが、**今回は現状維持**とし、別 PR で扱う(メンテナ判断)。`licenseKey: 'non-commercial-and-evaluation'` が組み込み先にも波及する点は、置き換え時の主な動機になる。
 
 ### 今すべきでないこと
 
@@ -106,3 +107,13 @@ Vue+Vuetify を React ページに載せる追加コストは概ね 120〜150KB 
 | 3 フレームワーク以上からの利用が見込まれる | (c) の上で (d) を検討。この時点で Vuetify を剥がす (b) が前提になる |
 
 結論として、「Vue に依存していること」自体は現時点で妥当な判断であり、問題があるとすれば依存の場所ではなく、**エンジンが単独で立てない設計**(DOM id 結合と通知機構の不在)の方である。そこを先に直しておけば、フレームワークの選択は後から安く変えられる。
+
+
+## 追記(2026-09-03): メンテナの決定
+
+本レビューの提示後、メンテナは **(b) を前倒しで実施**する判断をした(「依存があるとだるい」)。
+同日中に Vuetify・Handsontable・`@mdi/font` を取り除き、`src/presentation/ui/`(自前の最小 UI キット)と
+`src/presentation/styles/base.scss`(`.starry-digitizer` 配下のトークン/ユーティリティ)に置き換えた。
+peerDependency は `vue` のみ。アイコンは `@mdi/js` の SVG パス文字列を同梱する。
+(1) の「エンジンから DOM を追い出す」も同時に実施した(`canvasHandler.attachCanvases()`、`presentation/utils/downloadBlob` / `projectFileDialog`)。
+残る論点は §1.2 の「変更通知の不在」のみで、これは非 Vue の UI を作るときに着手する。

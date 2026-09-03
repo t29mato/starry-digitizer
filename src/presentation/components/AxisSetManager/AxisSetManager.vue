@@ -2,64 +2,67 @@
   <div>
     <h4>
       XY Axes List
-      <v-btn
+      <sd-button
         @click="handleOnClickAddAxisSetButton"
         size="x-small"
         class="ml-2"
+        :icon="mdiPlus"
+        title="Add axis set"
+        data-cy="add-axis-set"
         :disabled="options.readonly"
-        ><v-icon>mdi-plus</v-icon></v-btn
-      >
-      <v-btn
+      />
+      <sd-button
         size="x-small"
         @click="handleOnClickRemoveAxisSetButton"
+        :icon="mdiMinus"
+        title="Remove axis set"
+        data-cy="remove-axis-set"
         :disabled="options.readonly || axisSetRepository.axisSets.length === 1"
         class="ml-2"
-        ><v-icon>mdi-minus</v-icon></v-btn
-      >
+      />
     </h4>
-    <v-list
-      density="compact"
-      class="mb-2 mt-1 pa-0"
+    <div
+      class="mb-2 mt-1 pa-0 c__axisSet-list"
       style="min-height: 8vh; outline: solid 1px gray; max-height: 20vh"
     >
-      <v-list-item
+      <div
         v-for="axisSet in axisSetRepository.axisSets"
         :key="axisSet.id"
         class="pl-2 c__axisSet-item"
-        link
         @click="handleOnClickAxisSet(axisSet.id)"
         :class="{
           'bg-yellow-lighten-4':
             axisSet.id === axisSetRepository.activeAxisSet.id,
         }"
       >
-        <v-row>
-          <v-col cols="10">
-            <v-text-field
+        <div class="sd-row">
+          <div class="sd-col-10">
+            <sd-text-field
               v-model="axisSet.name"
               :placeholder="'axisSet ' + axisSet.id"
-              hide-details
-              density="compact"
-              class="mt-0 pt-0 pl-2"
+              class="pl-2"
               variant="underlined"
               :readonly="options.readonly"
-            ></v-text-field>
-          </v-col>
-        </v-row>
-      </v-list-item>
-    </v-list>
+            />
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- TODO: モーダル上でデータセットを選べるようにする -->
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { mdiPlus, mdiMinus } from '@mdi/js'
 
+import { SdButton, SdTextField } from '@/presentation/ui'
 import { useDigitizerContext } from '@/application/digitizerContext'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { MANUAL_MODE } from '@/constants'
 
 export default defineComponent({
+  components: { SdButton, SdTextField },
   setup() {
     const { canvasHandler, axisSetRepository, datasetRepository } =
       useDigitizerContext()
@@ -68,6 +71,8 @@ export default defineComponent({
   },
   data() {
     return {
+      mdiPlus,
+      mdiMinus,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
@@ -159,3 +164,21 @@ export default defineComponent({
   },
 })
 </script>
+
+<style scoped lang="scss">
+// INFO: replaces <v-list density="compact"> + <v-list-item link>: a plain
+// scrollable list whose rows highlight on hover the way the Vuetify one did.
+// The hover rule skips the active row so the yellow highlight stays visible.
+.c__axisSet-list {
+  overflow-y: auto;
+}
+.c__axisSet-item {
+  cursor: pointer;
+  padding-top: 2px;
+  padding-bottom: 2px;
+
+  &:hover:not(.bg-yellow-lighten-4) {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+</style>

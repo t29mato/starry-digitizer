@@ -1,26 +1,10 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
-// Vuetify: the host owns the single Vuetify instance; the library declares it
-// as a peer dependency and never creates one of its own.
-import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
-
-// Library styles, scoped under .starry-digitizer.
+// INFO: the library depends on nothing but `vue` — no Vuetify, no icon font.
+// Its styles are scoped under `.starry-digitizer`, so this single import
+// cannot leak into the host's own markup. This is exactly how Starrydata3
+// is configured.
 import 'starry-digitizer/styles'
 
-const vuetify = createVuetify({
-  components,
-  directives,
-  icons: {
-    defaultSet: 'mdi',
-    aliases,
-    sets: { mdi },
-  },
-})
-
-createApp(App).use(vuetify).mount('#app')
+createApp(App).mount('#app')

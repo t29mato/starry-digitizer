@@ -1,8 +1,15 @@
+// INFO: Thin wrapper around a canvas element the presentation layer hands
+// over. It deliberately does NOT look the element up by id: several digitizer
+// instances can live on one page, and an id lookup would always find the
+// first one. Lives in the application layer so the engine no longer depends
+// on presentation code.
 export class HTMLCanvas {
   element: HTMLCanvasElement
-  constructor(elementId: string) {
-    this.element = this.#getCanvasElementById(elementId)
+
+  constructor(element: HTMLCanvasElement) {
+    this.element = element
   }
+
   get context() {
     const context = this.element.getContext('2d')
     if (context instanceof CanvasRenderingContext2D) {
@@ -18,12 +25,5 @@ export class HTMLCanvas {
       this.element.width,
       this.element.height,
     ).data
-  }
-  #getCanvasElementById(id: string): HTMLCanvasElement {
-    const element = document.getElementById(id)
-    if (element instanceof HTMLCanvasElement) {
-      return element as HTMLCanvasElement
-    }
-    throw new Error(`element ID ${id} is not instance of a HTMLCanvasElement`)
   }
 }

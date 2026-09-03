@@ -8,7 +8,7 @@ describe('File menu: project ZIP', () => {
   beforeEach(() => {
     cy.visit('/', {
       onBeforeLoad(win) {
-        // INFO: ProjectService.downloadZip() creates an <a download> and
+        // INFO: presentation/utils/downloadBlob creates an <a download> and
         // clicks it; stub the click so the assertion can read the attributes.
         cy.stub(win.HTMLAnchorElement.prototype, 'click').as('anchorClick')
       },
@@ -18,8 +18,8 @@ describe('File menu: project ZIP', () => {
   it('saves the project as a ZIP download', () => {
     cy.get('#canvasWrapper').click(50, 390).click(400, 50).click(200, 200)
 
-    cy.contains('.v-btn', 'File').click()
-    cy.contains('.v-list-item', 'Save Project').click()
+    cy.get('[data-cy=menu-file]').click()
+    cy.get('[data-cy=menu-item-save-project]').click()
 
     cy.get('@anchorClick').should('have.been.calledOnce')
     cy.get('@anchorClick').then((stub) => {
@@ -30,17 +30,14 @@ describe('File menu: project ZIP', () => {
     })
 
     // INFO: errors surface in the app's snackbar; none must appear.
-    cy.get('.v-snackbar').should('not.exist')
+    cy.get('[data-cy=error-snackbar]').should('not.exist')
   })
 
   it('offers Load Project in the File menu', () => {
     // INFO: clicking it opens a native file dialog that Cypress cannot drive,
     // so only its presence and enabled state are checked here. The actual
     // ZIP restore path is covered by the host-app spec (spec.zip-vs-api).
-    cy.contains('.v-btn', 'File').click()
-    cy.contains('.v-list-item', 'Load Project').should(
-      'not.have.class',
-      'v-list-item--disabled',
-    )
+    cy.get('[data-cy=menu-file]').click()
+    cy.get('[data-cy=menu-item-load-project]').should('not.be.disabled')
   })
 })

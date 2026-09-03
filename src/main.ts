@@ -6,42 +6,12 @@ import { version } from '../package.json'
 import * as Sentry from '@sentry/vue'
 import { Integrations } from '@sentry/tracing'
 
-// Vuetify
-import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css'
-import { createVuetify } from 'vuetify'
-import './vuetify-style.css'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
-// TODO: TSの型宣言エラーが解消できずignore いずれ再度調査
-// @ts-ignore
-import colors from 'vuetify/lib/util/colors'
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
+// INFO: no UI framework any more — the digitizer ships its own styles
+// (src/presentation/styles/base.scss, imported by StarryDigitizer.vue) and
+// the standalone chrome (App.vue) carries its own scoped CSS.
+import './app-style.css'
 
-const vuetify = createVuetify({
-  components,
-  directives,
-  icons: {
-    defaultSet: 'mdi',
-    aliases,
-    sets: {
-      mdi,
-    },
-  },
-  theme: {
-    themes: {
-      light: {
-        dark: false,
-        colors: {
-          primary: colors.blue.darken1,
-          secondary: colors.blue.darken2,
-        },
-      },
-    },
-  },
-})
-
-const app = createApp(App).use(vuetify)
+const app = createApp(App)
 app.mount('#app')
 
 if (import.meta.env.MODE === 'production') {

@@ -1,14 +1,13 @@
 <template>
-  <v-app>
+  <div class="app starry-digitizer">
     <div v-if="deviceIsSmartphone" class="c__unsupported-device-screen">
       This application is not supported on smartphones. <br />Please access here
       on a PC.
     </div>
-    <v-app-bar
+    <header
       v-if="!deviceIsSmartphone"
-      :color="isProd ? 'primary' : 'orange'"
-      height="32"
-      flat
+      class="c__app-bar"
+      :class="{ 'c__app-bar--dev': !isProd }"
     >
       <img
         :src="logo"
@@ -18,48 +17,20 @@
         class="ml-3 mr-2"
       />
       <span class="text-white font-weight-bold mr-4">StarryDigitizer</span>
-      <v-menu v-for="menu in menus" :key="menu.title">
-        <template v-slot:activator="{ props }">
-          <v-btn
+      <sd-menu v-for="menu in menus" :key="menu.title" :items="menu.items">
+        <template #activator="{ props }">
+          <button
+            type="button"
+            class="c__menu-btn"
+            :data-cy="`menu-${menu.title.toLowerCase()}`"
             v-bind="props"
-            variant="text"
-            size="small"
-            class="text-none text-white px-2"
           >
             {{ menu.title }}
-          </v-btn>
+          </button>
         </template>
-        <v-list density="compact" min-width="220">
-          <template v-for="(item, index) in menu.items">
-            <v-divider
-              v-if="item.divider"
-              :key="'divider-' + index"
-            ></v-divider>
-            <v-list-item
-              v-else
-              :key="index"
-              :href="item.href"
-              :target="item.href ? '_blank' : undefined"
-              :disabled="item.disabled"
-              @click="item.action"
-            >
-              <template v-if="item.checked !== undefined" v-slot:prepend>
-                <v-icon size="small" class="mr-1" style="width: 16px">{{
-                  item.checked ? 'mdi-check' : ''
-                }}</v-icon>
-              </template>
-              <div class="d-flex justify-space-between" style="gap: 24px">
-                <span>{{ item.text }}</span>
-                <span v-if="item.shortcut" class="text-medium-emphasis">{{
-                  item.shortcut
-                }}</span>
-              </div>
-            </v-list-item>
-          </template>
-        </v-list>
-      </v-menu>
-    </v-app-bar>
-    <v-main v-if="!deviceIsSmartphone">
+      </sd-menu>
+    </header>
+    <main v-if="!deviceIsSmartphone" class="c__main">
       <starry-digitizer
         :context="appContext"
         image="/sample_graph_curve.png"
@@ -78,21 +49,17 @@
           <p class="text-caption text-right">{{ appVerAndBuildInfo }}</p>
         </template>
       </starry-digitizer>
-    </v-main>
-    <v-footer :color="isProd ? 'primary' : 'orange'">
-      <v-row justify="center" no-gutters>
-        <v-col class="text-center text-white" cols="12">
-          {{ new Date().getFullYear() }} — <strong>StarryDigitizer</strong
-          ><span class="ml-2 mt-1">{{ isProd ? version : '' }}</span>
-        </v-col>
-      </v-row>
-    </v-footer>
-    <v-snackbar v-model="showError" color="error" timeout="4000">
-      {{ errorMessage }}
-    </v-snackbar>
+    </main>
+    <footer class="c__footer" :class="{ 'c__footer--dev': !isProd }">
+      {{ new Date().getFullYear() }} — <strong>StarryDigitizer</strong
+      ><span class="ml-2">{{ isProd ? version : '' }}</span>
+    </footer>
+    <sd-snackbar v-model="showError" color="error" :timeout="4000">
+      <span data-cy="error-snackbar">{{ errorMessage }}</span>
+    </sd-snackbar>
     <keyboard-shortcuts-dialog v-model="showKeyboardShortcuts" />
     <pwa-update-prompt />
-  </v-app>
+  </div>
 </template>
 
 <script lang="ts">
@@ -101,30 +68,21 @@ import StarryDigitizer from '@/presentation/components/StarryDigitizer.vue'
 import PwaUpdatePrompt from '@/presentation/components/Generals/PWAUpdatePrompt.vue'
 import KeyboardShortcutsDialog from '@/presentation/components/Generals/KeyboardShortcutsDialog.vue'
 import logo from '@/assets/logo.svg'
+import { SdMenu, SdSnackbar, type SdMenuItem } from '@/presentation/ui'
 import { appContext } from '@/appContext'
 import type { DigitizerErrorPayload } from '@/application/errors'
 import {
   saveProjectAndDownload,
   triggerLoadProjectDialog,
-} from '@/application/utils/projectFileOperations'
+} from '@/presentation/utils/projectFileDialog'
 import { copyActiveDatasetToClipboard } from '@/application/utils/dataExport'
 import { toggleInterpolation } from '@/application/utils/interpolationToggle'
 
 import { version } from '../package.json'
 
-type MenuItem = {
-  text: string
-  shortcut?: string
-  href?: string
-  disabled?: boolean
-  checked?: boolean
-  divider?: boolean
-  action?: () => void
-}
-
 type Menu = {
   title: string
-  items: MenuItem[]
+  items: SdMenuItem[]
 }
 
 export default defineComponent({
@@ -134,6 +92,8 @@ export default defineComponent({
     StarryDigitizer,
     PwaUpdatePrompt,
     KeyboardShortcutsDialog,
+    SdMenu,
+    SdSnackbar,
   },
 
   // INFO: appContext is a reactive() object, so spreading its members into
@@ -316,7 +276,58 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
+// INFO: the standalone app chrome (bar, footer, menus). The digitizer itself
+// carries its own scoped styles; nothing here leaks into the library build.
+$bar-prod: #1e88e5;
+$bar-dev: #fb8c00;
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .c {
+  &__app-bar {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    background: $bar-prod;
+    color: #fff;
+    &--dev {
+      background: $bar-dev;
+    }
+  }
+
+  &__menu-btn {
+    height: 28px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+
+  &__main {
+    flex: 1;
+  }
+
+  &__footer {
+    padding: 6px 0;
+    text-align: center;
+    background: $bar-prod;
+    color: #fff;
+    &--dev {
+      background: $bar-dev;
+    }
+  }
+
   &__unsupported-device-screen {
     position: fixed;
     top: 0;

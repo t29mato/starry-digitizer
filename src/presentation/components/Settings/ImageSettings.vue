@@ -1,17 +1,16 @@
 <template>
   <div>
-    <v-file-input
-      id="fileInput"
-      accept="image/*"
-      @change="onImageUploaded"
-      label="Choose an image"
-      :single-line="true"
-      :clearable="false"
-      hide-details
-      density="compact"
-      class="mb-2"
-      font-size="0.8rem"
-    ></v-file-input>
+    <!-- INFO: the wrapper carries the margin because SdFileInput forwards
+         attrs (including `class`) to the inner <input>, and `id="fileInput"`
+         has to land on that input for the e2e specs. -->
+    <div class="mb-2">
+      <sd-file-input
+        id="fileInput"
+        accept="image/*"
+        @change="onImageUploaded"
+        label="Choose an image"
+      ></sd-file-input>
+    </div>
 
     <div
       class="c_file-drag-area"
@@ -29,8 +28,10 @@ import { useDigitizerContext } from '@/application/digitizerContext'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { replaceImage } from '@/application/utils/digitizerOperations'
 import { DigitizerError } from '@/application/errors'
+import { SdFileInput } from '@/presentation/ui'
 
 export default defineComponent({
+  components: { SdFileInput },
   emits: ['image-replaced', 'error'],
   setup() {
     const ctx = useDigitizerContext()

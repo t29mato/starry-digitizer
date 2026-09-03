@@ -94,18 +94,14 @@ export class ProjectService implements ProjectServiceInterface {
   }
 
   async exportProject(): Promise<Blob> {
-    // Get image data from canvasHandler or canvas element
-    let imageData = this.canvasHandler.uploadImageUrl
+    // INFO: uploadImageUrl is set by digitizerOperations.applyImage for every
+    // image path, so an empty value means no image was ever loaded. The old
+    // document.querySelector('canvas') fallback also picked the wrong canvas
+    // once two digitizers shared a page.
+    const imageData = this.canvasHandler.uploadImageUrl
 
     if (!imageData) {
-      const canvas = document.querySelector('canvas') as HTMLCanvasElement
-      if (!canvas) {
-        throw new DigitizerError(
-          'EXPORT_FAILED',
-          'No canvas found. Please upload an image first.',
-        )
-      }
-      imageData = canvas.toDataURL('image/png')
+      throw new DigitizerError('EXPORT_FAILED', 'No image loaded')
     }
 
     const projectData = this.toProjectDTO()
@@ -212,23 +208,6 @@ export class ProjectService implements ProjectServiceInterface {
     const imageData = await this.blobToBase64(imageBlob)
 
     return { projectData, imageData }
-  }
-
-  downloadZip(zipBlob: Blob, filename?: string): void {
-    const url = URL.createObjectURL(zipBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download =
-      filename ||
-      `sd-${new Date()
-        .toISOString()
-        .replace(/[-:]/g, '')
-        .replace(/\.\d{3}Z$/, '')
-        .replace('T', '-')}.zip`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
   }
 
   private base64ToBlob(base64: string): Promise<Blob> {

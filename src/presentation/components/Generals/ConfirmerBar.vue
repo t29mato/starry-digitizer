@@ -5,15 +5,15 @@
   >
     <p>{{ confirmer.message }}</p>
     <div class="d-flex">
-      <v-btn
+      <sd-button
         class="mr-2"
         size="small"
         color="white"
         @click="handleOnClickCancel"
-        >Cancel</v-btn
+        >Cancel</sd-button
       >
-      <v-btn size="small" color="primary" @click="handleOnClickConfirm"
-        >Confirm</v-btn
+      <sd-button size="small" color="primary" @click="handleOnClickConfirm"
+        >Confirm</sd-button
       >
     </div>
   </div>
@@ -23,8 +23,10 @@
 import { defineComponent } from 'vue'
 
 import { useDigitizerContext } from '@/application/digitizerContext'
+import { SdButton } from '@/presentation/ui'
 
 export default defineComponent({
+  components: { SdButton },
   setup() {
     const { confirmer } = useDigitizerContext()
     return { confirmer }

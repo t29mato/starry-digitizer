@@ -15,7 +15,7 @@
     // reason to fail the type-definition build.
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "types": ["node", "vuetify"]
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
   "exclude": [
@@ -31,7 +31,6 @@
     // verbatim and they no longer type-check against Vue 3.
     "src/shims-tsx.d.ts",
     "src/shims-vue.d.ts",
-    "src/shims-vuetify.d.ts",
     "src/vite-env.d.ts",
     "tests",
     "cypress"

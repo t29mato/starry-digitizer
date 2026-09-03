@@ -130,3 +130,22 @@ classDiagram
 - After: `InterpolatorCanvasInterface` のテストダブル(jest.fn()ベースのモック)
   を注入するだけで、DOMに一切触れずに `Interpolator` の計算・状態遷移ロジック
   (updatePreview/clearPreview/updateInterval等)をテストできる。
+
+## 追記(2026-09-03): 配置の変更
+
+`docs/design/framework-dependency-review.md` の「今すべきこと」1.(エンジンから
+DOM を追い出す)に合わせて、以下を変更した。
+
+- `src/presentation/dom/HTMLCanvas.ts` → `src/application/canvas/HTMLCanvas.ts`
+- `src/presentation/dom/InterpolatorCanvas.ts` → `src/application/canvas/InterpolatorCanvas.ts`
+  (テストも同様に移動。`src/presentation/dom/` は削除)
+- `HTMLCanvas` は id 文字列ではなく `HTMLCanvasElement` を受け取る
+  (`new HTMLCanvas(element)`)。`document.getElementById` は行わない。
+
+上の「依存方向」節では `InterpolatorCanvas` を presentation層に置く前提で書いて
+いるが、実際には **application層(`application/canvas`)** に置いている。理由は、
+このクラスがもう DOM を検索しないため presentation に属する必要がなく、逆に
+`InterpolatorManager`(application層)が実装を配線する以上、presentation に置くと
+application → presentation の逆依存が残ってしまうためである。canvas 要素そのものは
+`CanvasMain.vue` / `MagnifierImage.vue` が template ref から
+`setGuideCanvas()` / `setMagnifierCanvas()` に渡す。

@@ -1,6 +1,6 @@
 import { InterpolatorInterface } from './interpolatorInterface'
 import { InterpolatorCanvasInterface } from './interpolatorCanvasInterface'
-import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
 import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
 import { getPointsTotalDistance } from '../../utils/pointsUtils'

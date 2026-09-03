@@ -2,30 +2,34 @@
   <div>
     <h4>
       Datasets
-      <v-btn
+      <sd-button
         @click="handleOnClickAddDatasetButton"
         size="x-small"
         class="ml-2"
+        :icon="mdiPlus"
+        title="Add dataset"
+        data-cy="add-dataset"
         :disabled="options.readonly"
-        ><v-icon>mdi-plus</v-icon></v-btn
-      >
-      <v-btn
+      />
+      <sd-button
         size="x-small"
         @click="handleOnClickRemoveAllDatasetsButton"
+        :icon="mdiDeleteSweep"
         :disabled="options.readonly || datasetRepository.datasets.length === 0"
         class="ml-2"
         title="Remove all datasets"
-        ><v-icon>mdi-delete-sweep</v-icon></v-btn
-      >
-      <v-btn
+        data-cy="remove-all-datasets"
+      />
+      <sd-button
         v-if="datasetRepository.datasets.length > 1"
         size="x-small"
         @click="handleOnClickViewAll"
         class="ml-2"
+        :icon="mdiEyeOutline"
         :color="datasetRepository.activeDatasetId === 0 ? 'primary' : ''"
         title="View all datasets"
-        ><v-icon>mdi-eye-outline</v-icon></v-btn
-      >
+        data-cy="view-all-datasets"
+      />
     </h4>
     <div
       class="mb-2 mt-1 pa-0"
@@ -42,11 +46,10 @@
         :key="dataset.id"
         class="c__dataset-row"
       >
-        <v-row class="ma-0">
-          <v-col cols="8" class="pa-0">
-            <v-list-item
+        <div class="sd-row ma-0">
+          <div class="sd-col-8 pa-0">
+            <div
               class="pl-2 c__dataset-item"
-              link
               @click="handleOnClickDataset(dataset.id)"
               :class="
                 dataset.id === datasetRepository.activeDatasetId &&
@@ -56,76 +59,74 @@
               <!-- INFO: when the host app supplies name candidates the field
                    becomes a combobox (suggestions + free text); otherwise it
                    stays a plain text field. -->
-              <v-combobox
+              <sd-combobox
                 v-if="options.datasetNameCandidates.length > 0"
                 v-model="dataset.name"
                 :items="options.datasetNameCandidates"
                 :placeholder="'dataset ' + dataset.id"
-                hide-details
-                density="compact"
-                class="mt-0 pt-0 pl-2"
+                class="pl-2"
                 variant="underlined"
                 :readonly="options.readonly"
-              ></v-combobox>
-              <v-text-field
+              />
+              <sd-text-field
                 v-else
                 v-model="dataset.name"
                 :placeholder="'dataset ' + dataset.id"
-                hide-details
-                density="compact"
                 type="text"
-                class="mt-0 pt-0 pl-2"
+                class="pl-2"
                 variant="underlined"
                 :readonly="options.readonly"
-              ></v-text-field>
-            </v-list-item>
-          </v-col>
-          <v-col
-            cols="1"
-            class="pa-0 d-flex align-items-center justify-center"
+              />
+            </div>
+          </div>
+          <div
+            class="sd-col-1 pa-0 d-flex align-items-center justify-center"
             :class="`dataset-count-${dataset.id}`"
           >
             <span class="align-self-center">
               {{ dataset.points.length }}
             </span>
-          </v-col>
-          <v-col
+          </div>
+          <div
             v-if="options.features.csvExport"
-            cols="1"
-            class="pa-0 d-flex align-items-center justify-center"
+            class="sd-col-1 pa-0 d-flex align-items-center justify-center"
           >
-            <v-btn
+            <sd-button
               size="x-small"
-              icon="mdi-content-copy"
+              :icon="mdiContentCopy"
               @click="copyDatasetToClipboard(dataset.id)"
               :disabled="dataset.points.length === 0"
               variant="text"
               class="mr-1"
-            ></v-btn>
-          </v-col>
-          <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
-            <v-btn
+              title="Copy dataset to clipboard"
+              data-cy="dataset-copy"
+            />
+          </div>
+          <div class="sd-col-1 pa-0 d-flex align-items-center justify-center">
+            <sd-button
               size="x-small"
-              icon="mdi-eraser"
+              :icon="mdiEraser"
               @click="handleOnClickClearDatasetPoints(dataset.id)"
               :disabled="options.readonly || dataset.points.length === 0"
               variant="text"
               title="Clear points"
-            ></v-btn>
-          </v-col>
-          <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
-            <v-btn
+              data-cy="dataset-clear"
+            />
+          </div>
+          <div class="sd-col-1 pa-0 d-flex align-items-center justify-center">
+            <sd-button
               size="x-small"
-              icon="mdi-delete"
+              :icon="mdiDelete"
               @click="handleOnClickRemoveDatasetButton(dataset.id)"
               :disabled="
                 options.readonly || datasetRepository.datasets.length === 1
               "
               variant="text"
               title="Delete dataset"
-            ></v-btn>
-          </v-col>
-        </v-row>
+              data-cy="dataset-delete"
+            />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -135,7 +136,16 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import {
+  mdiPlus,
+  mdiDeleteSweep,
+  mdiEyeOutline,
+  mdiContentCopy,
+  mdiEraser,
+  mdiDelete,
+} from '@mdi/js'
 
+import { SdButton, SdCombobox, SdTextField } from '@/presentation/ui'
 import { useDigitizerContext } from '@/application/digitizerContext'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import {
@@ -145,7 +155,7 @@ import {
 import { MASK_MODE } from '@/constants'
 
 export default defineComponent({
-  components: {},
+  components: { SdButton, SdCombobox, SdTextField },
   setup() {
     const ctx = useDigitizerContext()
     const options = useDigitizerOptions()
@@ -161,6 +171,12 @@ export default defineComponent({
   },
   data() {
     return {
+      mdiPlus,
+      mdiDeleteSweep,
+      mdiEyeOutline,
+      mdiContentCopy,
+      mdiEraser,
+      mdiDelete,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
@@ -288,3 +304,17 @@ export default defineComponent({
   },
 })
 </script>
+
+<style scoped lang="scss">
+// INFO: replaces <v-list-item link>: the name cell is a plain clickable row.
+// The hover rule skips the active row so its yellow highlight stays visible.
+.c__dataset-item {
+  cursor: pointer;
+  padding-top: 2px;
+  padding-bottom: 2px;
+
+  &:hover:not(.bg-yellow-lighten-4) {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+</style>

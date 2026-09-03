@@ -9,8 +9,8 @@ import path, { resolve } from 'path'
 // Starrydata3 embeds (integration spec R8, acceptance criterion 3).
 //
 // INFO: ES + CJS only, no UMD. A UMD bundle must inline every dependency it
-// cannot resolve at runtime, which would (a) bundle Vuetify and Handsontable
-// and risk a second Vuetify instance in the host, and (b) re-embed
+// cannot resolve at runtime, which would (a) bundle Vue itself and risk a
+// second Vue runtime in the host, and (b) re-embed
 // tesseract.js's hard-coded CDN URLs — exactly what R8 forbids, since
 // Starrydata3 restricts external origins via CSP.
 export default defineConfig({
@@ -52,17 +52,16 @@ export default defineConfig({
       fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
     },
     rollupOptions: {
-      // INFO: everything the host installs itself stays external. CSS
-      // imports (e.g. handsontable/dist/handsontable.full.css) must still be
-      // bundled into style.css, hence the explicit `.css` escape hatch.
+      // INFO: `vue` is the only peer dependency; the runtime deps below are
+      // installed by the host through package.json `dependencies`. @mdi/js
+      // (icon path strings) is deliberately NOT external — it is bundled so
+      // the host carries no icon package. UI framework: none (see
+      // docs/design/framework-dependency-review.md).
       external: (id: string) => {
-        if (id.endsWith('.css')) return false
+        if (id.endsWith('.css') || id.endsWith('.scss')) return false
         return [
           /^vue$/,
           /^vue\//,
-          /^vuetify/,
-          /^handsontable/,
-          /^@handsontable\/vue3/,
           /^tesseract\.js/,
           /^jszip$/,
           /^curve-interpolator/,

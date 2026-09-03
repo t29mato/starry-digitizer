@@ -79,5 +79,8 @@ export default defineConfig({
   },
   server: {
     port: 8888,
+    // INFO: bind IPv4 too — Cypress resolves `localhost` to 127.0.0.1 and
+    // cannot verify an IPv6-only baseUrl.
+    host: true,
   },
 })

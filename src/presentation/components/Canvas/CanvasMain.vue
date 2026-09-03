@@ -1,6 +1,7 @@
 <template>
   <div
     id="canvasWrapper"
+    ref="canvasWrapper"
     class="c__canvas-wrapper"
     @click="click"
     @mousemove="mouseMove"
@@ -9,9 +10,10 @@
     @mouseenter="mouseEnter"
     @mouseleave="mouseLeave"
   >
-    <canvas id="imageCanvas"></canvas>
+    <canvas id="imageCanvas" ref="imageCanvas"></canvas>
     <canvas
       id="tempMaskCanvas"
+      ref="tempMaskCanvas"
       :style="{
         position: 'absolute',
         top: 0,
@@ -27,6 +29,7 @@
         opacity: 0.5,
       }"
       id="maskCanvas"
+      ref="maskCanvas"
     ></canvas>
     <canvas
       :style="{
@@ -36,6 +39,7 @@
         opacity: 0.5,
       }"
       id="interpolationGuideCanvas"
+      ref="interpolationGuideCanvas"
     ></canvas>
     <canvas-axis-set-guide></canvas-axis-set-guide>
     <canvas-axis-set></canvas-axis-set>
@@ -58,14 +62,14 @@ import { Coord, Point } from '@/@types/types'
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
 
-import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 import { useDigitizerContext } from '@/application/digitizerContext'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
+import { ProjectFileOperationResult } from '@/application/utils/projectFileOperations'
 import {
   saveProjectAndDownload,
   triggerLoadProjectDialog,
-  ProjectFileOperationResult,
-} from '@/application/utils/projectFileOperations'
+} from '@/presentation/utils/projectFileDialog'
 import { MANUAL_MODE } from '@/constants'
 
 // INFO: to adjust the exact position the user clicked.
@@ -108,13 +112,29 @@ export default defineComponent({
 
     // INFO: The image itself is loaded by StarryDigitizer.vue through
     // digitizerOperations.applyImage; this component only owns the canvases.
-    this.interpolator.setGuideCanvas(new HTMLCanvas('interpolationGuideCanvas'))
+    // They are handed to the engine explicitly (rather than looked up by id)
+    // so that several <StarryDigitizer> instances can share a page.
+    this.canvasHandler.attachCanvases({
+      wrapper: this.$refs.canvasWrapper as HTMLDivElement,
+      imageCanvas: this.$refs.imageCanvas as HTMLCanvasElement,
+      maskCanvas: this.$refs.maskCanvas as HTMLCanvasElement,
+      tempMaskCanvas: this.$refs.tempMaskCanvas as HTMLCanvasElement,
+    })
+    this.interpolator.setGuideCanvas(
+      new HTMLCanvas(this.$refs.interpolationGuideCanvas as HTMLCanvasElement),
+    )
   },
   beforeUnmount() {
     if (this.boundKeyDownHandler) {
       document.removeEventListener('keydown', this.boundKeyDownHandler)
       this.boundKeyDownHandler = null
     }
+    this.canvasHandler.detachCanvases([
+      'wrapper',
+      'imageCanvas',
+      'maskCanvas',
+      'tempMaskCanvas',
+    ])
   },
   methods: {
     // REFACTOR: modeに応じてpointなりpickColorなりを呼び出す形に変更する

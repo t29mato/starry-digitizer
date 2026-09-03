@@ -13,20 +13,18 @@ jest.mock('@/application/utils/digitizerOperations', () => ({
 }))
 
 import {
-  saveProjectAndDownload,
+  defaultProjectZipFilename,
   loadProjectFromFile,
-  triggerLoadProjectDialog,
+  saveProject,
 } from './projectFileOperations'
 
 const mockExportProject = jest.fn()
-const mockDownloadZip = jest.fn()
 const mockImportProject = jest.fn()
 
 const buildContext = () =>
   ({
     projectService: {
       exportProject: (...args: unknown[]) => mockExportProject(...args),
-      downloadZip: (...args: unknown[]) => mockDownloadZip(...args),
       importProject: (...args: unknown[]) => mockImportProject(...args),
     },
   }) as unknown as DigitizerContext
@@ -39,25 +37,34 @@ describe('projectFileOperations', () => {
     ctx = buildContext()
   })
 
-  describe('saveProjectAndDownload', () => {
-    it('exports and downloads the project on success', async () => {
+  describe('defaultProjectZipFilename', () => {
+    it('builds an sd-<timestamp>.zip name', () => {
+      expect(defaultProjectZipFilename(new Date('2026-09-03T17:45:00.123Z'))).toBe(
+        'sd-20260903-174500.zip',
+      )
+    })
+  })
+
+  describe('saveProject', () => {
+    it('returns the exported blob and a default filename', async () => {
       const blob = new Blob()
       mockExportProject.mockResolvedValue(blob as never)
 
-      const result = await saveProjectAndDownload(ctx)
+      const result = await saveProject(ctx)
 
       expect(mockExportProject).toHaveBeenCalled()
-      expect(mockDownloadZip).toHaveBeenCalledWith(blob)
-      expect(result).toEqual({ success: true })
+      expect(result.success).toBe(true)
+      expect(result.blob).toBe(blob)
+      expect(result.filename).toMatch(/^sd-\d{8}-\d{6}\.zip$/)
     })
 
     it('returns an EXPORT_FAILED error when export fails', async () => {
       mockExportProject.mockRejectedValue(new Error('disk full') as never)
 
-      const result = await saveProjectAndDownload(ctx)
+      const result = await saveProject(ctx)
 
-      expect(mockDownloadZip).not.toHaveBeenCalled()
       expect(result.success).toBe(false)
+      expect(result.blob).toBeUndefined()
       expect(result.errorMessage).toContain('disk full')
       expect(result.error).toBeInstanceOf(DigitizerError)
       expect(result.error?.code).toBe('EXPORT_FAILED')
@@ -65,13 +72,13 @@ describe('projectFileOperations', () => {
 
     it('passes an existing DigitizerError through with its own code', async () => {
       mockExportProject.mockRejectedValue(
-        new DigitizerError('EXPORT_FAILED', 'No canvas found.') as never,
+        new DigitizerError('EXPORT_FAILED', 'No image loaded') as never,
       )
 
-      const result = await saveProjectAndDownload(ctx)
+      const result = await saveProject(ctx)
 
       expect(result.error?.code).toBe('EXPORT_FAILED')
-      expect(result.errorMessage).toContain('No canvas found.')
+      expect(result.errorMessage).toContain('No image loaded')
     })
   })
 
@@ -132,44 +139,6 @@ describe('projectFileOperations', () => {
 
       expect(result.success).toBe(false)
       expect(result.error?.code).toBe('IMAGE_LOAD_FAILED')
-    })
-  })
-
-  describe('triggerLoadProjectDialog', () => {
-    const withCapturedFileInput = async (
-      run: (getInput: () => HTMLInputElement | undefined) => Promise<void>,
-    ) => {
-      let capturedInput: HTMLInputElement | undefined
-      const originalClick = HTMLInputElement.prototype.click
-      HTMLInputElement.prototype.click = function (this: HTMLInputElement) {
-        capturedInput = this
-      }
-      try {
-        await run(() => capturedInput)
-      } finally {
-        HTMLInputElement.prototype.click = originalClick
-      }
-    }
-
-    it('resolves with an error when no file is selected', async () => {
-      await withCapturedFileInput(async (getInput) => {
-        const promise = triggerLoadProjectDialog(ctx)
-        getInput()?.dispatchEvent(new Event('change'))
-
-        expect(await promise).toEqual({
-          success: false,
-          errorMessage: 'No file selected',
-        })
-      })
-    })
-
-    it('resolves as unsuccessful without an error message on cancel', async () => {
-      await withCapturedFileInput(async (getInput) => {
-        const promise = triggerLoadProjectDialog(ctx)
-        getInput()?.dispatchEvent(new Event('cancel'))
-
-        expect(await promise).toEqual({ success: false })
-      })
     })
   })
 })

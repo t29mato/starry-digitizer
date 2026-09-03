@@ -1,0 +1,16 @@
+/* INFO: standalone-app global reset (the embeddable component itself never
+   relies on globals; everything it needs is scoped under .starry-digitizer). */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.87);
+  background: #fff;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

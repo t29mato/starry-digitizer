@@ -25,7 +25,9 @@ describe('template spec', () => {
     cy.get('#switch-interpolation').click()
     cy.visit('/')
 
-    cy.get('#switch-interpolation').should('have.value', 'true')
+    // INFO: the plain checkbox that replaced <v-switch> has no `value`
+    // attribute, so the checked state is asserted directly.
+    cy.get('#switch-interpolation').should('be.checked')
   })
 
   //INFO: 実行したいがCypressのテスト数の上限到達回避のため節約しているテスト

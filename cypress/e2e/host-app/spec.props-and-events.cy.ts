@@ -14,7 +14,7 @@ function calibrateAndAddPoints() {
   // INFO: select the calibration mode explicitly rather than relying on the
   // default, because the mode a freshly mounted project comes up in depends
   // on how loadProject() treats the restored axis sets.
-  cy.contains('.v-radio', '2 Points').click()
+  cy.contains('.sd-check', '2 Points').click()
   let chain = cy
     .get('#canvasWrapper')
     // INFO: in "2 Points" mode the first click sets x1/y1, the second x2/y2,

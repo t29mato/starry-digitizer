@@ -59,37 +59,21 @@ https://starrydigitizer.readthedocs.io/).
 npm install starry-digitizer
 ```
 
-`vue` and `vuetify` are **peer dependencies** — the host provides them, so there is
-only ever one Vuetify instance on the page.
+`vue` (^3.3) is the **only peer dependency**. The component brings its own minimal
+UI (plain Vue + scoped CSS, inline SVG icons) — no Vuetify, no icon font, no table
+library — so it does not care which UI framework the host uses. Runtime dependencies
+installed automatically: `jszip`, `curve-interpolator`, `tesseract.js` (lazy-loaded).
 
-```bash
-npm install vue vuetify @mdi/font
-```
-
-The component uses Vuetify components and `mdi` icons, so the host's Vuetify instance
-must register the standard components/directives and the `mdi` icon set, and the host
-must load the `@mdi/font` stylesheet (the library does not import it).
-
-```ts
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
-import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css'
-
-const vuetify = createVuetify({
-  components,
-  directives,
-  icons: { defaultSet: 'mdi', aliases, sets: { mdi } },
-})
-```
-
-Finally, import the library stylesheet once (anywhere in the app):
+Import the library stylesheet once (anywhere in the app); every rule in it is scoped
+under the `.starry-digitizer` root class:
 
 ```ts
 import 'starry-digitizer/styles'
 ```
+
+Colors can be themed through CSS custom properties on the root class, e.g.
+`.starry-digitizer { --sd-primary: #1e3a5f; }` (see `src/presentation/styles/base.scss`
+for the full list).
 
 ### Usage
 
@@ -223,11 +207,19 @@ restricts external origins.
 
 ### Known limitations
 
-- **Only one `<StarryDigitizer>` may be mounted at a time.** Canvas element ids are
-  fixed, so a second simultaneous instance will not work.
-- The host must provide Vuetify and the mdi icon font; the library imports neither.
+- **Keyboard shortcuts and paste are document-wide.** Several
+  `<StarryDigitizer>` instances can now share a page — each one draws into its
+  own canvases, keeps its own datasets and has its own magnifier (see
+  `cypress/e2e/host-app/spec.multi-instance.cy.ts`). What is still shared are
+  the `document`-level listeners: a keyboard shortcut (undo/redo, zoom,
+  arrow-key nudges, Delete) is handled by *every* mounted instance, and a
+  pasted image is loaded into every instance that has `features.imageUpload`
+  on. Mount one instance at a time if those shortcuts matter to your users.
+  The `id` attributes on the canvases (`#imageCanvas` and friends) are still
+  fixed and will be duplicated in the DOM; nothing in the library resolves
+  them by id any more, but your own selectors should not rely on them.
 - **No UMD build.** ESM (`index.js`) and CJS (`index.cjs`) only. A UMD bundle would
-  have to inline every dependency, including Vuetify and tesseract.js with its
+  have to inline every dependency, including tesseract.js with its
   hard-coded CDN URLs.
 - `getDatasetValues()` returns `NaN` for points whose axis set is not calibrated.
   `NaN` serializes to `null` in JSON.
@@ -238,7 +230,7 @@ restricts external origins.
 
 - Vue 3 with TypeScript
 - Vite for build tooling
-- Vuetify 3 for UI components
+- Own minimal UI kit (`src/presentation/ui`), no UI framework dependency
 - Jest for unit testing
 - Cypress for E2E testing
 

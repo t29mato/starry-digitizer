@@ -3,8 +3,10 @@ import { InterpolatorCanvasInterface } from '@/application/services/interpolator
 import { Coord } from '@/@types/types'
 
 // INFO: docs/design/interpolator-canvas-separation.md 参照。
-// Interpolator(application層)が直接HTMLCanvas/DOMを触っていたcanvas描画・
-// クリア処理をこちらに集約し、Interpolatorへはinterface経由で注入する。
+// Interpolatorが直接HTMLCanvas/DOMを触っていたcanvas描画・クリア処理を
+// こちらに集約し、Interpolatorへはinterface経由で注入する。
+// canvas要素自体はpresentation層から setGuideCanvas/setMagnifierCanvas で
+// 渡されるため、このクラスはid検索を一切行わない。
 export class InterpolatorCanvas implements InterpolatorCanvasInterface {
   private guideCanvas?: HTMLCanvas
   private magnifierCanvas?: HTMLCanvas
@@ -89,6 +91,10 @@ export class InterpolatorCanvas implements InterpolatorCanvasInterface {
 
     this.magnifierCanvas.element.width = newWidthPx
     this.magnifierCanvas.element.height = newHeightPx
+
+    // INFO: drawImage() throws InvalidStateError for a 0x0 source canvas
+    // (e.g. a zoom shortcut fired before any image is loaded).
+    if (newWidthPx <= 0 || newHeightPx <= 0) return
 
     this.magnifierCanvas.context.drawImage(
       this.guideCanvas.element,

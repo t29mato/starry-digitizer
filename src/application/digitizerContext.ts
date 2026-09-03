@@ -55,6 +55,15 @@ export function createDigitizerContext(): DigitizerContext {
   // from setup() and keep the same reactivity they had when the singletons
   // were returned from data(). reactive() returns the same proxy for the same
   // target, so every consumer observes the same reactive object.
+  //
+  // NOTE (design debt, see docs/design/framework-dependency-review.md §1.2):
+  // this reactive() wrapper is the ONLY change-notification mechanism the
+  // engine has. Domain/application classes expose no observer/subscribe API;
+  // the UI re-renders because Vue's Proxy observes direct mutations made by
+  // components on repositories/services. A non-Vue host would need an
+  // explicit notification layer. Until that exists, avoid adding new direct
+  // mutations of domain objects from components — go through service methods
+  // so a future observer can hook in one place.
   return reactive({
     axisSetRepository,
     datasetRepository,

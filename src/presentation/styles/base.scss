@@ -1,0 +1,183 @@
+// INFO: StarryDigitizer's own design tokens and utility classes. The
+// component used to lean on Vuetify for both; now that Vuetify is gone
+// (docs/design/framework-dependency-review.md — the maintainer chose to drop
+// UI-framework dependencies entirely) the library ships this small sheet
+// instead. Everything is scoped under `.starry-digitizer` so nothing leaks
+// into the host page, and the utility class names intentionally mirror the
+// Vuetify ones that were already used in templates (d-flex, pa-1, mb-2 ...)
+// to keep the migration mechanical.
+
+.starry-digitizer {
+  --sd-primary: #1e88e5;
+  --sd-primary-contrast: #ffffff;
+  --sd-secondary: #1976d2;
+  --sd-error: #e53935;
+  --sd-warning: #fb8c00;
+  --sd-surface: #ffffff;
+  --sd-surface-variant: #f5f5f5;
+  --sd-border: rgba(0, 0, 0, 0.24);
+  --sd-text: rgba(0, 0, 0, 0.87);
+  --sd-text-medium: rgba(0, 0, 0, 0.6);
+  --sd-text-disabled: rgba(0, 0, 0, 0.38);
+  --sd-highlight: #fff9c4; // yellow-lighten-4
+  --sd-radius: 4px;
+  --sd-font: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --sd-font-size: 14px;
+
+  font-family: var(--sd-font);
+  font-size: var(--sd-font-size);
+  line-height: 1.4;
+  color: var(--sd-text);
+  box-sizing: border-box;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: inherit;
+  }
+
+  h4 {
+    margin: 8px 0 4px;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  // ---- layout ---------------------------------------------------------
+  .d-flex {
+    display: flex;
+  }
+  .d-none {
+    display: none;
+  }
+  .flex-wrap {
+    flex-wrap: wrap;
+  }
+  .flex-column {
+    flex-direction: column;
+  }
+  .justify-center {
+    justify-content: center;
+  }
+  .justify-space-between {
+    justify-content: space-between;
+  }
+  .justify-end {
+    justify-content: flex-end;
+  }
+  .align-center,
+  .align-items-center {
+    align-items: center;
+  }
+  .align-end {
+    align-items: flex-end;
+  }
+  .align-self-center {
+    align-self: center;
+  }
+  .flex-grow-1 {
+    flex-grow: 1;
+  }
+  .overflow-y-auto {
+    overflow-y: auto;
+  }
+
+  // 12-column grid (replacement for v-row / v-col)
+  .sd-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -4px;
+  }
+  .sd-col {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 4px;
+  }
+  @for $i from 1 through 12 {
+    .sd-col-#{$i} {
+      flex: 0 0 calc(#{$i} / 12 * 100%);
+      max-width: calc(#{$i} / 12 * 100%);
+      min-width: 0;
+      padding: 0 4px;
+    }
+  }
+
+  // ---- spacing (4px scale, same names as before) ----------------------
+  $sides: (
+    t: top,
+    b: bottom,
+    l: left,
+    r: right,
+  );
+  @for $i from 0 through 6 {
+    .ma-#{$i} {
+      margin: $i * 4px;
+    }
+    .pa-#{$i} {
+      padding: $i * 4px;
+    }
+    .mx-#{$i} {
+      margin-left: $i * 4px;
+      margin-right: $i * 4px;
+    }
+    .my-#{$i} {
+      margin-top: $i * 4px;
+      margin-bottom: $i * 4px;
+    }
+    .px-#{$i} {
+      padding-left: $i * 4px;
+      padding-right: $i * 4px;
+    }
+    .py-#{$i} {
+      padding-top: $i * 4px;
+      padding-bottom: $i * 4px;
+    }
+    @each $k, $side in $sides {
+      .m#{$k}-#{$i} {
+        margin-#{$side}: $i * 4px;
+      }
+      .p#{$k}-#{$i} {
+        padding-#{$side}: $i * 4px;
+      }
+    }
+  }
+
+  // ---- typography -----------------------------------------------------
+  .text-caption {
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
+  }
+  .text-overline {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .text-h5 {
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+  .text-right {
+    text-align: right;
+  }
+  .text-center {
+    text-align: center;
+  }
+  .text-red,
+  .text-error {
+    color: var(--sd-error);
+  }
+  .text-medium-emphasis {
+    color: var(--sd-text-medium);
+  }
+  .text-white {
+    color: #fff;
+  }
+  .font-weight-bold {
+    font-weight: 700;
+  }
+  .text-none {
+    text-transform: none;
+  }
+  .bg-yellow-lighten-4 {
+    background-color: var(--sd-highlight);
+  }
+}

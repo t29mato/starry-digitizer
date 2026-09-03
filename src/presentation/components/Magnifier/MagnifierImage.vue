@@ -15,6 +15,7 @@
     />
     <canvas
       id="magnifierMaskCanvas"
+      ref="magnifierMaskCanvas"
       :style="{
         position: 'absolute',
         top: 0,
@@ -34,6 +35,7 @@
     ></canvas>
     <canvas
       id="magnifierInterpolationCanvas"
+      ref="magnifierInterpolationCanvas"
       :style="{
         position: 'absolute',
         top: 0,
@@ -58,7 +60,7 @@
 import { defineComponent } from 'vue'
 
 import { useDigitizerContext } from '@/application/digitizerContext'
-import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 
 export default defineComponent({
   setup() {
@@ -66,9 +68,20 @@ export default defineComponent({
     return { interpolator, magnifier, canvasHandler }
   },
   mounted() {
+    // INFO: this component owns the magnifier canvases, so it is the one that
+    // hands them to the engine (no id lookup: several digitizer instances can
+    // share a page).
+    this.canvasHandler.attachCanvases({
+      magnifierMaskCanvas: this.$refs.magnifierMaskCanvas as HTMLCanvasElement,
+    })
     this.interpolator.setMagnifierCanvas(
-      new HTMLCanvas('magnifierInterpolationCanvas'),
+      new HTMLCanvas(
+        this.$refs.magnifierInterpolationCanvas as HTMLCanvasElement,
+      ),
     )
+  },
+  beforeUnmount() {
+    this.canvasHandler.detachCanvases(['magnifierMaskCanvas'])
   },
   computed: {
     halfSize(): number {

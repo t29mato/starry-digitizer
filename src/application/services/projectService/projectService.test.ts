@@ -352,6 +352,16 @@ describe('ProjectService', () => {
       expect(projectData.datasets[1].name).toBe('Test Dataset')
       expect(projectData.canvasHandler.scale).toBe(1.5)
     })
+
+    it('fails with EXPORT_FAILED when no image has been loaded', async () => {
+      canvasHandler.uploadImageUrl = ''
+
+      const error = await expectDigitizerError(
+        projectService.exportProject(),
+        'EXPORT_FAILED',
+      )
+      expect(error.message).toBe('No image loaded')
+    })
   })
 
   describe('importProject', () => {

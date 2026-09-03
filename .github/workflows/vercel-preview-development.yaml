@@ -32,6 +32,9 @@ jobs:
       - name: Build example host app
         run: npm ci && npm run build
         working-directory: examples/host-app
+      - name: Build example vanilla host
+        run: npm ci && npm run build
+        working-directory: examples/vanilla-host
       - name: coverage
         run: yarn test:coverage
       - name: Upload coverage to Codecov

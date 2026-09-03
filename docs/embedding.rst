@@ -31,30 +31,21 @@ props / events / メソッドの一覧など API の詳細は、リポジトリ�
 2. 前提(ホスト側で用意するもの)
 ========================================
 
-``vue`` と ``vuetify`` は peerDependencies です。ホストが1つの Vuetify インスタンスを用意し、
-標準のコンポーネント・ディレクティブと ``mdi`` アイコンセットを登録してください。
-アイコンフォント(``@mdi/font``)もホストが読み込みます。ライブラリの CSS は
-``import 'starry-digitizer/styles'`` で1回だけ読み込みます。
+peerDependency は ``vue``(^3.3)だけです。UI フレームワーク(Vuetify 等)やアイコンフォントは
+**不要** で、コンポーネントは自前の最小 UI(素の Vue + scoped CSS、インライン SVG アイコン)を持ちます。
+ホストが React や素の JavaScript でも、Vue ランタイム 1 つを足すだけで動きます。
 
 .. code-block:: bash
 
-   npm install starry-digitizer vue vuetify @mdi/font
+   npm install starry-digitizer vue
 
-.. code-block:: ts
+ライブラリの CSS は ``import 'starry-digitizer/styles'`` で 1 回だけ読み込みます。
+全ルールは ``.starry-digitizer`` 配下にスコープされ、ホストのグローバル CSS と衝突しません。
+配色は CSS カスタムプロパティで上書きできます。
 
-   import { createVuetify } from 'vuetify'
-   import * as components from 'vuetify/components'
-   import * as directives from 'vuetify/directives'
-   import { aliases, mdi } from 'vuetify/iconsets/mdi'
-   import 'vuetify/styles'
-   import '@mdi/font/css/materialdesignicons.css'
-   import 'starry-digitizer/styles'
+.. code-block:: css
 
-   export const vuetify = createVuetify({
-     components,
-     directives,
-     icons: { defaultSet: 'mdi', aliases, sets: { mdi } },
-   })
+   .starry-digitizer { --sd-primary: #1e3a5f; }
 
 
 3. 基本的な流れ
@@ -196,49 +187,54 @@ Content-Security-Policy で外部オリジンを制限しているホストは�
 React や素の JavaScript からは、コンテナ要素に小さな Vue アプリをマウントする
 薄いラッパーを書くことで利用できます。
 
+そのまま使えるラッパーの実装が ``examples/vanilla-host/src/mountDigitizer.ts`` にあります。
+Vue を import しているのはこのファイルだけで、ホスト側のコードは素の
+TypeScript です。自分のプロジェクトへコピーして使ってください。
+
 .. code-block:: ts
 
-   import { createApp, h, ref } from 'vue'
-   import { StarryDigitizer, type ProjectDTO } from 'starry-digitizer'
-   import { vuetify } from './vuetify'   // 2. で作ったインスタンス
+   // examples/vanilla-host/src/mountDigitizer.ts (抜粋)
+   const props = reactive({ ...options })          // update() 用にリアクティブに保持
+   const app = createApp({
+     render: () =>
+       h(StarryDigitizer, {
+         ref: digitizer,
+         image: props.image,
+         project: props.project,
+         readonly: props.readonly ?? false,
+         features: props.features,
+         'onUpdate:project': (p: ProjectDTO) => props.onProjectChange?.(p),
+         onError: (e: DigitizerErrorPayload) => props.onError?.(e),
+       }),
+   })
+   app.mount(el)
 
-   export function mountDigitizer(el: HTMLElement, opts: {
-     image?: Blob
-     project?: ProjectDTO
-     onChange: (p: ProjectDTO) => void
-     onError: (e: { code: string; message: string }) => void
-   }) {
-     const digitizer = ref<InstanceType<typeof StarryDigitizer>>()
-     const app = createApp({
-       render: () =>
-         h(StarryDigitizer, {
-           ref: digitizer,
-           image: opts.image,
-           project: opts.project,
-           features: { imageUpload: false, zipExportImport: false },
-           'onUpdate:project': opts.onChange,
-           onError: opts.onError,
-         }),
-     })
-     app.use(vuetify).mount(el)
-     return {
-       getDatasetValues: () => digitizer.value!.getDatasetValues(),
-       getProject: () => digitizer.value!.getProject(),
-       loadProject: (p: ProjectDTO, image?: Blob) => digitizer.value!.loadProject(p, image),
-       unmount: () => app.unmount(),
-     }
-   }
+返り値のハンドルは ``getProject()`` / ``getDatasetValues()`` / ``loadProject()`` /
+``reset()`` / ``exportZip()`` / ``update()`` / ``unmount()`` を持ちます。
+``update()`` は ``reactive()`` な props を書き換えるだけなので、``readonly`` や
+``features`` を再マウントなしで切り替えられます(打点済みの状態は失われません)。
 
 React であれば ``useEffect`` 内でこの関数を呼び、クリーンアップで ``unmount()`` を呼びます。
 iframe で埋め込むより、状態と物理量を直接やり取りできる点で優れています。
+React 用のコード例と、``file:`` 依存に固有の Vite 設定(``resolve.dedupe``)については
+``examples/vanilla-host/README.md`` を参照してください。
 
 
 11. 制約
 ========================================
 
-- 同一ページに **同時に複数の** ``<StarryDigitizer>`` を置くことはできません
-  (canvas 要素の id が固定のため)。順番にマウントし直すことは可能で、
-  前の状態は残りません。
+- 同一ページに複数の ``<StarryDigitizer>`` を置くこと自体は可能になりました。
+  canvas 要素はコンポーネントから明示的に engine へ渡されるようになったため、
+  各インスタンスは自分の canvas に描画し、データセットも拡大鏡も独立しています
+  (``cypress/e2e/host-app/spec.multi-instance.cy.ts`` で検証)。
+  ただし **``document`` レベルのイベントは共有** されます。
+  キーボードショートカット(undo/redo・ズーム・矢印キー・Delete)は
+  マウント済みの **すべての** インスタンスが処理し、画像のペーストは
+  ``features.imageUpload`` が有効なすべてのインスタンスに読み込まれます。
+  これらのショートカットが重要な用途では、インスタンスは 1 つに留めてください。
+  また canvas の ``id``(``#imageCanvas`` など)は固定のままで DOM 上は重複します。
+  ライブラリ内部は id 解決をしなくなりましたが、ホスト側のセレクタでも
+  id に依存しないでください。
 - UMD ビルドは提供していません(ESM / CommonJS のみ)。
 - 未校正の軸を持つデータセットの ``getDatasetValues()`` は ``NaN``(JSON では ``null``)を返します。
 
@@ -246,6 +242,19 @@ iframe で埋め込むより、状態と物理量を直接やり取りできる�
 12. 動作を確認できる最小構成
 ========================================
 
-リポジトリの ``examples/host-app`` に、Vue 3 + Vuetify の最小ホストがあります。
+リポジトリの ``examples/host-app`` に、Vue 3 の最小ホストがあります。
 props / events / メソッドが一通り動くことを Cypress で検証しており、組み込みの雛形として
 そのまま流用できます。
+
+``examples/vanilla-host`` は同じことをフレームワークなし(素の TypeScript + Vite)で
+行う例で、10. のマウントラッパーの実装そのものです。こちらも Cypress で検証しています。
+
+.. code-block:: sh
+
+   # examples/host-app
+   npm run dev &                      # http://localhost:5174
+   CYPRESS_HOST_APP=1 npx cypress run
+
+   # examples/vanilla-host
+   npm run dev &                      # http://localhost:5175
+   CYPRESS_VANILLA_HOST=1 npx cypress run

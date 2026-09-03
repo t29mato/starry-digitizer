@@ -2,10 +2,10 @@ import { expect, describe, it, beforeEach } from '@jest/globals'
 import { InterpolatorCanvas } from './InterpolatorCanvas'
 import { HTMLCanvas } from './HTMLCanvas'
 
-function appendCanvasElement(id: string): void {
-  const el = document.createElement('canvas')
-  el.id = id
-  document.body.appendChild(el)
+// INFO: HTMLCanvas now wraps an element handed to it, so the tests build
+// detached canvas elements instead of registering ids in the document.
+function createCanvasElement(): HTMLCanvasElement {
+  return document.createElement('canvas')
 }
 
 describe('InterpolatorCanvas', () => {
@@ -22,16 +22,13 @@ describe('InterpolatorCanvas', () => {
     })
 
     it('is false when only the guide canvas is set', () => {
-      appendCanvasElement('guide')
-      interpolatorCanvas.setGuideCanvas(new HTMLCanvas('guide'))
+      interpolatorCanvas.setGuideCanvas(new HTMLCanvas(createCanvasElement()))
       expect(interpolatorCanvas.hasCanvas()).toBe(false)
     })
 
     it('is true once both canvases are set', () => {
-      appendCanvasElement('guide')
-      appendCanvasElement('magnifier')
-      interpolatorCanvas.setGuideCanvas(new HTMLCanvas('guide'))
-      interpolatorCanvas.setMagnifierCanvas(new HTMLCanvas('magnifier'))
+      interpolatorCanvas.setGuideCanvas(new HTMLCanvas(createCanvasElement()))
+      interpolatorCanvas.setMagnifierCanvas(new HTMLCanvas(createCanvasElement()))
       expect(interpolatorCanvas.hasCanvas()).toBe(true)
     })
   })
@@ -44,8 +41,7 @@ describe('InterpolatorCanvas', () => {
     })
 
     it('clears the guide canvas context', () => {
-      appendCanvasElement('guide')
-      const guideCanvas = new HTMLCanvas('guide')
+      const guideCanvas = new HTMLCanvas(createCanvasElement())
       interpolatorCanvas.setGuideCanvas(guideCanvas)
 
       interpolatorCanvas.clearGuideCanvasContext()
@@ -67,8 +63,7 @@ describe('InterpolatorCanvas', () => {
     })
 
     it('clears the magnifier canvas context', () => {
-      appendCanvasElement('magnifier')
-      const magnifierCanvas = new HTMLCanvas('magnifier')
+      const magnifierCanvas = new HTMLCanvas(createCanvasElement())
       interpolatorCanvas.setMagnifierCanvas(magnifierCanvas)
 
       interpolatorCanvas.clearMagnifierCanvasContext()
@@ -93,10 +88,8 @@ describe('InterpolatorCanvas', () => {
     })
 
     it('strokes a path through the scaled coordinates and copies it to the magnifier canvas', () => {
-      appendCanvasElement('guide')
-      appendCanvasElement('magnifier')
-      const guideCanvas = new HTMLCanvas('guide')
-      const magnifierCanvas = new HTMLCanvas('magnifier')
+      const guideCanvas = new HTMLCanvas(createCanvasElement())
+      const magnifierCanvas = new HTMLCanvas(createCanvasElement())
       interpolatorCanvas.setGuideCanvas(guideCanvas)
       interpolatorCanvas.setMagnifierCanvas(magnifierCanvas)
 
@@ -123,8 +116,7 @@ describe('InterpolatorCanvas', () => {
 
   describe('resize', () => {
     it('does nothing when either canvas is missing', () => {
-      appendCanvasElement('guide')
-      const guideCanvas = new HTMLCanvas('guide')
+      const guideCanvas = new HTMLCanvas(createCanvasElement())
       interpolatorCanvas.setGuideCanvas(guideCanvas)
 
       interpolatorCanvas.resize(100, 100)
@@ -133,10 +125,8 @@ describe('InterpolatorCanvas', () => {
     })
 
     it('resizes both canvases and copies the guide canvas onto the magnifier canvas', () => {
-      appendCanvasElement('guide')
-      appendCanvasElement('magnifier')
-      const guideCanvas = new HTMLCanvas('guide')
-      const magnifierCanvas = new HTMLCanvas('magnifier')
+      const guideCanvas = new HTMLCanvas(createCanvasElement())
+      const magnifierCanvas = new HTMLCanvas(createCanvasElement())
       interpolatorCanvas.setGuideCanvas(guideCanvas)
       interpolatorCanvas.setMagnifierCanvas(magnifierCanvas)
 

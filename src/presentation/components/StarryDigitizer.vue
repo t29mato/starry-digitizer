@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-1 starry-digitizer">
+  <div class="starry-digitizer pa-1">
     <div class="c__wrapper">
       <div class="c__left-sidebar">
         <image-settings
@@ -24,11 +24,14 @@
         <slot name="right-sidebar-footer"></slot>
       </div>
     </div>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
+// INFO: the library's own tokens + utility classes (no Vuetify). Imported
+// here so the lib build folds them into style.css.
+import '@/presentation/styles/base.scss'
 import { MagnifierMain } from '@/presentation/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
 import { AxisSetSettings, ExtractorSettings, ImageSettings } from './Settings'

@@ -9,16 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mdi/font": "^7.2.96",
     "jszip": "^3.10.1",
     "starry-digitizer": "file:../..",
-    "vue": "^3.3.4",
-    "vuetify": "^3.3.13"
+    "vue": "^3.3.4"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.2.3",
+    "@vitejs/plugin-vue": "^5.2.4",
     "typescript": "~5.2.2",
-    "vite": "^4.4.5",
+    "vite": "^5.4.21",
     "vue-tsc": "^1.8.5"
   }
 }

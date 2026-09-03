@@ -1,5 +1,17 @@
 import { ManualMode, MaskMode } from '@/@types/types'
 import { Coord } from '@/@types/types'
+import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
+
+// INFO: the DOM elements the presentation layer lends to the engine. Every
+// key is optional because the wrapper/main canvases and the magnifier mask
+// canvas are owned by two different components that mount independently.
+export type AttachedCanvasElements = {
+  wrapper?: HTMLDivElement
+  imageCanvas?: HTMLCanvasElement
+  maskCanvas?: HTMLCanvasElement
+  tempMaskCanvas?: HTMLCanvasElement
+  magnifierMaskCanvas?: HTMLCanvasElement
+}
 
 export interface CanvasHandlerInterface {
   isDrawnMask: boolean
@@ -26,9 +38,16 @@ export interface CanvasHandlerInterface {
   get isDrawingMask(): boolean
   get scaledCursor(): Coord
   get hasImage(): boolean
+  get hasCanvases(): boolean
+  get canvasWrapper(): HTMLDivElement
+  get imageCanvas(): HTMLCanvas
+  get maskCanvas(): HTMLCanvas
+  get tempMaskCanvas(): HTMLCanvas
+  get magnifierMaskCanvas(): HTMLCanvas
 
   initializeImageElement(imagePath: string): Promise<unknown>
-  getDivElementById(id: string): HTMLDivElement
+  attachCanvases(elements: AttachedCanvasElements): void
+  detachCanvases(keys?: (keyof AttachedCanvasElements)[]): void
   mouseDown(xPx: number, yPx: number): void
   mouseDragInManualMode(): void
   mouseDragInMaskMode(xPx: number, yPx: number): void

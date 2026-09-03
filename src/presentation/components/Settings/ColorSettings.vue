@@ -2,45 +2,51 @@
   <div class="mt-0">
     <h5 class="mb-0">Color</h5>
     <!-- TODO: 抽出色設定もColorSettingsComponentに入れる -->
-    <v-row class="mt-0 ml-1 mb-0">
-      <v-col cols="4" class="pa-0">
-        <label class="d-flex">
-          <input
-            type="color"
-            :value="extractor.colorPicker"
-            :disabled="options.readonly"
-            @input="handleOnInputColorPalette"
-          />
-          <v-icon size="small">mdi-palette</v-icon>
-        </label>
-      </v-col>
-      <v-col cols="8" class="pa-0">
-        <v-text-field
+    <div class="sd-row mt-0 ml-1 mb-0 align-center">
+      <div class="sd-col-7 pa-0">
+        <sd-color-picker
+          data-cy="extract-color"
+          :model-value="extractor.colorPicker"
+          :disabled="options.readonly"
+          @update:model-value="setColorPickerColor"
+        ></sd-color-picker>
+      </div>
+      <div class="sd-col-5 pa-0">
+        <sd-text-field
           :model-value="extractor.colorDistancePct"
           @update:model-value="inputColorDistancePct"
-          prefix="Color Diff."
-          suffix="%"
+          label="Color Diff. (%)"
           type="number"
-          hide-details
-          :error="colorDistancePctErrorMsg.length > 0"
-          :error-messages="colorDistancePctErrorMsg"
-          density="compact"
+          data-cy="color-distance-pct"
           :disabled="options.readonly"
         >
-        </v-text-field>
-      </v-col>
-    </v-row>
-    <v-color-picker
-      :model-value="extractor.colorPicker"
-      @update:model-value="handleOnSelectColor"
-      hide-canvas
-      hide-inputs
-      show-swatches
-      hide-sliders
-      :swatches="extractor.swatches"
-      :elevation="0"
-      :disabled="options.readonly"
-    ></v-color-picker>
+        </sd-text-field>
+      </div>
+    </div>
+    <p v-if="colorDistancePctErrorMsg" class="text-red text-caption mb-0">
+      {{ colorDistancePctErrorMsg }}
+    </p>
+    <!-- INFO: replacement for <v-color-picker show-swatches>: the extractor
+         builds `swatches` (5 columns) from the loaded image, so they are
+         rendered as plain buttons rather than pulling in a picker widget. -->
+    <div class="c__swatches mt-1">
+      <div
+        v-for="(column, columnIndex) in extractor.swatches"
+        :key="columnIndex"
+        class="c__swatches__column"
+      >
+        <button
+          v-for="color in column"
+          :key="color"
+          type="button"
+          class="c__swatches__swatch"
+          :style="{ backgroundColor: color }"
+          :title="color"
+          :disabled="options.readonly"
+          @click="setColorPickerColor(color)"
+        ></button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -48,8 +54,10 @@
 import { defineComponent } from 'vue'
 import { useDigitizerContext } from '@/application/digitizerContext'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
+import { SdColorPicker, SdTextField } from '@/presentation/ui'
 
 export default defineComponent({
+  components: { SdColorPicker, SdTextField },
   setup() {
     const { extractor } = useDigitizerContext()
     const options = useDigitizerOptions()
@@ -61,28 +69,51 @@ export default defineComponent({
     }
   },
   methods: {
-    handleOnInputColorPalette(value: any) {
-      this.setColorPickerColor(value.target.value)
-    },
-    handleOnSelectColor(value: any) {
-      this.setColorPickerColor(value)
-    },
-    setColorPickerColor(color: any) {
+    setColorPickerColor(color: string) {
       this.extractor.setColorPicker(color)
     },
-    inputColorDistancePct(inputValue: string) {
-      const distance = parseInt(inputValue)
+    inputColorDistancePct(inputValue: string | number) {
+      const distance = parseInt(String(inputValue))
       this.colorDistancePctErrorMsg = ''
+      if (isNaN(distance)) {
+        return
+      }
       if (distance < 1) {
         this.colorDistancePctErrorMsg =
           'The Color Difference(%) is supposed to be larger than 1%.'
       }
       if (100 <= distance) {
         this.colorDistancePctErrorMsg =
-          'The Color Difference(%) is supposed to be size="small"er than 100%'
+          'The Color Difference(%) is supposed to be smaller than 100%'
       }
       this.extractor.setColorDistancePct(distance)
     },
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.c__swatches {
+  display: flex;
+  gap: 2px;
+
+  &__column {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__swatch {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 2px;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+}
+</style>

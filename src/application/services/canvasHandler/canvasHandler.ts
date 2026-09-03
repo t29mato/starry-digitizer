@@ -1,8 +1,11 @@
 //TODO: Separate into multiple apps based on feature (so far, multiple features related to canvas are gethered at this class but it is not ideal)
-import { CanvasHandlerInterface } from './canvasHandlerInterface'
+import {
+  AttachedCanvasElements,
+  CanvasHandlerInterface,
+} from './canvasHandlerInterface'
 import { extractColorSwatches } from '@/application/utils/colorPaletteUtils'
 
-import { HTMLCanvas } from '../../../presentation/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 import { MANUAL_MODE, MASK_MODE } from '@/constants'
 import { Coord, ManualMode, MaskMode } from '@/@types/types'
 export class CanvasHandler implements CanvasHandlerInterface {
@@ -23,8 +26,81 @@ export class CanvasHandler implements CanvasHandlerInterface {
   eraserSizePx = 30
   uploadImageUrl = ''
 
+  // INFO: The presentation layer owns the actual elements and hands them over
+  // in mounted() / takes them back in beforeUnmount(). Looking them up by id
+  // would break as soon as two <StarryDigitizer> instances share a page.
+  private attachedWrapper?: HTMLDivElement
+  private attachedImageCanvas?: HTMLCanvas
+  private attachedMaskCanvas?: HTMLCanvas
+  private attachedTempMaskCanvas?: HTMLCanvas
+  private attachedMagnifierMaskCanvas?: HTMLCanvas
+
   constructor() {
     this.imageElement = new Image()
+  }
+
+  // INFO: partial on purpose — CanvasMain.vue owns the wrapper and the three
+  // main canvases, MagnifierImage.vue owns the magnifier mask canvas, and the
+  // two components mount independently.
+  attachCanvases(elements: AttachedCanvasElements): void {
+    if (elements.wrapper !== undefined) {
+      this.attachedWrapper = elements.wrapper
+    }
+    if (elements.imageCanvas !== undefined) {
+      this.attachedImageCanvas = new HTMLCanvas(elements.imageCanvas)
+    }
+    if (elements.maskCanvas !== undefined) {
+      this.attachedMaskCanvas = new HTMLCanvas(elements.maskCanvas)
+    }
+    if (elements.tempMaskCanvas !== undefined) {
+      this.attachedTempMaskCanvas = new HTMLCanvas(elements.tempMaskCanvas)
+    }
+    if (elements.magnifierMaskCanvas !== undefined) {
+      this.attachedMagnifierMaskCanvas = new HTMLCanvas(
+        elements.magnifierMaskCanvas,
+      )
+    }
+  }
+
+  // INFO: pass the keys the unmounting component attached; omit them to drop
+  // every element (used by tests and by a full teardown).
+  detachCanvases(keys?: (keyof AttachedCanvasElements)[]): void {
+    const target = keys ?? [
+      'wrapper',
+      'imageCanvas',
+      'maskCanvas',
+      'tempMaskCanvas',
+      'magnifierMaskCanvas',
+    ]
+    target.forEach((key) => {
+      switch (key) {
+        case 'wrapper':
+          this.attachedWrapper = undefined
+          break
+        case 'imageCanvas':
+          this.attachedImageCanvas = undefined
+          break
+        case 'maskCanvas':
+          this.attachedMaskCanvas = undefined
+          break
+        case 'tempMaskCanvas':
+          this.attachedTempMaskCanvas = undefined
+          break
+        case 'magnifierMaskCanvas':
+          this.attachedMagnifierMaskCanvas = undefined
+          break
+      }
+    })
+  }
+
+  get hasCanvases(): boolean {
+    return Boolean(
+      this.attachedWrapper &&
+        this.attachedImageCanvas &&
+        this.attachedMaskCanvas &&
+        this.attachedTempMaskCanvas &&
+        this.attachedMagnifierMaskCanvas,
+    )
   }
 
   async initializeImageElement(imagePath: string) {
@@ -35,14 +111,6 @@ export class CanvasHandler implements CanvasHandlerInterface {
       }
       this.imageElement.src = imagePath
     })
-  }
-
-  getDivElementById(id: string): HTMLDivElement {
-    const element = document.getElementById(id)
-    if (element instanceof HTMLDivElement) {
-      return element as HTMLDivElement
-    }
-    throw new Error(`element ID ${id} is not instance of a HTMLDivElement`)
   }
 
   get scaledCursor(): Coord {
@@ -151,7 +219,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
     ctx.lineWidth = penSize
     ctx.stroke()
     this.isDrawnMask = true
-    this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
+    this.copyMaskToMagnifier()
   }
 
   drawEraserMask(xPx: number, yPx: number, penSize: number) {
@@ -173,13 +241,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
     ctx.stroke()
     this.isDrawnMask = true
     ctx.globalCompositeOperation = 'source-over'
-    this.magnifierMaskCanvas.context.clearRect(
-      0,
-      0,
-      this.maskCanvas.element.width,
-      this.maskCanvas.element.height,
-    )
-    this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
+    this.copyMaskToMagnifier({ clearFirst: true })
   }
 
   drawBoxMask() {
@@ -190,9 +252,28 @@ export class CanvasHandler implements CanvasHandlerInterface {
       this.rectangle.endX - this.rectangle.startX,
       this.rectangle.endY - this.rectangle.startY,
     )
-    this.magnifierMaskCanvas.context.drawImage(this.maskCanvas.element, 0, 0)
     this.isDrawnMask = true
+    this.copyMaskToMagnifier()
     this.clearRectangle()
+  }
+
+  // INFO: MagnifierImage.vue owns the magnifier mask canvas and mounts
+  // independently of CanvasMain.vue, so it can be absent while a mask is being
+  // drawn. Mirroring the mask onto it is a preview, never a state change —
+  // skipping it must not stop the mask itself from being recorded.
+  private copyMaskToMagnifier({ clearFirst = false } = {}): void {
+    const magnifier = this.attachedMagnifierMaskCanvas
+    if (!magnifier) return
+
+    if (clearFirst) {
+      magnifier.context.clearRect(
+        0,
+        0,
+        this.maskCanvas.element.width,
+        this.maskCanvas.element.height,
+      )
+    }
+    magnifier.context.drawImage(this.maskCanvas.element, 0, 0)
   }
 
   clearRectangle() {
@@ -269,19 +350,18 @@ export class CanvasHandler implements CanvasHandlerInterface {
     this.uploadImageUrl = ''
     this.scale = 1
     this.isDrawnMask = false
-    const clear = (id: string) => {
-      const element = document.getElementById(id)
-      if (element instanceof HTMLCanvasElement) {
-        element.width = 0
-        element.height = 0
-      }
-    }
+    // INFO: only the canvases that are currently attached — clearImage() is
+    // also reachable before mount (reset() on a fresh context).
     ;[
-      'imageCanvas',
-      'maskCanvas',
-      'tempMaskCanvas',
-      'magnifierMaskCanvas',
-    ].forEach(clear)
+      this.attachedImageCanvas,
+      this.attachedMaskCanvas,
+      this.attachedTempMaskCanvas,
+      this.attachedMagnifierMaskCanvas,
+    ].forEach((canvas) => {
+      if (!canvas) return
+      canvas.element.width = 0
+      canvas.element.height = 0
+    })
   }
 
   clearTempMask() {
@@ -300,7 +380,7 @@ export class CanvasHandler implements CanvasHandlerInterface {
       this.maskCanvas.element.width,
       this.maskCanvas.element.height,
     )
-    this.magnifierMaskCanvas.context.clearRect(
+    this.attachedMagnifierMaskCanvas?.context.clearRect(
       0,
       0,
       this.maskCanvas.element.width,
@@ -317,24 +397,43 @@ export class CanvasHandler implements CanvasHandlerInterface {
     return this.imageElement.height
   }
 
-  get canvasWrapper() {
-    return this.getDivElementById('canvasWrapper')
+  get canvasWrapper(): HTMLDivElement {
+    if (!this.attachedWrapper) {
+      throw new Error(CanvasHandler.notAttachedMessage('wrapper'))
+    }
+    return this.attachedWrapper
   }
 
-  get imageCanvas() {
-    return new HTMLCanvas('imageCanvas')
+  get imageCanvas(): HTMLCanvas {
+    if (!this.attachedImageCanvas) {
+      throw new Error(CanvasHandler.notAttachedMessage('imageCanvas'))
+    }
+    return this.attachedImageCanvas
   }
 
-  get maskCanvas() {
-    return new HTMLCanvas('maskCanvas')
+  get maskCanvas(): HTMLCanvas {
+    if (!this.attachedMaskCanvas) {
+      throw new Error(CanvasHandler.notAttachedMessage('maskCanvas'))
+    }
+    return this.attachedMaskCanvas
   }
 
-  get tempMaskCanvas() {
-    return new HTMLCanvas('tempMaskCanvas')
+  get tempMaskCanvas(): HTMLCanvas {
+    if (!this.attachedTempMaskCanvas) {
+      throw new Error(CanvasHandler.notAttachedMessage('tempMaskCanvas'))
+    }
+    return this.attachedTempMaskCanvas
   }
 
-  get magnifierMaskCanvas() {
-    return new HTMLCanvas('magnifierMaskCanvas')
+  get magnifierMaskCanvas(): HTMLCanvas {
+    if (!this.attachedMagnifierMaskCanvas) {
+      throw new Error(CanvasHandler.notAttachedMessage('magnifierMaskCanvas'))
+    }
+    return this.attachedMagnifierMaskCanvas
+  }
+
+  private static notAttachedMessage(name: keyof AttachedCanvasElements) {
+    return `CanvasHandler: "${name}" is not attached. Call attachCanvases({ ${name} }) from the component that owns the element.`
   }
 
   drawFitSizeImage() {
@@ -372,16 +471,40 @@ export class CanvasHandler implements CanvasHandlerInterface {
   }
 
   resize(width: number, height: number) {
+    // INFO: nothing to resize before an image is loaded, and drawing from a
+    // 0x0 canvas throws InvalidStateError. Reachable because the keyboard
+    // zoom shortcuts are handled on `document` and therefore reach every
+    // mounted digitizer, including one that is still waiting for its image.
+    const hasImagePixels = this.originalWidth > 0 && this.originalHeight > 0
+    if (
+      !this.hasCanvases ||
+      !hasImagePixels ||
+      !Number.isFinite(width) ||
+      !Number.isFinite(height) ||
+      width <= 0 ||
+      height <= 0
+    ) {
+      return
+    }
+
     const tempMaskCanvas = document.createElement('canvas')
     const tempMaskCanvasCtx = tempMaskCanvas.getContext(
       '2d',
     ) as CanvasRenderingContext2D
     tempMaskCanvas.width = this.maskCanvas.element.width
     tempMaskCanvas.height = this.maskCanvas.element.height
-    tempMaskCanvasCtx.drawImage(this.maskCanvas.element, 0, 0)
+    // INFO: clearImage() zeroes the canvases, so the previous mask may have
+    // no pixels to carry over.
+    const hasPreviousMask =
+      tempMaskCanvas.width > 0 && tempMaskCanvas.height > 0
+    if (hasPreviousMask) {
+      tempMaskCanvasCtx.drawImage(this.maskCanvas.element, 0, 0)
+    }
     this.maskCanvas.element.width = width
     this.maskCanvas.element.height = height
-    this.maskCanvas.context.drawImage(tempMaskCanvas, 0, 0, width, height)
+    if (hasPreviousMask) {
+      this.maskCanvas.context.drawImage(tempMaskCanvas, 0, 0, width, height)
+    }
     this.tempMaskCanvas.element.width = width
     this.tempMaskCanvas.element.height = height
     this.imageCanvas.element.width = width
