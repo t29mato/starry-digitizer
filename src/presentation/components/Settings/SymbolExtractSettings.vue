@@ -4,6 +4,7 @@
       <v-text-field
         :model-value="symbolExtractByArea.minDiameterPx"
         @update:model-value="inputMin"
+        :disabled="options.readonly"
         prefix="Min: "
         suffix="px"
         type="number"
@@ -16,6 +17,7 @@
       <v-text-field
         :model-value="symbolExtractByArea.maxDiameterPx"
         @update:model-value="inputMax"
+        :disabled="options.readonly"
         prefix="Max: "
         suffix="px"
         type="number"
@@ -30,8 +32,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 
 export default defineComponent({
+  setup() {
+    return { options: useDigitizerOptions() }
+  },
   data() {
     return {
       symbolExtractByArea: SymbolExtractByArea.instance,

@@ -12,6 +12,8 @@ export class Dataset implements DatasetInterface {
   visiblePointIds: number[] = []
   manuallyAddedPointIds: number[] = []
   axisSetId: number = 1
+  // INFO: host-owned opaque id (see DatasetDTO.externalId); never interpreted here
+  externalId?: string
 
   pointsAreAdjusting = false
   constructor(name: string, points: Point[], id: number, color?: string) {

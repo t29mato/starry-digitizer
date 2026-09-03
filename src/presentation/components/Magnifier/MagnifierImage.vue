@@ -57,18 +57,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
+import { useDigitizerContext } from '@/application/digitizerContext'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 
 export default defineComponent({
-  data() {
-    return {
-      interpolator,
-      magnifier,
-      canvasHandler,
-    }
+  setup() {
+    const { interpolator, magnifier, canvasHandler } = useDigitizerContext()
+    return { interpolator, magnifier, canvasHandler }
   },
   mounted() {
     this.interpolator.setMagnifierCanvas(

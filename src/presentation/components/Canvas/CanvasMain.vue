@@ -58,18 +58,14 @@ import { Coord, Point } from '@/@types/types'
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
 
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
-import { confirmer } from '@/instanceStore/applicationServiceInstances'
-import { extractor } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { historyManager } from '@/instanceStore/applicationServiceInstances'
+import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import {
   saveProjectAndDownload,
   triggerLoadProjectDialog,
+  ProjectFileOperationResult,
 } from '@/application/utils/projectFileOperations'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { MANUAL_MODE } from '@/constants'
 
 // INFO: to adjust the exact position the user clicked.
@@ -82,48 +78,49 @@ export default defineComponent({
     CanvasCursor,
     CanvasAxisSetGuide,
   },
-  props: {
-    imagePath: String,
-  },
-  beforeDestroy() {
-    document.removeEventListener('keydown', this.keyDownHandler)
-  },
-  data() {
+  emits: ['error'],
+  setup() {
+    const ctx = useDigitizerContext()
+    const options = useDigitizerOptions()
+    const { interpolator, confirmer, canvasHandler, historyManager } = ctx
+    const { axisSetRepository, datasetRepository } = ctx
     return {
+      ctx,
+      options,
       interpolator,
       confirmer,
-      extractor,
       canvasHandler,
       historyManager,
       axisSetRepository,
       datasetRepository,
     }
   },
-  async mounted() {
-    document.addEventListener('keydown', this.keyDownHandler.bind(this))
-
-    this.interpolator.setGuideCanvas(new HTMLCanvas('interpolationGuideCanvas'))
-
-    if (!this.imagePath) {
-      return
+  data() {
+    return {
+      // INFO: keep the exact bound reference so beforeUnmount can remove the
+      // very listener that was added (a fresh .bind() would not match).
+      boundKeyDownHandler: null as ((e: KeyboardEvent) => void) | null,
     }
-    try {
-      await this.canvasHandler.initializeImageElement(this.imagePath)
-      this.canvasHandler.drawFitSizeImage()
-      this.canvasHandler.setUploadImageUrl(this.imagePath)
-      this.extractor.setSwatches(this.canvasHandler.colorSwatches)
+  },
+  mounted() {
+    this.boundKeyDownHandler = this.keyDownHandler.bind(this)
+    document.addEventListener('keydown', this.boundKeyDownHandler)
 
-      //TODO: interpolation canvasをinterpolator appに移譲したのでここで呼んでいるがcanvas初期化一連を行うapplicationにまとめたい
-      this.interpolator.resizeCanvas()
-    } finally {
-      //
+    // INFO: The image itself is loaded by StarryDigitizer.vue through
+    // digitizerOperations.applyImage; this component only owns the canvases.
+    this.interpolator.setGuideCanvas(new HTMLCanvas('interpolationGuideCanvas'))
+  },
+  beforeUnmount() {
+    if (this.boundKeyDownHandler) {
+      document.removeEventListener('keydown', this.boundKeyDownHandler)
+      this.boundKeyDownHandler = null
     }
   },
   methods: {
     // REFACTOR: modeに応じてpointなりpickColorなりを呼び出す形に変更する
     point(e: MouseEvent): void {
-      // INFO: View All mode is read-only
-      if (this.datasetRepository.isViewAllMode) {
+      // INFO: readonly option and View All mode are both view-only
+      if (this.options.readonly || this.datasetRepository.isViewAllMode) {
         return
       }
       // IFNO: マスク描画モード中につき
@@ -198,6 +195,8 @@ export default defineComponent({
       }
     },
     mouseDrag(coord: Coord) {
+      // INFO: dragging draws masks / selection rectangles, so it is an edit.
+      if (this.options.readonly) return
       if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
@@ -235,6 +234,7 @@ export default defineComponent({
       this.canvasHandler.isCursorOnCanvas = false
     },
     mouseDown(e: MouseEvent) {
+      if (this.options.readonly) return
       if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
@@ -243,6 +243,7 @@ export default defineComponent({
       this.canvasHandler.mouseDown(xPx, yPx)
     },
     mouseUp() {
+      if (this.options.readonly) return
       if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
@@ -288,6 +289,9 @@ export default defineComponent({
 
       if (this.datasetRepository.isViewAllMode) return
 
+      // INFO: the remaining shortcuts all edit points/axes.
+      if (this.options.readonly) return
+
       if (!this.shouldProcessKeyEvent(e)) {
         return
       }
@@ -306,6 +310,10 @@ export default defineComponent({
       return targetName === 'INPUT' || targetName === 'TEXTAREA'
     },
     handleHistoryShortcut(e: KeyboardEvent): boolean {
+      // INFO: undo/redo replay edits, so they are disabled in readonly mode.
+      if (this.options.readonly) {
+        return false
+      }
       if (this.isTypingTarget(e)) {
         return false
       }
@@ -322,6 +330,10 @@ export default defineComponent({
       return true
     },
     handleFileShortcut(e: KeyboardEvent): boolean {
+      // INFO: ZIP save/load is an optional feature of the embedded digitizer.
+      if (!this.options.features.zipExportImport) {
+        return false
+      }
       if (this.isTypingTarget(e)) {
         return false
       }
@@ -332,15 +344,25 @@ export default defineComponent({
       const key = e.key.toLowerCase()
       if (key === 's') {
         e.preventDefault()
-        saveProjectAndDownload()
+        this.runProjectFileOperation(saveProjectAndDownload(this.ctx))
         return true
       }
-      if (key === 'o') {
+      // INFO: loading a project overwrites the current state, so it is an
+      // edit and stays disabled in readonly mode (saving stays available).
+      if (key === 'o' && !this.options.readonly) {
         e.preventDefault()
-        triggerLoadProjectDialog()
+        this.runProjectFileOperation(triggerLoadProjectDialog(this.ctx))
         return true
       }
       return false
+    },
+    async runProjectFileOperation(
+      operation: Promise<ProjectFileOperationResult>,
+    ): Promise<void> {
+      const result = await operation
+      if (!result.success && result.errorMessage) {
+        this.$emit('error', result.error ?? new Error(result.errorMessage))
+      }
     },
     // INFO: No modifier key here (mirrors the 'a'/'e'/'d' mode-switch keys
     // below) since Cmd/Ctrl+Plus/Minus/0 are reserved by the browser itself

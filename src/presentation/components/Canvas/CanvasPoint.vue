@@ -28,17 +28,19 @@ import { defineComponent } from 'vue'
 
 import { Point } from '@/@types/types'
 
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { MANUAL_MODE, STYLE } from '@/constants'
 
 export default defineComponent({
+  setup() {
+    const { interpolator, canvasHandler, datasetRepository } =
+      useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { interpolator, canvasHandler, datasetRepository, options }
+  },
   data() {
     return {
-      interpolator,
-      canvasHandler,
-      datasetRepository,
       pointOpacity: STYLE.POINT_OPACITY,
       tempPointOpacity: STYLE.TEMP_POINT_OPACITY,
       pointSizePx: STYLE.POINT_SIZE_PX,
@@ -142,6 +144,10 @@ export default defineComponent({
   },
   methods: {
     click(event: MouseEvent) {
+      // INFO: readonly mode is view-only: selecting or deleting points is disabled.
+      if (this.options.readonly) {
+        return
+      }
       switch (this.canvasHandler.manualMode) {
         // INFO: CanvasMain Component -> point method
         case MANUAL_MODE.ADD:

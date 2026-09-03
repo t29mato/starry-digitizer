@@ -12,6 +12,7 @@
         id="line-extract-dx"
         density="compact"
         hide-details
+        :disabled="options.readonly"
       ></v-text-field>
     </v-col>
     <v-col class="pa-0">
@@ -25,6 +26,7 @@
         id="line-extract-dy"
         density="compact"
         hide-details
+        :disabled="options.readonly"
       ></v-text-field>
     </v-col>
   </v-row>
@@ -34,8 +36,12 @@
 import { defineComponent } from 'vue'
 
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 
 export default defineComponent({
+  setup() {
+    return { options: useDigitizerOptions() }
+  },
   data() {
     return {
       lineExtract: LineExtract.instance,

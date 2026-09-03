@@ -51,8 +51,12 @@
           </v-row>
           <v-row>
             <v-col class="py-1">
+              <!-- INFO: considerGraphTilt mutates the axis set (project data),
+                   so it is disabled in readonly mode. The other fields above are
+                   view-only magnifier settings and stay editable. -->
               <v-checkbox
                 v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
+                :disabled="options.readonly"
                 label="Consider graph tilt"
                 density="compact"
                 hide-details
@@ -70,15 +74,18 @@
 </template>
 
 <script lang="ts">
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
+  setup() {
+    const { magnifier, axisSetRepository } = useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { magnifier, axisSetRepository, options }
+  },
   data() {
     return {
-      magnifier,
-      axisSetRepository,
       effectiveDigitsError: '',
       markerSizeError: '',
     }

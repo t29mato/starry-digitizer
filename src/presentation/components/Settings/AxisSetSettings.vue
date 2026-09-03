@@ -7,6 +7,7 @@
             <v-text-field
               v-model="displayVal.x1"
               id="x1-value"
+              :disabled="options.readonly"
               type="text"
               prefix="x1: "
               hide-details
@@ -19,6 +20,7 @@
             <v-text-field
               v-model="displayVal.x2"
               id="x2-value"
+              :disabled="options.readonly"
               type="text"
               prefix="x2: "
               hide-details
@@ -35,6 +37,7 @@
               color="primary"
               v-model="axisSetRepository.activeAxisSet.xIsLogScale"
               id="x-is-log"
+              :disabled="options.readonly"
               hide-details
               density="compact"
             ></v-checkbox>
@@ -45,6 +48,7 @@
             <v-text-field
               v-model="displayVal.y1"
               id="y1-value"
+              :disabled="options.readonly"
               prefix="y1: "
               type="text"
               hide-details
@@ -57,6 +61,7 @@
             <v-text-field
               v-model="displayVal.y2"
               id="y2-value"
+              :disabled="options.readonly"
               prefix="y2: "
               type="text"
               hide-details
@@ -71,6 +76,7 @@
               color="primary"
               v-model="axisSetRepository.activeAxisSet.yIsLogScale"
               id="y-is-log"
+              :disabled="options.readonly"
               density="compact"
               hide-details
             ></v-checkbox>
@@ -89,16 +95,17 @@
         inline
         color="primary"
         hide-details
+        :disabled="options.readonly"
       >
         <v-radio
           label="2 Points"
           :value="0"
-          :disabled="twoPointsRadioIsDisabled"
+          :disabled="options.readonly || twoPointsRadioIsDisabled"
         ></v-radio>
         <v-radio
           label="4 Points"
           :value="1"
-          :disabled="fourPointsRadioIsDisabled"
+          :disabled="options.readonly || fourPointsRadioIsDisabled"
         ></v-radio>
       </v-radio-group>
       <v-checkbox
@@ -111,7 +118,10 @@
       <div class="mt-2">
         <v-btn
           size="small"
-          :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
+          :disabled="
+            options.readonly ||
+            !axisSetRepository.activeAxisSet.hasAtLeastOneAxis
+          "
           @click="editAxes"
         >
           Edit Axes
@@ -119,7 +129,10 @@
         <v-btn
           size="small"
           class="ml-2"
-          :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
+          :disabled="
+            options.readonly ||
+            !axisSetRepository.activeAxisSet.hasAtLeastOneAxis
+          "
           @click="clearAxisSet"
         >
           Clear XY Axes
@@ -127,7 +140,10 @@
         <v-btn
           size="small"
           class="ml-2"
-          :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
+          :disabled="
+            options.readonly ||
+            !axisSetRepository.activeAxisSet.hasAtLeastOneAxis
+          "
           :loading="ocrIsRunning"
           @click="handleOnClickAutoDetectAxisValues"
           title="OCR the numbers near each axis marker and fill in its value"
@@ -153,11 +169,8 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import {
-  axisSetRepository,
-  datasetRepository,
-} from '@/instanceStore/repositoryInatances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { POINT_MODE, MANUAL_MODE } from '@/constants'
 import { AxisOcrReader } from '@/application/services/axisOcr/axisOcrReader'
@@ -166,13 +179,13 @@ import {
   matchOcrWordsToAxisValues,
 } from '@/application/utils/axisOcrMatcher'
 
-// INFO: docs/design/auto-axis-detection-design.md — a single reader
-// instance is reused across clicks (readWords() is stateless per-call, no
-// need to route this through instanceStore/applicationServiceInstances.ts
-// for a component-local, dependency-free wrapper).
-const axisOcrReader = new AxisOcrReader()
-
 export default defineComponent({
+  setup() {
+    const { axisSetRepository, datasetRepository, canvasHandler } =
+      useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { axisSetRepository, datasetRepository, canvasHandler, options }
+  },
   computed: {
     errorMessage(): string {
       if (this.axisSetRepository.activeAxisSet.xIsLogScale) {
@@ -224,9 +237,6 @@ export default defineComponent({
   },
   data() {
     return {
-      axisSetRepository,
-      datasetRepository,
-      canvasHandler,
       //NOTE: initialize axis values as string because it sometimes is displayed like '1e+10'
       displayVal: {
         x1: '',
@@ -361,6 +371,12 @@ export default defineComponent({
           ]),
         )
 
+        // INFO: docs/design/auto-axis-detection-design.md — readWords() is
+        // stateless per call (it creates and terminates its own worker), so
+        // the reader is built here rather than kept around. Building it on
+        // click also means options.assetBaseUrl is read at the moment the
+        // host's value is final.
+        const axisOcrReader = new AxisOcrReader(this.options.assetBaseUrl)
         const words = await axisOcrReader.readWords(
           this.canvasHandler.imageElement,
         )

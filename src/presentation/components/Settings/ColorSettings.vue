@@ -8,6 +8,7 @@
           <input
             type="color"
             :value="extractor.colorPicker"
+            :disabled="options.readonly"
             @input="handleOnInputColorPalette"
           />
           <v-icon size="small">mdi-palette</v-icon>
@@ -24,6 +25,7 @@
           :error="colorDistancePctErrorMsg.length > 0"
           :error-messages="colorDistancePctErrorMsg"
           density="compact"
+          :disabled="options.readonly"
         >
         </v-text-field>
       </v-col>
@@ -37,19 +39,25 @@
       hide-sliders
       :swatches="extractor.swatches"
       :elevation="0"
+      :disabled="options.readonly"
     ></v-color-picker>
   </div>
 </template>
 
 <script lang="ts">
-import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { defineComponent } from 'vue'
+import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 
 export default defineComponent({
+  setup() {
+    const { extractor } = useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { extractor, options }
+  },
   data() {
     return {
       colorDistancePctErrorMsg: '',
-      extractor,
     }
   },
   methods: {

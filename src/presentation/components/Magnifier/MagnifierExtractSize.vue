@@ -43,16 +43,17 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { extractor } from '@/instanceStore/applicationServiceInstances'
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
+import { useDigitizerContext } from '@/application/digitizerContext'
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
 
 export default defineComponent({
+  setup() {
+    const { extractor, magnifier } = useDigitizerContext()
+    return { extractor, magnifier }
+  },
   data() {
     return {
-      extractor,
-      magnifier,
       lineExtract: LineExtract.instance,
       symbolExtractByArea: SymbolExtractByArea.instance,
     }

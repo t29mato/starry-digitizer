@@ -24,8 +24,8 @@
 </template>
 
 <script lang="ts">
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import CanvasAxis from '@/presentation/components/Canvas/CanvasAxis.vue'
+import { useDigitizerContext } from '@/application/digitizerContext'
 
 import { defineComponent } from 'vue'
 
@@ -33,10 +33,9 @@ export default defineComponent({
   components: {
     CanvasAxis,
   },
-  data() {
-    return {
-      axisSetRepository,
-    }
+  setup() {
+    const { axisSetRepository } = useDigitizerContext()
+    return { axisSetRepository }
   },
 })
 </script>

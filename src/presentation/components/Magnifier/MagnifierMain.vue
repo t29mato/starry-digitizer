@@ -122,10 +122,7 @@ import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
 import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
 
 export default defineComponent({
   components: {
@@ -138,14 +135,15 @@ export default defineComponent({
     MagnifierSettingsBtn,
     MagnifierExtractSize,
   },
+  setup() {
+    const { magnifier, canvasHandler, axisSetRepository, datasetRepository } =
+      useDigitizerContext()
+    return { magnifier, canvasHandler, axisSetRepository, datasetRepository }
+  },
   data() {
     return {
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
-      magnifier,
-      canvasHandler,
-      axisSetRepository,
-      datasetRepository,
     }
   },
   computed: {

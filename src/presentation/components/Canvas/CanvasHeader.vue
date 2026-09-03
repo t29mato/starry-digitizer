@@ -11,21 +11,22 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
 
 // INFO: Undo/Redo and zoom controls used to live here as buttons. They now
 // live in the App.vue menu bar (Edit/View) plus their existing keyboard
 // shortcuts, so this header only shows read-only canvas status and stays
 // out of the way of the graph image.
 export default defineComponent({
-  data() {
-    return {
-      canvasHandler,
-      axisSetRepository,
-      datasetRepository,
-    }
+  // INFO: Save/Load Project buttons moved to the App.vue File menu, so this
+  // header emits nothing today. The declaration keeps the parent's @error
+  // listener from falling through onto the root element as a native handler,
+  // and leaves the contract in place if a failing action returns here.
+  emits: ['error'],
+  setup() {
+    const { canvasHandler, axisSetRepository, datasetRepository } =
+      useDigitizerContext()
+    return { canvasHandler, axisSetRepository, datasetRepository }
   },
   computed: {
     showCanvasScale(): string {

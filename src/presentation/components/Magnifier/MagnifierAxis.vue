@@ -36,16 +36,17 @@
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
 import { defineComponent } from 'vue'
 
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { useDigitizerContext } from '@/application/digitizerContext'
 import { STYLE } from '@/constants'
 
 export default defineComponent({
   components: {},
+  setup() {
+    const { magnifier, canvasHandler } = useDigitizerContext()
+    return { magnifier, canvasHandler }
+  },
   data() {
     return {
-      magnifier,
-      canvasHandler,
       axisSizePx: STYLE.AXIS_SIZE_PX,
     }
   },

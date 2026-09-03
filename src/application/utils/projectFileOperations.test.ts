@@ -1,39 +1,15 @@
 import { expect, describe, it, beforeEach, jest } from '@jest/globals'
-import { POINT_MODE } from '@/constants'
+import { DigitizerContext } from '@/application/digitizerContext'
+import { DigitizerError } from '@/application/errors'
+import { createEmptyProject } from '@/application/dto/projectDTO'
 
-const mockExportProject = jest.fn()
-const mockDownloadZip = jest.fn()
 const mockLoadProject = jest.fn()
-const mockInitializeImageElement = jest.fn()
-const mockDrawFitSizeImage = jest.fn()
-const mockSetUploadImageUrl = jest.fn()
-const mockSetActiveDataset = jest.fn()
 
-jest.mock('@/instanceStore/applicationServiceInstances', () => ({
-  projectService: {
-    exportProject: (...args: unknown[]) => mockExportProject(...args),
-    downloadZip: (...args: unknown[]) => mockDownloadZip(...args),
-    loadProject: (...args: unknown[]) => mockLoadProject(...args),
-  },
-  canvasHandler: {
-    initializeImageElement: (...args: unknown[]) =>
-      mockInitializeImageElement(...args),
-    drawFitSizeImage: (...args: unknown[]) => mockDrawFitSizeImage(...args),
-    setUploadImageUrl: (...args: unknown[]) => mockSetUploadImageUrl(...args),
-  },
-}))
-
-// INFO: datasetRepository.datasets is reassigned (not just mutated) by
-// loadProjectFromFile, so the mock exposes it as a plain writable property
-// rather than a getter, mirroring how the real repository singleton behaves.
-jest.mock('@/instanceStore/repositoryInatances', () => ({
-  datasetRepository: {
-    datasets: [] as unknown[],
-    setActiveDataset: (...args: unknown[]) => mockSetActiveDataset(...args),
-  },
-  axisSetRepository: {
-    axisSets: [] as { pointMode: number }[],
-  },
+// INFO: loadProjectFromFile delegates the whole "apply image + restore state"
+// step to digitizerOperations.loadProject, which has its own test suite —
+// here we only assert that it is handed the unpacked DTO and image.
+jest.mock('@/application/utils/digitizerOperations', () => ({
+  loadProject: (...args: unknown[]) => mockLoadProject(...args),
 }))
 
 import {
@@ -41,131 +17,159 @@ import {
   loadProjectFromFile,
   triggerLoadProjectDialog,
 } from './projectFileOperations'
-import {
-  datasetRepository,
-  axisSetRepository,
-} from '@/instanceStore/repositoryInatances'
+
+const mockExportProject = jest.fn()
+const mockDownloadZip = jest.fn()
+const mockImportProject = jest.fn()
+
+const buildContext = () =>
+  ({
+    projectService: {
+      exportProject: (...args: unknown[]) => mockExportProject(...args),
+      downloadZip: (...args: unknown[]) => mockDownloadZip(...args),
+      importProject: (...args: unknown[]) => mockImportProject(...args),
+    },
+  }) as unknown as DigitizerContext
 
 describe('projectFileOperations', () => {
+  let ctx: DigitizerContext
+
   beforeEach(() => {
     jest.clearAllMocks()
-    datasetRepository.datasets = []
-    axisSetRepository.axisSets = []
+    ctx = buildContext()
   })
 
   describe('saveProjectAndDownload', () => {
     it('exports and downloads the project on success', async () => {
       const blob = new Blob()
-      mockExportProject.mockResolvedValue(blob)
+      mockExportProject.mockResolvedValue(blob as never)
 
-      const result = await saveProjectAndDownload()
+      const result = await saveProjectAndDownload(ctx)
 
       expect(mockExportProject).toHaveBeenCalled()
       expect(mockDownloadZip).toHaveBeenCalledWith(blob)
       expect(result).toEqual({ success: true })
     })
 
-    it('returns an error message when export fails', async () => {
-      mockExportProject.mockRejectedValue(new Error('disk full'))
+    it('returns an EXPORT_FAILED error when export fails', async () => {
+      mockExportProject.mockRejectedValue(new Error('disk full') as never)
 
-      const result = await saveProjectAndDownload()
+      const result = await saveProjectAndDownload(ctx)
 
       expect(mockDownloadZip).not.toHaveBeenCalled()
       expect(result.success).toBe(false)
       expect(result.errorMessage).toContain('disk full')
+      expect(result.error).toBeInstanceOf(DigitizerError)
+      expect(result.error?.code).toBe('EXPORT_FAILED')
+    })
+
+    it('passes an existing DigitizerError through with its own code', async () => {
+      mockExportProject.mockRejectedValue(
+        new DigitizerError('EXPORT_FAILED', 'No canvas found.') as never,
+      )
+
+      const result = await saveProjectAndDownload(ctx)
+
+      expect(result.error?.code).toBe('EXPORT_FAILED')
+      expect(result.errorMessage).toContain('No canvas found.')
     })
   })
 
   describe('loadProjectFromFile', () => {
     const file = new File(['zip-bytes'], 'project.zip')
 
-    it('restores canvas/dataset/axisSet state on success', async () => {
-      mockLoadProject.mockResolvedValue('data:image/png;base64,xxx')
-      datasetRepository.datasets = [
-        { id: 1, name: 'dataset 1', points: [] },
-        { id: 2, name: 'dataset 2', points: [{ id: 1, xPx: 0, yPx: 0 }] },
-      ]
-      axisSetRepository.axisSets = [{ pointMode: POINT_MODE.TWO_POINTS }]
+    it('unpacks the ZIP and hands the DTO and image to loadProject', async () => {
+      const projectData = createEmptyProject()
+      mockImportProject.mockResolvedValue({
+        projectData,
+        imageData: 'data:image/png;base64,xxx',
+      } as never)
+      mockLoadProject.mockResolvedValue(undefined as never)
 
-      const result = await loadProjectFromFile(file)
+      const result = await loadProjectFromFile(ctx, file)
 
-      expect(mockLoadProject).toHaveBeenCalledWith(file)
-      expect(mockInitializeImageElement).toHaveBeenCalledWith(
+      expect(mockImportProject).toHaveBeenCalledWith(file)
+      expect(mockLoadProject).toHaveBeenCalledWith(
+        ctx,
+        projectData,
         'data:image/png;base64,xxx',
-      )
-      expect(mockDrawFitSizeImage).toHaveBeenCalled()
-      expect(mockSetUploadImageUrl).toHaveBeenCalledWith(
-        'data:image/png;base64,xxx',
-      )
-      // INFO: the empty placeholder "dataset 1" is dropped once a real
-      // dataset came in from the loaded project
-      expect(datasetRepository.datasets).toHaveLength(1)
-      expect(datasetRepository.datasets[0].name).toBe('dataset 2')
-      expect(mockSetActiveDataset).toHaveBeenCalledWith(0)
-      expect(axisSetRepository.axisSets[0].pointMode).toBe(
-        POINT_MODE.FOUR_POINTS,
       )
       expect(result).toEqual({ success: true })
     })
 
-    it('keeps the placeholder dataset when it is the only one', async () => {
-      mockLoadProject.mockResolvedValue('data:image/png;base64,xxx')
-      datasetRepository.datasets = [{ id: 1, name: 'dataset 1', points: [] }]
+    it('returns a ZIP_INVALID error when the import fails', async () => {
+      mockImportProject.mockRejectedValue(
+        new DigitizerError('ZIP_INVALID', 'bad zip') as never,
+      )
 
-      await loadProjectFromFile(file)
+      const result = await loadProjectFromFile(ctx, file)
 
-      expect(datasetRepository.datasets).toHaveLength(1)
-    })
-
-    it('returns an error message when loading fails', async () => {
-      mockLoadProject.mockRejectedValue(new Error('bad zip'))
-
-      const result = await loadProjectFromFile(file)
-
-      expect(mockInitializeImageElement).not.toHaveBeenCalled()
+      expect(mockLoadProject).not.toHaveBeenCalled()
       expect(result.success).toBe(false)
       expect(result.errorMessage).toContain('bad zip')
+      expect(result.error?.code).toBe('ZIP_INVALID')
+    })
+
+    it('falls back to PROJECT_INVALID for a plain Error', async () => {
+      mockImportProject.mockRejectedValue(new Error('boom') as never)
+
+      const result = await loadProjectFromFile(ctx, file)
+
+      expect(result.error).toBeInstanceOf(DigitizerError)
+      expect(result.error?.code).toBe('PROJECT_INVALID')
+    })
+
+    it('reports a failure raised while applying the loaded project', async () => {
+      mockImportProject.mockResolvedValue({
+        projectData: createEmptyProject(),
+        imageData: 'data:image/png;base64,xxx',
+      } as never)
+      mockLoadProject.mockRejectedValue(
+        new DigitizerError('IMAGE_LOAD_FAILED', 'cannot decode') as never,
+      )
+
+      const result = await loadProjectFromFile(ctx, file)
+
+      expect(result.success).toBe(false)
+      expect(result.error?.code).toBe('IMAGE_LOAD_FAILED')
     })
   })
 
   describe('triggerLoadProjectDialog', () => {
-    it('resolves with an error when no file is selected', async () => {
+    const withCapturedFileInput = async (
+      run: (getInput: () => HTMLInputElement | undefined) => Promise<void>,
+    ) => {
       let capturedInput: HTMLInputElement | undefined
       const originalClick = HTMLInputElement.prototype.click
       HTMLInputElement.prototype.click = function (this: HTMLInputElement) {
         capturedInput = this
       }
-
       try {
-        const promise = triggerLoadProjectDialog()
-        capturedInput?.dispatchEvent(new Event('change'))
+        await run(() => capturedInput)
+      } finally {
+        HTMLInputElement.prototype.click = originalClick
+      }
+    }
 
-        const result = await promise
-        expect(result).toEqual({
+    it('resolves with an error when no file is selected', async () => {
+      await withCapturedFileInput(async (getInput) => {
+        const promise = triggerLoadProjectDialog(ctx)
+        getInput()?.dispatchEvent(new Event('change'))
+
+        expect(await promise).toEqual({
           success: false,
           errorMessage: 'No file selected',
         })
-      } finally {
-        HTMLInputElement.prototype.click = originalClick
-      }
+      })
     })
 
     it('resolves as unsuccessful without an error message on cancel', async () => {
-      let capturedInput: HTMLInputElement | undefined
-      const originalClick = HTMLInputElement.prototype.click
-      HTMLInputElement.prototype.click = function (this: HTMLInputElement) {
-        capturedInput = this
-      }
+      await withCapturedFileInput(async (getInput) => {
+        const promise = triggerLoadProjectDialog(ctx)
+        getInput()?.dispatchEvent(new Event('cancel'))
 
-      try {
-        const promise = triggerLoadProjectDialog()
-        capturedInput?.dispatchEvent(new Event('cancel'))
-
-        const result = await promise
-        expect(result).toEqual({ success: false })
-      } finally {
-        HTMLInputElement.prototype.click = originalClick
-      }
+        expect(await promise).toEqual({ success: false })
+      })
     })
   })
 })

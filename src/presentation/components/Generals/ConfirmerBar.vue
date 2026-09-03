@@ -20,14 +20,14 @@
 </template>
 
 <script lang="ts">
-import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { defineComponent } from 'vue'
 
+import { useDigitizerContext } from '@/application/digitizerContext'
+
 export default defineComponent({
-  data() {
-    return {
-      confirmer,
-    }
+  setup() {
+    const { confirmer } = useDigitizerContext()
+    return { confirmer }
   },
   methods: {
     handleOnClickConfirm() {

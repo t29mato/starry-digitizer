@@ -16,6 +16,7 @@
       class="mb-2"
       divided
       :border="true"
+      :disabled="options.readonly"
     >
       <v-btn color="primary" size="small" class="pa-1"> Add (A) </v-btn>
       <v-btn color="primary" size="small" class="pa-1"> Edit (E) </v-btn>
@@ -31,7 +32,7 @@
         @update:model-value="handleOnClickInterpolatiorSwitch"
         hide-details
         density="compact"
-        :disabled="datasetRepository.isViewAllMode"
+        :disabled="options.readonly || datasetRepository.isViewAllMode"
       ></v-switch>
     </div>
 
@@ -49,12 +50,14 @@
         max="30"
         density="compact"
         hide-details
+        :disabled="options.readonly"
       ></v-text-field>
       <v-btn
         id="confirm-interpolation"
         @click="handleOnConfirmInterpolation"
         size="small"
         color="primary"
+        :disabled="options.readonly"
         >Confirm</v-btn
       >
     </div>
@@ -67,7 +70,7 @@
         size="small"
         class="ml-3"
         style="min-width: 60px"
-        :disabled="datasetRepository.isViewAllMode"
+        :disabled="options.readonly || datasetRepository.isViewAllMode"
         >Run</v-btn
       >
     </div>
@@ -79,7 +82,7 @@
       density="compact"
       hide-details
       prefix="Algorithm: "
-      :disabled="datasetRepository.isViewAllMode"
+      :disabled="options.readonly || datasetRepository.isViewAllMode"
     ></v-select>
     <div v-if="!datasetRepository.isViewAllMode">
       <div v-if="extractor.strategy.name === 'Symbol Extract'">
@@ -105,12 +108,8 @@ import ColorSettings from './ColorSettings.vue'
 import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { confirmer } from '@/instanceStore/applicationServiceInstances'
-import { extractor } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 
 import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
 import { toggleInterpolation } from '@/application/utils/interpolationToggle'
@@ -122,21 +121,38 @@ export default defineComponent({
     MaskSettings,
     ColorSettings,
   },
-  data() {
-    return {
+  setup() {
+    const ctx = useDigitizerContext()
+    const options = useDigitizerOptions()
+    const {
       interpolator,
-      confirmer,
       extractor,
       canvasHandler,
       axisSetRepository,
       datasetRepository,
+    } = ctx
+    return {
+      ctx,
+      options,
+      interpolator,
+      extractor,
+      canvasHandler,
+      axisSetRepository,
+      datasetRepository,
+    }
+  },
+  data() {
+    return {
       isExtracting: false,
     }
   },
   props: {
+    // INFO: <StarryDigitizer> no longer passes this down; kept optional so
+    // any remaining direct user of the component behaves as before.
     initialExtractorStrategy: {
       type: String,
       required: false,
+      default: undefined,
     },
   },
   mounted() {
@@ -182,7 +198,7 @@ export default defineComponent({
     },
     //INFO: isActive: booleanであるが、@updateでtsエラーになるのでanyとしている
     handleOnClickInterpolatiorSwitch(isActive: any) {
-      toggleInterpolation(isActive)
+      toggleInterpolation(this.ctx, isActive)
     },
     handleOnConfirmInterpolation() {
       if (

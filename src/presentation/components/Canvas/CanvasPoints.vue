@@ -73,20 +73,15 @@
 import CanvasPoint from '@/presentation/components/Canvas/CanvasPoint.vue'
 import { defineComponent } from 'vue'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
 
 export default defineComponent({
   components: {
     CanvasPoint,
   },
-  data() {
-    return {
-      canvasHandler,
-      datasetRepository,
-    }
+  setup() {
+    const { canvasHandler, datasetRepository } = useDigitizerContext()
+    return { canvasHandler, datasetRepository }
   },
-
-  methods: {},
 })
 </script>

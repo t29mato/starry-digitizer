@@ -32,9 +32,7 @@
 import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
 import { MANUAL_MODE, MASK_MODE, POINT_MODE, STYLE } from '@/constants'
 
 const guideLineBaseStyles: CSSProperties = {
@@ -44,11 +42,13 @@ const guideLineBaseStyles: CSSProperties = {
 }
 
 export default defineComponent({
+  setup() {
+    const { canvasHandler, axisSetRepository, datasetRepository } =
+      useDigitizerContext()
+    return { canvasHandler, axisSetRepository, datasetRepository }
+  },
   data() {
     return {
-      canvasHandler,
-      axisSetRepository,
-      datasetRepository,
       axisSizePx: STYLE.AXIS_SIZE_PX,
     }
   },

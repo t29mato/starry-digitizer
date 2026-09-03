@@ -11,8 +11,7 @@
 import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
 import { POINT_MODE } from '@/constants'
 
 const axisSetGuideCommonStyle: CSSProperties = {
@@ -23,11 +22,9 @@ const axisSetGuideCommonStyle: CSSProperties = {
 }
 
 export default defineComponent({
-  data() {
-    return {
-      canvasHandler,
-      axisSetRepository,
-    }
+  setup() {
+    const { canvasHandler, axisSetRepository } = useDigitizerContext()
+    return { canvasHandler, axisSetRepository }
   },
   methods: {
     //INFO: computedではリアクティブにならなかったのでmethodとしている

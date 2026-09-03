@@ -60,7 +60,24 @@
       </v-menu>
     </v-app-bar>
     <v-main v-if="!deviceIsSmartphone">
-      <starry-digitizer :initialGraphImagePath="'/sample_graph_curve.png'" />
+      <starry-digitizer
+        :context="appContext"
+        image="/sample_graph_curve.png"
+        :features="{
+          imageUpload: true,
+          zipExportImport: true,
+          csvExport: true,
+        }"
+        :confirm-image-replace="true"
+        @error="onDigitizerError"
+      >
+        <!-- INFO: the version/build caption is app-only (it reads
+        package.json and import.meta.env), so it is injected through the
+        component's slot instead of living inside the library. -->
+        <template #right-sidebar-footer>
+          <p class="text-caption text-right">{{ appVerAndBuildInfo }}</p>
+        </template>
+      </starry-digitizer>
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
@@ -84,15 +101,8 @@ import StarryDigitizer from '@/presentation/components/StarryDigitizer.vue'
 import PwaUpdatePrompt from '@/presentation/components/Generals/PWAUpdatePrompt.vue'
 import KeyboardShortcutsDialog from '@/presentation/components/Generals/KeyboardShortcutsDialog.vue'
 import logo from '@/assets/logo.svg'
-import {
-  canvasHandler,
-  historyManager,
-  interpolator,
-} from '@/instanceStore/applicationServiceInstances'
-import {
-  axisSetRepository,
-  datasetRepository,
-} from '@/instanceStore/repositoryInatances'
+import { appContext } from '@/appContext'
+import type { DigitizerErrorPayload } from '@/application/errors'
 import {
   saveProjectAndDownload,
   triggerLoadProjectDialog,
@@ -126,21 +136,34 @@ export default defineComponent({
     KeyboardShortcutsDialog,
   },
 
+  // INFO: appContext is a reactive() object, so spreading its members into
+  // data() keeps the computed menu items reactive exactly like the old
+  // singletons did.
   data: () => ({
     points: [],
     version,
     logo,
-    canvasHandler,
-    historyManager,
-    interpolator,
-    axisSetRepository,
-    datasetRepository,
+    appContext,
+    canvasHandler: appContext.canvasHandler,
+    historyManager: appContext.historyManager,
+    interpolator: appContext.interpolator,
+    axisSetRepository: appContext.axisSetRepository,
+    datasetRepository: appContext.datasetRepository,
+    githubRunNumber: import.meta.env.VITE_APP_GITHUB_RUN_NUMBER,
     isProd: import.meta.env.MODE === 'production',
     showError: false,
     errorMessage: '',
     showKeyboardShortcuts: false,
   }),
   computed: {
+    // INFO: "v<version>#<GitHub Actions build number>"; used to be rendered
+    // inside StarryDigitizer.vue.
+    appVerAndBuildInfo(): string {
+      const appVer = this.isProd ? `v${this.version}` : ''
+      const buildNumber = this.githubRunNumber ? `#${this.githubRunNumber}` : ''
+
+      return appVer + buildNumber
+    },
     deviceIsSmartphone() {
       const ua = navigator.userAgent.toLowerCase()
 
@@ -241,20 +264,23 @@ export default defineComponent({
     importPoints(points: any) {
       this.points = points
     },
+    onDigitizerError(payload: DigitizerErrorPayload) {
+      this.showErrorSnackbar(payload.message)
+    },
     async handleSaveProject() {
-      const result = await saveProjectAndDownload()
+      const result = await saveProjectAndDownload(this.appContext)
       if (!result.success) {
         this.showErrorSnackbar(result.errorMessage)
       }
     },
     async handleLoadProject() {
-      const result = await triggerLoadProjectDialog()
+      const result = await triggerLoadProjectDialog(this.appContext)
       if (!result.success && result.errorMessage) {
         this.showErrorSnackbar(result.errorMessage)
       }
     },
     async handleCopyData() {
-      const result = await copyActiveDatasetToClipboard()
+      const result = await copyActiveDatasetToClipboard(this.appContext)
       if (!result.success) {
         this.showErrorSnackbar(result.errorMessage)
       }
@@ -280,7 +306,7 @@ export default defineComponent({
         !this.axisSetRepository.activeAxisSet.isVisible
     },
     handleToggleInterpolation() {
-      toggleInterpolation(!this.interpolator.isActive)
+      toggleInterpolation(this.appContext, !this.interpolator.isActive)
     },
     showErrorSnackbar(message?: string) {
       this.errorMessage = message ?? 'An error occurred'

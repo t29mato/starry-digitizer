@@ -12,14 +12,13 @@
 </template>
 
 <script lang="ts">
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
+import { useDigitizerContext } from '@/application/digitizerContext'
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-  data() {
-    return {
-      magnifier,
-    }
+  setup() {
+    const { magnifier } = useDigitizerContext()
+    return { magnifier }
   },
   computed: {
     // INFO: 十字線を作成する箱の横幅

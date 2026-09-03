@@ -27,3 +27,8 @@ report
 .envrc
 .claude
 .vercel
+
+# Cypress artifacts
+cypress/screenshots
+cypress/videos
+cypress/downloads

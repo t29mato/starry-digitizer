@@ -96,6 +96,33 @@ describe('HistoryManager', () => {
     })
   })
 
+  test('externalId survives an undo/redo round trip', () => {
+    const { datasetRepository, historyManager } = setup()
+    // INFO: externalId is host-owned and opaque; losing it on undo would
+    // silently detach the dataset from the host's record.
+    datasetRepository.activeDataset.externalId = 'sample-42'
+
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+
+    historyManager.undo()
+    expect(datasetRepository.activeDataset.externalId).toBe('sample-42')
+
+    historyManager.redo()
+    expect(datasetRepository.activeDataset.externalId).toBe('sample-42')
+    expect(datasetRepository.activeDataset.points).toHaveLength(1)
+  })
+
+  test('leaves externalId undefined for datasets that never had one', () => {
+    const { datasetRepository, historyManager } = setup()
+
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    historyManager.undo()
+
+    expect(datasetRepository.activeDataset.externalId).toBeUndefined()
+  })
+
   test('clear() empties both stacks', () => {
     const { datasetRepository, historyManager } = setup()
 

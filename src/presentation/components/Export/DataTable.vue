@@ -8,7 +8,13 @@
       height="30vh"
       class="overflow-y-auto"
     ></hot-table>
-    <v-btn class="mt-1" @click="copyData" size="small">Copy to Clipboard</v-btn>
+    <v-btn
+      v-if="options.features.csvExport"
+      class="mt-1"
+      @click="copyData"
+      size="small"
+      >Copy to Clipboard</v-btn
+    >
   </div>
 </template>
 
@@ -27,12 +33,8 @@ import 'handsontable/dist/handsontable.full.css'
 // TODO: TSの型宣言エラーが解消できずignore resolvePackageJsonExports周りが関連か。いずれ再度調査
 // @ts-ignore
 import { registerAllModules } from 'handsontable/registry'
-import {
-  canvasHandler,
-  magnifier,
-} from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import {
   getActiveDatasetTableData,
   copyRowsToClipboard,
@@ -44,31 +46,36 @@ export default defineComponent({
   components: {
     HotTable,
   },
+  setup() {
+    const ctx = useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { ctx, options }
+  },
   computed: {
     tableData() {
-      // INFO: depends on datasetRepository/axisSetRepository (reactive
-      // singletons) so this stays reactive despite reading them via the
-      // shared getActiveDatasetTableData() helper rather than `this.*`
-      return getActiveDatasetTableData()
+      // INFO: the context is reactive(), so reading it inside this computed
+      // keeps the dependency tracking even though the values are pulled via
+      // the shared getActiveDatasetTableData() helper rather than `this.*`
+      return getActiveDatasetTableData(this.ctx)
     },
-  },
-  data() {
-    return {
-      canvasHandler,
-      magnifier,
-      axisSetRepository,
-      datasetRepository,
-      key: 0,
-      activeColor: colors.green.lighten5,
-      hotTableSettings: {
+    hotTableSettings() {
+      return {
         licenseKey: 'non-commercial-and-evaluation',
         columnSorting: true,
         colHeaders: ['X', 'Y'],
+        // INFO: read-only mode must also block in-cell edits of the table.
+        readOnly: this.options.readonly,
         columns: [
           { data: 'X', type: 'numeric' },
           { data: 'Y', type: 'numeric' },
         ],
-      },
+      }
+    },
+  },
+  data() {
+    return {
+      key: 0,
+      activeColor: colors.green.lighten5,
     }
   },
   methods: {

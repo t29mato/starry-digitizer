@@ -24,17 +24,16 @@
 </template>
 
 <script lang="ts">
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
 import MagnifierAxis from '@/presentation/components/Magnifier/MagnifierAxis.vue'
 import { defineComponent } from 'vue'
 export default defineComponent({
   components: {
     MagnifierAxis,
   },
-  data() {
-    return {
-      axisSetRepository,
-    }
+  setup() {
+    const { axisSetRepository } = useDigitizerContext()
+    return { axisSetRepository }
   },
 })
 </script>

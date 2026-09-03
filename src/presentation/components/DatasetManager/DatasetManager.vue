@@ -2,13 +2,17 @@
   <div>
     <h4>
       Datasets
-      <v-btn @click="handleOnClickAddDatasetButton" size="x-small" class="ml-2"
+      <v-btn
+        @click="handleOnClickAddDatasetButton"
+        size="x-small"
+        class="ml-2"
+        :disabled="options.readonly"
         ><v-icon>mdi-plus</v-icon></v-btn
       >
       <v-btn
         size="x-small"
         @click="handleOnClickRemoveAllDatasetsButton"
-        :disabled="datasetRepository.datasets.length === 0"
+        :disabled="options.readonly || datasetRepository.datasets.length === 0"
         class="ml-2"
         title="Remove all datasets"
         ><v-icon>mdi-delete-sweep</v-icon></v-btn
@@ -49,7 +53,22 @@
                 'bg-yellow-lighten-4'
               "
             >
+              <!-- INFO: when the host app supplies name candidates the field
+                   becomes a combobox (suggestions + free text); otherwise it
+                   stays a plain text field. -->
+              <v-combobox
+                v-if="options.datasetNameCandidates.length > 0"
+                v-model="dataset.name"
+                :items="options.datasetNameCandidates"
+                :placeholder="'dataset ' + dataset.id"
+                hide-details
+                density="compact"
+                class="mt-0 pt-0 pl-2"
+                variant="underlined"
+                :readonly="options.readonly"
+              ></v-combobox>
               <v-text-field
+                v-else
                 v-model="dataset.name"
                 :placeholder="'dataset ' + dataset.id"
                 hide-details
@@ -57,6 +76,7 @@
                 type="text"
                 class="mt-0 pt-0 pl-2"
                 variant="underlined"
+                :readonly="options.readonly"
               ></v-text-field>
             </v-list-item>
           </v-col>
@@ -69,7 +89,11 @@
               {{ dataset.points.length }}
             </span>
           </v-col>
-          <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
+          <v-col
+            v-if="options.features.csvExport"
+            cols="1"
+            class="pa-0 d-flex align-items-center justify-center"
+          >
             <v-btn
               size="x-small"
               icon="mdi-content-copy"
@@ -84,7 +108,7 @@
               size="x-small"
               icon="mdi-eraser"
               @click="handleOnClickClearDatasetPoints(dataset.id)"
-              :disabled="dataset.points.length === 0"
+              :disabled="options.readonly || dataset.points.length === 0"
               variant="text"
               title="Clear points"
             ></v-btn>
@@ -94,7 +118,9 @@
               size="x-small"
               icon="mdi-delete"
               @click="handleOnClickRemoveDatasetButton(dataset.id)"
-              :disabled="datasetRepository.datasets.length === 1"
+              :disabled="
+                options.readonly || datasetRepository.datasets.length === 1
+              "
               variant="text"
               title="Delete dataset"
             ></v-btn>
@@ -110,43 +136,36 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
+import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import {
-  canvasHandler,
-  interpolator,
-  magnifier,
-  historyManager,
-} from '@/instanceStore/applicationServiceInstances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+  getDatasetTableData,
+  copyRowsToClipboard,
+} from '@/application/utils/dataExport'
 import { MASK_MODE } from '@/constants'
-import AxisSetCalculator from '@/domain/services/axisSetCalculator'
-import { Point } from '@/@types/types'
 
 export default defineComponent({
   components: {},
+  setup() {
+    const ctx = useDigitizerContext()
+    const options = useDigitizerOptions()
+    return {
+      ctx,
+      canvasHandler: ctx.canvasHandler,
+      interpolator: ctx.interpolator,
+      historyManager: ctx.historyManager,
+      datasetRepository: ctx.datasetRepository,
+      axisSetRepository: ctx.axisSetRepository,
+      options,
+    }
+  },
   data() {
     return {
-      canvasHandler,
-      interpolator,
-      magnifier,
-      historyManager,
-      datasetRepository,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
       sortOrders: ['ascending', 'descending'],
-      axisSetRepository,
     }
-  },
-  props: {
-    exportBtnText: {
-      type: String,
-      required: false,
-    },
-    exportBtnClick: {
-      type: Function,
-      required: false,
-    },
   },
   computed: {
     totalPointsCount(): number {
@@ -246,40 +265,16 @@ export default defineComponent({
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.removeAllDatasets()
     },
-    calculateXY(x: number, y: number): { xV: string; yV: string } {
-      const calculator = new AxisSetCalculator(
-        this.axisSetRepository.activeAxisSet,
-        {
-          x: this.axisSetRepository.activeAxisSet.xIsLogScale,
-          y: this.axisSetRepository.activeAxisSet.yIsLogScale,
-        },
-        this.magnifier.effectiveDigits,
-      )
-      return calculator.calculateXYValues(x, y)
-    },
-    convertToCsv(data: string[][]): string {
-      const CSV_DELIMITER = ','
-      const rows = data.map((row) => row.join(CSV_DELIMITER))
-      return rows.join('\n')
-    },
-    copyDatasetToClipboard(datasetId: number) {
+    async copyDatasetToClipboard(datasetId: number) {
       const dataset = this.datasetRepository.datasets.find(
         (d) => d.id === datasetId,
       )
       if (!dataset || dataset.points.length === 0) return
 
-      const data = dataset.points.map((point: Point) => {
-        const { xV, yV } = this.calculateXY(point.xPx, point.yPx)
-        return [xV, yV]
-      })
-
-      const csv = this.convertToCsv(data)
-      navigator.clipboard
-        .writeText(csv)
-        .then(() => console.log('Dataset copied to clipboard successfully.'))
-        .catch((err) =>
-          console.error('Failed to copy dataset to clipboard.', err),
-        )
+      // INFO: getDatasetTableData() calibrates with the dataset's own axis
+      // set, so a row copied here matches the dataset even when another
+      // axis set is currently active.
+      await copyRowsToClipboard(getDatasetTableData(this.ctx, dataset))
     },
     handleOnClickClearDatasetPoints(datasetId: number) {
       const dataset = this.datasetRepository.datasets.find(

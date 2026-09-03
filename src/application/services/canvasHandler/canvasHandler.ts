@@ -258,6 +258,32 @@ export class CanvasHandler implements CanvasHandlerInterface {
     this.drawFitSizeImage()
   }
 
+  get hasImage(): boolean {
+    return this.uploadImageUrl !== ''
+  }
+
+  // INFO: drop the image entirely (used by reset() / unmount). A fresh Image
+  // has width/height 0 so any later draw is a no-op until a new image loads.
+  clearImage() {
+    this.imageElement = new Image()
+    this.uploadImageUrl = ''
+    this.scale = 1
+    this.isDrawnMask = false
+    const clear = (id: string) => {
+      const element = document.getElementById(id)
+      if (element instanceof HTMLCanvasElement) {
+        element.width = 0
+        element.height = 0
+      }
+    }
+    ;[
+      'imageCanvas',
+      'maskCanvas',
+      'tempMaskCanvas',
+      'magnifierMaskCanvas',
+    ].forEach(clear)
+  }
+
   clearTempMask() {
     this.tempMaskCanvas.context.clearRect(
       0,

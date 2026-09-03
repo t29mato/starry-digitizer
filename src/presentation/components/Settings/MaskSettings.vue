@@ -8,6 +8,7 @@
       class="mb-2"
       divided
       :border="true"
+      :disabled="options.readonly"
     >
       <v-btn size="small" class="pa-1" color="primary"> Pen </v-btn>
       <v-btn size="small" class="pa-1" color="primary"> Box </v-btn>
@@ -16,7 +17,7 @@
     <v-btn
       size="small"
       class="ml-1"
-      :disabled="!canvasHandler.isDrawnMask"
+      :disabled="options.readonly || !canvasHandler.isDrawnMask"
       @click="clearMask"
     >
       Clear
@@ -29,6 +30,7 @@
       hide-details
       label="Pen Size"
       density="compact"
+      :disabled="options.readonly"
     ></v-text-field>
     <v-text-field
       v-if="maskModeIsEraser"
@@ -38,20 +40,22 @@
       hide-details
       label="Eraser Size (px)"
       density="compact"
+      :disabled="options.readonly"
     ></v-text-field>
   </div>
 </template>
 
 <script lang="ts">
 import { MASK_MODE } from '@/constants'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { defineComponent } from 'vue'
+import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 
 export default defineComponent({
-  data() {
-    return {
-      canvasHandler,
-    }
+  setup() {
+    const { canvasHandler } = useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { canvasHandler, options }
   },
   computed: {
     maskModeIsPen() {

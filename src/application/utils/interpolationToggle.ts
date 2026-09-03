@@ -1,5 +1,4 @@
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { DigitizerContext } from '@/application/digitizerContext'
 import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
 
@@ -9,7 +8,11 @@ import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasP
 // interpolation off needs to re-materialize manually-added points as real
 // points first (see the NOTE below, inherited from the original code), or
 // they'd be lost along with the interpolation preview.
-export function toggleInterpolation(isActive: boolean): void {
+export function toggleInterpolation(
+  ctx: DigitizerContext,
+  isActive: boolean,
+): void {
+  const { interpolator, datasetRepository } = ctx
   interpolator.setIsActive(isActive)
 
   if (isActive) {

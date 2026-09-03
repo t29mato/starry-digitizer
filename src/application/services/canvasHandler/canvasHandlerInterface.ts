@@ -25,8 +25,9 @@ export interface CanvasHandlerInterface {
   get colorSwatches(): string[]
   get isDrawingMask(): boolean
   get scaledCursor(): Coord
+  get hasImage(): boolean
 
-  initializeImageElement(imagePath: string): void
+  initializeImageElement(imagePath: string): Promise<unknown>
   getDivElementById(id: string): HTMLDivElement
   mouseDown(xPx: number, yPx: number): void
   mouseDragInManualMode(): void
@@ -39,6 +40,7 @@ export interface CanvasHandlerInterface {
   drawBoxMask(): void
   clearRectangle(): void
   changeImage(imageElement: HTMLImageElement): void
+  clearImage(): void
   clearTempMask(): void
   clearMask(): void
   drawFitSizeImage(): void

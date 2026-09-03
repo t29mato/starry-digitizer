@@ -23,6 +23,15 @@ jobs:
         run: yarn lint
       - name: Unit test
         run: yarn test
+      - name: Library build
+        run: yarn lib-build
+      # Fails if Sentry / PWA / external CDN URLs leaked into the package
+      # (integration spec acceptance criterion 3).
+      - name: Library bundle check
+        run: yarn lib-check
+      - name: Build example host app
+        run: npm ci && npm run build
+        working-directory: examples/host-app
   E2E-Test:
     runs-on: ubuntu-latest
     steps:
@@ -117,6 +126,12 @@ jobs:
               echo "   Package.json version: $PACKAGE_VERSION"
               exit 1
           fi
+      # INFO: library-build/dist is gitignored, so the package contents must
+      # be built here — otherwise `files` would publish an empty directory.
+      - name: Library build
+        run: yarn lib-build
+      - name: Library bundle check
+        run: yarn lib-check
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}

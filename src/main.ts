@@ -18,11 +18,6 @@ import * as directives from 'vuetify/directives'
 import colors from 'vuetify/lib/util/colors'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
-import { interpolator } from './instanceStore/applicationServiceInstances'
-
-//INFO: initialize application services
-interpolator.initialize()
-
 const vuetify = createVuetify({
   components,
   directives,

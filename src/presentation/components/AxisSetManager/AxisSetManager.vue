@@ -2,13 +2,17 @@
   <div>
     <h4>
       XY Axes List
-      <v-btn @click="handleOnClickAddAxisSetButton" size="x-small" class="ml-2"
+      <v-btn
+        @click="handleOnClickAddAxisSetButton"
+        size="x-small"
+        class="ml-2"
+        :disabled="options.readonly"
         ><v-icon>mdi-plus</v-icon></v-btn
       >
       <v-btn
         size="x-small"
         @click="handleOnClickRemoveAxisSetButton"
-        :disabled="axisSetRepository.axisSets.length === 1"
+        :disabled="options.readonly || axisSetRepository.axisSets.length === 1"
         class="ml-2"
         ><v-icon>mdi-minus</v-icon></v-btn
       >
@@ -38,6 +42,7 @@
               density="compact"
               class="mt-0 pt-0 pl-2"
               variant="underlined"
+              :readonly="options.readonly"
             ></v-text-field>
           </v-col>
         </v-row>
@@ -50,19 +55,19 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { MANUAL_MODE } from '@/constants'
 
 export default defineComponent({
+  setup() {
+    const { canvasHandler, axisSetRepository, datasetRepository } =
+      useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { canvasHandler, axisSetRepository, datasetRepository, options }
+  },
   data() {
     return {
-      canvasHandler,
-      interpolator,
-      axisSetRepository,
-      datasetRepository,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
