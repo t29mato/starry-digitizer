@@ -48,6 +48,11 @@ npm run dev
 Starry Digitizer is published to npm as a Vue 3 component, so a host application can
 embed the digitizer directly instead of linking out to the standalone app.
 
+This section is the API reference. For the integration concepts — what the host is
+responsible for, how to pass images, how to save/restore state, using it from a
+non-Vue host — see the [embedding guide](docs/embedding.rst) (also published at
+https://starrydigitizer.readthedocs.io/).
+
 ### Install
 
 ```bash
