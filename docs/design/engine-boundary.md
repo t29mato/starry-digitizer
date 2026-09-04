@@ -24,6 +24,10 @@
 **`vue` を import しているのはこの 1 ファイルだけ**で、しかも `inject` / `provide` / `reactive` の 3 つだけである。
 `src/domain/` には `vue` の import が 1 つもない。同ファイルには既にこの注記がある。
 
+(Phase 1 でここは解消済み。`reactive` は `@vue/reactivity` から import するようになり、
+`provide` / `inject` は `src/presentation/digitizerContextProvider.ts` に移した。
+現在 `domain` + `application` に `vue` の import は 1 つもない。→ §4)
+
 > this `reactive()` wrapper is the ONLY change-notification mechanism the engine has. Domain/application classes expose no observer/subscribe API; the UI re-renders because Vue's Proxy observes direct mutations made by components on repositories/services.
 
 コンポーネントはリポジトリやドメインエンティティのプロパティを**直接書き換えている**。
@@ -74,7 +78,7 @@ React ホストが `starry-digitizer/core` を import して `datasetRepository.
 
 そのうえで、**中期的には直接ミューテーションを減らす**(A-3 の方向)。ただしこれは #307 のためではなく、Undo/Redo の履歴取得点を 1 箇所にまとめるという別の動機で価値がある。現在は `historyManager.capture()` をコンポーネント側が呼び忘れると履歴が飛ぶ構造になっている。
 
-#### API のかたち(案)
+#### API のかたち(実装済み)
 
 ```ts
 // starry-digitizer/core
@@ -90,11 +94,48 @@ const stop = effect(() => {
 stop()
 ```
 
-`effect` / `watch` / `computed` を core から再エクスポートするだけでよい。**新しい概念を発明しない**のが要点。
+`@vue/reactivity` を core からそのまま再エクスポートするだけでよい。**新しい概念を発明しない**のが要点。
+Phase 1 で実際に再エクスポートしたのは
+`effect` / `stop` / `computed` / `ref` / `reactive` / `readonly` / `effectScope` と
+ガード類(`isReactive` / `isRef` / `unref` / `toRaw` / `markRaw`)、および型 `ReactiveEffectRunner`
+(`src/core-main.ts`)。
 
-実地確認(2026-09-04): `@vue/reactivity` は独立したパッケージとして公開されており(v3.5.42)、
+**`watch` は再エクスポートしていない。**当初案には `effect` / `watch` / `computed` と書いたが、
+`watch` が `@vue/reactivity` に入ったのは **Vue 3.5** からで、peer の下限は `^3.3.4` である。
+3.3 系のホストで `watch` を export すると解決できない import になるため外した。
+購読の用途は `effect` で足り、Vue ホストは `vue` の `watch` をそのまま使える。
+
+実地確認(2026-09-04): `@vue/reactivity` は独立したパッケージとして公開されており、
 `vue` パッケージは `effect` をそのまま再エクスポートしている(`typeof require('vue').effect === 'function'`)。
 したがって Vue ホストでは追加のインストールもバンドル増加も発生しない。
+
+### 1.5 単一コピー問題(`@vue/reactivity` を external にする理由)
+
+リアクティビティのランタイムは、ホストの中で **1 コピーでなければならない**。
+`@vue/reactivity` をライブラリ側にバンドルすると、ホストの `vue` が持つコピーとライブラリのコピーの
+2 つが存在することになり、ライブラリが作った `reactive` オブジェクトのミューテーションを
+Vue のレンダラ側の effect が追跡できない(依存の登録先が別モジュールの WeakMap になるため)。
+症状は「状態は変わるが再描画されない」で、例外は出ないので発見が遅れる。
+
+このため `vite.library.config.ts` の `external` に `/^@vue\/reactivity$/` を加え、
+`vue` と同じくホストの解決に委ねている。`package.json` でも `dependencies` ではなく
+`peerDependencies`(`^3.3.4`)に置いている。
+
+実地確認(2026-09-04、この worktree の `node_modules`): `vue@3.3.4` / `@vue/reactivity@3.3.4` で
+
+```
+require('vue').reactive === require('@vue/reactivity').reactive  // => true
+```
+
+`vue` は `@vue/reactivity` に依存しており、npm/yarn が両者を hoist して 1 コピーに解決するため、
+Vue ホストでは何もしなくても同一物になる。
+
+**ただし保証ではない。** ホスト側で `vue` と `@vue/reactivity` のバージョンがずれた場合
+(片方だけを pin する、複数のパッケージが別レンジを要求する等)、解決順によっては
+`node_modules/@vue/reactivity` と `node_modules/vue/node_modules/@vue/reactivity` が
+並存しうる。そのときは上の等値が `false` になり、再描画が止まる。
+README にも同じ注意を書いた(「Choosing an entry point」)。バージョンを揃えるか
+`resolutions` / `overrides` で重複排除するのが対処になる。
 
 ---
 
@@ -190,8 +231,12 @@ canvas を一切使わない手書きの `PixelSource` で抽出が走ること�
 
 > `core` runs in a browser and does not depend on Vue's renderer. It needs a
 > 2D canvas context and image decoding; it is not a Node package.
-> Change notification is `@vue/reactivity`, re-exported as `effect` / `watch` /
-> `computed` — usable from React, Svelte or plain JavaScript.
+> Change notification is `@vue/reactivity`, re-exported as `effect` / `stop` /
+> `computed` / `ref` — usable from React, Svelte or plain JavaScript.
+
+(`watch` は含めない。理由は §1.4。)`@vue/reactivity` は `core` の唯一の必須 peer 依存で、
+ホストの中で 1 コピーに解決される必要がある(§1.5)。`vue` は `/vue` と既定 entry のためのもので、
+`peerDependenciesMeta` で optional にしてある。
 
 Node で**今日でも動く部分集合**(`migrateProject`、`AxisSetCalculator`、抽出アルゴリズム本体)は、必要になったときに `starry-digitizer/core/pure` として切り出せる。先に作らない。
 
@@ -199,15 +244,51 @@ Node で**今日でも動く部分集合**(`migrateProject`、`AxisSetCalculator
 
 ## 4. 段階
 
-| Phase | 内容 | 工数 | これで #307 の何が満たされるか |
-|---|---|---|---|
-| 0 | `Extractor.execute()` の引数を `PixelSource` に変更。`canvasHandler.manualMode` / `maskMode` への直接代入 10 件を既存の `setManualMode()` / `setMaskMode()` に置換。`core` の実行環境を文書化 | 1〜2 日 | 将来の分割の前提が整う |
-| 1 | `package.json` の `exports` に `./core` と `./vue` を追加し、`vite.library.config.ts` を 3 entry 化。`@vue/reactivity` を `digitizerContext.ts` の import 元にする | 3〜5 日 | **ホストが `core` を import できる。#307 の主目的が達成される** |
-| 2 | `useDigitizer()` composable を `vue` entry に用意(context の生成・provide・破棄を 1 行に) | 3 日 | ホストのボイラープレートが減る |
-| 3(条件付き) | 直接ミューテーションのサービス経由への集約 | 2〜4 週 | 履歴取得の一元化。**非 Vue ホストが実在してから** |
-| 4(条件付き) | `PixelSource` の node-canvas 実装 | 1〜2 週 | Node バッチ。**具体的な用途が出てから** |
+| Phase | 内容 | 工数 | 状態 | これで #307 の何が満たされるか |
+|---|---|---|---|---|
+| 0 | `Extractor.execute()` の引数を `PixelSource` に変更。`canvasHandler.manualMode` / `maskMode` への直接代入 10 件を既存の `setManualMode()` / `setMaskMode()` に置換。`core` の実行環境を文書化 | 1〜2 日 | **実施済み(2026-09-04)**(→ §2.4) | 将来の分割の前提が整う |
+| 1 | `package.json` の `exports` に `./core` と `./vue` を追加し、`vite.library.config.ts` を 3 entry 化。`@vue/reactivity` を `digitizerContext.ts` の import 元にする | 3〜5 日 | **実施済み(2026-09-04)**(→ 下記) | **ホストが `core` を import できる。#307 の主目的が達成される** |
+| 2 | `useDigitizer()` composable を `vue` entry に用意(context の生成・provide・破棄を 1 行に) | 3 日 | 未着手 | ホストのボイラープレートが減る |
+| 3(条件付き) | 直接ミューテーションのサービス経由への集約 | 2〜4 週 | 未着手 | 履歴取得の一元化。**非 Vue ホストが実在してから** |
+| 4(条件付き) | `PixelSource` の node-canvas 実装 | 1〜2 週 | 未着手 | Node バッチ。**具体的な用途が出てから** |
 
 Phase 1 まで(1 週間程度)で #307 の目的はほぼ達成される。Phase 3・4 は仮説段階で着手しない。
+
+### Phase 1 の実施内容
+
+**実施済み(2026-09-04)。** 実装は §3 の定義どおりで、既定 entry の import 面は変えていない。
+
+**entry を 3 つにした。**
+
+| ファイル | subpath | 中身 |
+|---|---|---|
+| `src/core-main.ts` | `starry-digitizer/core` | 状態(`createDigitizerContext`)・操作(`applyImage` / `replaceImage` / `loadProject` / `reset` / `getDatasetValues` / `loadImageAsDataUrl`)・DTO とマイグレーション・`DigitizerError`・`PixelSource` 型、および `@vue/reactivity` の再エクスポート(§1.4) |
+| `src/vue-main.ts` | `starry-digitizer/vue` | パネル 13 個・`provideDigitizerContext()` / `useDigitizerContext()` / `DIGITIZER_CONTEXT_KEY`・`digitizerOptions`(`DEFAULT_OPTIONS` / `DEFAULT_FEATURES`) |
+| `src/library-main.ts` | `starry-digitizer`(既定) | `<StarryDigitizer>` + 上記 2 つの `export *`。**既存ホストの import 面は不変** |
+
+`package.json` の `exports` に `./core` と `./vue` を追加した(型は `core.d.ts` / `vue.d.ts`、
+ESM は `core.js` / `vue.js`、CJS は `.cjs`)。`vite.library.config.ts` の `lib.entry` は
+オブジェクト形式の 3 entry になり、形式は従来どおり `es` / `cjs` のみ(multi-entry lib mode は
+UMD を作れないが、UMD はもともと出していない)。2 つ以上の entry から参照される共有コードは
+`chunks/[name]-[hash].js` に出るので、`core` と `vue` の両方を import するホストでも
+状態のコピーは 1 つになる。
+
+**変更通知を `@vue/reactivity` に移した。**
+
+- `src/application/digitizerContext.ts` の `reactive` の import 元を `vue` → `@vue/reactivity` に変更。それ以外のコード変更はない(A-2 の狙いどおり)。
+- `provide` / `inject` / `DIGITIZER_CONTEXT_KEY` は Vue のレンダラ(アクティブなコンポーネントインスタンス)を必要とするため、`src/presentation/digitizerContextProvider.ts` に移した。**パッケージルートからの export 名は変わっていない**ので、ホスト側の変更は不要。
+- `peerDependencies` に `@vue/reactivity: ^3.3.4` を追加し、`vue` は `peerDependenciesMeta` で optional にした。`/core` だけを使うホストは Vue を入れなくてよい。
+- `@vue/reactivity` は external のまま(理由は §1.5 の単一コピー問題)。
+- `watch` は再エクスポートしていない(理由は §1.4)。
+
+**`lib-check` をスクリプト化した。** `package.json` に埋めた 1 行から `scripts/lib-check.mjs` に移し、
+検査を 2 つにした。
+
+1. 従来どおり、`library-build/dist` 配下に外部オリジン(Sentry / GTM / jsdelivr / projectnaptha)や `import.meta.env` が混入していないこと(統合仕様 R8)。
+2. **`core.js` / `core.cjs` から相対 import を辿って到達できる全モジュール**に、`vue` / `vue/*` / `@vue/runtime-*` の import が無いこと。`@vue/reactivity` だけは許可する。core の実体の多くは `chunks/` にあるため、entry ファイルだけを見る検査では意味がない。
+
+**未着手のまま残したもの:** Phase 2 の `useDigitizer()`(ホストは今のところ
+`createDigitizerContext()` + `provideDigitizerContext()` を自分で呼ぶ)、Phase 3、Phase 4。
 
 ---
 
