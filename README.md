@@ -110,7 +110,7 @@ you import decides how much of the library — and how much of Vue — you pull 
 | Entry | What it exports | Peer dependencies | Host it is for |
 |---|---|---|---|
 | `starry-digitizer` (default) | `<StarryDigitizer>` plus everything the other two entries export | `vue`, `@vue/reactivity` | Anything that wants the ready-made three-column editor. This is the surface the package always had — existing hosts need no change. |
-| `starry-digitizer/vue` | The 13 panels, `provideDigitizerContext()` / `useDigitizerContext()` and the UI options (`provideDigitizerOptions()`, `DEFAULT_OPTIONS`, `features`) | `vue`, `@vue/reactivity` | A Vue host that lays the panels out itself. |
+| `starry-digitizer/vue` | The 13 panels, `provideDigitizerContext()` / `useDigitizerContext()` and the UI options (`provideDigitizerOptions()`, `createDigitizerOptions()`, `DEFAULT_OPTIONS`, `features`) | `vue`, `@vue/reactivity` | A Vue host that lays the panels out itself. |
 | `starry-digitizer/core` | State (`createDigitizerContext()`), the operations that mutate it, `ProjectDTO` and the other DTOs, `DigitizerError`, the `PixelSource` port, and `effect` / `computed` / `ref` / `stop` re-exported from `@vue/reactivity` | `@vue/reactivity` only | A host that is not written in Vue (React, Svelte, plain JavaScript), or that wants the engine with no UI at all. |
 
 `starry-digitizer/core` never touches Vue's renderer, but it **runs in a
@@ -172,6 +172,54 @@ const values = getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, ct
 </template>
 ```
 
+##### Options that change after setup
+
+Most hosts only know some of their options later: whether the user may edit at
+all comes from a permission check, and the dataset name candidates come from a
+fetch. `provideDigitizerOptions()` therefore also accepts a `ref`, a `computed`,
+a `reactive()` object or a getter, and the panels follow every change — this is
+what `<StarryDigitizer>` does with its own props internally. The panels still
+read a plain `DigitizerOptions` (`options.readonly`, no `.value`).
+
+`createDigitizerOptions(partial)` fills the rest in from the defaults. Use it
+rather than spreading `DEFAULT_OPTIONS` yourself: `features` is nested, so
+`{ ...DEFAULT_OPTIONS, features: { magnifier: false } }` would drop the other
+seven flags, while `createDigitizerOptions({ features: { magnifier: false } })`
+merges them.
+
+```vue
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { createDigitizerContext } from 'starry-digitizer/core'
+import {
+  provideDigitizerContext, provideDigitizerOptions, createDigitizerOptions,
+  CanvasHeader, CanvasMain, CanvasFooter, DatasetManager,
+} from 'starry-digitizer/vue'
+
+const canEdit = ref(false)
+const sampleNames = ref<string[]>([])
+
+provideDigitizerContext(createDigitizerContext())
+provideDigitizerOptions(
+  computed(() =>
+    createDigitizerOptions({
+      readonly: !canEdit.value,
+      datasetNameCandidates: sampleNames.value,
+      features: { imageUpload: false },
+    }),
+  ),
+)
+
+// Both reach the panels when they resolve: the point/axis editing unlocks and
+// the dataset name field turns into a combobox, with no remount.
+canEdit.value = await fetchEditPermission()
+sampleNames.value = await fetchSampleNames()
+</script>
+```
+
+A `reactive()` object works the same way, if the host would rather assign
+single fields (`options.readonly = false`) than replace the whole object.
+
 Every name above is also re-exported from `starry-digitizer`, so importing all
 of it from the package root works exactly as before; the two subpaths only let
 you say which half you mean.
@@ -186,7 +234,8 @@ Notes:
 - `CanvasMain` owns the canvas elements and must be mounted for anything that
   draws; `MagnifierMain` attaches the magnifier canvas.
 - Options are optional: without `provideDigitizerOptions()` the panels fall
-  back to `DEFAULT_OPTIONS`.
+  back to `DEFAULT_OPTIONS`. Pass them reactively when they change after setup
+  (see above).
 - Only one set of canvases may exist per context, so render `CanvasMain` once
   per context.
 

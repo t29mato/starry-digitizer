@@ -50,11 +50,14 @@ export {
 export {
   provideDigitizerOptions,
   useDigitizerOptions,
+  createDigitizerOptions,
   DEFAULT_FEATURES,
   DEFAULT_OPTIONS,
   DIGITIZER_OPTIONS_KEY,
 } from './presentation/digitizerOptions'
 export type {
   DigitizerOptions,
+  DigitizerOptionsInit,
+  DigitizerOptionsSource,
   StarryDigitizerFeatures,
 } from './presentation/digitizerOptions'

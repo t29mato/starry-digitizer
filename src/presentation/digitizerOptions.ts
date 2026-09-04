@@ -1,5 +1,5 @@
-import { inject, provide } from 'vue'
-import type { InjectionKey } from 'vue'
+import { inject, isRef, provide } from 'vue'
+import type { InjectionKey, Ref } from 'vue'
 
 /**
  * Feature toggles. All default to "on" in the standalone app.
@@ -67,13 +67,88 @@ export const DEFAULT_OPTIONS: DigitizerOptions = {
 }
 
 /**
+ * Partial options, with `features` partial too: the nested object is merged
+ * against DEFAULT_FEATURES rather than replacing it, so a host can turn one
+ * feature off without having to restate the other seven.
+ */
+export interface DigitizerOptionsInit
+  extends Partial<Omit<DigitizerOptions, 'features'>> {
+  features?: Partial<StarryDigitizerFeatures>
+}
+
+/**
+ * Fill a partial set of options out to a complete DigitizerOptions, exactly
+ * the way <StarryDigitizer> fills its props out (it uses this too). Spreading
+ * DEFAULT_OPTIONS by hand does not do the same thing: `features` is nested, so
+ * `{ ...DEFAULT_OPTIONS, features: { magnifier: false } }` would silently drop
+ * every other feature flag.
+ */
+export function createDigitizerOptions(
+  init: DigitizerOptionsInit = {},
+): DigitizerOptions {
+  return {
+    readonly: init.readonly ?? DEFAULT_OPTIONS.readonly,
+    features: { ...DEFAULT_FEATURES, ...init.features },
+    datasetNameCandidates:
+      init.datasetNameCandidates ?? DEFAULT_OPTIONS.datasetNameCandidates,
+    assetBaseUrl: init.assetBaseUrl ?? DEFAULT_OPTIONS.assetBaseUrl,
+    confirmImageReplace:
+      init.confirmImageReplace ?? DEFAULT_OPTIONS.confirmImageReplace,
+  }
+}
+
+/**
+ * What provideDigitizerOptions() accepts: a plain object, a reactive() one, a
+ * ref/computed holding one, or a getter returning one. Whichever the host
+ * passes, useDigitizerOptions() hands back the same plain-looking
+ * DigitizerOptions and readers write `options.readonly` — no `.value`.
+ */
+export type DigitizerOptionsSource =
+  | DigitizerOptions
+  | Ref<DigitizerOptions>
+  | (() => DigitizerOptions)
+
+/**
+ * Flatten a ref/getter source into an object whose property reads go through
+ * to the current value. A plain object needs no wrapper, and neither does a
+ * reactive() one (reading a property off it already tracks), so those are
+ * passed through as they are.
+ */
+function resolveDigitizerOptions(
+  source: DigitizerOptionsSource,
+): DigitizerOptions {
+  if (typeof source !== 'function' && !isRef(source)) return source
+
+  const read = (): DigitizerOptions =>
+    typeof source === 'function' ? source() : source.value
+
+  // INFO: a proxy rather than the ref itself, so descendants keep reading
+  // `options.readonly` and still see every change: each property access reads
+  // the ref again (and, inside a render/computed, subscribes to it).
+  return new Proxy({} as DigitizerOptions, {
+    get: (_target, key) => read()[key as keyof DigitizerOptions],
+    has: (_target, key) => key in read(),
+    ownKeys: () => Reflect.ownKeys(read()),
+    getOwnPropertyDescriptor: (_target, key) => ({
+      enumerable: true,
+      configurable: true,
+      value: read()[key as keyof DigitizerOptions],
+    }),
+  })
+}
+
+/**
  * Provide options to panels rendered outside <StarryDigitizer>. Hosts that
  * compose the exported panels themselves call this next to
  * provideDigitizerContext(); otherwise every panel falls back to
  * DEFAULT_OPTIONS.
+ *
+ * Pass a ref/computed/reactive object (see DigitizerOptionsSource) when the
+ * options change after setup — permission-driven `readonly`, dataset name
+ * candidates that arrive from a fetch — and the panels follow along.
  */
-export function provideDigitizerOptions(options: DigitizerOptions): void {
-  provide(DIGITIZER_OPTIONS_KEY, options)
+export function provideDigitizerOptions(options: DigitizerOptionsSource): void {
+  provide(DIGITIZER_OPTIONS_KEY, resolveDigitizerOptions(options))
 }
 
 export function useDigitizerOptions(): DigitizerOptions {

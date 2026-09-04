@@ -52,8 +52,8 @@ import {
 } from '@/application/digitizerContext'
 import { DIGITIZER_CONTEXT_KEY } from '@/presentation/digitizerContextProvider'
 import {
-  DEFAULT_FEATURES,
-  DIGITIZER_OPTIONS_KEY,
+  createDigitizerOptions,
+  provideDigitizerOptions,
   type DigitizerOptions,
   type StarryDigitizerFeatures,
 } from '@/presentation/digitizerOptions'
@@ -143,34 +143,24 @@ const ownsContext = props.context === undefined
 const ctx: DigitizerContext = props.context ?? createDigitizerContext()
 provide(DIGITIZER_CONTEXT_KEY, ctx)
 
-const options = computed<DigitizerOptions>(() => ({
-  readonly: props.readonly,
-  features: {
-    ...DEFAULT_FEATURES,
-    // INFO: when the host supplies the image, it also owns image changes
-    imageUpload: props.image === undefined,
-    zipExportImport: props.image === undefined && props.project === undefined,
-    ...(props.features ?? {}),
-  },
-  datasetNameCandidates: props.datasetNameCandidates,
-  assetBaseUrl: props.assetBaseUrl,
-  confirmImageReplace: props.confirmImageReplace,
-}))
-// INFO: provide the reactive computed's value through a proxy object so
-// descendants see prop changes without re-injecting.
-provide(
-  DIGITIZER_OPTIONS_KEY,
-  new Proxy({} as DigitizerOptions, {
-    get: (_target, key) => options.value[key as keyof DigitizerOptions],
-    has: (_target, key) => key in options.value,
-    ownKeys: () => Reflect.ownKeys(options.value),
-    getOwnPropertyDescriptor: (_target, key) => ({
-      enumerable: true,
-      configurable: true,
-      value: options.value[key as keyof DigitizerOptions],
-    }),
+const options = computed<DigitizerOptions>(() =>
+  createDigitizerOptions({
+    readonly: props.readonly,
+    features: {
+      // INFO: when the host supplies the image, it also owns image changes
+      imageUpload: props.image === undefined,
+      zipExportImport: props.image === undefined && props.project === undefined,
+      ...(props.features ?? {}),
+    },
+    datasetNameCandidates: props.datasetNameCandidates,
+    assetBaseUrl: props.assetBaseUrl,
+    confirmImageReplace: props.confirmImageReplace,
   }),
 )
+// INFO: provideDigitizerOptions() unwraps the computed for us, so descendants
+// see prop changes without re-injecting. Hosts that place the panels
+// themselves get the same behaviour from the same call.
+provideDigitizerOptions(options)
 
 // ---------------------------------------------------------------------------
 // Output precision
