@@ -19,8 +19,15 @@ export class InterpolatorCanvas implements InterpolatorCanvasInterface {
     this.magnifierCanvas = magnifierCanvas
   }
 
+  // INFO: only the guide canvas is required. The magnifier canvas is set by
+  // MagnifierImage.vue, which lives behind `features.magnifier`, so a host
+  // that hides the magnifier never sets it. Requiring it here made
+  // interpolator.resizeCanvas() a no-op for those hosts, which left the guide
+  // canvas at its default size and drew the interpolation preview at the
+  // wrong scale. Everything that touches the magnifier canvas below treats it
+  // as optional — it is a mirror of the guide canvas, never the source.
   hasCanvas(): boolean {
-    return !!this.guideCanvas && !!this.magnifierCanvas
+    return !!this.guideCanvas
   }
 
   clearGuideCanvasContext(): void {
@@ -37,9 +44,9 @@ export class InterpolatorCanvas implements InterpolatorCanvasInterface {
   }
 
   clearMagnifierCanvasContext(): void {
-    if (!this.magnifierCanvas) {
-      throw new Error('interpolator guide canvas is not set')
-    }
+    // INFO: absent when the host hides the magnifier. Clearing a mirror that
+    // does not exist is a no-op, not an error.
+    if (!this.magnifierCanvas) return
 
     this.magnifierCanvas.context.clearRect(
       0,
@@ -84,10 +91,12 @@ export class InterpolatorCanvas implements InterpolatorCanvasInterface {
   }
 
   resize(newWidthPx: number, newHeightPx: number): void {
-    if (!this.guideCanvas || !this.magnifierCanvas) return
+    if (!this.guideCanvas) return
 
     this.guideCanvas.element.width = newWidthPx
     this.guideCanvas.element.height = newHeightPx
+
+    if (!this.magnifierCanvas) return
 
     this.magnifierCanvas.element.width = newWidthPx
     this.magnifierCanvas.element.height = newHeightPx

@@ -71,6 +71,16 @@ export {
 } from './application/dto'
 
 // ---------------------------------------------------------------------------
+// Mode constants
+// ---------------------------------------------------------------------------
+// INFO: a host that replaces a panel with its own UI has to speak the same
+// modes the engine does — `setManualMode(MANUAL_MODE.ADD)`,
+// `setMaskMode(MASK_MODE.UNSET)`, `axisSet.pointMode = POINT_MODE.FOUR_POINTS`.
+// Without these it writes bare numbers.
+export { MANUAL_MODE, MASK_MODE, POINT_MODE, STYLE } from './constants'
+export type { ManualMode, MaskMode, PointMode } from './@types/types'
+
+// ---------------------------------------------------------------------------
 // Ports
 // ---------------------------------------------------------------------------
 // INFO: the pixel input the extraction algorithms need. Implementing it is how

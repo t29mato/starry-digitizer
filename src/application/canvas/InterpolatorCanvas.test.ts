@@ -21,9 +21,14 @@ describe('InterpolatorCanvas', () => {
       expect(interpolatorCanvas.hasCanvas()).toBe(false)
     })
 
-    it('is false when only the guide canvas is set', () => {
+    // INFO: regression — hasCanvas() used to require the magnifier canvas too.
+    // MagnifierImage.vue is the only thing that sets it and it lives behind
+    // `features.magnifier`, so a host that hid the magnifier made
+    // interpolator.resizeCanvas() a permanent no-op and the guide canvas was
+    // never sized.
+    it('is true with only the guide canvas — the magnifier one is optional', () => {
       interpolatorCanvas.setGuideCanvas(new HTMLCanvas(createCanvasElement()))
-      expect(interpolatorCanvas.hasCanvas()).toBe(false)
+      expect(interpolatorCanvas.hasCanvas()).toBe(true)
     })
 
     it('is true once both canvases are set', () => {
@@ -56,10 +61,13 @@ describe('InterpolatorCanvas', () => {
   })
 
   describe('clearMagnifierCanvasContext', () => {
-    it('throws if the magnifier canvas is not set', () => {
-      expect(() => interpolatorCanvas.clearMagnifierCanvasContext()).toThrow(
-        'interpolator guide canvas is not set',
-      )
+    // INFO: was "throws if the magnifier canvas is not set". It is a mirror of
+    // the guide canvas and is absent whenever the host hides the magnifier, so
+    // throwing turned a supported configuration into a crash.
+    it('does nothing if the magnifier canvas is not set', () => {
+      expect(() =>
+        interpolatorCanvas.clearMagnifierCanvasContext(),
+      ).not.toThrow()
     })
 
     it('clears the magnifier canvas context', () => {
@@ -115,13 +123,25 @@ describe('InterpolatorCanvas', () => {
   })
 
   describe('resize', () => {
-    it('does nothing when either canvas is missing', () => {
+    it('does nothing when the guide canvas is missing', () => {
+      const magnifierCanvas = new HTMLCanvas(createCanvasElement())
+      interpolatorCanvas.setMagnifierCanvas(magnifierCanvas)
+
+      interpolatorCanvas.resize(100, 100)
+
+      expect(magnifierCanvas.element.width).not.toBe(100)
+    })
+
+    // INFO: was asserting the opposite. The guide canvas is the one the
+    // overlay is drawn on, so it must take the size even when no magnifier is
+    // mounted (features.magnifier: false).
+    it('resizes the guide canvas without a magnifier canvas', () => {
       const guideCanvas = new HTMLCanvas(createCanvasElement())
       interpolatorCanvas.setGuideCanvas(guideCanvas)
 
       interpolatorCanvas.resize(100, 100)
 
-      expect(guideCanvas.element.width).not.toBe(100)
+      expect(guideCanvas.element.width).toBe(100)
     })
 
     it('resizes both canvases and copies the guide canvas onto the magnifier canvas', () => {
@@ -143,6 +163,24 @@ describe('InterpolatorCanvas', () => {
         200,
         150,
       )
+    })
+  })
+
+  describe('without a magnifier canvas (features.magnifier: false)', () => {
+    it('still resizes the guide canvas', () => {
+      const guide = createCanvasElement()
+      interpolatorCanvas.setGuideCanvas(new HTMLCanvas(guide))
+
+      interpolatorCanvas.resize(640, 480)
+
+      expect(guide.width).toBe(640)
+      expect(guide.height).toBe(480)
+    })
+
+    it('clearMagnifierCanvasContext is a no-op instead of throwing', () => {
+      interpolatorCanvas.setGuideCanvas(new HTMLCanvas(createCanvasElement()))
+
+      expect(() => interpolatorCanvas.clearMagnifierCanvasContext()).not.toThrow()
     })
   })
 })
