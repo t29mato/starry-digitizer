@@ -27,6 +27,11 @@
     "src/main.ts",
     "src/App.vue",
     "src/appContext.ts",
+    // INFO: the standalone app's IndexedDB auto-save. Nothing in the library
+    // reaches it, and the published package must not offer it as API — where
+    // work is persisted is the embedding host's decision.
+    "src/appPersistence.ts",
+    "src/appPersistence.test.ts",
     // INFO: leftover Vue 2 ambient shims. copyDtsFiles would publish them
     // verbatim and they no longer type-check against Vue 3.
     "src/shims-tsx.d.ts",

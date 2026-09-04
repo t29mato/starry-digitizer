@@ -32,14 +32,16 @@
     </header>
     <main v-if="!deviceIsSmartphone" class="c__main">
       <starry-digitizer
+        ref="digitizer"
         :context="appContext"
-        image="/sample_graph_curve.png"
+        :image="imageSource"
         :features="{
           imageUpload: true,
           zipExportImport: true,
           csvExport: true,
         }"
         :confirm-image-replace="true"
+        @update:project="onProjectUpdate"
         @error="onDigitizerError"
       >
         <!-- INFO: the version/build caption is app-only (it reads
@@ -77,6 +79,12 @@ import {
 } from '@/presentation/utils/projectFileDialog'
 import { copyActiveDatasetToClipboard } from '@/application/utils/dataExport'
 import { toggleInterpolation } from '@/application/utils/interpolationToggle'
+import { createAppPersistence } from '@/appPersistence'
+import type { ProjectDTO } from '@/application/dto/projectDTO'
+import {
+  dataUrlToBlob,
+  type ImageSource,
+} from '@/application/utils/imageLoader'
 
 import { version } from '../package.json'
 
@@ -84,6 +92,21 @@ type Menu = {
   title: string
   items: SdMenuItem[]
 }
+
+// INFO: the part of <StarryDigitizer>'s defineExpose() this app uses. $refs is
+// untyped in the Options API, so the shape is declared here rather than cast
+// away at every call site.
+type DigitizerRef = {
+  loadProject: (project?: ProjectDTO, image?: ImageSource) => Promise<void>
+}
+
+const DEFAULT_IMAGE = '/sample_graph_curve.png'
+
+// INFO: standalone-app-only auto-save (see src/appPersistence.ts). The library
+// persists nothing by itself; this app has no backend, so it keeps the work in
+// IndexedDB and restores it on the next load. Created at module scope because
+// there is exactly one App instance and it is not reactive state.
+const persistence = createAppPersistence()
 
 export default defineComponent({
   name: 'App',
@@ -114,6 +137,14 @@ export default defineComponent({
     showError: false,
     errorMessage: '',
     showKeyboardShortcuts: false,
+    // INFO: left undefined until mounted() has looked for auto-saved work, so
+    // a restored image is not preceded by a pointless fetch/decode of the
+    // sample figure (and its flash on screen).
+    imageSource: undefined as ImageSource | undefined,
+    // INFO: nothing is written before the restore has finished — otherwise the
+    // empty startup state would overwrite the very work we are about to read.
+    autoSaveReady: false,
+    lastSavedImageUrl: '',
   }),
   computed: {
     // INFO: "v<version>#<GitHub Actions build number>"; used to be rendered
@@ -152,6 +183,14 @@ export default defineComponent({
             {
               text: 'Copy Data to Clipboard',
               action: this.handleCopyData,
+            },
+            { text: 'divider', divider: true },
+            // INFO: the counterpart of the silent restore — the work comes
+            // back on its own, so there has to be a deliberate way to drop it
+            // and start from a blank figure again.
+            {
+              text: 'Start Over',
+              action: this.handleStartOver,
             },
           ],
         },
@@ -220,9 +259,88 @@ export default defineComponent({
       ]
     },
   },
+  async mounted() {
+    await this.restoreAutoSavedWork()
+    // INFO: every image path (upload, drag&drop, paste, ZIP import, restore)
+    // ends in canvasHandler.setUploadImageUrl(), so watching that one value
+    // covers all of them — and it changes only when the image really changes,
+    // which is what keeps the blob out of the per-point project saves.
+    this.$watch(
+      () => this.canvasHandler.uploadImageUrl,
+      (url: string) => this.persistImage(url),
+    )
+  },
   methods: {
     importPoints(points: any) {
       this.points = points
+    },
+    digitizerRef(): DigitizerRef | undefined {
+      return this.$refs.digitizer as DigitizerRef | undefined
+    },
+    // INFO: restore is silent by design: work in progress is what the user
+    // expects to find, so asking "restore?" only adds a click to the common
+    // case. loadProject() is the library's one restore path (it migrates the
+    // DTO and clears the undo history), so the app goes through it too.
+    async restoreAutoSavedWork() {
+      const saved = await persistence.load()
+      if (saved) {
+        // INFO: an older session that only ever used the sample figure has no
+        // image of its own; fall back to the same default a fresh visit gets.
+        await this.digitizerRef()?.loadProject(
+          saved.project,
+          saved.image ?? DEFAULT_IMAGE,
+        )
+      } else {
+        // INFO: assigning the prop lets the component load the default image
+        // through its own `image` watcher.
+        this.imageSource = DEFAULT_IMAGE
+      }
+      await this.markAutoSaveBaseline()
+    },
+    // INFO: adopt whatever is on the canvas now as "already saved", then let
+    // the pending watcher callbacks run against it before re-enabling writes,
+    // so a restore never writes back what it has just read.
+    async markAutoSaveBaseline() {
+      this.autoSaveReady = false
+      this.lastSavedImageUrl = this.canvasHandler.uploadImageUrl
+      await this.$nextTick()
+      this.autoSaveReady = true
+    },
+    onProjectUpdate(project: ProjectDTO) {
+      if (!this.autoSaveReady) return
+      // INFO: already debounced by the component (updateDebounceMs).
+      persistence.saveProject(project)
+    },
+    persistImage(url: string) {
+      if (!this.autoSaveReady) return
+      // INFO: the image is written only when it actually changed, so plotting
+      // points never rewrites the (much larger) blob.
+      if (url === this.lastSavedImageUrl) return
+      this.lastSavedImageUrl = url
+      if (url === '') {
+        persistence.saveImage(null)
+        return
+      }
+      dataUrlToBlob(url)
+        .then((blob) => persistence.saveImage(blob))
+        .catch((error) => {
+          console.warn(
+            '[starry-digitizer] could not auto-save the image',
+            error,
+          )
+        })
+    },
+    async handleStartOver() {
+      const confirmed = window.confirm(
+        'Start over? The image, the axes and all points of this session are discarded, including the auto-saved copy.',
+      )
+      if (!confirmed) return
+      this.autoSaveReady = false
+      await persistence.clear()
+      // INFO: an empty project plus the default figure — the same state a
+      // first-ever visit shows.
+      await this.digitizerRef()?.loadProject(undefined, DEFAULT_IMAGE)
+      await this.markAutoSaveBaseline()
     },
     onDigitizerError(payload: DigitizerErrorPayload) {
       this.showErrorSnackbar(payload.message)
