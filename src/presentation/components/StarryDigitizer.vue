@@ -69,6 +69,12 @@ import {
   getDatasetValues as computeDatasetValues,
   type DatasetValues,
 } from '@/application/utils/datasetValues'
+import {
+  createI18n,
+  detectLocale,
+  provideI18n,
+  type Locale,
+} from '@/presentation/i18n'
 
 export interface StarryDigitizerProps {
   /** Image to digitize. Blob recommended (hosts fetch signed URLs themselves); data URL / URL also accepted. */
@@ -83,6 +89,8 @@ export interface StarryDigitizerProps {
   features?: Partial<StarryDigitizerFeatures>
   /** Base URL for opencv/tesseract assets. Undefined = library defaults. */
   assetBaseUrl?: string
+  /** UI language. Omitted = detect from the browser, falling back to English. */
+  locale?: Locale
   /**
    * Share a context created with createDigitizerContext() (used by the
    * standalone app so its menu bar can drive the same state). Library users
@@ -102,6 +110,7 @@ const props = withDefaults(defineProps<StarryDigitizerProps>(), {
   datasetNameCandidates: () => [],
   features: undefined,
   assetBaseUrl: undefined,
+  locale: undefined,
   context: undefined,
   confirmImageReplace: true,
   updateDebounceMs: 300,
@@ -150,6 +159,12 @@ provide(
     }),
   }),
 )
+
+// INFO: the UI language. `locale` is a prop so the host stays in control;
+// without it we follow the browser. Everything below the component reads it
+// through useI18n().
+const locale = computed<Locale>(() => props.locale ?? detectLocale())
+provideI18n(createI18n(locale))
 
 // ---------------------------------------------------------------------------
 // Errors
