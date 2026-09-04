@@ -15,7 +15,7 @@ describe('magnifier follow behavior around the image edge (#255)', () => {
   // INFO: 端から halfSize/scale px 以内では translate 値が負になり、
   // 以前は `--Npx` という不正なCSSになってMagnifierが固まっていた
   it('keeps following near the left edge of the image', () => {
-    cy.get('#imageCanvas').then(($canvas) => {
+    cy.get('[data-cy=image-canvas]').then(($canvas) => {
       const rect = $canvas[0].getBoundingClientRect()
       const y = Math.round(rect.top + 100)
 
@@ -43,7 +43,7 @@ describe('magnifier follow behavior around the image edge (#255)', () => {
   })
 
   it('clamps at the image edge and stays still outside the image', () => {
-    cy.get('#imageCanvas').then(($canvas) => {
+    cy.get('[data-cy=image-canvas]').then(($canvas) => {
       const rect = $canvas[0].getBoundingClientRect()
       const outsideX = Math.round(rect.right + 100)
       const y1 = Math.round(rect.top + 100)

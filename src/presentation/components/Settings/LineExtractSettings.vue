@@ -1,51 +1,64 @@
 <template>
-  <v-row class="ma-0">
-    <!--  TODO: pxはappendixで追加する -->
-    <v-col class="pa-0 mr-2">
-      <v-text-field
+  <div class="sd-row ma-0">
+    <div class="sd-col pa-0 mr-2">
+      <sd-text-field
         :model-value="lineExtract.dxPx"
         @update:model-value="inputDxDyPx"
-        prefix="ΔX: "
+        prefix="ΔX:"
         suffix="px"
         type="number"
         class="ma-0"
         id="line-extract-dx"
-        density="compact"
-        hide-details
-      ></v-text-field>
-    </v-col>
-    <v-col class="pa-0">
-      <v-text-field
+        :disabled="options.readonly"
+      ></sd-text-field>
+    </div>
+    <div class="sd-col pa-0">
+      <sd-text-field
         :model-value="lineExtract.dyPx"
         @update:model-value="inputDxDyPx"
-        prefix="ΔY: "
+        prefix="ΔY:"
         suffix="px"
         type="number"
         class="ma-0"
         id="line-extract-dy"
-        density="compact"
-        hide-details
-      ></v-text-field>
-    </v-col>
-  </v-row>
+        :disabled="options.readonly"
+      ></sd-text-field>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
+import type LineExtract from '@/application/strategies/extractStrategies/lineExtract'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
+import { SdTextField } from '@/presentation/ui'
 
 export default defineComponent({
-  data() {
-    return {
-      lineExtract: LineExtract.instance,
-    }
+  components: { SdTextField },
+  setup() {
+    const { extractor } = useDigitizerContext()
+    return { options: useDigitizerOptions(), extractor }
+  },
+  computed: {
+    // INFO: this digitizer instance's own Line Extract strategy — not a shared
+    // singleton, so two <StarryDigitizer> on one page keep separate ΔX/ΔY.
+    lineExtract(): LineExtract {
+      return this.extractor.lineExtract
+    },
   },
 
   methods: {
-    inputDxDyPx(value: string) {
-      this.lineExtract.setDxPx(parseInt(value))
-      this.lineExtract.setDyPx(parseInt(value))
+    // INFO: SdTextField with type="number" emits a number once the input
+    // parses, and the raw string while it is mid-edit ("", "-").
+    inputDxDyPx(value: string | number) {
+      const parsed = parseInt(String(value))
+      if (isNaN(parsed)) {
+        return
+      }
+      this.lineExtract.setDxPx(parsed)
+      this.lineExtract.setDyPx(parsed)
     },
   },
 })

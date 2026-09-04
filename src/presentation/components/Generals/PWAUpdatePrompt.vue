@@ -1,36 +1,34 @@
 <template>
-  <v-snackbar
-    v-model="needRefresh"
-    :timeout="-1"
-    vertical
-    location="bottom right"
-    color="white"
+  <!-- INFO: a plain fixed bar rather than SdSnackbar: this prompt lives in
+       the standalone app chrome (outside the .starry-digitizer root), so it
+       carries its own styles instead of the library's utility classes. -->
+  <div
+    v-if="needRefresh"
     class="c__pwa-update-prompt"
+    data-cy="pwa-update-prompt"
+    role="status"
   >
-    <p class="font-weight-bold mb-1">
+    <p class="c__title">
       A new version{{ newVersion ? ` (v${newVersion})` : '' }} is available
     </p>
     <template v-if="notes.length">
-      <p class="mb-1">What's new:</p>
-      <ul class="pl-4">
+      <p class="c__notes-title">What's new:</p>
+      <ul class="c__notes">
         <li v-for="note in notes" :key="note">{{ note }}</li>
       </ul>
     </template>
-    <template #actions>
-      <v-btn color="grey" variant="text" size="small" @click="dismiss">
-        Later
-      </v-btn>
-      <v-btn color="primary" variant="flat" size="small" @click="reload">
-        Reload
-      </v-btn>
-    </template>
-  </v-snackbar>
+    <div class="c__actions">
+      <sd-button variant="text" size="small" @click="dismiss">Later</sd-button>
+      <sd-button color="primary" size="small" @click="reload">Reload</sd-button>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { version as currentVersion } from '../../../../package.json'
+import { SdButton } from '@/presentation/ui'
 
 // INFO: shown when vite-plugin-pwa (registerType: 'prompt') detects a new
 // Service Worker waiting after a deploy. version.json is fetched from the
@@ -40,6 +38,7 @@ const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000
 
 export default defineComponent({
   name: 'PWAUpdatePrompt',
+  components: { SdButton },
   setup() {
     const newVersion = ref('')
     const notes = ref<string[]>([])
@@ -86,8 +85,34 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .c__pwa-update-prompt {
-  ul {
-    max-width: 360px;
-  }
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2100;
+  max-width: 400px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  background-color: #fff;
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.c__title {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.c__notes-title {
+  margin: 0 0 4px;
+}
+.c__notes {
+  margin: 0;
+  padding-left: 16px;
+  max-width: 360px;
+}
+.c__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
 }
 </style>

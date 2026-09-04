@@ -15,6 +15,7 @@ export interface DatasetInterface {
   points: Point[]
   visiblePointIds: number[]
   manuallyAddedPointIds: number[]
+  externalId?: string
   pointsAreAdjusting: boolean
   tempPoints: Points
   activePointIds: number[]

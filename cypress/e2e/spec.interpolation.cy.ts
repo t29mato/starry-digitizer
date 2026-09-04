@@ -11,7 +11,7 @@ describe('template spec', () => {
 
   //INFO: アンカーポイントと仮で補間された点の区別ができないのでその合計数を検証
   it('asserts that there are 18 points in default interval setting', () => {
-    cy.get('#canvasWrapper')
+    cy.get('[data-cy=canvas-wrapper]')
       .click(50, 390)
       .click(400, 50)
       .click(70, 240)
@@ -25,13 +25,15 @@ describe('template spec', () => {
     cy.get('#switch-interpolation').click()
     cy.visit('/')
 
-    cy.get('#switch-interpolation').should('have.value', 'true')
+    // INFO: the plain checkbox that replaced <v-switch> has no `value`
+    // attribute, so the checked state is asserted directly.
+    cy.get('#switch-interpolation').should('be.checked')
   })
 
   //INFO: 実行したいがCypressのテスト数の上限到達回避のため節約しているテスト
   //INFO: 補間確定後はアンカーポイントが削除されるので点が3つ減る
   // it('asserts that there are 15 points after confirming interpolation in default interval setting', () => {
-  //   cy.get('#canvasWrapper')
+  //   cy.get('[data-cy=canvas-wrapper]')
   //     .click(50, 390)
   //     .click(400, 50)
   //     .click(70, 240)
@@ -46,7 +48,7 @@ describe('template spec', () => {
   // it('asserts that there are 13 points when interval is 15', () => {
   //   cy.get('input#interpolation-interval').clear().type('15')
 
-  //   cy.get('#canvasWrapper')
+  //   cy.get('[data-cy=canvas-wrapper]')
   //     .click(50, 390)
   //     .click(400, 50)
   //     .click(70, 240)
@@ -59,7 +61,7 @@ describe('template spec', () => {
   // it('asserts that there are 3 points when interpolation is disabled', () => {
   //   cy.get('#switch-interpolation').click()
 
-  //   cy.get('#canvasWrapper')
+  //   cy.get('[data-cy=canvas-wrapper]')
   //     .click(50, 390)
   //     .click(400, 50)
   //     .click(70, 240)

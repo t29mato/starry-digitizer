@@ -27,3 +27,11 @@ report
 .envrc
 .claude
 .vercel
+
+# Cypress artifacts
+cypress/screenshots
+cypress/videos
+cypress/downloads
+
+# npm pack output (built locally, never committed here)
+*.tgz

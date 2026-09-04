@@ -1,14 +1,6 @@
 <template>
-  <div class="c__magnifier mb-0">
-    <div
-      :style="{
-        overflow: 'hidden',
-        width: `${magnifier.sizePx}px`,
-        height: `${magnifier.sizePx}px`,
-        position: 'relative',
-        outline: '1px solid grey',
-      }"
-    >
+  <div ref="root" class="c__magnifier mb-0">
+    <div ref="box" class="c__magnifier__box">
       <magnifier-settings-btn
         :toggleSettingsDialog="toggleSettingsDialog"
       ></magnifier-settings-btn>
@@ -122,10 +114,7 @@ import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
 import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 
 export default defineComponent({
   components: {
@@ -138,14 +127,44 @@ export default defineComponent({
     MagnifierSettingsBtn,
     MagnifierExtractSize,
   },
-  data() {
-    return {
-      magnifierSettingError: '',
-      shouldShowSettingsDialog: false,
+  setup() {
+    const {
       magnifier,
+      valueFormat,
       canvasHandler,
       axisSetRepository,
       datasetRepository,
+    } = useDigitizerContext()
+    return {
+      magnifier,
+      valueFormat,
+      canvasHandler,
+      axisSetRepository,
+      datasetRepository,
+    }
+  },
+
+  // INFO: the magnifier box is square and its size drives canvas geometry and
+  // the overlay math, so it cannot be a pure CSS value. Instead of a fixed
+  // 300px it now follows the width its column actually gives it, which is what
+  // lets a host narrow the sidebar (--sd-right-sidebar-*) without the
+  // magnifier keeping the column wide. `--sd-magnifier-size` overrides it.
+  mounted() {
+    this.applySize()
+    if (typeof ResizeObserver !== 'undefined' && this.$refs.box) {
+      this.resizeObserver = new ResizeObserver(() => this.applySize())
+      this.resizeObserver.observe(this.$refs.box as Element)
+    }
+  },
+  beforeUnmount() {
+    this.resizeObserver?.disconnect()
+    this.resizeObserver = undefined
+  },
+  data() {
+    return {
+      resizeObserver: undefined as ResizeObserver | undefined,
+      magnifierSettingError: '',
+      shouldShowSettingsDialog: false,
     }
   },
   computed: {
@@ -172,7 +191,7 @@ export default defineComponent({
           x: this.axisSetRepository.activeAxisSet.xIsLogScale,
           y: this.axisSetRepository.activeAxisSet.yIsLogScale,
         },
-        this.magnifier.effectiveDigits,
+        this.valueFormat.effectiveDigits,
       )
       const values = calculator.calculateXYValues(
         this.canvasHandler.cursor.xPx,
@@ -189,6 +208,20 @@ export default defineComponent({
     },
   },
   methods: {
+    // INFO: CSS owns the box size (--sd-magnifier-size, default
+    // min(100%, 300px)); JS only mirrors the measured result into
+    // magnifier.sizePx, which the canvas geometry and the overlay math need in
+    // pixels. Measuring rather than computing means a host changing the
+    // variable — or simply narrowing the column — is picked up by the
+    // ResizeObserver with no extra API.
+    applySize() {
+      const box = this.$refs.box as HTMLElement | undefined
+      if (!box) return
+      const measured = Math.round(box.clientWidth)
+      if (measured > 0 && measured !== this.magnifier.sizePx) {
+        this.magnifier.setSizePx(measured)
+      }
+    },
     toggleSettingsDialog(): void {
       this.shouldShowSettingsDialog = !this.shouldShowSettingsDialog
     },
@@ -211,6 +244,17 @@ export default defineComponent({
 $_white-outline-size: 24px;
 $_white-outline-pos-value: calc(50% - #{$_white-outline-size} - 1px);
 .c__magnifier {
+  // INFO: square box. `min(100%, 300px)` keeps the historical 300px on a wide
+  // column but lets it shrink with --sd-right-sidebar-width instead of holding
+  // the column open; a host can pin it with --sd-magnifier-size.
+  &__box {
+    width: var(--sd-magnifier-size, min(100%, 300px));
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    position: relative;
+    outline: 1px solid grey;
+  }
+
   &__white-outlines {
     pointer-events: none;
 

@@ -50,17 +50,16 @@ import { defineComponent } from 'vue'
 
 import { Coord } from '@/@types/types'
 
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { STYLE } from '@/constants'
 
 export default defineComponent({
+  setup() {
+    const { interpolator, magnifier, canvasHandler } = useDigitizerContext()
+    return { interpolator, magnifier, canvasHandler }
+  },
   data() {
     return {
-      interpolator,
-      magnifier,
-      canvasHandler,
       pointSizePx: STYLE.POINT_SIZE_PX,
       pointOpacity: STYLE.POINT_OPACITY,
       tempPointOpacity: STYLE.TEMP_POINT_OPACITY,

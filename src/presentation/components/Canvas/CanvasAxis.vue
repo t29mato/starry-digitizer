@@ -9,7 +9,9 @@
     <!-- Click area (larger for easier interaction) -->
     <div
       v-if="
-        axis.coordIsFilled && canvasHandler.manualMode === MANUAL_MODE.UNSET
+        !options.readonly &&
+        axis.coordIsFilled &&
+        canvasHandler.manualMode === MANUAL_MODE.UNSET
       "
       :style="{
         position: 'absolute',
@@ -75,12 +77,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
-import {
-  axisSetRepository,
-  datasetRepository,
-} from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { POINT_MODE, STYLE, MANUAL_MODE } from '@/constants'
 
 export default defineComponent({
@@ -94,12 +93,15 @@ export default defineComponent({
       required: true,
     },
   },
+  setup() {
+    const { canvasHandler, axisSetRepository, datasetRepository } =
+      useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { canvasHandler, axisSetRepository, datasetRepository, options }
+  },
   data() {
     return {
       fontSize: 14,
-      canvasHandler,
-      axisSetRepository,
-      datasetRepository,
       axisSizePx: STYLE.AXIS_SIZE_PX,
       clickAreaSizePx: STYLE.AXIS_SIZE_PX * 2, // Larger click area
       isHovered: false,
@@ -270,6 +272,11 @@ export default defineComponent({
   methods: {
     handleClick(e: MouseEvent) {
       e.stopPropagation()
+
+      // INFO: readonly mode is view-only, so entering axis edit mode is not allowed.
+      if (this.options.readonly) {
+        return
+      }
 
       // Deactivate all active points when entering axis edit mode
       this.datasetRepository.activeDataset.inactivatePoints()

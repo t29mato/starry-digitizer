@@ -1,17 +1,19 @@
 <template>
   <div>
-    <v-file-input
-      id="fileInput"
-      accept="image/*"
-      @change="onImageUploaded"
-      label="Choose an image"
-      :single-line="true"
-      :clearable="false"
-      hide-details
-      density="compact"
-      class="mb-2"
-      font-size="0.8rem"
-    ></v-file-input>
+    <!-- INFO: the wrapper carries the margin because SdFileInput forwards
+         attrs (including `class`) to the inner <input>, and the test hooks
+         (`data-cy="image-file-input"`, plus the legacy `id="fileInput"`) have
+         to land on that input. `data-cy` is the public contract for hosts
+         (see README "Test hooks"); the id is kept only for compatibility. -->
+    <div class="mb-2">
+      <sd-file-input
+        id="fileInput"
+        data-cy="image-file-input"
+        accept="image/*"
+        @change="onImageUploaded"
+        label="Choose an image"
+      ></sd-file-input>
+    </div>
 
     <div
       class="c_file-drag-area"
@@ -25,41 +27,53 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { extractor } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { projectService } from '@/instanceStore/applicationServiceInstances'
-import { historyManager } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
-
-import { VALID_IMAGE_TYPES } from '@/presentation/constants'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
+import { replaceImage } from '@/application/utils/digitizerOperations'
+import { DigitizerError } from '@/application/errors'
+import { SdFileInput } from '@/presentation/ui'
 
 export default defineComponent({
+  components: { SdFileInput },
+  emits: ['image-replaced', 'error'],
+  setup() {
+    const ctx = useDigitizerContext()
+    const options = useDigitizerOptions()
+    const { axisSetRepository, datasetRepository } = ctx
+    return { ctx, options, axisSetRepository, datasetRepository }
+  },
   data() {
     return {
-      extractor,
-      canvasHandler,
-      axisSetRepository,
-      datasetRepository,
-      interpolator,
-      projectService,
-      historyManager,
       fileIsDraggedOver: false,
+      // INFO: keep the bound handlers so the exact same references can be
+      // handed to removeEventListener on unmount — the previous code bound
+      // them inline and therefore never actually detached them, leaving a
+      // paste/dragover listener per mount alive on document/window.
+      onPasteListener: undefined as
+        | ((event: ClipboardEvent) => void)
+        | undefined,
+      onDragOverListener: undefined as ((event: DragEvent) => void) | undefined,
     }
   },
 
   mounted() {
-    document.addEventListener('paste', this.onImagePasted.bind(this))
+    this.onPasteListener = (event: ClipboardEvent) => this.onImagePasted(event)
+    document.addEventListener('paste', this.onPasteListener)
 
     //NOTE: Need to get dragenter event from window, because dragenter doesn't fire on the Overlaying DOM which is 'pointer-events: none'
-    window.addEventListener('dragover', (e: DragEvent) => {
+    this.onDragOverListener = (e: DragEvent) => {
       e.preventDefault()
       this.fileIsDraggedOver = true
-    })
+    }
+    window.addEventListener('dragover', this.onDragOverListener)
   },
-  beforeDestroy() {
-    document.removeEventListener('paste', this.onImagePasted)
+  beforeUnmount() {
+    if (this.onPasteListener) {
+      document.removeEventListener('paste', this.onPasteListener)
+    }
+    if (this.onDragOverListener) {
+      window.removeEventListener('dragover', this.onDragOverListener)
+    }
   },
   methods: {
     hasExistingData(): boolean {
@@ -76,70 +90,35 @@ export default defineComponent({
       return hasAxisData || hasDatasetPoints
     },
     async updateImage(file: File) {
-      try {
-        if (!this.isValidFileType(file.type)) {
-          alert(
-            `Please upload an image in one of the following formats: ${VALID_IMAGE_TYPES.flatMap(
-              (type) => type.extensions,
-            ).join(',')}`,
-          )
+      // INFO: the host can turn the confirmation off (confirmImageReplace
+      // prop) when it drives image loading itself and already asked the user.
+      if (this.options.confirmImageReplace && this.hasExistingData()) {
+        const confirmed = window.confirm(
+          'Loading a new image will reset all axis coordinates and datasets. Are you sure you want to continue?',
+        )
+        if (!confirmed) {
           return
         }
+      }
 
-        // Check if there's existing data and confirm reset
-        if (this.hasExistingData()) {
-          const confirmed = window.confirm(
-            'Loading a new image will reset all axis coordinates and datasets. Are you sure you want to continue?',
-          )
-          if (!confirmed) {
-            return
-          }
-        }
-
-        const fr = await this.readFile(file)
-        if (typeof fr.result !== 'string') {
-          throw new Error('file is not string type')
-        }
-
-        await this.canvasHandler.initializeImageElement(fr.result)
-        this.canvasHandler.drawFitSizeImage()
-        this.interpolator.isActive && this.interpolator.clearPreview()
-        this.extractor.setSwatches(this.canvasHandler.colorSwatches)
-        this.canvasHandler.setUploadImageUrl(fr.result)
-
-        // Reset all axis coordinates for all axis sets
-        this.axisSetRepository.axisSets.forEach((axisSet) => {
-          axisSet.clearAxisCoords()
-        })
-
-        // Reset all datasets and create a new default dataset
-        this.datasetRepository.clearAllDatasets()
-        this.datasetRepository.createNewDataset()
-        this.datasetRepository.setActiveDataset(
-          this.datasetRepository.lastDatasetId,
-        )
-
-        // INFO: undo/redo history is scoped to axisSets/datasets on the
-        // current image (see docs/design/ux-ideas-implementation-design.md)
-        // — snapshots from the previous image no longer make sense once the
-        // image itself has changed, so drop them.
-        this.historyManager.clear()
+      try {
+        // INFO: replaceImage validates the MIME type, decodes and draws the
+        // image and clears axes/datasets/history — shared with the host-facing
+        // `image` prop so every entry point behaves identically.
+        await replaceImage(this.ctx, file)
+        this.$emit('image-replaced', { blob: file })
       } catch (e) {
-        console.error('failed to update image', { cause: e })
+        // INFO: no alert()/throw here — embedding hosts render their own error
+        // UI from the `error` event (invalid type, unreadable file, ...).
+        this.$emit('error', DigitizerError.from(e, 'IMAGE_LOAD_FAILED'))
       }
     },
     onImageUploaded(event: Event) {
-      const eventTarget = event.target as HTMLInputElement
-
-      if (!eventTarget) {
-        throw 'Unexpected Error: event target does not exist'
+      const eventTarget = event.target as HTMLInputElement | null
+      const file = eventTarget?.files?.[0]
+      if (!file) {
+        return
       }
-
-      if (!eventTarget.files) {
-        throw 'Unexpected Error: file was not uploaded'
-      }
-
-      const file = eventTarget.files[0]
 
       this.updateImage(file)
     },
@@ -165,27 +144,6 @@ export default defineComponent({
       }
       this.updateImage(imageFile)
     },
-    isValidFileType(fileType: string) {
-      return VALID_IMAGE_TYPES.map(
-        (imgTypeData) => imgTypeData.fileType,
-      ).includes(fileType)
-    },
-    readFile(file: File): Promise<FileReader> {
-      return new Promise((resolve, reject) => {
-        const fr = new FileReader()
-        fr.addEventListener('load', () => resolve(fr))
-        fr.addEventListener('error', (error) => reject(error))
-        fr.readAsDataURL(file)
-      })
-    },
-    loadImage(src: string): Promise<HTMLImageElement> {
-      return new Promise((resolve, reject) => {
-        const img = new Image()
-        img.onload = () => resolve(img)
-        img.onerror = (error) => reject(error)
-        img.src = src
-      })
-    },
     dragLeave(e: DragEvent) {
       e.preventDefault()
       this.fileIsDraggedOver = false
@@ -194,7 +152,10 @@ export default defineComponent({
       e.preventDefault()
 
       const file = e.dataTransfer?.files[0]
-      if (!file) return
+      if (!file) {
+        this.fileIsDraggedOver = false
+        return
+      }
 
       await this.updateImage(file)
 

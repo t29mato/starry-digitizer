@@ -14,6 +14,10 @@ const mockCreateWorker = jest.fn().mockResolvedValue({
   terminate: (...args: unknown[]) => mockTerminate(...args),
 })
 
+// INFO: tesseract.js is loaded with `await import('tesseract.js')` (lazy, so
+// the WASM runtime stays out of the initial bundle). ts-jest compiles that
+// down to a require(), so this factory still intercepts it; the package is
+// CJS with named exports, hence `createWorker` and no `default`.
 jest.mock('tesseract.js', () => ({
   createWorker: (...args: unknown[]) => mockCreateWorker(...args),
 }))
@@ -63,5 +67,27 @@ describe('AxisOcrReader', () => {
       'boom',
     )
     expect(mockTerminate).toHaveBeenCalled()
+  })
+
+  test('lets tesseract.js resolve its own asset paths when no assetBaseUrl is given', async () => {
+    mockRecognize.mockResolvedValue({ data: { blocks: null } })
+
+    await new AxisOcrReader().readWords({} as HTMLImageElement)
+
+    expect(mockCreateWorker).toHaveBeenCalledWith('eng', undefined, undefined)
+  })
+
+  test('forwards assetBaseUrl as the worker/core/lang paths, without a duplicated slash', async () => {
+    mockRecognize.mockResolvedValue({ data: { blocks: null } })
+
+    await new AxisOcrReader('https://cdn.example.com/tesseract/').readWords(
+      {} as HTMLImageElement,
+    )
+
+    expect(mockCreateWorker).toHaveBeenCalledWith('eng', undefined, {
+      workerPath: 'https://cdn.example.com/tesseract/worker.min.js',
+      corePath: 'https://cdn.example.com/tesseract/',
+      langPath: 'https://cdn.example.com/tesseract',
+    })
   })
 })

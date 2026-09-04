@@ -2,67 +2,74 @@
   <div>
     <h4>
       XY Axes List
-      <v-btn @click="handleOnClickAddAxisSetButton" size="x-small" class="ml-2"
-        ><v-icon>mdi-plus</v-icon></v-btn
-      >
-      <v-btn
+      <sd-button
+        @click="handleOnClickAddAxisSetButton"
+        size="x-small"
+        class="ml-2"
+        :icon="mdiPlus"
+        title="Add axis set"
+        data-cy="add-axis-set"
+        :disabled="options.readonly"
+      />
+      <sd-button
         size="x-small"
         @click="handleOnClickRemoveAxisSetButton"
-        :disabled="axisSetRepository.axisSets.length === 1"
+        :icon="mdiMinus"
+        title="Remove axis set"
+        data-cy="remove-axis-set"
+        :disabled="options.readonly || axisSetRepository.axisSets.length === 1"
         class="ml-2"
-        ><v-icon>mdi-minus</v-icon></v-btn
-      >
+      />
     </h4>
-    <v-list
-      density="compact"
-      class="mb-2 mt-1 pa-0"
-      style="min-height: 8vh; outline: solid 1px gray; max-height: 20vh"
-    >
-      <v-list-item
+    <div class="mb-2 mt-1 pa-0 c__axisSet-list">
+      <div
         v-for="axisSet in axisSetRepository.axisSets"
         :key="axisSet.id"
         class="pl-2 c__axisSet-item"
-        link
         @click="handleOnClickAxisSet(axisSet.id)"
         :class="{
           'bg-yellow-lighten-4':
             axisSet.id === axisSetRepository.activeAxisSet.id,
         }"
       >
-        <v-row>
-          <v-col cols="10">
-            <v-text-field
+        <div class="sd-row">
+          <div class="sd-col-10">
+            <sd-text-field
               v-model="axisSet.name"
               :placeholder="'axisSet ' + axisSet.id"
-              hide-details
-              density="compact"
-              class="mt-0 pt-0 pl-2"
+              class="pl-2"
               variant="underlined"
-            ></v-text-field>
-          </v-col>
-        </v-row>
-      </v-list-item>
-    </v-list>
+              :readonly="options.readonly"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- TODO: モーダル上でデータセットを選べるようにする -->
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { mdiPlus, mdiMinus } from '@mdi/js'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { SdButton, SdTextField } from '@/presentation/ui'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { MANUAL_MODE } from '@/constants'
 
 export default defineComponent({
+  components: { SdButton, SdTextField },
+  setup() {
+    const { canvasHandler, axisSetRepository, datasetRepository } =
+      useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { canvasHandler, axisSetRepository, datasetRepository, options }
+  },
   data() {
     return {
-      canvasHandler,
-      interpolator,
-      axisSetRepository,
-      datasetRepository,
+      mdiPlus,
+      mdiMinus,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
@@ -84,9 +91,9 @@ export default defineComponent({
 
       //NOTE: If axis coords are not calibrated, change manualMode for calibration. Otherwise automatically set to ADD mode
       if (this.axisSetRepository.activeAxisSet.nextAxis) {
-        this.canvasHandler.manualMode = MANUAL_MODE.UNSET
+        this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
       } else {
-        this.canvasHandler.manualMode = MANUAL_MODE.ADD
+        this.canvasHandler.setManualMode(MANUAL_MODE.ADD)
       }
     },
     handleOnClickAxisSet(id: number) {
@@ -146,11 +153,34 @@ export default defineComponent({
       this.axisSetRepository.setActiveAxisSet(alternativeAxisSet.id)
 
       if (alternativeAxisSet.nextAxis) {
-        this.canvasHandler.manualMode = MANUAL_MODE.UNSET
+        this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
       } else {
-        this.canvasHandler.manualMode = MANUAL_MODE.ADD
+        this.canvasHandler.setManualMode(MANUAL_MODE.ADD)
       }
     },
   },
 })
 </script>
+
+<style scoped lang="scss">
+// INFO: replaces <v-list density="compact"> + <v-list-item link>: a plain
+// scrollable list whose rows highlight on hover the way the Vuetify one did.
+// The hover rule skips the active row so the yellow highlight stays visible.
+// INFO: heights are custom properties so a host can compact the sidebar
+// without overriding internal class names.
+.c__axisSet-list {
+  min-height: var(--sd-axis-list-min-height, 8vh);
+  max-height: var(--sd-axis-list-max-height, 20vh);
+  overflow-y: auto;
+  outline: solid 1px gray;
+}
+.c__axisSet-item {
+  cursor: pointer;
+  padding-top: 2px;
+  padding-bottom: 2px;
+
+  &:hover:not(.bg-yellow-lighten-4) {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+</style>

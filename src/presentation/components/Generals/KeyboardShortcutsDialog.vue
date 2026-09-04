@@ -1,42 +1,47 @@
 <template>
-  <v-dialog
+  <sd-dialog
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
-    max-width="480"
+    title="Keyboard Shortcuts"
+    :max-width="480"
   >
-    <v-card>
-      <v-card-title>Keyboard Shortcuts</v-card-title>
-      <v-card-text>
-        <div v-for="group in shortcutGroups" :key="group.title" class="mb-4">
-          <div class="text-overline text-medium-emphasis">
-            {{ group.title }}
-          </div>
-          <div
-            v-for="item in group.items"
-            :key="item.action"
-            class="d-flex justify-space-between py-1"
-          >
-            <span>{{ item.action }}</span>
-            <span class="text-medium-emphasis">{{ item.shortcut }}</span>
-          </div>
+    <!-- INFO: SdDialog's root is a <teleport>, so the e2e hook goes on this
+         wrapper inside the body slot rather than on the component tag. -->
+    <div data-cy="keyboard-shortcuts-dialog">
+      <div v-for="group in shortcutGroups" :key="group.title" class="mb-4">
+        <div class="text-overline text-medium-emphasis">
+          {{ group.title }}
         </div>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn @click="$emit('update:modelValue', false)">Close</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        <div
+          v-for="item in group.items"
+          :key="item.action"
+          class="d-flex justify-space-between py-1"
+        >
+          <span>{{ item.action }}</span>
+          <span class="text-medium-emphasis">{{ item.shortcut }}</span>
+        </div>
+      </div>
+    </div>
+    <template #actions>
+      <sd-button
+        data-cy="keyboard-shortcuts-close"
+        @click="$emit('update:modelValue', false)"
+        >Close</sd-button
+      >
+    </template>
+  </sd-dialog>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { SdButton, SdDialog } from '@/presentation/ui'
 
 // INFO: A reference list for every global keyboard shortcut wired up in
 // CanvasMain.vue's keyDownHandler, so users who found the menu bar's
 // per-item shortcuts (File/Edit/View) can also discover the ones that
 // don't live in a menu (mode switching, point movement, etc).
 export default defineComponent({
+  components: { SdButton, SdDialog },
   props: {
     modelValue: {
       type: Boolean,

@@ -1,12 +1,11 @@
 import { Coord } from '@/@types/types'
-import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 
 export interface InterpolatorInterface {
   isActive: boolean
   interval: number
   interpolatedCoords: Coord[]
   interpolatedCoordsForGuideline: Coord[]
-  initialize(): void
   setIsActive(isActive: boolean): void
   resizeCanvas(): void
   setGuideCanvas(guideCanvas: HTMLCanvas): void

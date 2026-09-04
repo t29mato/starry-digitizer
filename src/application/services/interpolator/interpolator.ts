@@ -1,12 +1,11 @@
 import { InterpolatorInterface } from './interpolatorInterface'
 import { InterpolatorCanvasInterface } from './interpolatorCanvasInterface'
-import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
-import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
 import { getPointsTotalDistance } from '../../utils/pointsUtils'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { Coord, Point } from '@/@types/types'
+import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
+import { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
 
 export class Interpolator implements InterpolatorInterface {
   public isActive: boolean = false
@@ -14,9 +13,19 @@ export class Interpolator implements InterpolatorInterface {
   public interpolatedCoords: Coord[] = []
   public interpolatedCoordsForGuideline: Coord[] = []
   private canvas: InterpolatorCanvasInterface
+  private datasetRepository: DatasetRepositoryInterface
+  private canvasHandler: CanvasHandlerInterface
 
-  constructor(canvas: InterpolatorCanvasInterface) {
+  // INFO: repositories/services are injected (instead of imported as module
+  // singletons) so that each DigitizerContext owns its own Interpolator.
+  constructor(
+    canvas: InterpolatorCanvasInterface,
+    datasetRepository: DatasetRepositoryInterface,
+    canvasHandler: CanvasHandlerInterface,
+  ) {
     this.canvas = canvas
+    this.datasetRepository = datasetRepository
+    this.canvasHandler = canvasHandler
   }
 
   private clearInterpolatedCoords(): void {
@@ -51,26 +60,17 @@ export class Interpolator implements InterpolatorInterface {
   public resizeCanvas(): void {
     if (!this.canvas.hasCanvas()) return
 
-    const newWidth = canvasHandler.originalWidth * canvasHandler.scale
-    const newHeight = canvasHandler.originalHeight * canvasHandler.scale
+    const newWidth = this.canvasHandler.originalWidth * this.canvasHandler.scale
+    const newHeight =
+      this.canvasHandler.originalHeight * this.canvasHandler.scale
 
     this.canvas.resize(newWidth, newHeight)
 
     if (this.interpolatedCoords.length) {
       this.canvas.drawInterpolationLine(
         this.interpolatedCoordsForGuideline,
-        canvasHandler.scale,
+        this.canvasHandler.scale,
       )
-    }
-  }
-
-  public initialize(): void {
-    const isActive = getLocalStorageDataByKey('isInterpolatorActive')
-
-    if (isActive === 'true') {
-      this.isActive = true
-    } else if (isActive === 'false') {
-      this.isActive = false
     }
   }
 
@@ -96,7 +96,7 @@ export class Interpolator implements InterpolatorInterface {
         'interpolator.updatePreview was called but interpolator is not activated',
       )
     }
-    const activeDataset = datasetRepository.activeDataset
+    const activeDataset = this.datasetRepository.activeDataset
     const anchorPoints = activeDataset.points.filter((point: Point) =>
       activeDataset.manuallyAddedPointIds.includes(point.id),
     )
@@ -116,7 +116,7 @@ export class Interpolator implements InterpolatorInterface {
 
     this.canvas.drawInterpolationLine(
       this.interpolatedCoordsForGuideline,
-      canvasHandler.scale,
+      this.canvasHandler.scale,
     )
 
     this.interpolatedCoords.forEach((coord: Coord) => {
@@ -125,7 +125,7 @@ export class Interpolator implements InterpolatorInterface {
   }
 
   public clearPreview(): void {
-    const activeDataset = datasetRepository.activeDataset
+    const activeDataset = this.datasetRepository.activeDataset
 
     activeDataset.tempPoints.forEach((tempPoint) => {
       activeDataset.clearTempPoint(tempPoint.id)

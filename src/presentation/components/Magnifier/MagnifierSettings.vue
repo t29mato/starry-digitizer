@@ -1,85 +1,70 @@
 <template>
-  <v-dialog :model-value="shouldShowSettingsDialog" max-width="400px">
-    <v-card>
-      <v-card-title>
-        <span class="text-h5">Settings</span>
-      </v-card-title>
-      <v-card-text>
-        <v-container class="pa-0">
-          <v-row>
-            <v-col cols="6" class="py-2">
-              <v-text-field
-                :model-value="magnifier.scale"
-                type="number"
-                label="Magnifier (times)"
-                @change="onChangeMagnifierScale"
-                :error="magnifierSettingError.length > 0"
-                :error-messages="magnifierSettingError"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="6" class="py-2">
-              <v-text-field
-                :model-value="magnifier.effectiveDigits"
-                type="number"
-                label="Effective digits"
-                @change="onChangeEffectiveDigits"
-                :error="effectiveDigitsError.length > 0"
-                :error-messages="effectiveDigitsError"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-              ></v-text-field>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="6" class="py-2">
-              <v-text-field
-                :model-value="magnifier.markerSizePx"
-                type="number"
-                label="Marker size (px)"
-                @change="onChangeMarkerSizePx"
-                :error="markerSizeError.length > 0"
-                :error-messages="markerSizeError"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-              ></v-text-field>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col class="py-1">
-              <v-checkbox
-                v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
-                label="Consider graph tilt"
-                density="compact"
-                hide-details
-                color="primary"
-              ></v-checkbox>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn @click="toggleSettingsDialog"> Close </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <sd-dialog
+    :model-value="shouldShowSettingsDialog"
+    @update:model-value="toggleSettingsDialog()"
+    title="Settings"
+    :max-width="400"
+  >
+    <div class="sd-row">
+      <div class="sd-col-6 py-2">
+        <sd-text-field
+          :model-value="magnifier.scale"
+          type="number"
+          label="Magnifier (times)"
+          @change="onChangeMagnifierScale"
+        ></sd-text-field>
+        <p v-if="magnifierSettingError" class="c__error text-caption text-red">
+          {{ magnifierSettingError }}
+        </p>
+      </div>
+      <div class="sd-col-6 py-2">
+        <sd-text-field
+          :model-value="magnifier.markerSizePx"
+          type="number"
+          label="Marker size (px)"
+          @change="onChangeMarkerSizePx"
+        ></sd-text-field>
+        <p v-if="markerSizeError" class="c__error text-caption text-red">
+          {{ markerSizeError }}
+        </p>
+      </div>
+    </div>
+    <div class="sd-row">
+      <div class="sd-col py-2">
+        <!-- INFO: considerGraphTilt mutates the axis set (project data),
+             so it is disabled in readonly mode. The other fields above are
+             view-only magnifier settings and stay editable.
+             "Effective digits" used to sit here too; it governs every
+             extracted value the library hands out, not the magnifier, so it
+             now lives with the data table (see DataTable.vue). -->
+        <sd-checkbox
+          v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
+          :disabled="options.readonly"
+          label="Consider graph tilt"
+        ></sd-checkbox>
+      </div>
+    </div>
+    <template #actions>
+      <sd-button @click="toggleSettingsDialog()">Close</sd-button>
+    </template>
+  </sd-dialog>
 </template>
 
 <script lang="ts">
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { defineComponent } from 'vue'
+import { SdButton, SdCheckbox, SdDialog, SdTextField } from '@/presentation/ui'
 
 export default defineComponent({
+  components: { SdButton, SdCheckbox, SdDialog, SdTextField },
+  setup() {
+    const { magnifier, axisSetRepository } = useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { magnifier, axisSetRepository, options }
+  },
   data() {
     return {
-      magnifier,
-      axisSetRepository,
-      effectiveDigitsError: '',
       markerSizeError: '',
     }
   },
@@ -105,15 +90,6 @@ export default defineComponent({
     onChangeMagnifierScale(event: Event) {
       this.setMagnifierScale(Number((<HTMLInputElement>event.target).value))
     },
-    onChangeEffectiveDigits(event: Event) {
-      const digits = parseInt((<HTMLInputElement>event.target).value)
-      this.effectiveDigitsError = ''
-      if (digits < 1 || digits > 10) {
-        this.effectiveDigitsError = 'Value must be between 1 and 10'
-        return
-      }
-      this.magnifier.setEffectiveDigits(digits)
-    },
     onChangeMarkerSizePx(event: Event) {
       const sizePx = Number((<HTMLInputElement>event.target).value)
       this.markerSizeError = ''
@@ -126,3 +102,9 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.c__error {
+  margin: 2px 0 0;
+}
+</style>

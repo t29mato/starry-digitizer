@@ -2,7 +2,7 @@
 /* eslint-disable prettier/prettier */
 import LineExtract from './lineExtract'
 
-const extractor = LineExtract.instance
+const extractor = new LineExtract()
 extractor.dxPx = 1
 extractor.dyPx = 3
 

@@ -6,7 +6,7 @@ describe('template spec', () => {
   })
   it('red line test with selected area', () => {
     cy.contains('Pen').click()
-    cy.get('#canvasWrapper')
+    cy.get('[data-cy=canvas-wrapper]')
       .trigger('mousedown', 300, 100)
       //TODO: force: true is a work around
       .trigger('mousemove', 300, 300)

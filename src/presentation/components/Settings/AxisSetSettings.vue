@@ -1,79 +1,87 @@
 <template>
   <div>
-    <table>
+    <table class="c__AxisSetRepository-settings__table">
       <tbody>
         <tr>
           <td class="pl-0 pr-1" style="width: 42%">
-            <v-text-field
-              v-model="displayVal.x1"
+            <sd-text-field
+              :model-value="displayVal.x1"
+              @update:model-value="displayVal.x1 = String($event)"
               id="x1-value"
+              data-cy="x1-value"
+              prefix="x1:"
+              :disabled="options.readonly"
               type="text"
-              prefix="x1: "
-              hide-details
-              density="compact"
-              @click="$event.target.select()"
+              @click="selectAll"
             >
-            </v-text-field>
+            </sd-text-field>
           </td>
           <td class="pl-0 pr-1" style="width: 42%">
-            <v-text-field
-              v-model="displayVal.x2"
+            <sd-text-field
+              :model-value="displayVal.x2"
+              @update:model-value="displayVal.x2 = String($event)"
               id="x2-value"
+              data-cy="x2-value"
+              prefix="x2:"
+              :disabled="options.readonly"
               type="text"
-              prefix="x2: "
-              hide-details
-              density="compact"
-              @click="$event.target.select()"
+              @click="selectAll"
             >
-            </v-text-field>
+            </sd-text-field>
           </td>
           <td>
             <span class="c__AxisSetRepository-settings__hint">Log</span>
           </td>
           <td>
-            <v-checkbox
-              color="primary"
-              v-model="axisSetRepository.activeAxisSet.xIsLogScale"
+            <sd-checkbox
+              :model-value="axisSetRepository.activeAxisSet.xIsLogScale"
+              @update:model-value="
+                axisSetRepository.activeAxisSet.xIsLogScale = Boolean($event)
+              "
               id="x-is-log"
-              hide-details
-              density="compact"
-            ></v-checkbox>
+              data-cy="x-is-log"
+              :disabled="options.readonly"
+            ></sd-checkbox>
           </td>
         </tr>
         <tr>
           <td class="pl-0 pr-1">
-            <v-text-field
-              v-model="displayVal.y1"
+            <sd-text-field
+              :model-value="displayVal.y1"
+              @update:model-value="displayVal.y1 = String($event)"
               id="y1-value"
-              prefix="y1: "
+              data-cy="y1-value"
+              prefix="y1:"
+              :disabled="options.readonly"
               type="text"
-              hide-details
-              density="compact"
-              @click="$event.target.select()"
+              @click="selectAll"
             >
-            </v-text-field>
+            </sd-text-field>
           </td>
           <td class="pl-0 pr-1">
-            <v-text-field
-              v-model="displayVal.y2"
+            <sd-text-field
+              :model-value="displayVal.y2"
+              @update:model-value="displayVal.y2 = String($event)"
               id="y2-value"
-              prefix="y2: "
+              data-cy="y2-value"
+              prefix="y2:"
+              :disabled="options.readonly"
               type="text"
-              hide-details
-              density="compact"
-              @click="$event.target.select()"
+              @click="selectAll"
             >
-            </v-text-field>
+            </sd-text-field>
           </td>
           <td><span class="c__AxisSetRepository-settings__hint">Log</span></td>
           <td>
-            <v-checkbox
-              color="primary"
-              v-model="axisSetRepository.activeAxisSet.yIsLogScale"
+            <sd-checkbox
+              :model-value="axisSetRepository.activeAxisSet.yIsLogScale"
+              @update:model-value="
+                axisSetRepository.activeAxisSet.yIsLogScale = Boolean($event)
+              "
               id="y-is-log"
-              density="compact"
-              hide-details
-            ></v-checkbox>
+              data-cy="y-is-log"
+              :disabled="options.readonly"
+            ></sd-checkbox>
           </td>
         </tr>
       </tbody>
@@ -83,67 +91,97 @@
       <h5 class="c__AxisSetRepository-settings__point-mode__label">
         Calibration mode:
       </h5>
-      <v-radio-group
-        row
-        v-model.number="axisSetRepository.activeAxisSet.pointMode"
-        inline
-        color="primary"
-        hide-details
+      <!-- INFO: the radios are built from SdCheckbox (type="radio") rather
+           than SdRadioGroup so each <input> can carry its own data-cy hook;
+           SdRadioGroup takes its radios as data and has no per-option attr
+           passthrough. The DOM is otherwise identical (label.sd-check). -->
+      <div
+        class="c__AxisSetRepository-settings__point-mode"
+        data-cy="calibration-mode"
       >
-        <v-radio
-          label="2 Points"
-          :value="0"
-          :disabled="twoPointsRadioIsDisabled"
-        ></v-radio>
-        <v-radio
-          label="4 Points"
-          :value="1"
-          :disabled="fourPointsRadioIsDisabled"
-        ></v-radio>
-      </v-radio-group>
-      <v-checkbox
+        <sd-checkbox
+          v-for="option in pointModeOptions"
+          :key="option.value"
+          type="radio"
+          :name="calibrationModeName"
+          :value="option.value"
+          :label="option.label"
+          :data-cy="option.dataCy"
+          :data-value="option.value"
+          :disabled="option.disabled"
+          :model-value="axisSetRepository.activeAxisSet.pointMode"
+          @update:model-value="setPointMode"
+        ></sd-checkbox>
+      </div>
+      <sd-checkbox
         label="Show axes marker"
-        density="compact"
-        hide-details
-        color="primary"
-        v-model="axisSetRepository.activeAxisSet.isVisible"
-      ></v-checkbox>
-      <div class="mt-2">
-        <v-btn
+        data-cy="show-axes-marker"
+        :model-value="axisSetRepository.activeAxisSet.isVisible"
+        @update:model-value="
+          axisSetRepository.activeAxisSet.isVisible = Boolean($event)
+        "
+      ></sd-checkbox>
+      <div class="mt-2 d-flex align-center flex-wrap">
+        <sd-button
           size="small"
-          :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
+          :disabled="
+            options.readonly ||
+            !axisSetRepository.activeAxisSet.hasAtLeastOneAxis
+          "
           @click="editAxes"
         >
           Edit Axes
-        </v-btn>
-        <v-btn
+        </sd-button>
+        <sd-button
           size="small"
           class="ml-2"
-          :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
+          :disabled="
+            options.readonly ||
+            !axisSetRepository.activeAxisSet.hasAtLeastOneAxis
+          "
           @click="clearAxisSet"
         >
           Clear XY Axes
-        </v-btn>
-        <v-btn
-          size="small"
-          class="ml-2"
-          :disabled="!axisSetRepository.activeAxisSet.hasAtLeastOneAxis"
-          :loading="ocrIsRunning"
-          @click="handleOnClickAutoDetectAxisValues"
-          title="OCR the numbers near each axis marker and fill in its value"
-        >
-          Auto-fill values (OCR)
-        </v-btn>
-        <v-tooltip location="top">
-          <template v-slot:activator="{ props }">
-            <v-icon v-bind="props" color="warning" size="small" class="ml-1">
-              mdi-information-outline
-            </v-icon>
-          </template>
-          {{ ocrWarningMessage }}
-        </v-tooltip>
+        </sd-button>
+        <!-- INFO: features.axisOcr hides the whole OCR affordance, not just
+             the button: the accuracy hint and the error line only ever say
+             something about a run that can no longer be started. Hiding the
+             button is also what keeps tesseract.js out of the bundle — it is
+             dynamically imported from the click handler and nothing else
+             reaches AxisOcrReader (see axisOcrReader.ts). -->
+        <template v-if="options.features.axisOcr">
+          <sd-button
+            size="small"
+            class="ml-2"
+            :disabled="
+              options.readonly ||
+              !axisSetRepository.activeAxisSet.hasAtLeastOneAxis ||
+              ocrIsRunning
+            "
+            @click="handleOnClickAutoDetectAxisValues"
+            title="OCR the numbers near each axis marker and fill in its value"
+          >
+            {{
+              ocrIsRunning
+                ? 'Auto-fill values (OCR)…'
+                : 'Auto-fill values (OCR)'
+            }}
+          </sd-button>
+          <sd-tooltip :text="ocrWarningMessage" class="ml-1">
+            <sd-icon
+              class="c__AxisSetRepository-settings__ocr-warning"
+              :path="mdiInformationOutline"
+              :size="16"
+              tabindex="0"
+              :title="ocrWarningMessage"
+            />
+          </sd-tooltip>
+        </template>
       </div>
-      <p v-if="ocrErrorMessage" class="text-red mt-1">
+      <p
+        v-if="options.features.axisOcr && ocrErrorMessage"
+        class="text-red mt-1"
+      >
         {{ ocrErrorMessage }}
       </p>
     </div>
@@ -153,11 +191,8 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import {
-  axisSetRepository,
-  datasetRepository,
-} from '@/instanceStore/repositoryInatances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { POINT_MODE, MANUAL_MODE } from '@/constants'
 import { AxisOcrReader } from '@/application/services/axisOcr/axisOcrReader'
@@ -165,14 +200,38 @@ import {
   AXIS_NAMES,
   matchOcrWordsToAxisValues,
 } from '@/application/utils/axisOcrMatcher'
+import { mdiInformationOutline } from '@mdi/js'
+import {
+  SdButton,
+  SdCheckbox,
+  SdIcon,
+  SdTextField,
+  SdTooltip,
+} from '@/presentation/ui'
+import type { SdRadioOption } from '@/presentation/ui'
 
-// INFO: docs/design/auto-axis-detection-design.md — a single reader
-// instance is reused across clicks (readWords() is stateless per-call, no
-// need to route this through instanceStore/applicationServiceInstances.ts
-// for a component-local, dependency-free wrapper).
-const axisOcrReader = new AxisOcrReader()
+// INFO: radio inputs with the same `name` form ONE group per document, not per
+// component, so two <StarryDigitizer> instances on a page would fight over the
+// calibration mode: picking "4 Points" in one clears the other's selection.
+// The engine has no DOM-id lookups left for exactly this reason (spec R7), and
+// this attribute was the last thing tying the panels to a document-wide name.
+// Vue 3.5's useId() would do this, but the supported peer range starts at 3.3.
+let calibrationModeGroupSeq = 0
 
 export default defineComponent({
+  components: {
+    SdButton,
+    SdCheckbox,
+    SdIcon,
+    SdTextField,
+    SdTooltip,
+  },
+  setup() {
+    const { axisSetRepository, datasetRepository, canvasHandler } =
+      useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { axisSetRepository, datasetRepository, canvasHandler, options }
+  },
   computed: {
     errorMessage(): string {
       if (this.axisSetRepository.activeAxisSet.xIsLogScale) {
@@ -221,12 +280,29 @@ export default defineComponent({
         activeAxisSet.hasAtLeastOneAxis
       )
     },
+    // INFO: SdRadioGroup takes its radios as data instead of child elements,
+    // so the per-option disabling lives here.
+    pointModeOptions(): (SdRadioOption & { dataCy: string })[] {
+      return [
+        {
+          label: '2 Points',
+          value: POINT_MODE.TWO_POINTS,
+          dataCy: 'calibration-mode-2',
+          disabled: this.options.readonly || this.twoPointsRadioIsDisabled,
+        },
+        {
+          label: '4 Points',
+          value: POINT_MODE.FOUR_POINTS,
+          dataCy: 'calibration-mode-4',
+          disabled: this.options.readonly || this.fourPointsRadioIsDisabled,
+        },
+      ]
+    },
   },
   data() {
     return {
-      axisSetRepository,
-      datasetRepository,
-      canvasHandler,
+      calibrationModeName: `calibration-mode-${(calibrationModeGroupSeq += 1)}`,
+      mdiInformationOutline,
       //NOTE: initialize axis values as string because it sometimes is displayed like '1e+10'
       displayVal: {
         x1: '',
@@ -256,6 +332,15 @@ export default defineComponent({
     this.displayVal.y2 = String(this.y2Axis.value)
   },
   methods: {
+    setPointMode(value: string | number | boolean) {
+      this.axisSetRepository.activeAxisSet.pointMode =
+        Number(value) === POINT_MODE.FOUR_POINTS
+          ? POINT_MODE.FOUR_POINTS
+          : POINT_MODE.TWO_POINTS
+    },
+    selectAll(event: Event) {
+      ;(event.target as HTMLInputElement).select()
+    },
     parseExponentialValue(value: string): string {
       // Handle '^' notation as actual exponentiation (e.g., 2^3 = 8)
       if (value.includes('^')) {
@@ -361,6 +446,12 @@ export default defineComponent({
           ]),
         )
 
+        // INFO: docs/design/auto-axis-detection-design.md — readWords() is
+        // stateless per call (it creates and terminates its own worker), so
+        // the reader is built here rather than kept around. Building it on
+        // click also means options.assetBaseUrl is read at the moment the
+        // host's value is final.
+        const axisOcrReader = new AxisOcrReader(this.options.assetBaseUrl)
         const words = await axisOcrReader.readWords(
           this.canvasHandler.imageElement,
         )
@@ -453,17 +544,38 @@ export default defineComponent({
 <style lang="scss" scoped>
 .c {
   &__AxisSetRepository-settings {
+    &__table {
+      width: 100%;
+      border-spacing: 0;
+      td {
+        padding: 2px 0;
+        vertical-align: middle;
+      }
+    }
+
     &__hint {
       display: block;
+      padding: 0 2px 0 6px;
       font-size: 0.75rem;
-      transform: translateY(-8px);
-      padding-top: 13px;
-      vertical-align: middle;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    &__ocr-warning {
+      color: var(--sd-warning, #fb8c00);
+      cursor: help;
     }
 
     &__point-mode {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+
       &__label {
+        margin: 6px 0 2px;
         font-size: 0.75rem;
+        font-weight: 500;
       }
     }
   }

@@ -2,104 +2,123 @@
   <div>
     <h4>
       Datasets
-      <v-btn @click="handleOnClickAddDatasetButton" size="x-small" class="ml-2"
-        ><v-icon>mdi-plus</v-icon></v-btn
-      >
-      <v-btn
+      <sd-button
+        @click="handleOnClickAddDatasetButton"
+        size="x-small"
+        class="ml-2"
+        :icon="mdiPlus"
+        title="Add dataset"
+        data-cy="add-dataset"
+        :disabled="options.readonly"
+      />
+      <sd-button
         size="x-small"
         @click="handleOnClickRemoveAllDatasetsButton"
-        :disabled="datasetRepository.datasets.length === 0"
+        :icon="mdiDeleteSweep"
+        :disabled="options.readonly || datasetRepository.datasets.length === 0"
         class="ml-2"
         title="Remove all datasets"
-        ><v-icon>mdi-delete-sweep</v-icon></v-btn
-      >
-      <v-btn
+        data-cy="remove-all-datasets"
+      />
+      <sd-button
         v-if="datasetRepository.datasets.length > 1"
         size="x-small"
         @click="handleOnClickViewAll"
         class="ml-2"
+        :icon="mdiEyeOutline"
         :color="datasetRepository.activeDatasetId === 0 ? 'primary' : ''"
         title="View all datasets"
-        ><v-icon>mdi-eye-outline</v-icon></v-btn
-      >
+        data-cy="view-all-datasets"
+      />
     </h4>
-    <div
-      class="mb-2 mt-1 pa-0"
-      style="
-        min-height: 15vh;
-        outline: solid 1px gray;
-        max-height: 30vh;
-        overflow-y: auto;
-      "
-    >
+    <div class="mb-2 mt-1 pa-0 c__dataset-list">
       <!-- Individual datasets -->
       <div
         v-for="dataset in datasetRepository.datasets"
         :key="dataset.id"
         class="c__dataset-row"
       >
-        <v-row class="ma-0">
-          <v-col cols="8" class="pa-0">
-            <v-list-item
+        <div class="sd-row ma-0">
+          <div class="sd-col-8 pa-0">
+            <div
               class="pl-2 c__dataset-item"
-              link
               @click="handleOnClickDataset(dataset.id)"
               :class="
                 dataset.id === datasetRepository.activeDatasetId &&
                 'bg-yellow-lighten-4'
               "
             >
-              <v-text-field
+              <!-- INFO: when the host app supplies name candidates the field
+                   becomes a combobox (suggestions + free text); otherwise it
+                   stays a plain text field. -->
+              <sd-combobox
+                v-if="options.datasetNameCandidates.length > 0"
+                v-model="dataset.name"
+                :items="options.datasetNameCandidates"
+                :placeholder="'dataset ' + dataset.id"
+                class="pl-2"
+                variant="underlined"
+                :readonly="options.readonly"
+              />
+              <sd-text-field
+                v-else
                 v-model="dataset.name"
                 :placeholder="'dataset ' + dataset.id"
-                hide-details
-                density="compact"
                 type="text"
-                class="mt-0 pt-0 pl-2"
+                class="pl-2"
                 variant="underlined"
-              ></v-text-field>
-            </v-list-item>
-          </v-col>
-          <v-col
-            cols="1"
-            class="pa-0 d-flex align-items-center justify-center"
+                :readonly="options.readonly"
+              />
+            </div>
+          </div>
+          <div
+            class="sd-col-1 pa-0 d-flex align-items-center justify-center"
             :class="`dataset-count-${dataset.id}`"
           >
             <span class="align-self-center">
               {{ dataset.points.length }}
             </span>
-          </v-col>
-          <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
-            <v-btn
+          </div>
+          <div
+            v-if="options.features.csvExport"
+            class="sd-col-1 pa-0 d-flex align-items-center justify-center"
+          >
+            <sd-button
               size="x-small"
-              icon="mdi-content-copy"
+              :icon="mdiContentCopy"
               @click="copyDatasetToClipboard(dataset.id)"
               :disabled="dataset.points.length === 0"
               variant="text"
               class="mr-1"
-            ></v-btn>
-          </v-col>
-          <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
-            <v-btn
+              title="Copy dataset to clipboard"
+              data-cy="dataset-copy"
+            />
+          </div>
+          <div class="sd-col-1 pa-0 d-flex align-items-center justify-center">
+            <sd-button
               size="x-small"
-              icon="mdi-eraser"
+              :icon="mdiEraser"
               @click="handleOnClickClearDatasetPoints(dataset.id)"
-              :disabled="dataset.points.length === 0"
+              :disabled="options.readonly || dataset.points.length === 0"
               variant="text"
               title="Clear points"
-            ></v-btn>
-          </v-col>
-          <v-col cols="1" class="pa-0 d-flex align-items-center justify-center">
-            <v-btn
+              data-cy="dataset-clear"
+            />
+          </div>
+          <div class="sd-col-1 pa-0 d-flex align-items-center justify-center">
+            <sd-button
               size="x-small"
-              icon="mdi-delete"
+              :icon="mdiDelete"
               @click="handleOnClickRemoveDatasetButton(dataset.id)"
-              :disabled="datasetRepository.datasets.length === 1"
+              :disabled="
+                options.readonly || datasetRepository.datasets.length === 1
+              "
               variant="text"
               title="Delete dataset"
-            ></v-btn>
-          </v-col>
-        </v-row>
+              data-cy="dataset-delete"
+            />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -109,44 +128,59 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-
 import {
-  canvasHandler,
-  interpolator,
-  magnifier,
-  historyManager,
-} from '@/instanceStore/applicationServiceInstances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { MASK_MODE } from '@/constants'
-import AxisSetCalculator from '@/domain/services/axisSetCalculator'
-import { Point } from '@/@types/types'
+  mdiPlus,
+  mdiDeleteSweep,
+  mdiEyeOutline,
+  mdiContentCopy,
+  mdiEraser,
+  mdiDelete,
+} from '@mdi/js'
+
+import { SdButton, SdCombobox, SdTextField } from '@/presentation/ui'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
+import {
+  getDatasetTableData,
+  copyRowsToClipboard,
+} from '@/application/utils/dataExport'
+// INFO: the dataset-list use cases live in the application layer so a host
+// that replaces this panel gets the same behaviour (call order, undo capture,
+// mask/axis-set clean-up) without reimplementing it. This component only
+// decides whether to ask the user first.
+import {
+  activateDataset,
+  addDataset,
+  clearDatasetPoints,
+  removeAllDatasets,
+  removeDataset,
+  viewAllDatasets,
+} from '@/application/utils/datasetOperations'
 
 export default defineComponent({
-  components: {},
+  components: { SdButton, SdCombobox, SdTextField },
+  setup() {
+    const ctx = useDigitizerContext()
+    const options = useDigitizerOptions()
+    return {
+      ctx,
+      datasetRepository: ctx.datasetRepository,
+      options,
+    }
+  },
   data() {
     return {
-      canvasHandler,
-      interpolator,
-      magnifier,
-      historyManager,
-      datasetRepository,
+      mdiPlus,
+      mdiDeleteSweep,
+      mdiEyeOutline,
+      mdiContentCopy,
+      mdiEraser,
+      mdiDelete,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
       sortOrders: ['ascending', 'descending'],
-      axisSetRepository,
     }
-  },
-  props: {
-    exportBtnText: {
-      type: String,
-      required: false,
-    },
-    exportBtnClick: {
-      type: Function,
-      required: false,
-    },
   },
   computed: {
     totalPointsCount(): number {
@@ -165,16 +199,6 @@ export default defineComponent({
         'There are unconfirmed interpolated points. Do you want to discard them and switch to a different dataset?',
       )
     },
-    activateDataset(id: number) {
-      this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.setActiveDataset(id)
-      this.axisSetRepository.setActiveAxisSet(
-        this.datasetRepository.activeDataset.axisSetId,
-      )
-      // INFO: データセットが変えた時はマスクをクリアすることが多いので。
-      this.canvasHandler.clearMask()
-      this.canvasHandler.maskMode = MASK_MODE.UNSET
-    },
     handleOnClickDataset(id: number) {
       if (
         id === this.datasetRepository.activeDatasetId ||
@@ -182,27 +206,17 @@ export default defineComponent({
       )
         return
 
-      this.activateDataset(id)
+      activateDataset(this.ctx, id)
     },
     handleOnClickViewAll() {
       if (!this.shouldContinueSwitchDataset()) return
 
-      this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.setActiveDataset(0)
-      this.canvasHandler.clearMask()
-      this.canvasHandler.maskMode = MASK_MODE.UNSET
+      viewAllDatasets(this.ctx)
     },
     handleOnClickAddDatasetButton() {
       if (!this.shouldContinueSwitchDataset()) return
 
-      this.historyManager.capture()
-      this.datasetRepository.createNewDataset()
-
-      this.datasetRepository.lastDataset.setAxisSetId(
-        this.axisSetRepository.activeAxisSetId,
-      )
-
-      this.activateDataset(this.datasetRepository.lastDatasetId)
+      addDataset(this.ctx)
     },
     handleOnClickRemoveDatasetButton(datasetId?: number) {
       const targetDataset = datasetId
@@ -213,83 +227,63 @@ export default defineComponent({
 
       //NOTE: remove dataset without confirmation if the dataset doesn't have data points
       if (targetDataset.points.length === 0) {
-        this.removeDataset(targetDataset.id)
+        removeDataset(this.ctx, targetDataset.id)
         return
       }
 
       window.confirm(
         `Are you sure to delete '${targetDataset.name}'? This operation is irreversible.`,
-      ) && this.removeDataset(targetDataset.id)
-    },
-    removeDataset(datasetId: number) {
-      this.historyManager.capture()
-      this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.removeDataset(datasetId)
+      ) && removeDataset(this.ctx, targetDataset.id)
     },
     handleOnClickRemoveAllDatasetsButton() {
-      const totalPoints = this.datasetRepository.datasets.reduce(
-        (sum, dataset) => sum + dataset.points.length,
-        0,
-      )
+      const totalPoints = this.totalPointsCount
 
       if (totalPoints === 0) {
-        this.removeAllDatasets()
+        removeAllDatasets(this.ctx)
         return
       }
 
       window.confirm(
         `Are you sure to delete all ${this.datasetRepository.datasets.length} datasets? This will remove ${totalPoints} data points. This operation is irreversible.`,
-      ) && this.removeAllDatasets()
+      ) && removeAllDatasets(this.ctx)
     },
-    removeAllDatasets() {
-      this.historyManager.capture()
-      this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.removeAllDatasets()
-    },
-    calculateXY(x: number, y: number): { xV: string; yV: string } {
-      const calculator = new AxisSetCalculator(
-        this.axisSetRepository.activeAxisSet,
-        {
-          x: this.axisSetRepository.activeAxisSet.xIsLogScale,
-          y: this.axisSetRepository.activeAxisSet.yIsLogScale,
-        },
-        this.magnifier.effectiveDigits,
-      )
-      return calculator.calculateXYValues(x, y)
-    },
-    convertToCsv(data: string[][]): string {
-      const CSV_DELIMITER = ','
-      const rows = data.map((row) => row.join(CSV_DELIMITER))
-      return rows.join('\n')
-    },
-    copyDatasetToClipboard(datasetId: number) {
+    async copyDatasetToClipboard(datasetId: number) {
       const dataset = this.datasetRepository.datasets.find(
         (d) => d.id === datasetId,
       )
       if (!dataset || dataset.points.length === 0) return
 
-      const data = dataset.points.map((point: Point) => {
-        const { xV, yV } = this.calculateXY(point.xPx, point.yPx)
-        return [xV, yV]
-      })
-
-      const csv = this.convertToCsv(data)
-      navigator.clipboard
-        .writeText(csv)
-        .then(() => console.log('Dataset copied to clipboard successfully.'))
-        .catch((err) =>
-          console.error('Failed to copy dataset to clipboard.', err),
-        )
+      // INFO: getDatasetTableData() calibrates with the dataset's own axis
+      // set, so a row copied here matches the dataset even when another
+      // axis set is currently active.
+      await copyRowsToClipboard(getDatasetTableData(this.ctx, dataset))
     },
     handleOnClickClearDatasetPoints(datasetId: number) {
-      const dataset = this.datasetRepository.datasets.find(
-        (d) => d.id === datasetId,
-      )
-      if (!dataset) return
-      this.historyManager.capture()
-      dataset.clearPoints()
-      this.interpolator.clearPreview()
+      clearDatasetPoints(this.ctx, datasetId)
     },
   },
 })
 </script>
+
+<style scoped lang="scss">
+// INFO: heights are custom properties so a host can compact the sidebar
+// without overriding internal class names.
+.c__dataset-list {
+  min-height: var(--sd-dataset-list-min-height, 15vh);
+  max-height: var(--sd-dataset-list-max-height, 30vh);
+  overflow-y: auto;
+  outline: solid 1px gray;
+}
+
+// INFO: replaces <v-list-item link>: the name cell is a plain clickable row.
+// The hover rule skips the active row so its yellow highlight stays visible.
+.c__dataset-item {
+  cursor: pointer;
+  padding-top: 2px;
+  padding-bottom: 2px;
+
+  &:hover:not(.bg-yellow-lighten-4) {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+</style>

@@ -34,8 +34,7 @@
       "jest",
       "cypress",
       "cypress-file-upload",
-      "node",
-      "vuetify"
+      "node"
     ],
     "paths": {
       "@/*": [

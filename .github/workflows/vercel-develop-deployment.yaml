@@ -23,6 +23,18 @@ jobs:
         run: yarn lint
       - name: Unit test
         run: yarn test
+      - name: Library build
+        run: yarn lib-build
+      # Fails if Sentry / PWA / external CDN URLs leaked into the package
+      # (integration spec acceptance criterion 3).
+      - name: Library bundle check
+        run: yarn lib-check
+      - name: Build example host app
+        run: npm ci && npm run build
+        working-directory: examples/host-app
+      - name: Build example vanilla host
+        run: npm ci && npm run build
+        working-directory: examples/vanilla-host
   Deploy-Develop:
     runs-on: ubuntu-latest
     needs: [UnitTest]
