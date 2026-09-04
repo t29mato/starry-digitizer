@@ -628,7 +628,14 @@ rather than the internal `.c__canvas-wrapper` / `.c__table-wrapper` classes.
 | `image-canvas` | The `<canvas>` the figure image is drawn on. |
 | `mask-canvas` | Overlay `<canvas>` holding the committed selection-area mask. |
 | `temp-mask-canvas` | Overlay `<canvas>` for the mask stroke/box being dragged right now. |
-| `interpolation-guide-canvas` | Overlay `<canvas>` for the interpolation guide curve. |
+| `interpolation-guide-canvas` | Overlay `<canvas>` for the interpolation guide curve. Its width is `image width × canvasHandler.scale`, which makes it the one place the current zoom is readable from the DOM. |
+
+#### Magnifier (`MagnifierMain`)
+
+| `data-cy` | Element |
+|---|---|
+| `magnifier-mask-canvas` | Overlay `<canvas>` mirroring the selection-area mask inside the magnifier. |
+| `magnifier-interpolation-canvas` | Overlay `<canvas>` mirroring the interpolation guide inside the magnifier. |
 
 #### Data table (`DataTable`)
 

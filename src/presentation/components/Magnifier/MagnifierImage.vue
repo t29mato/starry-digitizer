@@ -18,6 +18,7 @@
     <canvas
       id="magnifierMaskCanvas"
       ref="magnifierMaskCanvas"
+      data-cy="magnifier-mask-canvas"
       :style="{
         position: 'absolute',
         top: 0,
@@ -36,6 +37,7 @@
     <canvas
       id="magnifierInterpolationCanvas"
       ref="magnifierInterpolationCanvas"
+      data-cy="magnifier-interpolation-canvas"
       :style="{
         position: 'absolute',
         top: 0,

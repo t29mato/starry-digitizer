@@ -84,12 +84,12 @@ describe('host app: two digitizers on one page', () => {
     // INFO: canvasHandler.resize() sizes the magnifier mask canvas together
     // with the image canvas, so a per-instance width proves the magnifier is
     // wired to its own canvasHandler and not to the first instance's.
-    cy.get(`${FIRST} #magnifierMaskCanvas`).should(
+    cy.get(`${FIRST} [data-cy=magnifier-mask-canvas]`).should(
       'have.attr',
       'width',
       String(FIRST_IMAGE_WIDTH),
     )
-    cy.get(`${SECOND} #magnifierMaskCanvas`).should(
+    cy.get(`${SECOND} [data-cy=magnifier-mask-canvas]`).should(
       'have.attr',
       'width',
       String(SECOND_IMAGE_WIDTH),
