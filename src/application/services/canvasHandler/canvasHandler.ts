@@ -36,6 +36,11 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   penToolSizePx = 50
   eraserSizePx = 30
   uploadImageUrl = ''
+  // INFO: a fit-to-frame that has been asked for but could not be applied yet
+  // (the frame had no layout / the canvases were not all attached). Exposed
+  // read-only through `hasPendingFitSize` so the presentation layer can retry
+  // it, and only then — a manual zoom must never be overridden.
+  private isFitSizePending = false
 
   // INFO: The presentation layer owns the actual elements and hands them over
   // in mounted() / takes them back in beforeUnmount(). Looking them up by id
@@ -104,13 +109,20 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     })
   }
 
+  // INFO: the magnifier mask canvas is deliberately NOT required here. It is
+  // owned by MagnifierImage.vue, which sits inside <magnifier-main> behind
+  // `v-if="options.features.magnifier"` (StarryDigitizer.vue), so a host that
+  // passes `features: { magnifier: false }` never attaches it. Requiring it
+  // made hasCanvases permanently false for those hosts, which made resize()
+  // always bail and left the image undrawn — the digitizer looked empty.
+  // Everything that mirrors onto that canvas already guards for its absence
+  // (see copyMaskToMagnifier and clearImage).
   get hasCanvases(): boolean {
     return Boolean(
       this.attachedWrapper &&
         this.attachedImageCanvas &&
         this.attachedMaskCanvas &&
-        this.attachedTempMaskCanvas &&
-        this.attachedMagnifierMaskCanvas,
+        this.attachedTempMaskCanvas,
     )
   }
 
@@ -384,6 +396,9 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     this.uploadImageUrl = ''
     this.scale = 1
     this.isDrawnMask = false
+    // INFO: no image, nothing to fit — a leftover request would otherwise make
+    // the next layout change re-fit an image that is gone.
+    this.isFitSizePending = false
     // INFO: only the canvases that are currently attached — clearImage() is
     // also reachable before mount (reset() on a fresh context).
     ;[
@@ -470,41 +485,96 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     return `CanvasHandler: "${name}" is not attached. Call attachCanvases({ ${name} }) from the component that owns the element.`
   }
 
+  // INFO: whether a fit-to-frame was asked for but could not be applied yet
+  // (see drawFitSizeImage). The presentation layer watches the frame and calls
+  // drawFitSizeImage() again once it has a size — see CanvasMain.vue.
+  get hasPendingFitSize(): boolean {
+    return this.isFitSizePending
+  }
+
   drawFitSizeImage() {
+    // INFO: no image yet — there is nothing to fit and nothing to remember
+    // either: loading one calls back in through changeImage() / applyImage().
+    // Distinguishing this from "the frame has no size yet" (below) matters,
+    // because only the latter is worth retrying on a layout change.
+    if (this.originalWidth <= 0 || this.originalHeight <= 0) {
+      return
+    }
+
     const wrapperWidthPx = this.canvasWrapper.offsetWidth
     const wrapperHeightPx = this.canvasWrapper.offsetHeight
+    // INFO: the frame is not laid out yet. A host that lets flex size the
+    // canvas (--sd-canvas-height: 0 / --sd-canvas-min-height: 0) can hand the
+    // image over inside that window, and fitting to 0x0 would burn
+    // scale = Math.min(0, 0) - 0.01 = -0.01 into the handler while resize()
+    // rejects the negative size and leaves the canvases alone — the image and
+    // the points overlaid on it (CanvasPoints uses `scale`) would then be
+    // drawn at different scales. Keep the current scale and remember that a
+    // fit is owed instead.
+    if (wrapperWidthPx <= 0 || wrapperHeightPx <= 0) {
+      this.isFitSizePending = true
+      return
+    }
+
     const widthScale = wrapperWidthPx / this.originalWidth
     const heightScale = wrapperHeightPx / this.originalHeight
     const scale = Math.min(widthScale, heightScale) - 0.01 // INFO: 0.01を引くことで、画像がはみ出さないようにする
     const fitWidth = this.originalWidth * scale
     const fitHeight = this.originalHeight * scale
-    this.resize(fitWidth, fitHeight)
+    // INFO: `scale` is only adopted when the canvases really took the new
+    // size (canvases may not all be attached yet).
+    if (!this.resize(fitWidth, fitHeight)) {
+      this.isFitSizePending = true
+      return
+    }
     this.scale = scale
+    this.isFitSizePending = false
   }
 
   scaleDown() {
     if (this.scale <= 0.1) {
       throw new Error(`The scale doesn't allow it to be a minus.`)
     }
-    this.scale = this.scale - 0.1
-    const scaledWidth = this.originalWidth * this.scale
-    const scaledHeight = this.originalHeight * this.scale
-    this.resize(scaledWidth, scaledHeight)
+    const scale = this.scale - 0.1
+    const scaledWidth = this.originalWidth * scale
+    const scaledHeight = this.originalHeight * scale
+    if (!this.resize(scaledWidth, scaledHeight)) {
+      return
+    }
+    this.scale = scale
+    this.clearPendingFitSize()
   }
 
   scaleUp() {
-    this.scale = this.scale + 0.1
-    const scaledWidth = this.originalWidth * this.scale
-    const scaledHeight = this.originalHeight * this.scale
-    this.resize(scaledWidth, scaledHeight)
+    const scale = this.scale + 0.1
+    const scaledWidth = this.originalWidth * scale
+    const scaledHeight = this.originalHeight * scale
+    if (!this.resize(scaledWidth, scaledHeight)) {
+      return
+    }
+    this.scale = scale
+    this.clearPendingFitSize()
   }
 
   drawOriginalSizeImage() {
-    this.resize(this.originalWidth, this.originalHeight)
+    if (!this.resize(this.originalWidth, this.originalHeight)) {
+      return
+    }
     this.scale = 1
+    this.clearPendingFitSize()
   }
 
-  resize(width: number, height: number) {
+  // INFO: the user picked a zoom by hand, so an owed fit is stale — a later
+  // layout change must not silently override what they chose.
+  private clearPendingFitSize() {
+    this.isFitSizePending = false
+  }
+
+  // INFO: returns whether the canvases were actually resized. Callers that
+  // keep a scale of their own (drawFitSizeImage / scaleUp / scaleDown /
+  // drawOriginalSizeImage) must not update `scale` when this is false, or the
+  // image and the points overlaid on it are drawn at different scales.
+  resize(width: number, height: number): boolean {
     // INFO: nothing to resize before an image is loaded, and drawing from a
     // 0x0 canvas throws InvalidStateError. Reachable because the keyboard
     // zoom shortcuts are handled on `document` and therefore reach every
@@ -518,7 +588,7 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
       width <= 0 ||
       height <= 0
     ) {
-      return
+      return false
     }
 
     const tempMaskCanvas = document.createElement('canvas')
@@ -544,15 +614,15 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     this.imageCanvas.element.width = width
     this.imageCanvas.element.height = height
     this.imageCanvas.context.drawImage(this.imageElement, 0, 0, width, height)
-    this.magnifierMaskCanvas.element.width = width
-    this.magnifierMaskCanvas.element.height = height
-    this.magnifierMaskCanvas.context.drawImage(
-      this.maskCanvas.element,
-      0,
-      0,
-      width,
-      height,
-    )
+    // INFO: absent when the host hides the magnifier; mirroring onto it is a
+    // preview, so its absence must not stop the resize.
+    const magnifier = this.attachedMagnifierMaskCanvas
+    if (magnifier) {
+      magnifier.element.width = width
+      magnifier.element.height = height
+      magnifier.context.drawImage(this.maskCanvas.element, 0, 0, width, height)
+    }
+    return true
   }
 
   setUploadImageUrl(url: string) {

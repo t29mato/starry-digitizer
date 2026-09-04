@@ -40,6 +40,12 @@ export interface CanvasHandlerInterface extends PixelSource {
   get scaledCursor(): Coord
   get hasImage(): boolean
   get hasCanvases(): boolean
+  // INFO: true when drawFitSizeImage() was called while the canvas frame had
+  // no layout yet (a host may let flex size it, so the image can arrive before
+  // the frame has a height) and the fit is therefore still owed. The
+  // presentation layer re-runs drawFitSizeImage() when the frame gets a size,
+  // but only while this is true — a manual zoom must not be overridden.
+  get hasPendingFitSize(): boolean
   get canvasWrapper(): HTMLDivElement
   get imageCanvas(): HTMLCanvas
   get maskCanvas(): HTMLCanvas

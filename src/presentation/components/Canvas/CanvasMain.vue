@@ -115,6 +115,9 @@ export default defineComponent({
       // with more than one <StarryDigitizer> every instance sees every move;
       // this tells them apart.
       isDraggingHere: false,
+      // INFO: watches the canvas frame so a fit that had to be postponed
+      // (see applyPendingFitSize) can be re-run once the frame is laid out.
+      wrapperResizeObserver: undefined as ResizeObserver | undefined,
     }
   },
   mounted() {
@@ -139,6 +142,21 @@ export default defineComponent({
     this.interpolator.setGuideCanvas(
       new HTMLCanvas(this.$refs.interpolationGuideCanvas as HTMLCanvasElement),
     )
+
+    // INFO: a host may let flex size the canvas frame
+    // (--sd-canvas-height: 0 / --sd-canvas-min-height: 0), so the image can be
+    // handed to the engine while the frame is still 0px high. drawFitSizeImage()
+    // postpones the fit in that window; re-run it here once the frame is
+    // measured. The observer lives in the presentation layer on purpose:
+    // canvasHandler ships in the `starry-digitizer/core` entry and must not
+    // grow another browser API dependency (docs/design/engine-boundary.md §2).
+    // ResizeObserver is guarded because jsdom has none.
+    if (typeof ResizeObserver !== 'undefined' && this.$refs.canvasWrapper) {
+      this.wrapperResizeObserver = new ResizeObserver(() =>
+        this.applyPendingFitSize(),
+      )
+      this.wrapperResizeObserver.observe(this.$refs.canvasWrapper as Element)
+    }
   },
   beforeUnmount() {
     if (this.boundKeyDownHandler) {
@@ -149,6 +167,8 @@ export default defineComponent({
       document.removeEventListener('mousemove', this.boundMouseMoveHandler)
       this.boundMouseMoveHandler = null
     }
+    this.wrapperResizeObserver?.disconnect()
+    this.wrapperResizeObserver = undefined
     this.canvasHandler.detachCanvases([
       'wrapper',
       'imageCanvas',
@@ -157,6 +177,18 @@ export default defineComponent({
     ])
   },
   methods: {
+    // INFO: only re-fits while the engine says a fit is still owed. Without
+    // that guard every layout change (a sidebar opening, the window resizing)
+    // would throw away a zoom the user chose with +/-/0.
+    applyPendingFitSize(): void {
+      if (!this.canvasHandler.hasPendingFitSize) {
+        return
+      }
+      this.canvasHandler.drawFitSizeImage()
+      if (!this.canvasHandler.hasPendingFitSize) {
+        this.interpolator.resizeCanvas()
+      }
+    },
     // INFO: the element this component owns via a template ref — passed to
     // getMouseCoordFromMouseEvent instead of an id lookup so that several
     // digitizer instances can share a page. Undefined before mount / after
