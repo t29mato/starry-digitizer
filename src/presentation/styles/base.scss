@@ -2,12 +2,40 @@
 // component used to lean on Vuetify for both; now that Vuetify is gone
 // (docs/design/framework-dependency-review.md — the maintainer chose to drop
 // UI-framework dependencies entirely) the library ships this small sheet
-// instead. Everything is scoped under `.starry-digitizer` so nothing leaks
+// instead. Every *rule* is scoped under `.starry-digitizer` so nothing leaks
 // into the host page, and the utility class names intentionally mirror the
 // Vuetify ones that were already used in templates (d-flex, pa-1, mb-2 ...)
 // to keep the migration mechanical.
 
-.starry-digitizer {
+// INFO: theme token defaults live on `:root`, not on `.starry-digitizer`.
+// A host that lays out the individual panels itself (`starry-digitizer/vue`)
+// ends up with more than one region to wrap — Starrydata3 puts its own
+// property/unit selectors *inside* the axis panel — and requiring a
+// `.starry-digitizer` wrapper around each of them would define the same 15
+// tokens over and over in unrelated subtrees. Declaring the defaults once at
+// the document root means a panel renders correctly with no wrapper at all;
+// the wrapper keeps its old meaning (utility classes, layout, the base font)
+// and is still what existing hosts write.
+//
+// INFO: `:where()` is what makes that safe — it flattens the selector to
+// specificity 0, so *anything* a host writes wins:
+//   - `:root { --sd-primary: … }`               (0,1,0) — page-wide theme
+//   - `.starry-digitizer { --sd-primary: … }`   (0,1,0) — documented recipe
+//   - `.v-application .starry-digitizer { … }`  (0,2,0) — Starrydata3 today
+// Per-wrapper themes keep working too: a declaration on a wrapper element
+// beats what that element inherits from the root, so two wrappers can carry
+// two different palettes. Do NOT add `.starry-digitizer` to this selector
+// list — a declaration on the wrapper itself, even at specificity 0, would
+// shadow the host's `:root` theme for everything inside it.
+//
+// INFO: only the *theme* tokens move. The layout custom properties
+// (`--sd-height`, `--sd-*-sidebar-*`, `--sd-canvas-*`, `--sd-magnifier-size`,
+// `--sd-*-list-*-height` …) are deliberately absent here and stay per
+// instance: they have no default rule at all, each component reads them as
+// `var(--sd-x, <fallback>)`, and the host sets them on the element that owns
+// the height. Hoisting those to `:root` would make two digitizers on one page
+// share one set of dimensions — see docs/embedding.rst §10.6.
+:where(:root) {
   --sd-primary: #1e88e5;
   --sd-primary-contrast: #ffffff;
   --sd-secondary: #1976d2;
@@ -23,7 +51,9 @@
   --sd-radius: 4px;
   --sd-font: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --sd-font-size: 14px;
+}
 
+.starry-digitizer {
   font-family: var(--sd-font);
   font-size: var(--sd-font-size);
   line-height: 1.4;

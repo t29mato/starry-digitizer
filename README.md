@@ -98,9 +98,26 @@ whichever entry point you use; every rule in it is scoped under the
 import 'starry-digitizer/styles'
 ```
 
-Colors can be themed through CSS custom properties on the root class, e.g.
+Colors can be themed through CSS custom properties, e.g.
 `.starry-digitizer { --sd-primary: #1e3a5f; }` (see `src/presentation/styles/base.scss`
 for the full list).
+
+The library's own values for those tokens are declared on `:where(:root)`, which has
+zero specificity. Three things follow:
+
+- **Any host declaration wins**, whether it is on `:root`, on `.starry-digitizer`, or on
+  something more specific. Load order does not matter.
+- **Panels themed without a wrapper.** A host composing the panels itself (see
+  `starry-digitizer/vue` below) does not have to wrap each panel in
+  `.starry-digitizer` just to make the colors resolve. Note that the spacing
+  utilities the panels use (`d-flex`, `pa-1`, …) *are* still scoped to that class,
+  so a panel outside a wrapper keeps its colors but loses its padding.
+- **Per-instance themes still work.** Declaring tokens on a wrapper themes that
+  subtree only, so two digitizers on one page can look different.
+
+Layout sizes are a separate group and stay on the wrapper — see
+[Layout (CSS custom properties)](#layout-css-custom-properties). They describe one
+instance's box, so they must not be hoisted to `:root`.
 
 ### Choosing an entry point
 
