@@ -402,6 +402,18 @@ interface DatasetValues {
 }
 ```
 
+`points` are rounded to a **significant-digit** count, not returned at full float
+precision: with the default of 4, a point at 299.86 K comes back as 299.9. The
+count is the "Effective digits" field in the magnifier settings (1–10), so it is
+a user setting rather than a constant. `pixelPoints` is never rounded and round-
+trips exactly, so a host that needs full precision can convert the pixels itself.
+
+Do not use an absolute or relative epsilon to compare `points` against expected
+values — the error scales with the value and with the digit setting. The useful
+tolerance is one pixel expressed in axis units (`axis range / plot height in px`,
+or `decades / height` on a log axis), which is also the precision the digitizer
+can actually resolve.
+
 ### Datasets and external IDs
 
 `DatasetDTO.externalId` is an optional, opaque string the host can use to bind a
