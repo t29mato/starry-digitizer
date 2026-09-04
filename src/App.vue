@@ -78,7 +78,7 @@ import {
   triggerLoadProjectDialog,
 } from '@/presentation/utils/projectFileDialog'
 import { copyActiveDatasetToClipboard } from '@/application/utils/dataExport'
-import { toggleInterpolation } from '@/application/utils/interpolationToggle'
+import { toggleInterpolation } from '@/presentation/utils/interpolationToggle'
 import { createAppPersistence } from '@/appPersistence'
 import type { ProjectDTO } from '@/application/dto/projectDTO'
 import {
@@ -269,6 +269,14 @@ export default defineComponent({
       () => this.canvasHandler.uploadImageUrl,
       (url: string) => this.persistImage(url),
     )
+    // INFO: watched rather than saved from the menu handler, because the
+    // interpolation switch inside ExtractorSettings toggles the same flag from
+    // within the library — saving only on the menu path would miss the common
+    // one.
+    this.$watch(
+      () => this.interpolator.isActive,
+      () => this.persistSettings(),
+    )
   },
   methods: {
     importPoints(points: any) {
@@ -283,7 +291,7 @@ export default defineComponent({
     // DTO and clears the undo history), so the app goes through it too.
     async restoreAutoSavedWork() {
       const saved = await persistence.load()
-      if (saved) {
+      if (saved?.project) {
         // INFO: an older session that only ever used the sample figure has no
         // image of its own; fall back to the same default a fresh visit gets.
         await this.digitizerRef()?.loadProject(
@@ -295,6 +303,16 @@ export default defineComponent({
         // through its own `image` watcher.
         this.imageSource = DEFAULT_IMAGE
       }
+      // INFO: outside the branch above — a remembered setting is restored even
+      // when there is no saved project, e.g. the user flipped a switch and
+      // reloaded before digitizing anything.
+      if (saved?.settings) {
+        // INFO: setIsActive(), not toggleInterpolation() — the latter also
+        // re-materializes points and redraws the preview, which is what a user
+        // CLICK should do, not what restoring a remembered flag should. This
+        // matches what the library's removed initialize() used to do.
+        this.interpolator.setIsActive(saved.settings.isInterpolatorActive)
+      }
       await this.markAutoSaveBaseline()
     },
     // INFO: adopt whatever is on the canvas now as "already saved", then let
@@ -305,6 +323,12 @@ export default defineComponent({
       this.lastSavedImageUrl = this.canvasHandler.uploadImageUrl
       await this.$nextTick()
       this.autoSaveReady = true
+    },
+    persistSettings() {
+      if (!this.autoSaveReady) return
+      persistence.saveSettings({
+        isInterpolatorActive: this.interpolator.isActive,
+      })
     },
     onProjectUpdate(project: ProjectDTO) {
       if (!this.autoSaveReady) return

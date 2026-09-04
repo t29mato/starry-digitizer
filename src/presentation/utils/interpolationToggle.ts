@@ -1,6 +1,11 @@
 import { DigitizerContext } from '@/application/digitizerContext'
 import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
 
+// INFO: this lives in presentation, not application, because it reaches for
+// forceRenderCanvasPoints (a rendering workaround) and is only ever called from
+// components. It used to sit in application/utils and was the last place where
+// application imported from presentation.
+//
 // INFO: Extracted from ExtractorSettings.vue's handleOnClickInterpolatiorSwitch
 // so App.vue's View menu can toggle interpolation the same way the panel
 // switch does. This isn't just interpolator.setIsActive() — turning

@@ -113,7 +113,7 @@ import { MANUAL_MODE } from '@/constants'
 import { ManualMode } from '@/@types/types'
 
 import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
-import { toggleInterpolation } from '@/application/utils/interpolationToggle'
+import { toggleInterpolation } from '@/presentation/utils/interpolationToggle'
 
 export default defineComponent({
   components: {

@@ -29,6 +29,7 @@ const DB_VERSION = 1
 const STORE_NAME = 'session'
 const PROJECT_KEY = 'project'
 const IMAGE_KEY = 'image'
+const SETTINGS_KEY = 'settings'
 
 /** Minimal key/value store, so the persistence logic can be tested without IndexedDB. */
 export interface SessionStore {
@@ -38,9 +39,25 @@ export interface SessionStore {
 }
 
 export interface SavedSession {
-  project: ProjectDTO
+  /**
+   * Absent when nothing was digitized yet. Settings are saved independently,
+   * so a session can hold a remembered preference and no project at all.
+   */
+  project?: ProjectDTO
   /** Absent when no image was ever saved (the app then keeps the one its `image` prop loaded). */
   image?: Blob
+  /** Absent until the user has changed a setting. */
+  settings?: AppSettings
+}
+
+/**
+ * App-level preferences that used to be persisted by the library itself under
+ * one process-wide localStorage key. The library dropped that: it has no
+ * identity that survives a reload, so it cannot tell two digitizers on a page
+ * apart. The app can, because there is only ever one.
+ */
+export interface AppSettings {
+  isInterpolatorActive: boolean
 }
 
 export interface AppPersistence {
@@ -49,6 +66,7 @@ export interface AppPersistence {
   saveProject(project: ProjectDTO): Promise<void>
   /** `null` removes the saved image (the app has none any more). */
   saveImage(image: Blob | null): Promise<void>
+  saveSettings(settings: AppSettings): Promise<void>
   /** Drop everything — "Start Over". */
   clear(): Promise<void>
 }
@@ -70,6 +88,14 @@ function isProjectLike(value: unknown): value is ProjectDTO {
     typeof candidate.version === 'string' &&
     Array.isArray(candidate.axisSets) &&
     Array.isArray(candidate.datasets)
+  )
+}
+
+function isSettingsLike(value: unknown): value is AppSettings {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as AppSettings).isInterpolatorActive === 'boolean'
   )
 }
 
@@ -199,8 +225,15 @@ export function createAppPersistence(
           opened.get(PROJECT_KEY),
           opened.get(IMAGE_KEY),
         ])
-        if (!isProjectLike(project)) return null
-        return image instanceof Blob ? { project, image } : { project }
+        const settings = await opened.get(SETTINGS_KEY)
+        const saved: SavedSession = {}
+        // INFO: each piece stands on its own. Returning null as soon as there
+        // is no project would throw away a remembered setting from a visit
+        // where the user changed a switch without digitizing anything.
+        if (isProjectLike(project)) saved.project = project
+        if (image instanceof Blob) saved.image = image
+        if (isSettingsLike(settings)) saved.settings = settings
+        return saved.project || saved.image || saved.settings ? saved : null
       } catch (error) {
         warn('could not read the auto-saved work', error)
         return null
@@ -221,6 +254,12 @@ export function createAppPersistence(
       return enqueue('project save', (opened) => opened.put(PROJECT_KEY, plain))
     },
 
+    saveSettings(settings) {
+      return enqueue('settings save', (opened) =>
+        opened.put(SETTINGS_KEY, { ...settings }),
+      )
+    },
+
     saveImage(image) {
       return enqueue('image save', (opened) =>
         image === null
@@ -233,6 +272,7 @@ export function createAppPersistence(
       return enqueue('clear', async (opened) => {
         await opened.delete(PROJECT_KEY)
         await opened.delete(IMAGE_KEY)
+        await opened.delete(SETTINGS_KEY)
       })
     },
   }
