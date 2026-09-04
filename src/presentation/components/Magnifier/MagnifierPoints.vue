@@ -11,6 +11,8 @@
       position: 'absolute',
       top: `${yPx * magnifier.scale}px`,
       left: `${xPx * magnifier.scale}px`,
+      // INFO: translate(-${a - b}) だと a - b が負のとき `--5px` という不正な
+      // CSS になり変形が丸ごと無効化されるため、符号を畳んだ式で書く (#255)
       transform: `scale(${magnifier.scale}) translate(${
         magnifierHalfSize / magnifier.scale - canvasHandler.cursor.xPx
       }px, ${
