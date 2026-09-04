@@ -40,8 +40,19 @@ describe('migrateProject', () => {
       expect(migrated.version).toBe(PROJECT_DTO_VERSION)
     })
 
-    it('fills in a default canvasHandler when it is missing', () => {
+    // INFO: the regression this guards. A fabricated `{ scale: 1 }` is
+    // indistinguishable from a saved one, and restoreProject() used to assign
+    // it over the fit factor the image had just been drawn at — the image kept
+    // its fit size while the points/axes/guide were drawn at scale 1.
+    it('leaves canvasHandler absent when the input has none', () => {
       const migrated = migrateProject(legacyProject())
+
+      expect(migrated.canvasHandler).toBeUndefined()
+      expect(migrated).not.toHaveProperty('canvasHandler')
+    })
+
+    it('still fills the per-field defaults of a canvasHandler that IS present', () => {
+      const migrated = migrateProject({ ...legacyProject(), canvasHandler: {} })
 
       expect(migrated.canvasHandler).toEqual({
         scale: 1,

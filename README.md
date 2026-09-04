@@ -443,7 +443,12 @@ expected to store the DTO verbatim without interpreting it, so:
 - `migrateProject(dto)` converts any supported older DTO to the current version and is
   called internally on every `project` prop / `loadProject()` call.
 - An unrecognized version raises the `error` event with code `DTO_VERSION_UNSUPPORTED`.
-- Display-only values such as `canvasHandler.scale` are optional on restore.
+- `canvasHandler` is optional: a DTO without it restores fine, and no defaults are
+  invented for it.
+- `canvasHandler.scale` is written into the DTO but **never restored from it**. It is the
+  fit factor of the image against the canvas frame that was on screen when the project was
+  saved, so it means nothing in a differently sized frame. `loadProject()` re-fits the
+  image to the current frame instead.
 
 ```ts
 import { migrateProject, PROJECT_DTO_VERSION, createEmptyProject } from 'starry-digitizer'

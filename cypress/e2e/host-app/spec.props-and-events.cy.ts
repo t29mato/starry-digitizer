@@ -27,10 +27,18 @@ function calibrateAndAddPoints() {
   return chain
 }
 
-/** Drops `timestamp`, which changes on every DTO snapshot. */
-function withoutTimestamp(json: string) {
+/**
+ * Drops the parts of a ProjectDTO that are not expected to compare equal
+ * across two snapshots: `timestamp` (changes every time) and `canvasHandler`,
+ * whose `scale` is the fit factor of the image against the canvas frame at the
+ * moment of the snapshot. It is written into the DTO but never restored from
+ * it (see application/dto/canvasHandlerDTO.ts), and a remount re-fits the
+ * image, so it legitimately differs from the value that was emitted before.
+ */
+function withoutVolatileFields(json: string) {
   const dto = JSON.parse(json)
   delete dto.timestamp
+  delete dto.canvasHandler
   return dto
 }
 
@@ -66,7 +74,7 @@ describe('host app: props, events and remounting', () => {
     cy.get('[data-cy=project-json]')
       .invoke('text')
       .then((text) => {
-        before.project = withoutTimestamp(text)
+        before.project = withoutVolatileFields(text)
       })
     cy.get('[data-cy=get-values]').click()
     cy.get('[data-cy=values-json]')
@@ -87,7 +95,7 @@ describe('host app: props, events and remounting', () => {
     cy.get('[data-cy=project-json]')
       .invoke('text')
       .should((text) => {
-        expect(withoutTimestamp(text)).to.deep.equal(before.project)
+        expect(withoutVolatileFields(text)).to.deep.equal(before.project)
       })
     cy.get('[data-cy=get-values]').click()
     cy.get('[data-cy=values-json]')

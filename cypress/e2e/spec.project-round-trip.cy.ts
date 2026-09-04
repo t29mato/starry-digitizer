@@ -6,6 +6,7 @@
 
 import {
   visitApp,
+  resetZoom,
   calibrateTwoPoints,
   clickCanvas,
   setAxisValues,
@@ -80,6 +81,11 @@ describe('File menu: project ZIP round trip', () => {
 
         clickMenuItem('File', 'Load Project')
         selectProjectFile({ contents, fileName: 'project.zip' })
+        // INFO: loading a project re-fits the image to the current frame — the
+        // zoom is NOT part of what a project saves (canvasHandlerDTO.scale is
+        // write-only), so pin it back to 100% before comparing on-canvas
+        // positions that were recorded at 100%.
+        resetZoom()
 
         // Axis values
         assertAxisValues({ x1: '0', x2: '10', y1: '0', y2: '100' })
@@ -118,6 +124,9 @@ describe('File menu: project ZIP round trip', () => {
         clickMenuItem('File', 'Load Project')
         selectProjectFile({ contents, fileName: 'project.zip' })
         canvasPoints().should('have.length', 1)
+        // INFO: see above — the load re-fits, and QUARTER is a fixed pixel
+        // coordinate that only maps to a quarter of the axis span at 100%.
+        resetZoom()
 
         // INFO: a brand new point placed at the quarter position must be
         // calibrated by the RESTORED axis coordinates. That only yields

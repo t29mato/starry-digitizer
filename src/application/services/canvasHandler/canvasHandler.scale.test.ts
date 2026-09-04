@@ -105,6 +105,18 @@ describe('CanvasHandler scaling', () => {
       expect(canvasHandler.hasPendingFitSize).toBe(false)
     })
 
+    // INFO: reachable now that loadProject() re-fits after a restore — a host
+    // can restore a project without the component being mounted, and reading
+    // the wrapper would throw.
+    it('keeps the scale and owes a fit when nothing is attached at all', () => {
+      loadImage(canvasHandler)
+
+      expect(() => canvasHandler.drawFitSizeImage()).not.toThrow()
+
+      expect(canvasHandler.scale).toBe(1)
+      expect(canvasHandler.hasPendingFitSize).toBe(true)
+    })
+
     it('keeps the scale when the canvases are not all attached yet', () => {
       const wrapper = createWrapper(WRAPPER_WIDTH, WRAPPER_HEIGHT)
       canvasHandler.attachCanvases({ wrapper })

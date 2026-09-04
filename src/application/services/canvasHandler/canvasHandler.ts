@@ -19,6 +19,18 @@ import { PixelSource } from '@/application/ports/pixelSource'
 export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   isDrawnMask = false
   imageElement: HTMLImageElement
+  // INFO: how large the image is drawn relative to its intrinsic size — the
+  // single number every overlay (CanvasPoints, CanvasAxisSet, CanvasCursor,
+  // Interpolator) multiplies its image-pixel coordinates by.
+  //
+  // NEVER assign it from outside without resizing the canvases in the same
+  // breath. It is only ever valid together with the canvas element sizes that
+  // resize() writes; a bare assignment leaves the image at one factor and
+  // everything drawn on top of it at another. Two bugs have already been
+  // caused by exactly that (drawFitSizeImage adopting a scale whose resize()
+  // had bailed out, and restoreProject assigning the saved DTO value). Change
+  // it through drawFitSizeImage / drawOriginalSizeImage / scaleUp / scaleDown,
+  // which all adopt the new factor only after resize() reports success.
   scale = 1
   cursor: Coord = { xPx: 0, yPx: 0 }
   isCursorOnCanvas = false
@@ -498,6 +510,17 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     // Distinguishing this from "the frame has no size yet" (below) matters,
     // because only the latter is worth retrying on a layout change.
     if (this.originalWidth <= 0 || this.originalHeight <= 0) {
+      return
+    }
+
+    // INFO: the canvases are not lent to the engine yet (before mount / after
+    // unmount), so there is no frame to measure and reading `canvasWrapper`
+    // would throw. Same outcome as a frame with no layout: remember the fit is
+    // owed and let the presentation layer re-run it. Reachable now that
+    // loadProject() re-fits after a restore, which a host can trigger without
+    // going through the mounted component.
+    if (!this.hasCanvases) {
+      this.isFitSizePending = true
       return
     }
 

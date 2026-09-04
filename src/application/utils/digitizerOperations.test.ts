@@ -7,6 +7,7 @@ import {
 } from './digitizerOperations'
 import { DigitizerContext } from '@/application/digitizerContext'
 import { ProjectService } from '@/application/services/projectService/projectService'
+import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
 import { HistoryManager } from '@/application/services/historyManager/historyManager'
 import { AxisSetRepository } from '@/domain/repositories/axisSetRepository/axisSetRepository'
 import { DatasetRepository } from '@/domain/repositories/datasetRepository/datasetRepository'
@@ -248,11 +249,17 @@ describe('loadProject', () => {
     expect(c.interpolator.resizeCanvas).toHaveBeenCalled()
   })
 
-  it('does not touch the canvas image when no image is given', async () => {
+  it('does not load an image when none is given', async () => {
     await loadProject(c.ctx, createEmptyProject())
 
     expect(c.canvasHandler.initializeImageElement).not.toHaveBeenCalled()
-    expect(c.canvasHandler.drawFitSizeImage).not.toHaveBeenCalled()
+    expect(c.canvasHandler.setUploadImageUrl).not.toHaveBeenCalled()
+    // INFO: the fit IS asked for on this path too (see the re-fit after the
+    // restore), and it is a no-op while no image is loaded — CanvasHandler
+    // returns before touching the canvases or the scale. See
+    // canvasHandler.scale.test.ts, "leaves the scale alone and owes nothing
+    // when no image is loaded".
+    expect(c.canvasHandler.drawFitSizeImage).toHaveBeenCalled()
   })
 
   it('applies the image before restoring when one is given', async () => {
@@ -263,6 +270,101 @@ describe('loadProject', () => {
     )
     expect(c.canvasHandler.setUploadImageUrl).toHaveBeenCalledWith(DATA_URL)
     expect(c.projectService.restoreProject).toHaveBeenCalled()
+  })
+
+  it('re-fits after the restore, not before it', async () => {
+    const order: string[] = []
+    c.canvasHandler.drawFitSizeImage.mockImplementation(() => {
+      order.push('fit')
+    })
+    jest.spyOn(c.projectService, 'restoreProject').mockImplementation(() => {
+      order.push('restore')
+    })
+
+    await loadProject(c.ctx, createEmptyProject(), DATA_URL)
+
+    // INFO: applyImage() fits first, then the restore runs, then the fit is
+    // recomputed so the canvas size and canvasHandler.scale agree.
+    expect(order).toEqual(['fit', 'restore', 'fit'])
+  })
+})
+
+// INFO: the reported bug, end to end over the real CanvasHandler: the image
+// is drawn at the fit factor of the current frame while the points, axis
+// markers and interpolation guide are drawn with `canvasHandler.scale`. After
+// loadProject() the two must agree, whatever the saved DTO says.
+describe('loadProject: canvas scale', () => {
+  const IMAGE_WIDTH = 400
+  const IMAGE_HEIGHT = 200
+  const WRAPPER_WIDTH = 800
+  const WRAPPER_HEIGHT = 600
+  // INFO: mirrors drawFitSizeImage() — min(800/400, 600/200) - 0.01
+  const EXPECTED_FIT_SCALE = 2 - 0.01
+
+  const buildContextWithRealCanvas = () => {
+    const c = buildContext()
+    const canvasHandler = new CanvasHandler()
+
+    const wrapper = document.createElement('div')
+    // INFO: jsdom does no layout, so offsetWidth/Height have to be defined.
+    Object.defineProperty(wrapper, 'offsetWidth', {
+      value: WRAPPER_WIDTH,
+      configurable: true,
+    })
+    Object.defineProperty(wrapper, 'offsetHeight', {
+      value: WRAPPER_HEIGHT,
+      configurable: true,
+    })
+    canvasHandler.attachCanvases({
+      wrapper,
+      imageCanvas: document.createElement('canvas'),
+      maskCanvas: document.createElement('canvas'),
+      tempMaskCanvas: document.createElement('canvas'),
+    })
+    // INFO: a real <img> only reports a size once it has decoded.
+    canvasHandler.imageElement.width = IMAGE_WIDTH
+    canvasHandler.imageElement.height = IMAGE_HEIGHT
+    canvasHandler.setUploadImageUrl(DATA_URL)
+
+    const projectService = new ProjectService(
+      c.axisSetRepository,
+      c.datasetRepository,
+      canvasHandler,
+    )
+    const ctx = {
+      ...c.ctx,
+      canvasHandler,
+      projectService,
+    } as unknown as DigitizerContext
+
+    return { ctx, canvasHandler }
+  }
+
+  it('ends with the scale that fits the CURRENT frame', async () => {
+    const { ctx, canvasHandler } = buildContextWithRealCanvas()
+
+    await loadProject(ctx, createEmptyProject())
+
+    expect(canvasHandler.scale).toBeCloseTo(EXPECTED_FIT_SCALE)
+    expect(canvasHandler.imageCanvas.element.width).toBe(
+      Math.trunc(IMAGE_WIDTH * EXPECTED_FIT_SCALE),
+    )
+    // INFO: what the overlays multiply by has to match what the image was
+    // drawn at, or they drift apart (the smaller the frame, the further).
+    expect(canvasHandler.imageCanvas.element.width / IMAGE_WIDTH).toBeCloseTo(
+      canvasHandler.scale,
+    )
+  })
+
+  it('ignores the scale saved in the DTO', async () => {
+    const { ctx, canvasHandler } = buildContextWithRealCanvas()
+    const project = createEmptyProject()
+    // INFO: a scale saved against a completely different frame.
+    project.canvasHandler = { scale: 0.5, manualMode: MANUAL_MODE.UNSET }
+
+    await loadProject(ctx, project)
+
+    expect(canvasHandler.scale).toBeCloseTo(EXPECTED_FIT_SCALE)
   })
 })
 

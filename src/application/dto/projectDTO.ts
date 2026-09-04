@@ -32,7 +32,12 @@ export interface ProjectDTO {
   activeAxisSetId: number
   datasets: DatasetDTO[]
   activeDatasetId: number
-  /** Display-only state. Optional on read: defaults are applied if missing. */
+  /**
+   * Display-only state. Genuinely optional: `migrateProject` leaves it absent
+   * when the input has none rather than inventing defaults, because a
+   * fabricated `scale` of 1 is indistinguishable from a saved one and would be
+   * restored over the freshly computed fit factor (see migrateCanvasHandler).
+   */
   canvasHandler?: CanvasHandlerDTO
 }
 
@@ -95,7 +100,7 @@ export function migrateProject(input: unknown): ProjectDTO {
       ? input.activeDatasetId
       : datasets[0]?.id ?? 1
 
-  return {
+  const migrated: ProjectDTO = {
     version: PROJECT_DTO_VERSION,
     timestamp:
       typeof input.timestamp === 'string'
@@ -105,8 +110,16 @@ export function migrateProject(input: unknown): ProjectDTO {
     activeAxisSetId,
     datasets,
     activeDatasetId,
-    canvasHandler: migrateCanvasHandler(input.canvasHandler),
   }
+
+  // INFO: the key stays absent when the writer had no canvas state, so
+  // consumers can tell "nothing was saved" from "this was saved".
+  const canvasHandler = migrateCanvasHandler(input.canvasHandler)
+  if (canvasHandler) {
+    migrated.canvasHandler = canvasHandler
+  }
+
+  return migrated
 }
 
 function migrateAxisSet(raw: unknown, index: number): AxisSetDTO {
@@ -157,13 +170,25 @@ function migrateDataset(raw: unknown, index: number): DatasetDTO {
   return migrated
 }
 
-function migrateCanvasHandler(raw: unknown): CanvasHandlerDTO {
-  const record = isRecord(raw) ? raw : {}
+/**
+ * Upgrade the optional `canvasHandler` block, or report that there is none.
+ *
+ * INFO: a missing block must stay missing. Substituting `{ scale: 1,
+ * manualMode: UNSET }` made every major-1 file — and every host DTO that never
+ * carried canvas state — look like a saved `scale` of 1, which
+ * `restoreProject()` then assigned over the fit factor the image had just been
+ * drawn at. The canvases kept the fit size while the point / axis / guide
+ * overlays were drawn at 1, so they drifted further apart the smaller the
+ * viewport was. A block that IS present but partial still gets per-field
+ * defaults; only "no block at all" is reported as undefined.
+ */
+function migrateCanvasHandler(raw: unknown): CanvasHandlerDTO | undefined {
+  if (!isRecord(raw)) return undefined
   return {
-    scale: typeof record.scale === 'number' ? record.scale : 1,
+    scale: typeof raw.scale === 'number' ? raw.scale : 1,
     manualMode:
-      typeof record.manualMode === 'number'
-        ? (record.manualMode as CanvasHandlerDTO['manualMode'])
+      typeof raw.manualMode === 'number'
+        ? (raw.manualMode as CanvasHandlerDTO['manualMode'])
         : MANUAL_MODE.UNSET,
   }
 }

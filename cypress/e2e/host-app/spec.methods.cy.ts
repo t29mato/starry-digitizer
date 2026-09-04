@@ -10,7 +10,7 @@ import {
   ProjectLike,
   readJson,
   visitHostApp,
-  withoutTimestamp,
+  withoutVolatileFields,
 } from '../../support/hostApp'
 
 describe('host app: getProject()', () => {
@@ -33,8 +33,8 @@ describe('host app: getProject()', () => {
           .should((pulled) => {
             // INFO: timestamp is restamped on every snapshot, so it is the
             // one field that legitimately differs.
-            expect(withoutTimestamp(pulled)).to.deep.equal(
-              withoutTimestamp(emitted),
+            expect(withoutVolatileFields(pulled)).to.deep.equal(
+              withoutVolatileFields(emitted),
             )
           })
       })

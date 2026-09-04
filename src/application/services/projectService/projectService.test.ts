@@ -189,7 +189,7 @@ describe('ProjectService', () => {
       expect(datasetRepository.datasets[1].externalId).toBe('sample-7')
       expect(datasetRepository.activeDatasetId).toBe(2)
 
-      expect(canvasHandler.scale).toBe(2.5)
+      // INFO: manualMode is portable, `scale` is not — see below.
       expect(canvasHandler.manualMode).toBe(MANUAL_MODE.EDIT)
     })
 
@@ -215,8 +215,13 @@ describe('ProjectService', () => {
       expect(datasetRepository.datasets[0].name).toBe('Dataset 1')
     })
 
-    it('tolerates a DTO with no canvasHandler and leaves the canvas untouched', () => {
-      canvasHandler.scale = 3
+    // INFO: the regression this guards (the reported bug). loadProject() fits
+    // the image FIRST, so `scale` already holds the correct fit factor by the
+    // time restoreProject() runs. Resetting it to the fabricated default of a
+    // DTO that never carried canvas state left the canvases at the fit size
+    // and every overlay drawn at 1.
+    it('leaves the canvas scale alone for a DTO with no canvasHandler', () => {
+      canvasHandler.scale = 0.855
       canvasHandler.setManualMode(MANUAL_MODE.DELETE)
       const dto = buildProjectDTO() as Record<string, unknown>
       delete dto.canvasHandler
@@ -224,10 +229,34 @@ describe('ProjectService', () => {
       projectService.restoreProject(dto as unknown as ProjectDTO)
 
       expect(datasetRepository.datasets).toHaveLength(2)
-      // INFO: migrateProject substitutes the defaults for a missing
-      // canvasHandler, so the canvas resets rather than keeping stale state.
-      expect(canvasHandler.scale).toBe(1)
-      expect(canvasHandler.manualMode).toBe(MANUAL_MODE.UNSET)
+      expect(canvasHandler.scale).toBe(0.855)
+      // INFO: no canvasHandler block at all, so there is no manual mode to
+      // restore either — whatever was on screen stays on screen.
+      expect(canvasHandler.manualMode).toBe(MANUAL_MODE.DELETE)
+    })
+
+    // INFO: `scale` is the fit factor against the frame that was on screen
+    // when the project was saved, so it is not portable and is deliberately
+    // dropped even when the DTO does carry one. Assigning it here could not
+    // resize the canvases anyway.
+    it('does not restore the canvas scale even when the DTO carries one', () => {
+      canvasHandler.scale = 0.855
+      const dto = buildProjectDTO() as ProjectDTO
+      dto.canvasHandler = { scale: 0.5, manualMode: MANUAL_MODE.ADD }
+
+      projectService.restoreProject(dto)
+
+      expect(canvasHandler.scale).toBe(0.855)
+    })
+
+    it('restores manualMode when the DTO carries a canvasHandler', () => {
+      canvasHandler.setManualMode(MANUAL_MODE.DELETE)
+      const dto = buildProjectDTO() as ProjectDTO
+      dto.canvasHandler = { scale: 0.5, manualMode: MANUAL_MODE.ADD }
+
+      projectService.restoreProject(dto)
+
+      expect(canvasHandler.manualMode).toBe(MANUAL_MODE.ADD)
     })
 
     it('accepts a legacy 1.11.2 project', () => {

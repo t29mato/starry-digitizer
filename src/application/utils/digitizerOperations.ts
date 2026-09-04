@@ -92,9 +92,24 @@ export async function loadProject(
     }
   })
 
+  // INFO: fit LAST, after the restore, so the canvas size and
+  // canvasHandler.scale are settled together and every overlay below draws at
+  // the same factor. Order matters: applyImage() already fits, but that
+  // happens before restoreProject(), and a project restore is a whole-state
+  // swap — the zoom that was on screen a moment ago belongs to the previous
+  // figure, and the saved DTO cannot supply one (see canvasHandlerDTO.scale).
+  //
+  // Safe on the image-less path too (`image` omitted and nothing loaded yet):
+  // drawFitSizeImage() returns immediately while originalWidth/Height are 0,
+  // and it also bails out when the canvases are not attached, so neither
+  // `scale` nor the canvases are touched. Once an image does arrive,
+  // applyImage() fits it.
+  ctx.canvasHandler.drawFitSizeImage()
+
   if (ctx.interpolator.isActive) {
     ctx.interpolator.clearPreview()
   }
+  // INFO: after the fit, so the guide canvas is sized with the final scale.
   ctx.interpolator.resizeCanvas()
   ctx.historyManager.clear()
 }

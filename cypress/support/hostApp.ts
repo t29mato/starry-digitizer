@@ -55,10 +55,20 @@ export function setAxisValues(values: {
   })
 }
 
-/** Drops `timestamp`, which changes on every DTO snapshot. */
-export function withoutTimestamp(json: string): Record<string, unknown> {
+/**
+ * Drops the parts of a ProjectDTO that are not expected to compare equal
+ * across two snapshots:
+ *
+ * - `timestamp`, which changes on every snapshot;
+ * - `canvasHandler`, whose `scale` is the fit factor against the canvas frame
+ *   at the moment of the snapshot. It is written into the DTO but never read
+ *   back (see application/dto/canvasHandlerDTO.ts), and a remount re-fits the
+ *   image, so it legitimately differs from the value that was saved.
+ */
+export function withoutVolatileFields(json: string): Record<string, unknown> {
   const dto = JSON.parse(json) as Record<string, unknown>
   delete dto.timestamp
+  delete dto.canvasHandler
   return dto
 }
 

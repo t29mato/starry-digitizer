@@ -86,9 +86,25 @@ export class ProjectService implements ProjectServiceInterface {
         : this.datasetRepository.datasets[0].id,
     )
 
-    // INFO: display-only state; migrateProject guarantees defaults
+    // INFO: display-only state, and only the part of it that is portable.
+    // `dto.canvasHandler` is absent when the writer never had one (major 1
+    // files) — migrateProject leaves it undefined rather than inventing
+    // defaults, so "no canvas state saved" stays distinguishable from "canvas
+    // state saved".
+    //
+    // `canvasHandler.scale` is NOT restored on purpose:
+    //   - it is the fit factor of the image against the canvas frame that was
+    //     on screen when the project was saved, so it is meaningless as soon
+    //     as the frame has another size (another window, another host layout);
+    //   - assigning it here cannot resize anything (resize() lives on the
+    //     handler and is not called by an assignment), so the canvases keep
+    //     the size the real fit gave them while `scale` — which CanvasPoints,
+    //     CanvasAxisSet and Interpolator all draw with — says something else.
+    //     That is exactly how the overlays ended up drawn at scale 1 over a
+    //     correctly fitted image.
+    // The fit is recomputed after the restore instead; see
+    // digitizerOperations.loadProject().
     if (dto.canvasHandler) {
-      this.canvasHandler.scale = dto.canvasHandler.scale
       this.canvasHandler.setManualMode(dto.canvasHandler.manualMode)
     }
   }
