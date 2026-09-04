@@ -256,6 +256,68 @@ Notes:
 - Only one set of canvases may exist per context, so render `CanvasMain` once
   per context.
 
+##### Replacing the dataset list
+
+A host that wants its own dataset list (its own table, its own row actions)
+should drop `DatasetManager` and drive the engine through the dataset use
+cases instead of writing the repository calls by hand. Each one takes the
+context as its first argument:
+
+```ts
+import {
+  activateDataset,   // (ctx, id)  switch the active dataset
+  addDataset,        // (ctx)      append a row on the active axis set, activate it
+  removeDataset,     // (ctx, id)  delete one row
+  removeAllDatasets, // (ctx)      delete every row (the engine leaves one fresh row)
+  clearDatasetPoints,// (ctx, id)  empty one row, keep the row
+  viewAllDatasets,   // (ctx)      show every dataset at once (activeDatasetId 0)
+} from 'starry-digitizer/core'
+
+activateDataset(ctx, 2)
+```
+
+They are not thin wrappers — each one carries clean-up that is easy to miss
+and expensive to get wrong:
+
+- **The order inside `activateDataset()` is part of the specification.** The
+  interpolation preview is cleared *before* `setActiveDataset()`, never after.
+  `Interpolator.clearPreview()` always operates on
+  `datasetRepository.activeDataset`: it drops that dataset's temp points **and
+  deletes every id in its `manuallyAddedPointIds`**. Run after the switch, it
+  would delete the manually-added points of the dataset being switched *to*.
+  Do not reorder these calls in your own code, and do not call
+  `datasetRepository.setActiveDataset()` directly when interpolation may be on.
+- Switching rows adopts the new row's axis set and clears the mask. The mask
+  belongs to the row it was painted for; left up, the next extraction runs
+  inside the previous row's region and is calibrated against the previous
+  row's axes.
+- Deleting the *active* row is also a switch — `removeDataset()` promotes a
+  neighbouring row by itself — so it owes the same clean-up. `removeDataset()`
+  applies it only when the active row actually changed; `removeAllDatasets()`
+  always applies it, because the surviving row is a brand-new one even when
+  its id is still `1`.
+- `clearDatasetPoints()` only clears the preview when the target row *is* the
+  active one, so emptying row B cannot take row A's points with it.
+- The undo snapshot (`historyManager.capture()`) is taken inside
+  `addDataset`, `removeDataset`, `removeAllDatasets` and `clearDatasetPoints`.
+  You do not call `capture()` yourself for these. (`activateDataset` and
+  `viewAllDatasets` change no data and take no snapshot.)
+- They are safe to call before `CanvasMain` is mounted: the mask clear is
+  guarded by `canvasHandler.hasCanvases`.
+
+**Confirmation dialogs are yours.** These functions always do what they are
+told — no `window.confirm`, no wording, no i18n. The built-in panel asks
+before discarding unconfirmed interpolated points, before deleting a row that
+has points, and before deleting all datasets; a host that replaces the panel
+decides its own policy and then calls the function.
+
+```ts
+function onDeleteRow(dataset: DatasetInterface) {
+  if (dataset.points.length > 0 && !confirm(`Delete '${dataset.name}'?`)) return
+  removeDataset(ctx, dataset.id)
+}
+```
+
 #### `starry-digitizer/core` — non-Vue hosts
 
 `core` is the engine without any UI: the same state, operations and DTOs the

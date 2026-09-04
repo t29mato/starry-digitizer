@@ -49,6 +49,18 @@ export {
   loadProject,
   reset,
 } from './application/utils/digitizerOperations'
+// INFO: the dataset-list use cases. A host that replaces <DatasetManager>
+// with its own list drives it through these — they carry the call order, the
+// undo capture and the mask/axis-set clean-up a hand-written list would have
+// to rediscover. See README "Replacing the dataset list".
+export {
+  activateDataset,
+  addDataset,
+  removeDataset,
+  removeAllDatasets,
+  clearDatasetPoints,
+  viewAllDatasets,
+} from './application/utils/datasetOperations'
 export { getDatasetValues } from './application/utils/datasetValues'
 export type { DatasetValues } from './application/utils/datasetValues'
 export { loadImageAsDataUrl } from './application/utils/imageLoader'

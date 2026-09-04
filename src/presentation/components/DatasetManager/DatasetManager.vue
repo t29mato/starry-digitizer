@@ -144,7 +144,18 @@ import {
   getDatasetTableData,
   copyRowsToClipboard,
 } from '@/application/utils/dataExport'
-import { MASK_MODE } from '@/constants'
+// INFO: the dataset-list use cases live in the application layer so a host
+// that replaces this panel gets the same behaviour (call order, undo capture,
+// mask/axis-set clean-up) without reimplementing it. This component only
+// decides whether to ask the user first.
+import {
+  activateDataset,
+  addDataset,
+  clearDatasetPoints,
+  removeAllDatasets,
+  removeDataset,
+  viewAllDatasets,
+} from '@/application/utils/datasetOperations'
 
 export default defineComponent({
   components: { SdButton, SdCombobox, SdTextField },
@@ -153,11 +164,7 @@ export default defineComponent({
     const options = useDigitizerOptions()
     return {
       ctx,
-      canvasHandler: ctx.canvasHandler,
-      interpolator: ctx.interpolator,
-      historyManager: ctx.historyManager,
       datasetRepository: ctx.datasetRepository,
-      axisSetRepository: ctx.axisSetRepository,
       options,
     }
   },
@@ -192,18 +199,6 @@ export default defineComponent({
         'There are unconfirmed interpolated points. Do you want to discard them and switch to a different dataset?',
       )
     },
-    activateDataset(id: number) {
-      this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.setActiveDataset(id)
-      this.axisSetRepository.setActiveAxisSet(
-        this.datasetRepository.activeDataset.axisSetId,
-      )
-      // INFO: データセットが変えた時はマスクをクリアすることが多いので。
-      // INFO: ユーザーがマスクツールを解除したわけではない内部的な後始末なので、
-      // 打点モードを復元する exitMaskMode() ではなく setMaskMode(UNSET) を使う。
-      this.canvasHandler.clearMask()
-      this.canvasHandler.setMaskMode(MASK_MODE.UNSET)
-    },
     handleOnClickDataset(id: number) {
       if (
         id === this.datasetRepository.activeDatasetId ||
@@ -211,27 +206,17 @@ export default defineComponent({
       )
         return
 
-      this.activateDataset(id)
+      activateDataset(this.ctx, id)
     },
     handleOnClickViewAll() {
       if (!this.shouldContinueSwitchDataset()) return
 
-      this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.setActiveDataset(0)
-      this.canvasHandler.clearMask()
-      this.canvasHandler.setMaskMode(MASK_MODE.UNSET)
+      viewAllDatasets(this.ctx)
     },
     handleOnClickAddDatasetButton() {
       if (!this.shouldContinueSwitchDataset()) return
 
-      this.historyManager.capture()
-      this.datasetRepository.createNewDataset()
-
-      this.datasetRepository.lastDataset.setAxisSetId(
-        this.axisSetRepository.activeAxisSetId,
-      )
-
-      this.activateDataset(this.datasetRepository.lastDatasetId)
+      addDataset(this.ctx)
     },
     handleOnClickRemoveDatasetButton(datasetId?: number) {
       const targetDataset = datasetId
@@ -242,38 +227,25 @@ export default defineComponent({
 
       //NOTE: remove dataset without confirmation if the dataset doesn't have data points
       if (targetDataset.points.length === 0) {
-        this.removeDataset(targetDataset.id)
+        removeDataset(this.ctx, targetDataset.id)
         return
       }
 
       window.confirm(
         `Are you sure to delete '${targetDataset.name}'? This operation is irreversible.`,
-      ) && this.removeDataset(targetDataset.id)
-    },
-    removeDataset(datasetId: number) {
-      this.historyManager.capture()
-      this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.removeDataset(datasetId)
+      ) && removeDataset(this.ctx, targetDataset.id)
     },
     handleOnClickRemoveAllDatasetsButton() {
-      const totalPoints = this.datasetRepository.datasets.reduce(
-        (sum, dataset) => sum + dataset.points.length,
-        0,
-      )
+      const totalPoints = this.totalPointsCount
 
       if (totalPoints === 0) {
-        this.removeAllDatasets()
+        removeAllDatasets(this.ctx)
         return
       }
 
       window.confirm(
         `Are you sure to delete all ${this.datasetRepository.datasets.length} datasets? This will remove ${totalPoints} data points. This operation is irreversible.`,
-      ) && this.removeAllDatasets()
-    },
-    removeAllDatasets() {
-      this.historyManager.capture()
-      this.interpolator.isActive && this.interpolator.clearPreview()
-      this.datasetRepository.removeAllDatasets()
+      ) && removeAllDatasets(this.ctx)
     },
     async copyDatasetToClipboard(datasetId: number) {
       const dataset = this.datasetRepository.datasets.find(
@@ -287,13 +259,7 @@ export default defineComponent({
       await copyRowsToClipboard(getDatasetTableData(this.ctx, dataset))
     },
     handleOnClickClearDatasetPoints(datasetId: number) {
-      const dataset = this.datasetRepository.datasets.find(
-        (d) => d.id === datasetId,
-      )
-      if (!dataset) return
-      this.historyManager.capture()
-      dataset.clearPoints()
-      this.interpolator.clearPreview()
+      clearDatasetPoints(this.ctx, datasetId)
     },
   },
 })
