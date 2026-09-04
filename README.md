@@ -55,9 +55,24 @@ https://starrydigitizer.readthedocs.io/).
 
 ### Install
 
+The package is **not published to npm**. Build a tarball from this repository and
+install it from a path (see the host's own docs for where to keep it):
+
 ```bash
-npm install starry-digitizer
+git clone https://github.com/t29mato/starry-digitizer && cd starry-digitizer
+yarn install
+npm pack            # `prepack` runs the library build → starry-digitizer-<version>.tgz
 ```
+
+```bash
+# in the host application
+npm install /path/to/starry-digitizer-<version>.tgz
+```
+
+Committing that tarball into the host repository keeps installs reproducible
+(npm records its integrity hash) and works inside a Docker build with no network
+access. A `git+ssh://github.com/t29mato/starry-digitizer#<sha>` dependency also
+works — the `prepare` script builds the library on install.
 
 `vue` (^3.3) is the **only peer dependency**. The component brings its own minimal
 UI (plain Vue + scoped CSS, inline SVG icons) — no Vuetify, no icon font, no table

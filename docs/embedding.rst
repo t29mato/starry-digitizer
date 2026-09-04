@@ -31,13 +31,26 @@ props / events / メソッドの一覧など API の詳細は、リポジトリ�
 2. 前提(ホスト側で用意するもの)
 ========================================
 
-peerDependency は ``vue``(^3.3)だけです。UI フレームワーク(Vuetify 等)やアイコンフォントは
+peerDependency は ``vue``\ (^3.3)だけです。UI フレームワーク(Vuetify 等)やアイコンフォントは
 **不要** で、コンポーネントは自前の最小 UI(素の Vue + scoped CSS、インライン SVG アイコン)を持ちます。
 ホストが React や素の JavaScript でも、Vue ランタイム 1 つを足すだけで動きます。
 
+パッケージは npm レジストリには公開していません。リポジトリを clone して ``npm pack`` で
+tarball を作り、パス指定でインストールします(``prepack`` が必ずライブラリをビルドします)。
+
 .. code-block:: bash
 
-   npm install starry-digitizer vue
+   # ライブラリ側(1回)
+   git clone https://github.com/t29mato/starry-digitizer && cd starry-digitizer
+   yarn install && npm pack
+
+   # ホストアプリ側
+   npm install /path/to/starry-digitizer-<version>.tgz vue
+
+tarball をホスト側リポジトリにコミットしておくと、``package-lock.json`` に integrity ハッシュが
+記録され、ネットワークのない Docker ビルドでも同じ成果物が再現します。
+``git+ssh://github.com/t29mato/starry-digitizer#<sha>`` 形式の依存も使えます(``prepare``
+スクリプトが install 時にビルドします)。
 
 ライブラリの CSS は ``import 'starry-digitizer/styles'`` で 1 回だけ読み込みます。
 全ルールは ``.starry-digitizer`` 配下にスコープされ、ホストのグローバル CSS と衝突しません。
