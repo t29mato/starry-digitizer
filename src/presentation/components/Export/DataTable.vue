@@ -117,7 +117,7 @@ export default defineComponent({
 .c__table-wrapper {
   display: inline-block;
   max-width: 100%;
-  max-height: 30vh;
+  max-height: var(--sd-table-max-height, 30vh);
   overflow: auto;
 }
 

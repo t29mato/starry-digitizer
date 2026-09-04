@@ -2,15 +2,19 @@
   <div class="starry-digitizer pa-1">
     <div class="c__wrapper">
       <div class="c__left-sidebar">
+        <slot name="aside-top"></slot>
         <image-settings
           v-if="options.features.imageUpload"
           @image-replaced="onImageReplaced"
           @error="onError"
         ></image-settings>
-        <axis-set-manager></axis-set-manager>
-        <axis-set-settings></axis-set-settings>
-        <dataset-manager></dataset-manager>
-        <data-table />
+        <axis-set-manager v-if="options.features.axisPanel"></axis-set-manager>
+        <axis-set-settings
+          v-if="options.features.axisPanel"
+        ></axis-set-settings>
+        <dataset-manager v-if="options.features.datasetPanel"></dataset-manager>
+        <data-table v-if="options.features.dataTable" />
+        <slot name="aside-bottom"></slot>
       </div>
       <div class="c__main-area">
         <canvas-header @error="onError"></canvas-header>
@@ -19,11 +23,14 @@
         <canvas-footer></canvas-footer>
       </div>
       <div class="c__right-sidebar">
-        <magnifier-main></magnifier-main>
-        <extractor-settings></extractor-settings>
+        <magnifier-main v-if="options.features.magnifier"></magnifier-main>
+        <extractor-settings
+          v-if="options.features.extractionPanel"
+        ></extractor-settings>
         <slot name="right-sidebar-footer"></slot>
       </div>
     </div>
+    <slot name="footer"></slot>
   </div>
 </template>
 
@@ -319,32 +326,58 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-$l_leftSidebarWidth: 260px;
-$l_rightSidebarWidth: 300px;
-$l_mainAreaSideMargin: 10px;
+// INFO: layout contract with the host (see README "Embedding in a fixed-height
+// pane"). Sizes are CSS custom properties on `.starry-digitizer`, and the
+// three columns are flex items rather than fixed widths + a calc() that has to
+// be kept in sync with them by hand.
+.starry-digitizer {
+  // INFO: `auto` keeps the standalone page flowing as before. A host that owns
+  // the height sets `--sd-height: 100%` (its own pane being 100dvh, say) and
+  // the whole tree then fits inside without the page scrolling.
+  height: var(--sd-height, auto);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 
 .c {
   &__wrapper {
     display: flex;
+    // INFO: min-height:0 lets the columns shrink below their content so their
+    // own overflow:auto takes over instead of pushing the page taller.
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  &__left-sidebar,
+  &__right-sidebar {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   &__left-sidebar {
-    width: $l_leftSidebarWidth;
+    flex: 0 1 var(--sd-left-sidebar-width, 260px);
+    min-width: var(--sd-left-sidebar-min-width, 200px);
+    max-width: var(--sd-left-sidebar-max-width, 340px);
   }
 
   &__right-sidebar {
-    width: $l_rightSidebarWidth;
+    flex: 0 1 var(--sd-right-sidebar-width, 300px);
+    min-width: var(--sd-right-sidebar-min-width, 240px);
+    max-width: var(--sd-right-sidebar-max-width, 380px);
   }
 
   &__main-area {
-    margin: 0 $l_mainAreaSideMargin;
-    width: calc(
-      100% -
-        (
-          #{$l_leftSidebarWidth} + #{$l_rightSidebarWidth} +
-            (#{$l_mainAreaSideMargin * 2})
-        )
-    );
+    display: flex;
+    flex-direction: column;
+    // INFO: min-width:0 stops the canvas from forcing the row wider than the
+    // host pane; min-height:0 does the same vertically.
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    margin: 0 var(--sd-main-area-margin, 10px);
   }
 }
 </style>

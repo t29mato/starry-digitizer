@@ -233,6 +233,63 @@ React 用のコード例と、``file:`` 依存に固有の Vite 設定(``resolve
 ``examples/vanilla-host/README.md`` を参照してください。
 
 
+10.5 レイアウトを自分で組む
+--------------------------------------------------
+
+``<StarryDigitizer>`` は 3 カラムの既製レイアウトです。ホストが独自の配置(1画面完結の
+エディタなど)を組みたい場合は、\ **個々のパネルを直接配置**\ できます。
+
+.. code-block:: ts
+
+   import {
+     createDigitizerContext, provideDigitizerContext,
+     provideDigitizerOptions, DEFAULT_OPTIONS,
+     CanvasHeader, CanvasMain, CanvasFooter,
+     AxisSetManager, AxisSetSettings, ExtractorSettings, MagnifierMain,
+     loadProject, getDatasetValues,
+   } from 'starry-digitizer'
+
+   const ctx = createDigitizerContext()
+   provideDigitizerContext(ctx)
+   provideDigitizerOptions({ ...DEFAULT_OPTIONS, datasetNameCandidates: sampleNames })
+
+公開しているパネル: ``CanvasHeader`` / ``CanvasMain`` / ``CanvasFooter`` /
+``AxisSetManager`` / ``AxisSetSettings`` / ``DatasetManager`` / ``DataTable`` /
+``ExtractorSettings`` / ``ImageSettings`` / ``MaskSettings`` / ``ColorSettings`` /
+``MagnifierMain`` / ``ConfirmerBar``。
+
+同じ context を共有するので、どこに置いても状態は同期します。``CanvasMain`` は
+canvas 要素の持ち主なので、1 つの context につき 1 つだけ配置してください。
+
+既製レイアウトのまま差し込み口だけ増やしたい場合は、名前付きスロット
+``aside-top`` / ``aside-bottom`` / ``right-sidebar-footer`` / ``footer`` が使えます。
+
+10.6 高さをホストに合わせる(1画面レイアウト)
+--------------------------------------------------
+
+寸法はすべて ``.starry-digitizer`` 上の CSS カスタムプロパティです。内部クラス名を
+``:deep()`` で上書きする必要はありません。
+
+.. code-block:: css
+
+   .digitize-pane { height: 100dvh; display: flex; min-height: 0; }
+   .digitize-pane .starry-digitizer { --sd-height: 100%; }
+
+``--sd-height: 100%`` を渡すと、コンポーネントは与えられた高さに収まり、余った高さは
+キャンバスが使い、各サイドバーは内側でスクロールします。ページに縦スクロールは出ません。
+
+主なプロパティ: ``--sd-height`` / ``--sd-left-sidebar-width`` / ``--sd-right-sidebar-width``
+(および各 ``-min-width`` / ``-max-width``) / ``--sd-main-area-margin`` /
+``--sd-canvas-height`` / ``--sd-canvas-min-height`` / ``--sd-table-max-height``。
+
+``--sd-canvas-height`` には長さを指定してください(``auto`` は不可)。フィット表示の倍率は
+キャンバス枠の実測高さから計算するため、内容依存の高さにすると循環します。
+
+不要なパネルは ``features`` で個別に消せます(``axisPanel`` / ``datasetPanel`` /
+``extractionPanel`` / ``magnifier`` / ``dataTable``)。ホスト側に同じ役割の UI がある場合、
+二重に見せないために使います。
+
+
 11. 制約
 ========================================
 

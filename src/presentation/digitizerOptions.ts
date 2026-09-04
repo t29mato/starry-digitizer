@@ -1,7 +1,13 @@
-import { inject } from 'vue'
+import { inject, provide } from 'vue'
 import type { InjectionKey } from 'vue'
 
-/** Feature toggles. All default to "on" in the standalone app. */
+/**
+ * Feature toggles. All default to "on" in the standalone app.
+ *
+ * The first three switch individual controls; the rest hide whole panels, for
+ * hosts that already provide the same thing in their own UI (a sample picker,
+ * a point-list editor, ...) and would otherwise show it twice.
+ */
 export interface StarryDigitizerFeatures {
   /** Show the image file input / accept drag&drop + paste. */
   imageUpload: boolean
@@ -9,6 +15,16 @@ export interface StarryDigitizerFeatures {
   zipExportImport: boolean
   /** Show "Copy to Clipboard" (CSV) buttons. */
   csvExport: boolean
+  /** Show the axis-set list and its calibration panel. */
+  axisPanel: boolean
+  /** Show the dataset list. */
+  datasetPanel: boolean
+  /** Show the manual/automatic extraction panel. */
+  extractionPanel: boolean
+  /** Show the magnifier. */
+  magnifier: boolean
+  /** Show the table of extracted values. */
+  dataTable: boolean
 }
 
 /**
@@ -35,6 +51,11 @@ export const DEFAULT_FEATURES: StarryDigitizerFeatures = {
   imageUpload: true,
   zipExportImport: true,
   csvExport: true,
+  axisPanel: true,
+  datasetPanel: true,
+  extractionPanel: true,
+  magnifier: true,
+  dataTable: true,
 }
 
 export const DEFAULT_OPTIONS: DigitizerOptions = {
@@ -43,6 +64,16 @@ export const DEFAULT_OPTIONS: DigitizerOptions = {
   datasetNameCandidates: [],
   assetBaseUrl: undefined,
   confirmImageReplace: true,
+}
+
+/**
+ * Provide options to panels rendered outside <StarryDigitizer>. Hosts that
+ * compose the exported panels themselves call this next to
+ * provideDigitizerContext(); otherwise every panel falls back to
+ * DEFAULT_OPTIONS.
+ */
+export function provideDigitizerOptions(options: DigitizerOptions): void {
+  provide(DIGITIZER_OPTIONS_KEY, options)
 }
 
 export function useDigitizerOptions(): DigitizerOptions {

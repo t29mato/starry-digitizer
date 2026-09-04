@@ -577,7 +577,14 @@ export default defineComponent({
     -webkit-user-drag: none;
     outline: solid 1px gray;
     overflow: auto;
-    height: 80vh;
+    // INFO: the height must stay definite — canvasHandler.drawFitSizeImage()
+    // reads offsetHeight to compute the fit scale, so a content-driven height
+    // would be circular. `flex: 1 1 auto` keeps that basis while letting the
+    // wrapper shrink or grow when the host gives .starry-digitizer a height
+    // (--sd-height), which is what makes a 100dvh embed work.
+    flex: 1 1 auto;
+    height: var(--sd-canvas-height, 80vh);
+    min-height: var(--sd-canvas-min-height, 240px);
   }
 }
 </style>

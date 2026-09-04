@@ -151,8 +151,100 @@ so the same `<StarryDigitizer>` can be reused when switching figures.
 | `imageUpload` | `true` only when `image` is **not** given | When the host supplies the image, it also owns image changes. |
 | `zipExportImport` | `true` only when neither `image` nor `project` is given | Embedded hosts save through their own API, not ZIP files. |
 | `csvExport` | `true` | "Copy to clipboard" buttons. |
+| `axisPanel` | `true` | The axis-set list and its calibration panel. |
+| `datasetPanel` | `true` | The dataset list. Turn it off when the host already has its own picker for the same thing. |
+| `extractionPanel` | `true` | Manual / automatic extraction. |
+| `magnifier` | `true` | The magnifier. |
+| `dataTable` | `true` | The table of extracted values. |
 
 Any key you pass in `features` overrides the derived default.
+
+### Slots
+
+| Slot | Where |
+|---|---|
+| `aside-top` | Top of the left sidebar |
+| `aside-bottom` | Bottom of the left sidebar |
+| `right-sidebar-footer` | Bottom of the right sidebar |
+| `footer` | Full width, below the three columns |
+
+### Layout (CSS custom properties)
+
+The component is a three-column flex layout. Every size is a custom property on
+the `.starry-digitizer` root, so a host can adjust it without reaching into
+internal class names:
+
+| Property | Default | Meaning |
+|---|---|---|
+| `--sd-height` | `auto` | Set to `100%` to make the digitizer fill a host pane of a known height instead of growing with its content. |
+| `--sd-left-sidebar-width` / `--sd-right-sidebar-width` | `260px` / `300px` | Preferred column widths (`flex-basis`). |
+| `--sd-left-sidebar-min-width` / `--sd-left-sidebar-max-width` | `200px` / `340px` | Bounds for the left column. Right column has the same pair. |
+| `--sd-main-area-margin` | `10px` | Gap between the canvas column and the sidebars. |
+| `--sd-canvas-height` | `80vh` | Canvas height when the parent has no height of its own. |
+| `--sd-canvas-min-height` | `240px` | Floor for the canvas when the pane is short. |
+| `--sd-table-max-height` | `30vh` | Height cap for the data table. |
+
+#### Embedding in a fixed-height pane
+
+To build a single-screen editor with no page scrolling, give the host pane a
+definite height and hand it to the component:
+
+```css
+.digitize-pane { height: 100dvh; display: flex; min-height: 0; }
+.digitize-pane .starry-digitizer { --sd-height: 100%; }
+```
+
+The canvas then takes whatever height is left over, and each sidebar scrolls
+inside itself. `--sd-canvas-height` must stay a length (not `auto`): the fit
+calculation reads the wrapper's measured height, so a content-driven height
+would be circular.
+
+### Composing the panels yourself
+
+When the built-in three-column layout is not the arrangement you want, place the
+panels yourself. Create one context, provide it, and render any subset — they
+all read that context, so they stay in sync:
+
+```vue
+<script setup lang="ts">
+import {
+  createDigitizerContext, provideDigitizerContext,
+  provideDigitizerOptions, DEFAULT_OPTIONS,
+  CanvasHeader, CanvasMain, CanvasFooter, AxisSetManager, AxisSetSettings,
+  ExtractorSettings, MagnifierMain,
+  loadProject, getDatasetValues,
+} from 'starry-digitizer'
+import 'starry-digitizer/styles'
+
+const ctx = createDigitizerContext()
+provideDigitizerContext(ctx)
+provideDigitizerOptions({ ...DEFAULT_OPTIONS, datasetNameCandidates: sampleNames })
+
+await loadProject(ctx, savedProject, imageBlob)
+const values = getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, ctx.magnifier.effectiveDigits)
+</script>
+
+<template>
+  <div class="my-layout">
+    <main><CanvasHeader /><CanvasMain /><CanvasFooter /></main>
+    <aside><AxisSetManager /><AxisSetSettings /><ExtractorSettings /><MagnifierMain /></aside>
+  </div>
+</template>
+```
+
+Exported panels: `CanvasHeader`, `CanvasMain`, `CanvasFooter`, `AxisSetManager`,
+`AxisSetSettings`, `DatasetManager`, `DataTable`, `ExtractorSettings`,
+`ImageSettings`, `MaskSettings`, `ColorSettings`, `MagnifierMain`,
+`ConfirmerBar`.
+
+Notes:
+
+- `CanvasMain` owns the canvas elements and must be mounted for anything that
+  draws; `MagnifierMain` attaches the magnifier canvas.
+- Options and locale are optional: without `provideDigitizerOptions()` /
+  `provideI18n()` the panels fall back to `DEFAULT_OPTIONS` and English.
+- Only one set of canvases may exist per context, so render `CanvasMain` once
+  per context.
 
 ### Events
 
