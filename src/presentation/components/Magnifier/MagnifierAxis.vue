@@ -36,7 +36,7 @@
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
 import { defineComponent } from 'vue'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { STYLE } from '@/constants'
 
 export default defineComponent({

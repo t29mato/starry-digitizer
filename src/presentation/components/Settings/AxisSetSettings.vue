@@ -8,6 +8,7 @@
               :model-value="displayVal.x1"
               @update:model-value="displayVal.x1 = String($event)"
               id="x1-value"
+              data-cy="x1-value"
               prefix="x1:"
               :disabled="options.readonly"
               type="text"
@@ -20,6 +21,7 @@
               :model-value="displayVal.x2"
               @update:model-value="displayVal.x2 = String($event)"
               id="x2-value"
+              data-cy="x2-value"
               prefix="x2:"
               :disabled="options.readonly"
               type="text"
@@ -48,6 +50,7 @@
               :model-value="displayVal.y1"
               @update:model-value="displayVal.y1 = String($event)"
               id="y1-value"
+              data-cy="y1-value"
               prefix="y1:"
               :disabled="options.readonly"
               type="text"
@@ -60,6 +63,7 @@
               :model-value="displayVal.y2"
               @update:model-value="displayVal.y2 = String($event)"
               id="y2-value"
+              data-cy="y2-value"
               prefix="y2:"
               :disabled="options.readonly"
               type="text"
@@ -174,7 +178,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { POINT_MODE, MANUAL_MODE } from '@/constants'

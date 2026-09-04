@@ -28,7 +28,7 @@ import { defineComponent } from 'vue'
 
 import { Point } from '@/@types/types'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { MANUAL_MODE, STYLE } from '@/constants'
 

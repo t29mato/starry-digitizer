@@ -78,7 +78,7 @@
 import { defineComponent } from 'vue'
 
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { POINT_MODE, STYLE, MANUAL_MODE } from '@/constants'
 

@@ -1,5 +1,4 @@
-import { inject, provide, reactive } from 'vue'
-import type { InjectionKey } from 'vue'
+import { reactive } from '@vue/reactivity'
 import { AxisSetRepositoryManager } from '@/domain/repositories/axisSetRepository/manager/axisSetRepositoryManager'
 import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 import { CanvasHandlerManager } from '@/application/services/canvasHandler/manager/canvasHandlerManager'
@@ -22,9 +21,17 @@ import type { HistoryManagerInterface } from '@/application/services/historyMana
 // INFO: One complete set of application state (repositories + services) for
 // a single <StarryDigitizer> instance. It replaces the former module-level
 // singletons in src/instanceStore/* so that mounting a fresh component gets
-// fresh state and nothing leaks between mounts. Components reach it through
-// provide/inject (see useDigitizerContext); the standalone app keeps one
-// shared instance in src/appContext.ts for its menu bar.
+// fresh state and nothing leaks between mounts. Vue components reach it
+// through provide/inject (see presentation/digitizerContextProvider); the
+// standalone app keeps one shared instance in src/appContext.ts for its menu
+// bar.
+//
+// INFO: this module is part of the `starry-digitizer/core` entry, so it must
+// not import Vue's renderer. `reactive` comes from @vue/reactivity, which the
+// `vue` package depends on — a Vue host therefore shares the very same copy
+// (verified: `require('vue').reactive === require('@vue/reactivity').reactive`)
+// and a non-Vue host can subscribe with the `effect` re-exported from core.
+// See docs/design/engine-boundary.md §1.
 export interface DigitizerContext {
   axisSetRepository: AxisSetRepositoryInterface
   datasetRepository: DatasetRepositoryInterface
@@ -36,10 +43,6 @@ export interface DigitizerContext {
   projectService: ProjectServiceInterface
   historyManager: HistoryManagerInterface
 }
-
-export const DIGITIZER_CONTEXT_KEY: InjectionKey<DigitizerContext> = Symbol(
-  'starry-digitizer-context',
-)
 
 export function createDigitizerContext(): DigitizerContext {
   const axisSetRepository = new AxisSetRepositoryManager().getNewInstance()
@@ -54,7 +57,8 @@ export function createDigitizerContext(): DigitizerContext {
   // INFO: reactive() so that Options API components can expose the members
   // from setup() and keep the same reactivity they had when the singletons
   // were returned from data(). reactive() returns the same proxy for the same
-  // target, so every consumer observes the same reactive object.
+  // target, so every consumer observes the same reactive object. Non-Vue
+  // hosts observe the same mutations through core's `effect`.
   //
   // NOTE (design debt, see docs/design/framework-dependency-review.md §1.2):
   // this reactive() wrapper is the ONLY change-notification mechanism the
@@ -79,18 +83,4 @@ export function createDigitizerContext(): DigitizerContext {
     ),
     historyManager: new HistoryManager(axisSetRepository, datasetRepository),
   }) as DigitizerContext
-}
-
-export function provideDigitizerContext(context: DigitizerContext): void {
-  provide(DIGITIZER_CONTEXT_KEY, context)
-}
-
-export function useDigitizerContext(): DigitizerContext {
-  const context = inject(DIGITIZER_CONTEXT_KEY)
-  if (!context) {
-    throw new Error(
-      'DigitizerContext is not provided. Components must be rendered inside <StarryDigitizer>.',
-    )
-  }
-  return context
 }

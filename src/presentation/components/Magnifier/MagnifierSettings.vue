@@ -61,7 +61,7 @@
 </template>
 
 <script lang="ts">
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { defineComponent } from 'vue'
 import { SdButton, SdCheckbox, SdDialog, SdTextField } from '@/presentation/ui'

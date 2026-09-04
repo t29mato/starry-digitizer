@@ -48,7 +48,7 @@ import { defineComponent } from 'vue'
 
 import { Coord } from '@/@types/types'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { STYLE } from '@/constants'
 
 export default defineComponent({

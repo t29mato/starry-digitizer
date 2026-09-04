@@ -138,7 +138,7 @@ import {
 } from '@mdi/js'
 
 import { SdButton, SdCombobox, SdTextField } from '@/presentation/ui'
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import {
   getDatasetTableData,

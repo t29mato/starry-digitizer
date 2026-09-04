@@ -109,7 +109,7 @@ import ColorSettings from './ColorSettings.vue'
 import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
 import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { SdButton, SdCheckbox, SdSelect, SdTextField } from '@/presentation/ui'
 import { MANUAL_MODE } from '@/constants'

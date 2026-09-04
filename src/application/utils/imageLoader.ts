@@ -1,5 +1,4 @@
 import { DigitizerError } from '@/application/errors'
-import { VALID_IMAGE_TYPES } from '@/presentation/constants'
 
 /**
  * Anything an image can be handed to StarryDigitizer as:
@@ -9,6 +8,30 @@ import { VALID_IMAGE_TYPES } from '@/presentation/constants'
  * - an http(s) or relative URL (fetched with credentials: 'include')
  */
 export type ImageSource = Blob | string
+
+// INFO: which image formats the digitizer accepts. It lived in
+// presentation/constants, which made application depend on presentation and
+// dragged that module into the `starry-digitizer/core` entry; the list is a
+// property of the loader, so it belongs here. The file input's `accept`
+// attribute is built from validImageExtensions() below.
+const VALID_IMAGE_TYPES: { extensions: string[]; fileType: string }[] = [
+  {
+    extensions: ['jpg', 'jpeg'],
+    fileType: 'image/jpeg',
+  },
+  {
+    extensions: ['png'],
+    fileType: 'image/png',
+  },
+  {
+    extensions: ['gif'],
+    fileType: 'image/gif',
+  },
+  {
+    extensions: ['webp'],
+    fileType: 'image/webp',
+  },
+]
 
 const VALID_MIME_TYPES = VALID_IMAGE_TYPES.map((t) => t.fileType)
 

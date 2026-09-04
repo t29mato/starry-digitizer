@@ -1,11 +1,14 @@
 <template>
   <div>
     <!-- INFO: the wrapper carries the margin because SdFileInput forwards
-         attrs (including `class`) to the inner <input>, and `id="fileInput"`
-         has to land on that input for the e2e specs. -->
+         attrs (including `class`) to the inner <input>, and the test hooks
+         (`data-cy="image-file-input"`, plus the legacy `id="fileInput"`) have
+         to land on that input. `data-cy` is the public contract for hosts
+         (see README "Test hooks"); the id is kept only for compatibility. -->
     <div class="mb-2">
       <sd-file-input
         id="fileInput"
+        data-cy="image-file-input"
         accept="image/*"
         @change="onImageUploaded"
         label="Choose an image"
@@ -24,7 +27,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { replaceImage } from '@/application/utils/digitizerOperations'
 import { DigitizerError } from '@/application/errors'

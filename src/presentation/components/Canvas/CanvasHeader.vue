@@ -11,7 +11,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 
 // INFO: Undo/Redo and zoom controls used to live here as buttons. They now
 // live in the App.vue menu bar (Edit/View) plus their existing keyboard

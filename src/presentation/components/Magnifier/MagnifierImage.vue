@@ -57,7 +57,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 
 export default defineComponent({

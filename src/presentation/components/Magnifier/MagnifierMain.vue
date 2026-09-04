@@ -114,7 +114,7 @@ import MagnifierSettingsBtn from './MagnifierSettingsBtn.vue'
 import MagnifierExtractSize from '@/presentation/components/Magnifier/MagnifierExtractSize.vue'
 import AxisSetCalculator from '@/domain/services/axisSetCalculator'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 
 export default defineComponent({
   components: {

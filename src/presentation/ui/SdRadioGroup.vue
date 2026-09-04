@@ -11,7 +11,7 @@
       :disabled="disabled || option.disabled"
       :model-value="modelValue"
       :data-value="option.value"
-      @update:model-value="$emit('update:modelValue', $event)"
+      @update:model-value="onUpdate"
     />
   </div>
 </template>
@@ -38,7 +38,16 @@ withDefaults(
   }>(),
   { label: undefined, disabled: false, inline: true },
 )
-defineEmits<{ 'update:modelValue': [value: string | number] }>()
+const emit = defineEmits<{ 'update:modelValue': [value: string | number] }>()
+
+// INFO: SdCheckbox is shared with the checkbox mode, so its emit is typed
+// `boolean | string | number`. In radio mode it always emits the option's
+// `value` (SdCheckbox.vue:74), which is string | number — narrow rather than
+// cast, so a future change to SdCheckbox cannot silently widen this emit.
+function onUpdate(value: boolean | string | number) {
+  if (typeof value === 'boolean') return
+  emit('update:modelValue', value)
+}
 </script>
 
 <style scoped lang="scss">

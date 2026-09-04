@@ -54,7 +54,7 @@ import { defineComponent } from 'vue'
 import { mdiPlus, mdiMinus } from '@mdi/js'
 
 import { SdButton, SdTextField } from '@/presentation/ui'
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { MANUAL_MODE } from '@/constants'
 

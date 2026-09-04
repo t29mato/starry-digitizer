@@ -32,7 +32,7 @@
 import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { MANUAL_MODE, MASK_MODE, POINT_MODE, STYLE } from '@/constants'
 
 const guideLineBaseStyles: CSSProperties = {

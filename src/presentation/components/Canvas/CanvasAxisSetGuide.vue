@@ -11,7 +11,7 @@
 import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { POINT_MODE } from '@/constants'
 
 const axisSetGuideCommonStyle: CSSProperties = {

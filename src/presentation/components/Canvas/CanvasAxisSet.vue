@@ -25,7 +25,7 @@
 
 <script lang="ts">
 import CanvasAxis from '@/presentation/components/Canvas/CanvasAxis.vue'
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 
 import { defineComponent } from 'vue'
 

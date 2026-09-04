@@ -3,14 +3,16 @@
     id="canvasWrapper"
     ref="canvasWrapper"
     class="c__canvas-wrapper"
+    data-cy="canvas-wrapper"
     @click="click"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
   >
-    <canvas id="imageCanvas" ref="imageCanvas"></canvas>
+    <canvas id="imageCanvas" ref="imageCanvas" data-cy="image-canvas"></canvas>
     <canvas
       id="tempMaskCanvas"
       ref="tempMaskCanvas"
+      data-cy="temp-mask-canvas"
       :style="{
         position: 'absolute',
         top: 0,
@@ -27,6 +29,7 @@
       }"
       id="maskCanvas"
       ref="maskCanvas"
+      data-cy="mask-canvas"
     ></canvas>
     <canvas
       :style="{
@@ -37,6 +40,7 @@
       }"
       id="interpolationGuideCanvas"
       ref="interpolationGuideCanvas"
+      data-cy="interpolation-guide-canvas"
     ></canvas>
     <canvas-axis-set-guide></canvas-axis-set-guide>
     <canvas-axis-set></canvas-axis-set>
@@ -47,12 +51,15 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import {
-  CanvasAxisSet,
-  CanvasPoints,
-  CanvasCursor,
-  CanvasAxisSetGuide,
-} from '.'
+// INFO: imported from the .vue files directly, not through './index'. The
+// barrel re-exports this component, so going through it makes index.ts and
+// CanvasMain.vue mutually dependent; with the library's three entry points
+// Rollup then splits them into different chunks and warns that the resulting
+// circular chunk dependency can break execution order.
+import CanvasAxisSet from './CanvasAxisSet.vue'
+import CanvasPoints from './CanvasPoints.vue'
+import CanvasCursor from './CanvasCursor.vue'
+import CanvasAxisSetGuide from './CanvasAxisSetGuide.vue'
 import { Vector } from '@/domain/models/axisSet/axisSetInterface'
 import { Coord, Point } from '@/@types/types'
 
@@ -60,7 +67,7 @@ import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtil
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
 
 import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { ProjectFileOperationResult } from '@/application/utils/projectFileOperations'
 import {

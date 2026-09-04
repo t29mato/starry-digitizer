@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { defineComponent } from 'vue'
 
 export default defineComponent({

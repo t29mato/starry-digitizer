@@ -1,6 +1,8 @@
 <template>
   <div>
-    <div class="c__table-wrapper">
+    <!-- INFO: `data-table-wrapper` marks the scrolling frame (this is what a
+         host measures for height); `data-table` marks the <table> itself. -->
+    <div class="c__table-wrapper" data-cy="data-table-wrapper">
       <table class="sd-table" data-cy="data-table">
         <thead>
           <tr>
@@ -36,7 +38,7 @@
 import { defineComponent } from 'vue'
 
 import { SdButton } from '@/presentation/ui'
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import {
   getActiveDatasetTableData,

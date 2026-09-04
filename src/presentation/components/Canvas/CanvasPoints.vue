@@ -73,7 +73,7 @@
 import CanvasPoint from '@/presentation/components/Canvas/CanvasPoint.vue'
 import { defineComponent } from 'vue'
 
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 
 export default defineComponent({
   components: {

@@ -61,7 +61,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { mdiCheck } from '@mdi/js'
 import { SdColorPicker, SdIcon, SdTextField } from '@/presentation/ui'

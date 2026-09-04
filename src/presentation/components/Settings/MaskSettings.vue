@@ -55,7 +55,7 @@
 <script lang="ts">
 import { MASK_MODE } from '@/constants'
 import { defineComponent } from 'vue'
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { SdButton, SdTextField } from '@/presentation/ui'
 

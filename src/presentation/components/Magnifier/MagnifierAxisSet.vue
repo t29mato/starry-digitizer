@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import { useDigitizerContext } from '@/application/digitizerContext'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import MagnifierAxis from '@/presentation/components/Magnifier/MagnifierAxis.vue'
 import { defineComponent } from 'vue'
 export default defineComponent({
