@@ -149,6 +149,26 @@ describe('createDigitizerOptions', () => {
     expect(options.features).toEqual({ ...DEFAULT_FEATURES, csvExport: false })
   })
 
+  it('ships axisOcr on by default', () => {
+    // INFO: OCR is opt-out, not opt-in: the standalone app and every host
+    // that says nothing keep the "Auto-fill values (OCR)" button. Only a
+    // host that does not want the ~11MB of tesseract assets turns it off.
+    expect(DEFAULT_FEATURES.axisOcr).toBe(true)
+    expect(DEFAULT_OPTIONS.features.axisOcr).toBe(true)
+    expect(createDigitizerOptions().features.axisOcr).toBe(true)
+  })
+
+  it('keeps every other flag when a host turns axisOcr off', () => {
+    const options = createDigitizerOptions({ features: { axisOcr: false } })
+
+    expect(options.features).toEqual({ ...DEFAULT_FEATURES, axisOcr: false })
+    expect(options.features.axisPanel).toBe(true)
+    expect(options.features.magnifier).toBe(true)
+    expect(Object.keys(options.features).sort()).toEqual(
+      Object.keys(DEFAULT_FEATURES).sort(),
+    )
+  })
+
   it('builds what <StarryDigitizer> builds from its props', () => {
     // INFO: mirrors the object the component used to assemble inline, so the
     // switch to this helper cannot have changed what it provides.

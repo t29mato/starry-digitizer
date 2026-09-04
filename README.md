@@ -370,6 +370,7 @@ is watched too and applies immediately, so a host can drive it from its own cont
 | `imageUpload` | `true` only when `image` is **not** given | When the host supplies the image, it also owns image changes. |
 | `zipExportImport` | `true` only when neither `image` nor `project` is given | Embedded hosts save through their own API, not ZIP files. |
 | `csvExport` | `true` | "Copy to clipboard" buttons. |
+| `axisOcr` | `true` | The "Auto-fill values (OCR)" button in the axis panel. Turn it off to drop OCR entirely: the tesseract.js worker, wasm core and English language data are ~11MB, and they are only reachable through that button. Hosts whose Content-Security-Policy forbids external origins **must** either serve those files themselves (`assetBaseUrl`) or set this to `false` — otherwise the button is there, is pressable, and fails every time, because tesseract.js falls back to its own CDN URLs. |
 | `axisPanel` | `true` | The axis-set list and its calibration panel. |
 | `datasetPanel` | `true` | The dataset list. Turn it off when the host already has its own picker for the same thing. |
 | `extractionPanel` | `true` | Manual / automatic extraction. |
@@ -526,6 +527,11 @@ OCR (tesseract.js) is loaded lazily and only when the feature is used. Pass
 `assetBaseUrl` to serve the tesseract worker, core (wasm) and language data from your
 own origin instead of a public CDN — required when your Content-Security-Policy
 restricts external origins.
+
+Where the assets are served from (`assetBaseUrl`) and whether the feature exists at
+all (`features.axisOcr`) are separate choices. A host that does not want the ~11MB of
+OCR assets at any URL passes `features.axisOcr: false`; nothing then imports
+tesseract.js.
 
 ### Test hooks (`data-cy`)
 

@@ -197,6 +197,33 @@ describe('host app: features.csvExport', () => {
   })
 })
 
+describe('host app: features.axisOcr', () => {
+  beforeEach(() => {
+    visitHostApp()
+  })
+
+  it('shows the OCR button and its accuracy hint while on (the default)', () => {
+    cy.get('[data-cy=toggle-axis-ocr]').should('contain.text', 'axisOcr: on')
+    cy.contains('button', 'Auto-fill values (OCR)').should('exist')
+    cy.get('.c__AxisSetRepository-settings__ocr-warning').should('exist')
+  })
+
+  it('hides the OCR button and its accuracy hint while off', () => {
+    cy.get('[data-cy=toggle-axis-ocr]').click()
+    cy.get('[data-cy=toggle-axis-ocr]').should('contain.text', 'axisOcr: off')
+    cy.contains('button', 'Auto-fill values (OCR)').should('not.exist')
+    cy.get('.c__AxisSetRepository-settings__ocr-warning').should('not.exist')
+    // INFO: only the OCR affordance goes away — the rest of the axis panel
+    // (the value fields, the calibration mode radios, the other buttons)
+    // has nothing to do with OCR and must stay.
+    cy.get('[data-cy=x1-value]').should('exist')
+    cy.get('[data-cy=y2-value]').should('exist')
+    cy.get('[data-cy=calibration-mode]').should('exist')
+    cy.contains('button', 'Edit Axes').should('exist')
+    cy.contains('button', 'Clear XY Axes').should('exist')
+  })
+})
+
 describe('host app: features.zipExportImport', () => {
   beforeEach(() => {
     visitHostApp()

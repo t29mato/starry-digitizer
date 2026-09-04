@@ -189,6 +189,24 @@ tarball をホスト側リポジトリにコミットしておくと、``package
 Content-Security-Policy で外部オリジンを制限しているホストは、これらのファイルを自分の
 オリジンに配置し ``assetBaseUrl`` で場所を指定してください。
 
+OCR 自体が不要なら ``features`` の ``axisOcr`` を ``false`` にしてください。
+「Auto-fill values (OCR)」ボタンとその周辺表示が消え、tesseract.js を動的 import する
+経路が無くなるため、ワーカー・wasm・言語データ(合計約 11MB)がホストの配信物から
+まるごと落ちます。``assetBaseUrl``\ (配信元)と ``axisOcr``\ (機能の有無)は別の軸で、
+CSP を絞っていないホストは ``axisOcr`` を ``true`` のまま CDN 既定値で使えます。
+逆に ``assetBaseUrl`` を渡さないだけではボタンは残るので、CSP で外部オリジンを禁じている
+ホストでは「押せるのに必ず失敗するボタン」になります。
+
+.. code-block:: vue
+
+   <StarryDigitizer :features="{ axisOcr: false }" />
+
+``axisOcr`` を ``false`` にしたのに成果物が軽くならない場合は、学習データの置き場所を
+確認してください。Vite は ``public/`` 以下を **参照の有無に関係なく** 成果物へ複製するため、
+``public/eng.traineddata.gz`` のように置いていると OCR を無効にしても 2.9MB が付いてきます。
+自前配信する場合は ``public/`` の外(ビルドプラグインやコピータスクの管理下)に置き、
+``assetBaseUrl`` が指す先へ明示的に配置してください。
+
 ライブラリのビルド成果物には Sentry・PWA・アナリティクスなどの外部通信は含まれません
 (CI の ``yarn lib-check`` で検査しています)。
 

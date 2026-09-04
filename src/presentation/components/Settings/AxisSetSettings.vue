@@ -143,32 +143,45 @@
         >
           Clear XY Axes
         </sd-button>
-        <sd-button
-          size="small"
-          class="ml-2"
-          :disabled="
-            options.readonly ||
-            !axisSetRepository.activeAxisSet.hasAtLeastOneAxis ||
-            ocrIsRunning
-          "
-          @click="handleOnClickAutoDetectAxisValues"
-          title="OCR the numbers near each axis marker and fill in its value"
-        >
-          {{
-            ocrIsRunning ? 'Auto-fill values (OCR)…' : 'Auto-fill values (OCR)'
-          }}
-        </sd-button>
-        <sd-tooltip :text="ocrWarningMessage" class="ml-1">
-          <sd-icon
-            class="c__AxisSetRepository-settings__ocr-warning"
-            :path="mdiInformationOutline"
-            :size="16"
-            tabindex="0"
-            :title="ocrWarningMessage"
-          />
-        </sd-tooltip>
+        <!-- INFO: features.axisOcr hides the whole OCR affordance, not just
+             the button: the accuracy hint and the error line only ever say
+             something about a run that can no longer be started. Hiding the
+             button is also what keeps tesseract.js out of the bundle — it is
+             dynamically imported from the click handler and nothing else
+             reaches AxisOcrReader (see axisOcrReader.ts). -->
+        <template v-if="options.features.axisOcr">
+          <sd-button
+            size="small"
+            class="ml-2"
+            :disabled="
+              options.readonly ||
+              !axisSetRepository.activeAxisSet.hasAtLeastOneAxis ||
+              ocrIsRunning
+            "
+            @click="handleOnClickAutoDetectAxisValues"
+            title="OCR the numbers near each axis marker and fill in its value"
+          >
+            {{
+              ocrIsRunning
+                ? 'Auto-fill values (OCR)…'
+                : 'Auto-fill values (OCR)'
+            }}
+          </sd-button>
+          <sd-tooltip :text="ocrWarningMessage" class="ml-1">
+            <sd-icon
+              class="c__AxisSetRepository-settings__ocr-warning"
+              :path="mdiInformationOutline"
+              :size="16"
+              tabindex="0"
+              :title="ocrWarningMessage"
+            />
+          </sd-tooltip>
+        </template>
       </div>
-      <p v-if="ocrErrorMessage" class="text-red mt-1">
+      <p
+        v-if="options.features.axisOcr && ocrErrorMessage"
+        class="text-red mt-1"
+      >
         {{ ocrErrorMessage }}
       </p>
     </div>

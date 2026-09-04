@@ -35,6 +35,12 @@
           csvExport: {{ features.csvExport ? 'on' : 'off' }}
         </button>
         <button
+          data-cy="toggle-axis-ocr"
+          @click="features.axisOcr = !features.axisOcr"
+        >
+          axisOcr: {{ features.axisOcr ? 'on' : 'off' }}
+        </button>
+        <button
           data-cy="toggle-zip-feature"
           @click="features.zipExportImport = !features.zipExportImport"
         >
@@ -226,6 +232,7 @@ const features = reactive({
   imageUpload: false,
   zipExportImport: false,
   csvExport: true,
+  axisOcr: true,
   axisPanel: true,
   datasetPanel: true,
   extractionPanel: true,

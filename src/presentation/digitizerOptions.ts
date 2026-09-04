@@ -4,7 +4,7 @@ import type { InjectionKey, Ref } from 'vue'
 /**
  * Feature toggles. All default to "on" in the standalone app.
  *
- * The first three switch individual controls; the rest hide whole panels, for
+ * The first four switch individual controls; the rest hide whole panels, for
  * hosts that already provide the same thing in their own UI (a sample picker,
  * a point-list editor, ...) and would otherwise show it twice.
  */
@@ -15,6 +15,12 @@ export interface StarryDigitizerFeatures {
   zipExportImport: boolean
   /** Show "Copy to Clipboard" (CSV) buttons. */
   csvExport: boolean
+  /**
+   * Show "Auto-fill values (OCR)" in the axis panel. Off also keeps the
+   * ~11MB of tesseract.js worker/wasm/language assets out of the host build,
+   * since nothing can reach the (lazy) OCR code path any more.
+   */
+  axisOcr: boolean
   /** Show the axis-set list and its calibration panel. */
   axisPanel: boolean
   /** Show the dataset list. */
@@ -51,6 +57,7 @@ export const DEFAULT_FEATURES: StarryDigitizerFeatures = {
   imageUpload: true,
   zipExportImport: true,
   csvExport: true,
+  axisOcr: true,
   axisPanel: true,
   datasetPanel: true,
   extractionPanel: true,
@@ -69,7 +76,7 @@ export const DEFAULT_OPTIONS: DigitizerOptions = {
 /**
  * Partial options, with `features` partial too: the nested object is merged
  * against DEFAULT_FEATURES rather than replacing it, so a host can turn one
- * feature off without having to restate the other seven.
+ * feature off without having to restate the other eight.
  */
 export interface DigitizerOptionsInit
   extends Partial<Omit<DigitizerOptions, 'features'>> {
