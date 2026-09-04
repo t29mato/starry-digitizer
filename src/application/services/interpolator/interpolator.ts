@@ -2,7 +2,6 @@ import { InterpolatorInterface } from './interpolatorInterface'
 import { InterpolatorCanvasInterface } from './interpolatorCanvasInterface'
 import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 import { getInterpolatedCoordsList } from '../../lib/CurveInterpolatorLib'
-import { getLocalStorageDataByKey } from '../../utils/localStorageUtils'
 import { getPointsTotalDistance } from '../../utils/pointsUtils'
 import { Coord, Point } from '@/@types/types'
 import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
@@ -72,16 +71,6 @@ export class Interpolator implements InterpolatorInterface {
         this.interpolatedCoordsForGuideline,
         this.canvasHandler.scale,
       )
-    }
-  }
-
-  public initialize(): void {
-    const isActive = getLocalStorageDataByKey('isInterpolatorActive')
-
-    if (isActive === 'true') {
-      this.isActive = true
-    } else if (isActive === 'false') {
-      this.isActive = false
     }
   }
 

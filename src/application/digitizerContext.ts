@@ -58,7 +58,6 @@ export function createDigitizerContext(): DigitizerContext {
     datasetRepository,
     canvasHandler,
   ).getNewInstance()
-  interpolator.initialize()
 
   // INFO: reactive() so that Options API components can expose the members
   // from setup() and keep the same reactivity they had when the singletons

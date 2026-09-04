@@ -1,5 +1,3 @@
-export const LOCAL_STORAGE_GLOBAL_KEY = 'starryDigitizer'
-
 export const STYLE = {
   POINT_SIZE_PX: 10,
   TEMP_POINT_SIZE_PX: 8,

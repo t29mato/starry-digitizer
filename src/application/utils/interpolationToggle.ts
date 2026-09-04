@@ -1,5 +1,4 @@
 import { DigitizerContext } from '@/application/digitizerContext'
-import { addLocalStorageData } from '@/application/utils/localStorageUtils'
 import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
 
 // INFO: Extracted from ExtractorSettings.vue's handleOnClickInterpolatiorSwitch
@@ -39,6 +38,4 @@ export function toggleInterpolation(
   // HACK: Since tempPoints are not drawn, force rendering as a temporary
   // measure. Fundamental solution required
   forceRenderCanvasPoints(datasetRepository)
-
-  addLocalStorageData('isInterpolatorActive', String(isActive))
 }

@@ -40,7 +40,6 @@ describe('Interpolator', () => {
   let interpolator: Interpolator
 
   beforeEach(() => {
-    localStorage.clear()
     mockCanvas = createMockCanvas(true)
     interpolator = new Interpolator(mockCanvas, datasetRepository, canvasHandler)
     datasetRepository.activeDataset = new Dataset('dataset 1', [], 1)
@@ -55,15 +54,6 @@ describe('Interpolator', () => {
   it('setIsActive updates the isActive value', () => {
     expect(interpolator.isActive).toBe(false)
     interpolator.setIsActive(true)
-    expect(interpolator.isActive).toBe(true)
-  })
-
-  it('initialize reflects the persisted localStorage value', () => {
-    localStorage.setItem(
-      'starryDigitizer',
-      JSON.stringify({ isInterpolatorActive: 'true' }),
-    )
-    interpolator.initialize()
     expect(interpolator.isActive).toBe(true)
   })
 

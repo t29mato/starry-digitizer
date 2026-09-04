@@ -2,7 +2,6 @@ import { expect, describe, it, beforeEach, jest } from '@jest/globals'
 import { Dataset } from '@/domain/models/dataset/dataset'
 import { DatasetRepository } from '@/domain/repositories/datasetRepository/datasetRepository'
 import { DigitizerContext } from '@/application/digitizerContext'
-import { LOCAL_STORAGE_GLOBAL_KEY } from '@/constants'
 
 import { toggleInterpolation } from './interpolationToggle'
 
@@ -34,7 +33,6 @@ describe('toggleInterpolation', () => {
   let c: ReturnType<typeof buildContext>
 
   beforeEach(() => {
-    localStorage.clear()
     c = buildContext()
   })
 
@@ -46,22 +44,19 @@ describe('toggleInterpolation', () => {
     expect(c.interpolator.clearPreview).not.toHaveBeenCalled()
   })
 
-  it('persists the active state to localStorage', () => {
+  // INFO: was two cases asserting that the toggle wrote to
+  // localStorage['starryDigitizer']. The library no longer persists anything:
+  // that key was process-wide, so two digitizers on a page shared it, and the
+  // library has no identity that survives a reload to key it by. Persisting
+  // this belongs to the host (the standalone app does it now).
+  it('does not touch localStorage', () => {
+    const setItem = jest.spyOn(Storage.prototype, 'setItem')
+
     toggleInterpolation(c.ctx, true)
-
-    const stored = JSON.parse(
-      localStorage.getItem(LOCAL_STORAGE_GLOBAL_KEY) ?? '{}',
-    )
-    expect(stored.isInterpolatorActive).toBe('true')
-  })
-
-  it('persists the inactive state to localStorage', () => {
     toggleInterpolation(c.ctx, false)
 
-    const stored = JSON.parse(
-      localStorage.getItem(LOCAL_STORAGE_GLOBAL_KEY) ?? '{}',
-    )
-    expect(stored.isInterpolatorActive).toBe('false')
+    expect(setItem).not.toHaveBeenCalled()
+    setItem.mockRestore()
   })
 
   it('re-materializes manually-added points as real points when turned off', () => {
