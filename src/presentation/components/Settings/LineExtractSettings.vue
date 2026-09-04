@@ -30,19 +30,23 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
+import type LineExtract from '@/application/strategies/extractStrategies/lineExtract'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { SdTextField } from '@/presentation/ui'
 
 export default defineComponent({
   components: { SdTextField },
   setup() {
-    return { options: useDigitizerOptions() }
+    const { extractor } = useDigitizerContext()
+    return { options: useDigitizerOptions(), extractor }
   },
-  data() {
-    return {
-      lineExtract: LineExtract.instance,
-    }
+  computed: {
+    // INFO: this digitizer instance's own Line Extract strategy — not a shared
+    // singleton, so two <StarryDigitizer> on one page keep separate ΔX/ΔY.
+    lineExtract(): LineExtract {
+      return this.extractor.lineExtract
+    },
   },
 
   methods: {

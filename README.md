@@ -41,6 +41,9 @@ npm run dev
 3. **Extract Points**:
    - **Manual**: Click on data points in the graph
    - **Auto**: Use color-based auto-detection for bulk extraction
+   - **Selection Area**: The Pen / Box / Eraser tools restrict auto-detection to
+     a region. Turning the active mask tool off restores the manual mode
+     (Add / Edit / Delete) that was on before it was turned on.
 4. **Export**: Download your data as CSV or JSON
 
 ## Using as a library (Vue 3 component)

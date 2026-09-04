@@ -3,7 +3,8 @@
     <h5 class="mb-0">Selection Area</h5>
     <div class="d-flex align-center flex-wrap mb-2">
       <!-- INFO: replacement for <v-btn-toggle>: clicking the active tool
-           deselects it (MASK_MODE.UNSET), same as Vuetify's toggle. -->
+           deselects it, same as Vuetify's toggle. Deselecting also brings the
+           manual mode that was on before the mask tool back. -->
       <div class="c__mask-tools" role="group" aria-label="Selection Area">
         <sd-button
           v-for="tool in tools"
@@ -96,7 +97,9 @@ export default defineComponent({
     },
     change(value: number) {
       if (this.canvasHandler.maskMode === value) {
-        this.canvasHandler.setMaskMode(MASK_MODE.UNSET)
+        // INFO: ユーザーが明示的にマスクツールを解除した唯一の経路なので、
+        // マスクに入る前の打点モードを復元する exitMaskMode() を使う。
+        this.canvasHandler.exitMaskMode()
         return
       }
       this.canvasHandler.setMaskMode(value)
@@ -104,6 +107,8 @@ export default defineComponent({
     clearMask() {
       this.canvasHandler.clearMask()
       // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
+      // INFO: ここはツールの解除意図ではなくマスク削除に伴う後始末なので、
+      // 打点モードは復元しない(復元するとクリア直後のクリックが打点になる)。
       if (this.canvasHandler.maskMode === MASK_MODE.ERASER) {
         this.canvasHandler.setMaskMode(MASK_MODE.UNSET)
       }

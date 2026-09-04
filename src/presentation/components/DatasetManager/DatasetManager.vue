@@ -199,6 +199,8 @@ export default defineComponent({
         this.datasetRepository.activeDataset.axisSetId,
       )
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
+      // INFO: ユーザーがマスクツールを解除したわけではない内部的な後始末なので、
+      // 打点モードを復元する exitMaskMode() ではなく setMaskMode(UNSET) を使う。
       this.canvasHandler.clearMask()
       this.canvasHandler.setMaskMode(MASK_MODE.UNSET)
     },

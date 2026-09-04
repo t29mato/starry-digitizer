@@ -10,17 +10,6 @@ export default class LineExtract
   dxPx = 10
   dyPx = 10
 
-  static #instance: LineExtract
-  static get instance(): LineExtract {
-    if (!this.#instance) {
-      this.#instance = new LineExtract()
-    }
-    return this.#instance
-  }
-  constructor() {
-    super()
-  }
-
   execute(
     height: number,
     width: number,

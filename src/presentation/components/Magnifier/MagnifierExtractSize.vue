@@ -44,21 +44,23 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
-import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
-import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
+import type LineExtract from '@/application/strategies/extractStrategies/lineExtract'
+import type SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
 
 export default defineComponent({
   setup() {
     const { extractor, magnifier } = useDigitizerContext()
     return { extractor, magnifier }
   },
-  data() {
-    return {
-      lineExtract: LineExtract.instance,
-      symbolExtractByArea: SymbolExtractByArea.instance,
-    }
-  },
   computed: {
+    // INFO: this digitizer instance's own strategies (see ExtractorInterface),
+    // so the guide sizes follow the settings of THIS instance only.
+    lineExtract(): LineExtract {
+      return this.extractor.lineExtract
+    },
+    symbolExtractByArea(): SymbolExtractByArea {
+      return this.extractor.symbolExtractByArea
+    },
     symbolMinDiameter(): number {
       return this.symbolExtractByArea.minDiameterPx * this.magnifier.scale
     },

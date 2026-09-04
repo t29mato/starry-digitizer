@@ -106,9 +106,6 @@ import LineExtractSettings from './LineExtractSettings.vue'
 import MaskSettings from './MaskSettings.vue'
 import ColorSettings from './ColorSettings.vue'
 // import { ExtractStrategy } from '@/application/strategies/extractor'
-import SymbolExtractByArea from '@/application/strategies/extractStrategies/symbolExtractByArea'
-import LineExtract from '@/application/strategies/extractStrategies/lineExtract'
-
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { SdButton, SdCheckbox, SdSelect, SdTextField } from '@/presentation/ui'
@@ -173,12 +170,8 @@ export default defineComponent({
     },
   },
   mounted() {
-    switch (this.initialExtractorStrategy) {
-      case 'Symbol Extract':
-        this.extractor.setStrategy(SymbolExtractByArea.instance)
-        break
-      case 'Line Extract':
-        this.extractor.setStrategy(LineExtract.instance)
+    if (this.initialExtractorStrategy !== undefined) {
+      this.extractor.setStrategyByName(this.initialExtractorStrategy)
     }
   },
   methods: {
@@ -191,13 +184,7 @@ export default defineComponent({
       this.canvasHandler.setManualMode(value)
     },
     setExtractStrategy(strategy: string | number) {
-      switch (strategy) {
-        case 'Symbol Extract':
-          this.extractor.setStrategy(SymbolExtractByArea.instance)
-          break
-        case 'Line Extract':
-          this.extractor.setStrategy(LineExtract.instance)
-      }
+      this.extractor.setStrategyByName(String(strategy))
     },
     async extractPoints() {
       this.isExtracting = true

@@ -10,17 +10,6 @@ export default class SymbolExtractByArea
   minDiameterPx = 5
   maxDiameterPx = 100
 
-  static #instance: SymbolExtractByArea
-  static get instance(): SymbolExtractByArea {
-    if (!this.#instance) {
-      this.#instance = new SymbolExtractByArea()
-    }
-    return this.#instance
-  }
-  constructor() {
-    super()
-  }
-
   execute(
     height: number,
     width: number,

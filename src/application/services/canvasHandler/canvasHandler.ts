@@ -30,6 +30,9 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   }
   maskMode: MaskMode = MASK_MODE.UNSET
   manualMode: ManualMode = MANUAL_MODE.UNSET
+  // INFO: the manual mode that was on when the current mask tool was switched
+  // on, so exitMaskMode() can put it back. UNSET means "nothing to restore".
+  private manualModeBeforeMask: ManualMode = MANUAL_MODE.UNSET
   penToolSizePx = 50
   eraserSizePx = 30
   uploadImageUrl = ''
@@ -572,12 +575,48 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     if (mode !== MANUAL_MODE.UNSET) {
       this.maskMode = MASK_MODE.UNSET
     }
+    // INFO: whoever sets the manual mode explicitly (keyboard shortcut, axis
+    // completion, project restore, host API) becomes the new truth, so a memo
+    // taken before the mask tool could only restore a stale mode afterwards.
+    this.manualModeBeforeMask = MANUAL_MODE.UNSET
   }
 
+  // INFO: two ways to leave the mask mode on purpose, because "the user
+  // deselected the tool" and "something internal cleared it" want different
+  // outcomes. A dedicated exitMaskMode() was chosen over an options bag on
+  // setMaskMode (setMaskMode(UNSET, { restoreManualMode: true })) so that the
+  // intent is visible at the call site and the plain setter keeps one meaning:
+  //   - setMaskMode(UNSET): just turn the mask tool off — used by internal
+  //     clean-up such as switching datasets, where reviving the plot mode the
+  //     user had before would be its own surprise.
+  //   - exitMaskMode(): the user deselected the active mask tool, so put the
+  //     manual mode that was on before it back.
   setMaskMode(mode: MaskMode) {
+    // INFO: remember the manual mode only when a mask tool is switched on from
+    // a non-mask state. Walking Pen -> Box -> Eraser must not overwrite the
+    // memo (manualMode is already UNSET by then).
+    if (mode !== MASK_MODE.UNSET && this.maskMode === MASK_MODE.UNSET) {
+      this.manualModeBeforeMask = this.manualMode
+    }
+    // INFO: dropping the memo here keeps it from outliving the mask session it
+    // belongs to — a project restore, a reset or a dataset switch must not be
+    // followed later by an unexpected restore.
+    if (mode === MASK_MODE.UNSET) {
+      this.manualModeBeforeMask = MANUAL_MODE.UNSET
+    }
     this.maskMode = mode
     if (mode !== MASK_MODE.UNSET) {
       this.manualMode = MANUAL_MODE.UNSET
+    }
+  }
+
+  exitMaskMode() {
+    const manualModeToRestore = this.manualModeBeforeMask
+    // INFO: clears the memo as well, so a second exitMaskMode() restores
+    // nothing.
+    this.setMaskMode(MASK_MODE.UNSET)
+    if (manualModeToRestore !== MANUAL_MODE.UNSET) {
+      this.setManualMode(manualModeToRestore)
     }
   }
 

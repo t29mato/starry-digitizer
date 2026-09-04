@@ -73,6 +73,10 @@ export interface CanvasHandlerInterface extends PixelSource {
   setIsCursorOnCanvas(value: boolean): void
   setManualMode(mode: ManualMode): void
   setMaskMode(mode: MaskMode): void
+  // INFO: "the user deselected the active mask tool" — unlike
+  // setMaskMode(UNSET) it restores the manual mode that was on before the mask
+  // tool was switched on.
+  exitMaskMode(): void
   setPenToolSizePx(size: number): void
   setEraserSizePx(size: number): void
 }

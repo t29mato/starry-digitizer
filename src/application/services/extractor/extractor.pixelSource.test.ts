@@ -32,7 +32,7 @@ const source: PixelSource = {
 }
 
 test('Extractor runs against a plain PixelSource with no canvas', () => {
-  const strategy = SymbolExtractByArea.instance
+  const strategy = new SymbolExtractByArea()
   strategy.minDiameterPx = 0
   strategy.maxDiameterPx = 1000
 
