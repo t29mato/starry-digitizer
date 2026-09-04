@@ -8,6 +8,7 @@
       cursor: cursor,
       width: size,
       height: size,
+      'box-sizing': 'border-box',
       'background-color': backgroundColor,
       // INFO: 白一色の縁取りだと白背景(または明るい背景色)のグラフで見えなく
       // なるため、白+黒の二重リングにして、明暗どちらの背景でも最低限どちらか

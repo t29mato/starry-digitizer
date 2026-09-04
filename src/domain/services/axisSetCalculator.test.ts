@@ -58,6 +58,28 @@ describe('AxisSetCalculator', () => {
     expect(result.yV).toBe('NaN')
   })
 
+  // INFO: 未配置の軸のcoordはinitialCoord {-999, -999} (truthy) のため、
+  // 以前はゼロ除算でInfinityが返っていた
+  it('should calculate XY values as NaN when axes are not placed yet', () => {
+    const unplacedAxisSet = new AxisSet(
+      new Axis('x1', 0),
+      new Axis('x2', 1),
+      new Axis('y1', 0),
+      new Axis('y2', 1),
+      new Axis('x1y1', -1),
+      1,
+      'XY Axes 1',
+    )
+    const calculator = new AxisSetCalculator(unplacedAxisSet, {
+      x: false,
+      y: false,
+    })
+    const result = calculator.calculateXYValues(500, 500)
+    expect(result.xV).toBe('NaN')
+    expect(result.yV).toBe('NaN')
+    expect(calculator.calculatePixelCoordinates(0.5, 0.5)).toBeNull()
+  })
+
   it('should calculate XY values as NaN when x1 value equals x2 value', () => {
     axisSetMock.x2.value = axisSetMock.x1.value
     const calculator = new AxisSetCalculator(axisSetMock, {
