@@ -34,6 +34,7 @@
     "app-dev-build": "cross-env VITE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vite build --mode development",
     "lib-build": "vite build -c vite.library.config.ts",
     "lib-check": "node scripts/lib-check.mjs",
+    "pack-dev": "node scripts/pack-dev.mjs",
     "prepack": "npm run lib-build",
     "prepare": "npm run lib-build || true",
     "preview": "vite preview",
