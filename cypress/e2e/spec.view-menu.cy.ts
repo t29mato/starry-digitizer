@@ -27,7 +27,7 @@ const ORIGINAL_WIDTH = 1180
 
 function assertScale(percent: string, canvasWidth: number) {
   cy.contains('span', percent).should('be.visible')
-  cy.get('#imageCanvas').should(($canvas) => {
+  cy.get('[data-cy=image-canvas]').should(($canvas) => {
     expect(($canvas[0] as HTMLCanvasElement).width).to.equal(canvasWidth)
   })
 }
@@ -56,7 +56,7 @@ describe('View menu', () => {
   it('fits the image to the available space and back', () => {
     clickMenuItem('View', 'Fit')
     // The viewport is narrower than the image, so fitting must shrink it.
-    cy.get('#imageCanvas').should(($canvas) => {
+    cy.get('[data-cy=image-canvas]').should(($canvas) => {
       expect(($canvas[0] as HTMLCanvasElement).width).to.be.lessThan(
         ORIGINAL_WIDTH,
       )
@@ -75,7 +75,7 @@ describe('View menu', () => {
     assertScale('100%', ORIGINAL_WIDTH)
 
     cy.get('body').trigger('keydown', { key: 'f' })
-    cy.get('#imageCanvas').should(($canvas) => {
+    cy.get('[data-cy=image-canvas]').should(($canvas) => {
       expect(($canvas[0] as HTMLCanvasElement).width).to.be.lessThan(
         ORIGINAL_WIDTH,
       )

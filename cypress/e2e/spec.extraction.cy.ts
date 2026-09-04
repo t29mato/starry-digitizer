@@ -53,13 +53,13 @@ function selectMaskTool(tool: 'Pen' | 'Box' | 'Eraser') {
  * INFO: Cypress' `.trigger()` populates neither offsetX/offsetY nor
  * clientX/clientY, so both pairs are passed explicitly and kept consistent
  * with each other: `getMouseCoordFromMouseEvent` reads clientX/clientY minus
- * #imageCanvas' bounding rect, and falls back to offsetX/offsetY when the
+ * the image canvas' bounding rect, and falls back to offsetX/offsetY when the
  * canvas is not attached yet. The events go to the topmost canvas (inline
- * left/top of 0) rather than to #canvasWrapper, which has no inline position.
+ * left/top of 0) rather than to the canvas wrapper, which has no inline position.
  */
 function drag(from: { x: number; y: number }, to: { x: number; y: number }) {
   const steps = 8
-  cy.get('#imageCanvas').then(($canvas) => {
+  cy.get('[data-cy=image-canvas]').then(($canvas) => {
     const rect = $canvas[0].getBoundingClientRect()
     const at = (i: number) => {
       const x = from.x + ((to.x - from.x) * i) / steps
@@ -72,7 +72,7 @@ function drag(from: { x: number; y: number }, to: { x: number; y: number }) {
         buttons: 1,
       }
     }
-    let chain = cy.get('#interpolationGuideCanvas').trigger('mousedown', at(0))
+    let chain = cy.get('[data-cy=interpolation-guide-canvas]').trigger('mousedown', at(0))
     for (let i = 1; i <= steps; i++) {
       chain = chain.trigger('mousemove', at(i))
     }

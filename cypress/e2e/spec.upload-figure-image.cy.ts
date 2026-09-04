@@ -4,7 +4,7 @@ describe('template spec', () => {
   })
   it('upload figure image', () => {
     const filePath = "sample_graph_curve_2.png"
-    cy.get('#fileInput').attachFile(filePath)
+    cy.get('[data-cy=image-file-input]').attachFile(filePath)
   })
 
   it('upload figure image by paste', () => {

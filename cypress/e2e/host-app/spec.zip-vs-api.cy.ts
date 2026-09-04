@@ -13,7 +13,7 @@ describe('host app: ZIP path and API path agree', () => {
   it('produces identical dataset values after a ZIP round trip', () => {
     // INFO: select the calibration mode explicitly (see spec.props-and-events).
     cy.contains('.sd-check', '2 Points').click()
-    cy.get('#canvasWrapper')
+    cy.get('[data-cy=canvas-wrapper]')
       .click(50, 390)
       .click(400, 50)
       .click(200, 200)

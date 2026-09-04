@@ -16,7 +16,7 @@ describe('File menu: project ZIP', () => {
   })
 
   it('saves the project as a ZIP download', () => {
-    cy.get('#canvasWrapper').click(50, 390).click(400, 50).click(200, 200)
+    cy.get('[data-cy=canvas-wrapper]').click(50, 390).click(400, 50).click(200, 200)
 
     cy.get('[data-cy=menu-file]').click()
     cy.get('[data-cy=menu-item-save-project]').click()

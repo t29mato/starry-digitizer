@@ -19,7 +19,7 @@ export function visitHostApp(): void {
   cy.visit('/')
   cy.get('[data-cy=ready]').should('contain.text', 'version')
   cy.get('body').trigger('keydown', { key: '0' })
-  cy.get('#imageCanvas').should('have.attr', 'width', String(FIRST_IMAGE_WIDTH))
+  cy.get('[data-cy=image-canvas]').should('have.attr', 'width', String(FIRST_IMAGE_WIDTH))
 }
 
 /**
@@ -31,7 +31,7 @@ export function calibrateAxes(
   corner: [number, number] = [400, 50],
 ): void {
   cy.contains('.sd-check', '2 Points').click()
-  cy.get('#canvasWrapper')
+  cy.get('[data-cy=canvas-wrapper]')
     .click(origin[0], origin[1])
     .click(corner[0], corner[1])
 }
@@ -39,7 +39,7 @@ export function calibrateAxes(
 /** Clicks the canvas once per coordinate, adding a data point each time. */
 export function addPoints(points: [number, number][]): void {
   points.forEach(([x, y]) => {
-    cy.get('#canvasWrapper').click(x, y)
+    cy.get('[data-cy=canvas-wrapper]').click(x, y)
   })
 }
 

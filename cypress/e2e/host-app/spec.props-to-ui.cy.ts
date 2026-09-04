@@ -43,8 +43,8 @@ describe('host app: readonly prop disables every editing affordance', () => {
   })
 
   it('adds no point when the canvas is clicked', () => {
-    cy.get('#canvasWrapper').click(300, 250)
-    cy.get('#canvasWrapper').click(320, 260)
+    cy.get('[data-cy=canvas-wrapper]').click(300, 250)
+    cy.get('[data-cy=canvas-wrapper]').click(320, 260)
     // INFO: wait past the update debounce so a point that did get added
     // would have had time to show up.
     cy.wait(500)
@@ -53,10 +53,10 @@ describe('host app: readonly prop disables every editing affordance', () => {
   })
 
   it('disables the axis settings controls', () => {
-    cy.get('#x1-value').should('be.disabled')
-    cy.get('#x2-value').should('be.disabled')
-    cy.get('#y1-value').should('be.disabled')
-    cy.get('#y2-value').should('be.disabled')
+    cy.get('[data-cy=x1-value]').should('be.disabled')
+    cy.get('[data-cy=x2-value]').should('be.disabled')
+    cy.get('[data-cy=y1-value]').should('be.disabled')
+    cy.get('[data-cy=y2-value]').should('be.disabled')
     cy.get('#x-is-log').should('be.disabled')
     cy.get('#y-is-log').should('be.disabled')
     cy.contains('button', 'Edit Axes').should('be.disabled')
@@ -97,9 +97,9 @@ describe('host app: readonly prop disables every editing affordance', () => {
   it('re-enables everything when readonly goes back off', () => {
     cy.get('[data-cy=toggle-readonly]').click()
     cy.get('[data-cy=toggle-readonly]').should('contain.text', 'readonly: off')
-    cy.get('#x1-value').should('not.be.disabled')
+    cy.get('[data-cy=x1-value]').should('not.be.disabled')
     cy.contains('button', 'Run').should('not.be.disabled')
-    cy.get('#canvasWrapper').click(300, 250)
+    cy.get('[data-cy=canvas-wrapper]').click(300, 250)
     cy.get('.canvas-point').should('have.length', POINTS.length + 1)
   })
 })
@@ -114,14 +114,14 @@ describe('host app: features.imageUpload', () => {
       'contain.text',
       'imageUpload: off',
     )
-    cy.get('#fileInput').should('not.exist')
+    cy.get('[data-cy=image-file-input]').should('not.exist')
   })
 
   it('ignores a pasted image while off', () => {
     pasteImage()
     cy.wait(500)
     cy.get('[data-cy=image-replaced-count]').should('have.text', '0')
-    cy.get('#imageCanvas').should(
+    cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',
       String(FIRST_IMAGE_WIDTH),
@@ -135,7 +135,7 @@ describe('host app: features.imageUpload', () => {
       'contain.text',
       'imageUpload: on',
     )
-    cy.get('#fileInput').should('exist')
+    cy.get('[data-cy=image-file-input]').should('exist')
 
     pasteImage()
     // INFO: image-replaced only fires once the new image is decoded and drawn.
@@ -143,7 +143,7 @@ describe('host app: features.imageUpload', () => {
     // INFO: a replaced image is drawn fit-to-wrapper; zoom back to 100% so
     // the canvas reports the new figure's intrinsic width.
     cy.get('body').trigger('keydown', { key: '0' })
-    cy.get('#imageCanvas').should(
+    cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',
       String(SECOND_IMAGE_WIDTH),
@@ -153,13 +153,13 @@ describe('host app: features.imageUpload', () => {
 
   it('accepts an uploaded file and reports image-replaced while on', () => {
     cy.get('[data-cy=toggle-image-upload]').click()
-    cy.get('#fileInput').selectFile(
+    cy.get('[data-cy=image-file-input]').selectFile(
       'cypress/fixtures/sample_graph_curve_2.png',
       { force: true },
     )
     cy.get('[data-cy=image-replaced-count]').should('have.text', '1')
     cy.get('body').trigger('keydown', { key: '0' })
-    cy.get('#imageCanvas').should(
+    cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',
       String(SECOND_IMAGE_WIDTH),

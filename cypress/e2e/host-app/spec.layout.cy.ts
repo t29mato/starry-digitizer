@@ -31,14 +31,14 @@ describe('host app: panel feature flags', () => {
       'axisPanel: off',
     )
     PANELS.axisPanel().should('not.exist')
-    cy.get('#x1-value').should('not.exist')
+    cy.get('[data-cy=x1-value]').should('not.exist')
     // INFO: hiding one panel must leave the rest of the layout alone.
     PANELS.datasetPanel().should('exist')
-    cy.get('#imageCanvas').should('exist')
+    cy.get('[data-cy=image-canvas]').should('exist')
 
     cy.get('[data-cy=toggle-axis-panel]').click()
     PANELS.axisPanel().should('exist')
-    cy.get('#x1-value').should('exist')
+    cy.get('[data-cy=x1-value]').should('exist')
   })
 
   it('hides the dataset panel', () => {
@@ -108,7 +108,7 @@ describe('host app: panel feature flags', () => {
     cy.get('[data-cy=toggle-data-table]').click()
     Object.values(PANELS).forEach((panel) => panel().should('not.exist'))
 
-    cy.get('#canvasWrapper').click(300, 250)
+    cy.get('[data-cy=canvas-wrapper]').click(300, 250)
     cy.get('.canvas-point').should('have.length', 1)
     cy.get('[data-cy=error-codes]').should('have.text', '')
   })
@@ -202,7 +202,7 @@ describe('host app: compact (fixed-height) embedding', () => {
     // INFO: the canvas is shorter in compact mode, so calibration clicks stay
     // well inside it.
     calibrateAxes([50, 200], [400, 50])
-    cy.get('#canvasWrapper').click(300, 150)
+    cy.get('[data-cy=canvas-wrapper]').click(300, 150)
     cy.get('.canvas-point').should('have.length', 1)
     cy.get('[data-cy=slot-footer]').should('be.visible')
   })

@@ -21,7 +21,7 @@ export function visitApp(options?: Partial<Cypress.VisitOptions>): void {
 }
 
 /**
- * Waits for #imageCanvas to exist.
+ * Waits for [data-cy=image-canvas] to exist.
  *
  * NOTE: this deliberately does NOT try to detect that the image has been
  * decoded. A `<canvas>` with no width attribute reports the HTML default of
@@ -30,7 +30,7 @@ export function visitApp(options?: Partial<Cypress.VisitOptions>): void {
  * the shortcut, which is the only signal that survives the async decode.
  */
 export function waitForImage(): void {
-  cy.get('#imageCanvas').should('exist')
+  cy.get('[data-cy=image-canvas]').should('exist')
 }
 
 /**
@@ -56,7 +56,7 @@ export function resetZoom(expectedWidth = 1180): void {
 /** One "Reset to 100%" attempt, retried until the canvas reports `expected`. */
 function pressResetZoom(expected: number, attemptsLeft: number): void {
   cy.get('body').trigger('keydown', { key: '0' })
-  cy.get('#imageCanvas').then(($canvas) => {
+  cy.get('[data-cy=image-canvas]').then(($canvas) => {
     const width = ($canvas[0] as HTMLCanvasElement).width
     if (width === expected) return
     if (attemptsLeft === 0) {
@@ -114,17 +114,17 @@ export function assertMenuItemChecked(item: string, checked: boolean): void {
 }
 
 /**
- * Clicks the canvas at a coordinate relative to #canvasWrapper's top-left.
+ * Clicks the canvas at a coordinate relative to the canvas wrapper's top-left.
  *
  * INFO: a plain `.click(x, y)` is enough now that the app derives the image
- * pixel from `clientX/clientY` minus #imageCanvas' bounding rect (see
+ * pixel from `clientX/clientY` minus the image canvas' bounding rect (see
  * getMouseCoordFromMouseEvent). Both sides start from the same viewport
  * coordinate, so there is no second, independent rounding to disagree with —
  * the earlier helper had to compensate for Chrome rounding `offsetX` on its
  * own.
  */
 export function clickCanvas(coord: Coord): void {
-  cy.get('#canvasWrapper').click(coord.x, coord.y)
+  cy.get('[data-cy=canvas-wrapper]').click(coord.x, coord.y)
 }
 
 /**

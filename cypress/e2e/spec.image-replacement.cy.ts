@@ -30,11 +30,11 @@ const REPLACEMENT = 'cypress/fixtures/sample_graph_curve_2.png'
 const REPLACEMENT_WIDTH = 845
 
 function uploadImage(path: string) {
-  cy.get('#fileInput').selectFile(path, { force: true })
+  cy.get('[data-cy=image-file-input]').selectFile(path, { force: true })
 }
 
 function assertCanvasWidth(width: number) {
-  cy.get('#imageCanvas').should(($canvas) => {
+  cy.get('[data-cy=image-canvas]').should(($canvas) => {
     expect(($canvas[0] as HTMLCanvasElement).width).to.equal(width)
   })
 }

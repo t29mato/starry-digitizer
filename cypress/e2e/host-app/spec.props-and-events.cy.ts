@@ -16,7 +16,7 @@ function calibrateAndAddPoints() {
   // on how loadProject() treats the restored axis sets.
   cy.contains('.sd-check', '2 Points').click()
   let chain = cy
-    .get('#canvasWrapper')
+    .get('[data-cy=canvas-wrapper]')
     // INFO: in "2 Points" mode the first click sets x1/y1, the second x2/y2,
     // and only later clicks add data points (see AxisSet#nextAxis).
     .click(50, 390)
@@ -118,7 +118,7 @@ describe('host app: props, events and remounting', () => {
     cy.get('[data-cy=toggle-readonly]').click()
     cy.get('[data-cy=toggle-readonly]').should('contain.text', 'readonly: on')
 
-    cy.get('#canvasWrapper').click(300, 250)
+    cy.get('[data-cy=canvas-wrapper]').click(300, 250)
     // INFO: give the (debounced) update path a chance to run before asserting
     // that nothing changed.
     cy.wait(500)

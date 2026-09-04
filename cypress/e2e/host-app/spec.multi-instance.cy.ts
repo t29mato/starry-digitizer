@@ -26,14 +26,14 @@ function calibrateIn(
   origin: [number, number],
   corner: [number, number],
 ): void {
-  cy.get(`${scope} #canvasWrapper`)
+  cy.get(`${scope} [data-cy=canvas-wrapper]`)
     .click(origin[0], origin[1])
     .click(corner[0], corner[1])
 }
 
 function addPointsIn(scope: string, points: [number, number][]): void {
   points.forEach(([x, y]) => {
-    cy.get(`${scope} #canvasWrapper`).click(x, y)
+    cy.get(`${scope} [data-cy=canvas-wrapper]`).click(x, y)
   })
 }
 
@@ -48,7 +48,7 @@ function magnifierReadout(scope: string): Cypress.Chainable<string> {
 describe('host app: two digitizers on one page', () => {
   beforeEach(() => {
     // INFO: visit and pin the zoom while only one instance exists, so the
-    // shared helpers' unscoped `#imageCanvas` selector stays unambiguous.
+    // shared helpers' unscoped `[data-cy=image-canvas]` selector stays unambiguous.
     visitHostApp()
     cy.get('[data-cy=mount-second]').click()
     cy.get('[data-cy=mount-second]').should(
@@ -60,7 +60,7 @@ describe('host app: two digitizers on one page', () => {
     // INFO: force, because with two digitizers stacked the page is taller
     // than the viewport and <body>'s center is covered.
     cy.get('body').trigger('keydown', { key: '0', force: true })
-    cy.get(`${SECOND} #imageCanvas`).should(
+    cy.get(`${SECOND} [data-cy=image-canvas]`).should(
       'have.attr',
       'width',
       String(SECOND_IMAGE_WIDTH),
@@ -68,12 +68,12 @@ describe('host app: two digitizers on one page', () => {
   })
 
   it('draws each instance into its own canvases', () => {
-    cy.get(`${FIRST} #imageCanvas`).should(
+    cy.get(`${FIRST} [data-cy=image-canvas]`).should(
       'have.attr',
       'width',
       String(FIRST_IMAGE_WIDTH),
     )
-    cy.get(`${SECOND} #imageCanvas`).should(
+    cy.get(`${SECOND} [data-cy=image-canvas]`).should(
       'have.attr',
       'width',
       String(SECOND_IMAGE_WIDTH),
@@ -97,7 +97,7 @@ describe('host app: two digitizers on one page', () => {
 
     magnifierReadout(FIRST).then((firstBefore) => {
       magnifierReadout(SECOND).then((secondBefore) => {
-        cy.get(`${SECOND} #canvasWrapper`).trigger('mousemove', 137, 211)
+        cy.get(`${SECOND} [data-cy=canvas-wrapper]`).trigger('mousemove', 137, 211)
 
         // INFO: only the hovered instance's magnifier tracks the cursor.
         magnifierReadout(SECOND).should('not.equal', secondBefore)
@@ -139,10 +139,10 @@ describe('host app: two digitizers on one page', () => {
     // handles the same keypress. Here that means both zoom out together.
     cy.get('body').trigger('keydown', { key: '-', force: true })
 
-    cy.get(`${FIRST} #imageCanvas`)
+    cy.get(`${FIRST} [data-cy=image-canvas]`)
       .invoke('attr', 'width')
       .then((width) => expect(Number(width)).to.be.lessThan(FIRST_IMAGE_WIDTH))
-    cy.get(`${SECOND} #imageCanvas`)
+    cy.get(`${SECOND} [data-cy=image-canvas]`)
       .invoke('attr', 'width')
       .then((width) => expect(Number(width)).to.be.lessThan(SECOND_IMAGE_WIDTH))
   })

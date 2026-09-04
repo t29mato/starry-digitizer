@@ -19,7 +19,7 @@ function mountSample(): void {
   cy.get('[data-cy=load-sample]').click()
   cy.get('[data-cy=status]').should('contain.text', 'ready')
   cy.get('body').trigger('keydown', { key: '0' })
-  cy.get('#imageCanvas').should('have.attr', 'width', String(IMAGE_WIDTH))
+  cy.get('[data-cy=image-canvas]').should('have.attr', 'width', String(IMAGE_WIDTH))
 }
 
 describe('vanilla host: mountDigitizer()', () => {
@@ -39,8 +39,8 @@ describe('vanilla host: mountDigitizer()', () => {
     // Calibrate in "2 Points" mode: the first click sets x1/y1, the second
     // x2/y2. The third click then adds a data point.
     cy.contains('.sd-check', '2 Points').click()
-    cy.get('#canvasWrapper').click(50, 390).click(400, 50)
-    cy.get('#canvasWrapper').click(200, 200)
+    cy.get('[data-cy=canvas-wrapper]').click(50, 390).click(400, 50)
+    cy.get('[data-cy=canvas-wrapper]').click(200, 200)
     cy.get('.canvas-point').should('have.length', 1)
 
     cy.get('[data-cy=get-values]').click()

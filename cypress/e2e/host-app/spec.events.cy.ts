@@ -51,7 +51,7 @@ describe('host app: update:project', () => {
     cy.get('[data-cy=clear-log]').click()
 
     // INFO: four clicks well inside the 300ms debounce window.
-    cy.get('#canvasWrapper')
+    cy.get('[data-cy=canvas-wrapper]')
       .click(200, 200)
       .click(220, 210)
       .click(240, 220)
@@ -155,13 +155,13 @@ describe('host app: image-replaced', () => {
   it('never fires while features.imageUpload is off', () => {
     // INFO: with the feature off the file input is not even rendered, so the
     // only way in would be the paste listener — which is gone with it.
-    cy.get('#fileInput').should('not.exist')
+    cy.get('[data-cy=image-file-input]').should('not.exist')
     cy.get('[data-cy=image-replaced-count]').should('have.text', '0')
   })
 
   it('fires with a Blob payload once imageUpload is on', () => {
     cy.get('[data-cy=toggle-image-upload]').click()
-    cy.get('#fileInput').selectFile(
+    cy.get('[data-cy=image-file-input]').selectFile(
       'cypress/fixtures/sample_graph_curve_2.png',
       { force: true },
     )

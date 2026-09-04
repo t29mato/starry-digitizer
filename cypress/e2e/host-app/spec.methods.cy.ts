@@ -70,10 +70,10 @@ describe('host app: loadProject()', () => {
 
     // Axis set: name, values and the 4-points display mode restored loads use.
     cy.get('.c__axisSet-item input').should('have.value', 'Fixture Axes')
-    cy.get('#x1-value').should('have.value', '10')
-    cy.get('#x2-value').should('have.value', '20')
-    cy.get('#y1-value').should('have.value', '30')
-    cy.get('#y2-value').should('have.value', '70')
+    cy.get('[data-cy=x1-value]').should('have.value', '10')
+    cy.get('[data-cy=x2-value]').should('have.value', '20')
+    cy.get('[data-cy=y1-value]').should('have.value', '30')
+    cy.get('[data-cy=y2-value]').should('have.value', '70')
     cy.contains('.sd-check', '4 Points').find('input').should('be.checked')
 
     // Datasets: both rows, their names and their point counts.
@@ -131,10 +131,10 @@ describe('host app: reset()', () => {
     cy.get('.canvas-point').should('have.length', 0)
     cy.get('.dataset-count-1').should('contain.text', '0')
     cy.get('.c__dataset-row').should('have.length', 1)
-    cy.get('#x1-value').should('have.value', '0')
-    cy.get('#x2-value').should('have.value', '1')
+    cy.get('[data-cy=x1-value]').should('have.value', '0')
+    cy.get('[data-cy=x2-value]').should('have.value', '1')
     // INFO: clearImage() sizes every canvas to 0.
-    cy.get('#imageCanvas').should('have.attr', 'width', '0')
+    cy.get('[data-cy=image-canvas]').should('have.attr', 'width', '0')
 
     cy.get('[data-cy=get-values]').click()
     readJson<DatasetValuesLike[]>('values-json').should((datasets) => {

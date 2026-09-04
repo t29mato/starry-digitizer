@@ -33,7 +33,7 @@ describe('host app: changing the image prop', () => {
     cy.get('[data-cy=swap-image]').click()
     cy.get('[data-cy=ready-count]').should('have.text', '2')
     cy.get('body').trigger('keydown', { key: '0' })
-    cy.get('#imageCanvas').should(
+    cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',
       String(SECOND_IMAGE_WIDTH),
@@ -55,14 +55,14 @@ describe('host app: changing the image prop', () => {
     cy.get('[data-cy=remount-other]').click()
     cy.get('[data-cy=ready-count]').should('have.text', '2')
     cy.get('body').trigger('keydown', { key: '0' })
-    cy.get('#imageCanvas').should(
+    cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',
       String(SECOND_IMAGE_WIDTH),
     )
     cy.get('.canvas-point').should('have.length', 0)
     cy.get('.dataset-count-1').should('contain.text', '0')
-    cy.get('#x1-value').should('have.value', '0')
+    cy.get('[data-cy=x1-value]').should('have.value', '0')
   })
 })
 
@@ -82,10 +82,10 @@ describe('host app: changing the project prop', () => {
     cy.get('.canvas-point').should('have.length', 3)
     cy.get('.c__dataset-row').should('have.length', 2)
     cy.get('.c__axisSet-item input').should('have.value', 'Fixture Axes')
-    cy.get('#x2-value').should('have.value', '20')
+    cy.get('[data-cy=x2-value]').should('have.value', '20')
     // INFO: the image prop did not change, so the first figure stays on screen.
     cy.get('body').trigger('keydown', { key: '0' })
-    cy.get('#imageCanvas').should(
+    cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',
       String(FIRST_IMAGE_WIDTH),
@@ -143,10 +143,10 @@ describe('host app: legacy (v1) project DTO', () => {
     cy.get('[data-cy=error-codes]').should('have.text', '')
     cy.get('.canvas-point').should('have.length', 2)
     cy.get('.c__axisSet-item input').should('have.value', 'XY Axes 1')
-    cy.get('#x1-value').should('have.value', '1')
-    cy.get('#x2-value').should('have.value', '11')
-    cy.get('#y1-value').should('have.value', '2')
-    cy.get('#y2-value').should('have.value', '12')
+    cy.get('[data-cy=x1-value]').should('have.value', '1')
+    cy.get('[data-cy=x2-value]').should('have.value', '11')
+    cy.get('[data-cy=y1-value]').should('have.value', '2')
+    cy.get('[data-cy=y2-value]').should('have.value', '12')
     cy.get('.c__dataset-row .sd-combobox input')
       .first()
       .should('have.value', 'legacy dataset')

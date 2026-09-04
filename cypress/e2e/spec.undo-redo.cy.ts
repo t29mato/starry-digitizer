@@ -8,7 +8,7 @@ describe('undo/redo', () => {
   })
 
   it('undoes and redoes a point addition with the Ctrl/Cmd+Z shortcut', () => {
-    cy.get('#canvasWrapper')
+    cy.get('[data-cy=canvas-wrapper]')
       // INFO: default calibration mode is "2 Points" — the first click sets
       // x1/y1, the second sets x2/y2 (see AxisSet#nextAxis), and only
       // clicks after that add data points. Mirrors spec.interpolation.cy.ts.
@@ -43,7 +43,7 @@ describe('undo/redo', () => {
     cy.get('[data-cy=menu-item-redo]').should('be.disabled')
     cy.get('body').type('{esc}')
 
-    cy.get('#canvasWrapper')
+    cy.get('[data-cy=canvas-wrapper]')
       .click(50, 390)
       .click(400, 50)
       .click(200, 200)
