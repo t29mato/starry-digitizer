@@ -1,17 +1,26 @@
 import { Coord } from '@/@types/types'
 
-// Canvas上のpositionを返す関数
-export function getMouseCoordFromMouseEvent(e: MouseEvent): Coord {
-  // INFO: to adjust the exact position the user clicked.
-  const offsetPx = 1
+// INFO: マウスイベントから画像キャンバス基準の座標を返す。
+// クリック対象がcanvas-point等の子要素でも、clientX/YとgetBoundingClientRect()から
+// 算出するため、イベントターゲットに依存せず常に同じ計算式になる。
+// INFO: the canvas element is passed in rather than looked up by id — several
+// <StarryDigitizer> instances can share a page, so an id lookup would always
+// find the first one.
+export function getMouseCoordFromMouseEvent(
+  e: MouseEvent,
+  imageCanvas: HTMLCanvasElement | undefined,
+): Coord {
+  if (!imageCanvas) {
+    return {
+      xPx: e.offsetX,
+      yPx: e.offsetY,
+    }
+  }
 
-  // INFO: プロットの上のoffsetX, Yはプロット(div Element)の中でのXY値になるため、styleのtopとleftを足すことで、canvas上のxy値を再現してる
-  const target = e.target as HTMLElement
-  const xPx = e.offsetX - offsetPx + parseFloat(target.style.left)
-  const yPx = e.offsetY + parseFloat(target.style.top)
+  const rect = imageCanvas.getBoundingClientRect()
 
   return {
-    xPx,
-    yPx,
+    xPx: e.clientX - rect.left,
+    yPx: e.clientY - rect.top,
   }
 }

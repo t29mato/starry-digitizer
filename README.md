@@ -161,12 +161,12 @@ Any key you pass in `features` overrides the derived default.
 
 ### Slots
 
-| Slot | Where |
-|---|---|
-| `aside-top` | Top of the left sidebar |
-| `aside-bottom` | Bottom of the left sidebar |
-| `right-sidebar-footer` | Bottom of the right sidebar |
-| `footer` | Full width, below the three columns |
+| Slot | Where | Slot props |
+|---|---|---|
+| `aside-top` | Top of the left sidebar | `width` — the measured column width in px |
+| `aside-bottom` | Bottom of the left sidebar | `width` |
+| `right-sidebar-footer` | Bottom of the right sidebar | `width` |
+| `footer` | Full width, below the three columns | — |
 
 ### Layout (CSS custom properties)
 
@@ -183,6 +183,21 @@ internal class names:
 | `--sd-canvas-height` | `80vh` | Canvas height when the parent has no height of its own. |
 | `--sd-canvas-min-height` | `240px` | Floor for the canvas when the pane is short. |
 | `--sd-table-max-height` | `30vh` | Height cap for the data table. |
+| `--sd-magnifier-size` | `min(100%, 300px)` | Size of the (square) magnifier. It follows the right column by default, so narrowing that column narrows the magnifier too. |
+| `--sd-axis-list-min-height` / `--sd-axis-list-max-height` | `8vh` / `20vh` | Bounds for the axis-set list. |
+| `--sd-dataset-list-min-height` / `--sd-dataset-list-max-height` | `15vh` / `30vh` | Bounds for the dataset list. Set the min to `0` to let a short list take only the room it needs. |
+
+The `min-width` of each column defaults to the same value as its width, so the
+standalone layout never shrinks. Lower `--sd-left-sidebar-min-width` /
+`--sd-right-sidebar-min-width` to allow narrower columns:
+
+```css
+.starry-digitizer {
+  --sd-right-sidebar-width: 200px;  --sd-right-sidebar-min-width: 200px;
+  --sd-left-sidebar-width: 210px;   --sd-left-sidebar-min-width: 210px;
+  --sd-dataset-list-min-height: 0;  --sd-axis-list-min-height: 0;
+}
+```
 
 #### Embedding in a fixed-height pane
 

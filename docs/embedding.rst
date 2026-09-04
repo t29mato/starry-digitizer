@@ -280,7 +280,24 @@ canvas 要素の持ち主なので、1 つの context につき 1 つだけ配�
 
 主なプロパティ: ``--sd-height`` / ``--sd-left-sidebar-width`` / ``--sd-right-sidebar-width``
 (および各 ``-min-width`` / ``-max-width``) / ``--sd-main-area-margin`` /
-``--sd-canvas-height`` / ``--sd-canvas-min-height`` / ``--sd-table-max-height``。
+``--sd-canvas-height`` / ``--sd-canvas-min-height`` / ``--sd-table-max-height`` /
+``--sd-magnifier-size`` / ``--sd-axis-list-min-height`` / ``--sd-axis-list-max-height`` /
+``--sd-dataset-list-min-height`` / ``--sd-dataset-list-max-height``。
+
+各カラムの ``min-width`` の既定値は幅と同じなので、既定のレイアウトは縮みません。
+狭いカラムを許すには ``-min-width`` も下げてください。拡大鏡は既定で右カラムの幅に
+追従する(``min(100%, 300px)``)ため、右カラムを狭めれば拡大鏡も一緒に狭くなります。
+
+.. code-block:: css
+
+   .starry-digitizer {
+     --sd-right-sidebar-width: 200px;  --sd-right-sidebar-min-width: 200px;
+     --sd-left-sidebar-width: 210px;   --sd-left-sidebar-min-width: 210px;
+     --sd-dataset-list-min-height: 0;  --sd-axis-list-min-height: 0;
+   }
+
+``aside-top`` / ``aside-bottom`` / ``right-sidebar-footer`` の各スロットには、
+実測したサイドバー幅が ``width`` スロット props として渡されます。
 
 ``--sd-canvas-height`` には長さを指定してください(``auto`` は不可)。フィット表示の倍率は
 キャンバス枠の実測高さから計算するため、内容依存の高さにすると循環します。

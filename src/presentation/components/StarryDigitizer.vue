@@ -1,8 +1,8 @@
 <template>
   <div class="starry-digitizer pa-1">
     <div class="c__wrapper">
-      <div class="c__left-sidebar">
-        <slot name="aside-top"></slot>
+      <div ref="leftSidebar" class="c__left-sidebar">
+        <slot name="aside-top" :width="leftSidebarWidth"></slot>
         <image-settings
           v-if="options.features.imageUpload"
           @image-replaced="onImageReplaced"
@@ -14,7 +14,7 @@
         ></axis-set-settings>
         <dataset-manager v-if="options.features.datasetPanel"></dataset-manager>
         <data-table v-if="options.features.dataTable" />
-        <slot name="aside-bottom"></slot>
+        <slot name="aside-bottom" :width="leftSidebarWidth"></slot>
       </div>
       <div class="c__main-area">
         <canvas-header @error="onError"></canvas-header>
@@ -22,12 +22,12 @@
         <canvas-main @error="onError"></canvas-main>
         <canvas-footer></canvas-footer>
       </div>
-      <div class="c__right-sidebar">
+      <div ref="rightSidebar" class="c__right-sidebar">
         <magnifier-main v-if="options.features.magnifier"></magnifier-main>
         <extractor-settings
           v-if="options.features.extractionPanel"
         ></extractor-settings>
-        <slot name="right-sidebar-footer"></slot>
+        <slot name="right-sidebar-footer" :width="rightSidebarWidth"></slot>
       </div>
     </div>
     <slot name="footer"></slot>
@@ -173,6 +173,21 @@ provide(
 const locale = computed<Locale>(() => props.locale ?? detectLocale())
 provideI18n(createI18n(locale))
 
+// INFO: the sidebars are flex items with min/max bounds, so their rendered
+// width depends on the host's pane. Slot content often needs to line up with
+// it (a host toolbar sitting above the axis panel, say), so it is handed to
+// the slots rather than left for the host to measure through internal classes.
+const leftSidebar = ref<HTMLElement>()
+const rightSidebar = ref<HTMLElement>()
+const leftSidebarWidth = ref(0)
+const rightSidebarWidth = ref(0)
+let sidebarObserver: ResizeObserver | undefined
+
+function measureSidebars() {
+  leftSidebarWidth.value = leftSidebar.value?.clientWidth ?? 0
+  rightSidebarWidth.value = rightSidebar.value?.clientWidth ?? 0
+}
+
 // ---------------------------------------------------------------------------
 // Errors
 // ---------------------------------------------------------------------------
@@ -225,6 +240,12 @@ async function loadProject(
 
 onMounted(async () => {
   isMounted.value = true
+  measureSidebars()
+  if (typeof ResizeObserver !== 'undefined') {
+    sidebarObserver = new ResizeObserver(measureSidebars)
+    if (leftSidebar.value) sidebarObserver.observe(leftSidebar.value)
+    if (rightSidebar.value) sidebarObserver.observe(rightSidebar.value)
+  }
   await loadProject(props.project, props.image)
 })
 
@@ -316,6 +337,8 @@ defineExpose({
 })
 
 onBeforeUnmount(() => {
+  sidebarObserver?.disconnect()
+  sidebarObserver = undefined
   if (debounceTimer !== undefined) clearTimeout(debounceTimer)
   if (ownsContext) {
     // INFO: the context is garbage with the component, but canvases/images
@@ -349,6 +372,9 @@ onBeforeUnmount(() => {
     min-height: 0;
   }
 
+  // INFO: min-width defaults to the same value as the basis so the standalone
+  // layout never shrinks (its columns stay exactly 260 / 300 as before). A
+  // host that wants narrower columns lowers --sd-*-min-width explicitly.
   &__left-sidebar,
   &__right-sidebar {
     display: flex;
@@ -359,13 +385,13 @@ onBeforeUnmount(() => {
 
   &__left-sidebar {
     flex: 0 1 var(--sd-left-sidebar-width, 260px);
-    min-width: var(--sd-left-sidebar-min-width, 200px);
+    min-width: var(--sd-left-sidebar-min-width, 260px);
     max-width: var(--sd-left-sidebar-max-width, 340px);
   }
 
   &__right-sidebar {
     flex: 0 1 var(--sd-right-sidebar-width, 300px);
-    min-width: var(--sd-right-sidebar-min-width, 240px);
+    min-width: var(--sd-right-sidebar-min-width, 300px);
     max-width: var(--sd-right-sidebar-max-width, 380px);
   }
 

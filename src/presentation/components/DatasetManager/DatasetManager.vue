@@ -31,15 +31,7 @@
         data-cy="view-all-datasets"
       />
     </h4>
-    <div
-      class="mb-2 mt-1 pa-0"
-      style="
-        min-height: 15vh;
-        outline: solid 1px gray;
-        max-height: 30vh;
-        overflow-y: auto;
-      "
-    >
+    <div class="mb-2 mt-1 pa-0 c__dataset-list">
       <!-- Individual datasets -->
       <div
         v-for="dataset in datasetRepository.datasets"
@@ -306,6 +298,15 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+// INFO: heights are custom properties so a host can compact the sidebar
+// without overriding internal class names.
+.c__dataset-list {
+  min-height: var(--sd-dataset-list-min-height, 15vh);
+  max-height: var(--sd-dataset-list-max-height, 30vh);
+  overflow-y: auto;
+  outline: solid 1px gray;
+}
+
 // INFO: replaces <v-list-item link>: the name cell is a plain clickable row.
 // The hover rule skips the active row so its yellow highlight stays visible.
 .c__dataset-item {

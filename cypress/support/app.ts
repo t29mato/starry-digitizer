@@ -20,25 +20,51 @@ export function visitApp(options?: Partial<Cypress.VisitOptions>): void {
   resetZoom()
 }
 
-/** Waits for the canvas to have a real image drawn on it. */
+/**
+ * Waits for #imageCanvas to exist.
+ *
+ * NOTE: this deliberately does NOT try to detect that the image has been
+ * decoded. A `<canvas>` with no width attribute reports the HTML default of
+ * 300x150, so "width > 0" is true from the very first render and any such
+ * check is a no-op. Waiting for the image is `resetZoom`'s job — it retries
+ * the shortcut, which is the only signal that survives the async decode.
+ */
 export function waitForImage(): void {
-  cy.get('#imageCanvas')
-    .should('exist')
-    .and(($canvas) => {
-      expect(($canvas[0] as HTMLCanvasElement).width).to.be.greaterThan(0)
-    })
+  cy.get('#imageCanvas').should('exist')
 }
 
 /**
- * Presses the "Reset to 100%" shortcut and waits until the canvas really is
- * at 1:1 with the image. `expectedWidth` defaults to the sample graph the app
- * boots with; pass the width of a replacement image after an upload.
+ * Presses the "Reset to 100%" shortcut until the canvas really is at 1:1 with
+ * the image. `expectedWidth` defaults to the sample graph the app boots with;
+ * pass the width of a replacement image after an upload.
+ *
+ * INFO: the shortcut has to be RETRIED, not just asserted on. Loading an
+ * image is asynchronous (`initializeImageElement` resolves on the <img>'s
+ * onload) and finishes with `drawFitSizeImage()`. A single keydown that
+ * arrives before that is lost twice over: `CanvasHandler.resize()` bails out
+ * while `originalWidth` is still 0, and the fit draw that follows the decode
+ * would overwrite a 100% scale anyway. The canvas then stays at the fit width
+ * (e.g. 680 for the 1180x980 sample) and the assertion times out — the
+ * order-dependent flake this replaces, which surfaced in whichever spec
+ * happened to visit while the machine was busy.
  */
 export function resetZoom(expectedWidth = 1180): void {
-  cy.get('body').trigger('keydown', { key: '0' })
   cy.contains('.c__current-dataset-and-axis', 'Dataset:')
-  cy.get('#imageCanvas').should(($canvas) => {
-    expect(($canvas[0] as HTMLCanvasElement).width).to.equal(expectedWidth)
+  pressResetZoom(expectedWidth, 40)
+}
+
+/** One "Reset to 100%" attempt, retried until the canvas reports `expected`. */
+function pressResetZoom(expected: number, attemptsLeft: number): void {
+  cy.get('body').trigger('keydown', { key: '0' })
+  cy.get('#imageCanvas').then(($canvas) => {
+    const width = ($canvas[0] as HTMLCanvasElement).width
+    if (width === expected) return
+    if (attemptsLeft === 0) {
+      expect(width, 'canvas width after "Reset to 100%"').to.equal(expected)
+      return
+    }
+    cy.wait(100, { log: false })
+    pressResetZoom(expected, attemptsLeft - 1)
   })
 }
 
@@ -87,7 +113,16 @@ export function assertMenuItemChecked(item: string, checked: boolean): void {
     .should(checked ? 'exist' : 'not.exist')
 }
 
-/** Clicks the canvas at a coordinate relative to #canvasWrapper's top-left. */
+/**
+ * Clicks the canvas at a coordinate relative to #canvasWrapper's top-left.
+ *
+ * INFO: a plain `.click(x, y)` is enough now that the app derives the image
+ * pixel from `clientX/clientY` minus #imageCanvas' bounding rect (see
+ * getMouseCoordFromMouseEvent). Both sides start from the same viewport
+ * coordinate, so there is no second, independent rounding to disagree with —
+ * the earlier helper had to compensate for Chrome rounding `offsetX` on its
+ * own.
+ */
 export function clickCanvas(coord: Coord): void {
   cy.get('#canvasWrapper').click(coord.x, coord.y)
 }
@@ -230,14 +265,20 @@ export function selectAxisSet(index: number): void {
   axisSetRows().eq(index).click()
 }
 
-export function pointCount(datasetId: number): Cypress.Chainable<JQuery<HTMLElement>> {
+export function pointCount(
+  datasetId: number,
+): Cypress.Chainable<JQuery<HTMLElement>> {
   return cy.get(`.dataset-count-${datasetId}`)
 }
 
 /** Triggers the Ctrl/Cmd+Z undo shortcut. */
 export function undo(times = 1): void {
   for (let i = 0; i < times; i++) {
-    cy.get('body').trigger('keydown', { key: 'z', ctrlKey: true, metaKey: true })
+    cy.get('body').trigger('keydown', {
+      key: 'z',
+      ctrlKey: true,
+      metaKey: true,
+    })
   }
 }
 
@@ -286,9 +327,7 @@ export function stubClipboard(win: Cypress.AUTWindow): void {
   }
   // INFO: .as() lives on the Cypress agent, and .resolves() returns a plain
   // SinonStub, so the alias must be taken before the behaviour is set.
-  cy.stub(win.navigator.clipboard, 'writeText')
-    .as('clipboardWrite')
-    .resolves()
+  cy.stub(win.navigator.clipboard, 'writeText').as('clipboardWrite').resolves()
 }
 
 /** Reads back what was last written through the stubbed clipboard. */
@@ -328,6 +367,32 @@ export function selectProjectFile(
 type CypressBuffer = ReturnType<typeof Cypress.Buffer.from>
 
 /**
+ * Polls the downloads folder until exactly one `sd-*.zip` has appeared.
+ *
+ * INFO: `cy.task(...).should(...)` does NOT retry the task — the assertion
+ * runs once against the first listing, so the check raced the browser's
+ * download and failed with "expected [] to have a length of 1" whenever
+ * building the ZIP took longer than the click-to-listing gap. Polling the
+ * task explicitly is the only way to give the download time to land.
+ */
+function waitForDownloadedZipName(
+  attemptsLeft = 100,
+): Cypress.Chainable<string> {
+  return cy.task('listDownloads').then((files) => {
+    const zips = (files as string[]).filter((f) => /^sd-.*\.zip$/.test(f))
+    if (zips.length === 1) {
+      return cy.wrap(zips[0], { log: false })
+    }
+    if (attemptsLeft === 0) {
+      expect(zips, 'exactly one sd-*.zip was downloaded').to.have.length(1)
+    }
+    return cy
+      .wait(100, { log: false })
+      .then(() => waitForDownloadedZipName(attemptsLeft - 1))
+  })
+}
+
+/**
  * Waits for "Save Project" to have finished writing exactly one `sd-*.zip`
  * into the downloads folder and yields its contents.
  *
@@ -336,16 +401,8 @@ type CypressBuffer = ReturnType<typeof Cypress.Buffer.from>
  * removes the half-written file.
  */
 export function readDownloadedProject(): Cypress.Chainable<CypressBuffer> {
-  cy.task('listDownloads').should((files) => {
-    const zips = (files as string[]).filter((f) => /^sd-.*\.zip$/.test(f))
-    expect(zips, 'exactly one sd-*.zip was downloaded').to.have.length(1)
-  })
-  return cy
-    .task('listDownloads')
-    .then((files) => {
-      const name = (files as string[]).find((f) => /^sd-.*\.zip$/.test(f))
-      return cy.readFile(`cypress/downloads/${name}`, null)
-    })
+  return waitForDownloadedZipName()
+    .then((name) => cy.readFile(`cypress/downloads/${name}`, null))
     .should((contents) => {
       // INFO: the ZIP always embeds the graph image, so a plausible download
       // is far bigger than this; the check guards against reading a file the

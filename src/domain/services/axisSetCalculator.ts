@@ -18,15 +18,20 @@ export default class AxisSetCalculator {
       this.effectiveDigits = effectiveDigits
     }
   }
+
+  // INFO: 軸が未配置の場合、coordはinitialCoord {-999, -999} (truthy) のため、
+  // 存在チェックに加えて座標が非負(=実際に配置済み)であることを判定する
+  get #allAxisCoordsAreFilled(): boolean {
+    return [
+      this.#axisSet.x1,
+      this.#axisSet.x2,
+      this.#axisSet.y1,
+      this.#axisSet.y2,
+    ].every((axis) => axis.coord && axis.coord.xPx >= 0 && axis.coord.yPx >= 0)
+  }
+
   calculateXYValues(xt: number, yt: number): { xV: string; yV: string } {
-    if (
-      !(
-        this.#axisSet.x1.coord &&
-        this.#axisSet.x2.coord &&
-        this.#axisSet.y1.coord &&
-        this.#axisSet.y2.coord
-      )
-    ) {
+    if (!this.#allAxisCoordsAreFilled) {
       return { xV: 'NaN', yV: 'NaN' }
     }
     if (
@@ -113,14 +118,7 @@ export default class AxisSetCalculator {
     xValue: number,
     yValue: number,
   ): { xPx: number; yPx: number } | null {
-    if (
-      !(
-        this.#axisSet.x1.coord &&
-        this.#axisSet.x2.coord &&
-        this.#axisSet.y1.coord &&
-        this.#axisSet.y2.coord
-      )
-    ) {
+    if (!this.#allAxisCoordsAreFilled) {
       return null
     }
     if (

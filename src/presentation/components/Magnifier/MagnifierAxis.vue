@@ -6,10 +6,10 @@
         top: `${(yPx - axisHalfSizePx) * magnifier.scale}px`,
         left: `${(xPx - axisCrossBorderHalfPx) * magnifier.scale}px`,
         'pointer-events': 'none',
-        transform: `scale(${magnifier.scale}) translate(-${
-          canvasHandler.cursor.xPx - magnifierHalfSizePx / magnifier.scale
-        }px, -${
-          canvasHandler.cursor.yPx - magnifierHalfSizePx / magnifier.scale
+        transform: `scale(${magnifier.scale}) translate(${
+          magnifierHalfSizePx / magnifier.scale - canvasHandler.cursor.xPx
+        }px, ${
+          magnifierHalfSizePx / magnifier.scale - canvasHandler.cursor.yPx
         }px)`,
         'transform-origin': 'top left',
         width: `${axisCrossBorderPx}px`,

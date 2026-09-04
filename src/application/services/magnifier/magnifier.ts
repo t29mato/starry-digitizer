@@ -23,4 +23,12 @@ export class Magnifier implements MagnifierInterface {
   setMarkerSizePx(sizePx: number) {
     this.markerSizePx = sizePx
   }
+
+  // INFO: the magnifier box is square and its size is used for canvas
+  // geometry and overlay math, not just CSS — so it has to live here rather
+  // than being a pure stylesheet value. MagnifierMain keeps it in step with
+  // the width its column actually gives it.
+  setSizePx(sizePx: number) {
+    this.sizePx = sizePx
+  }
 }

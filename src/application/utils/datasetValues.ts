@@ -33,19 +33,8 @@ export function calculatePhysicalValue(
   yPx: number,
   effectiveDigits: number,
 ): XYValue {
-  // INFO: AxisSetCalculator only guards against equal axis values; with the
-  // (-999,-999) placeholder coords it would divide by a zero-length axis and
-  // return Infinity. Hosts should see NaN for an uncalibrated axis set.
-  // (Not Axis.coordIsFilled: that treats a legitimate (0,0) as unset.)
-  const isSet = (c: { xPx: number; yPx: number }) => c.xPx >= 0 && c.yPx >= 0
-  const calibrated =
-    isSet(axisSet.x1.coord) &&
-    isSet(axisSet.x2.coord) &&
-    isSet(axisSet.y1.coord) &&
-    isSet(axisSet.y2.coord)
-  if (!calibrated) {
-    return { x: NaN, y: NaN }
-  }
+  // INFO: AxisSetCalculator itself returns 'NaN' for an axis set whose axes
+  // still hold the (-999,-999) placeholder coords, so no guard is needed here.
   const calculator = new AxisSetCalculator(
     axisSet,
     { x: axisSet.xIsLogScale, y: axisSet.yIsLogScale },

@@ -50,26 +50,34 @@ function selectMaskTool(tool: 'Pen' | 'Box' | 'Eraser') {
 /**
  * Drags across the canvas, which is how both the pen and the box are drawn.
  *
- * INFO: CanvasMain maps a mouse position onto the image with
- * `event.offsetX/offsetY` plus the target's inline `left`/`top`. Cypress'
- * `.trigger()` does not populate offsetX/offsetY, so they are passed
- * explicitly, and the events go to the topmost canvas (inline left/top of 0)
- * rather than to #canvasWrapper, which has no inline position at all.
+ * INFO: Cypress' `.trigger()` populates neither offsetX/offsetY nor
+ * clientX/clientY, so both pairs are passed explicitly and kept consistent
+ * with each other: `getMouseCoordFromMouseEvent` reads clientX/clientY minus
+ * #imageCanvas' bounding rect, and falls back to offsetX/offsetY when the
+ * canvas is not attached yet. The events go to the topmost canvas (inline
+ * left/top of 0) rather than to #canvasWrapper, which has no inline position.
  */
 function drag(from: { x: number; y: number }, to: { x: number; y: number }) {
   const steps = 8
-  const at = (i: number) => ({
-    offsetX: from.x + ((to.x - from.x) * i) / steps,
-    offsetY: from.y + ((to.y - from.y) * i) / steps,
-    buttons: 1,
+  cy.get('#imageCanvas').then(($canvas) => {
+    const rect = $canvas[0].getBoundingClientRect()
+    const at = (i: number) => {
+      const x = from.x + ((to.x - from.x) * i) / steps
+      const y = from.y + ((to.y - from.y) * i) / steps
+      return {
+        offsetX: x,
+        offsetY: y,
+        clientX: rect.left + x,
+        clientY: rect.top + y,
+        buttons: 1,
+      }
+    }
+    let chain = cy.get('#interpolationGuideCanvas').trigger('mousedown', at(0))
+    for (let i = 1; i <= steps; i++) {
+      chain = chain.trigger('mousemove', at(i))
+    }
+    chain.trigger('mouseup', { ...at(steps), buttons: 0 })
   })
-  let chain = cy
-    .get('#interpolationGuideCanvas')
-    .trigger('mousedown', at(0))
-  for (let i = 1; i <= steps; i++) {
-    chain = chain.trigger('mousemove', at(i))
-  }
-  chain.trigger('mouseup', { ...at(steps), buttons: 0 })
 }
 
 describe('automatic extraction', () => {

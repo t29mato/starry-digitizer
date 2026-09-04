@@ -1,7 +1,7 @@
 <template>
   <!-- INFO: plain HTML chrome. The host owns no UI framework; the digitizer
        brings its own styles, scoped under `.starry-digitizer`. -->
-  <div class="host-app">
+  <div class="host-app" :class="{ 'host-app--compact': compact }">
     <main class="host-main">
       <div class="host-toolbar">
         <button data-cy="remount" @click="remount">
@@ -64,6 +64,39 @@
         <button data-cy="load-broken-image" @click="loadBrokenImage">
           load broken png
         </button>
+        <button
+          data-cy="toggle-axis-panel"
+          @click="features.axisPanel = !features.axisPanel"
+        >
+          axisPanel: {{ features.axisPanel ? 'on' : 'off' }}
+        </button>
+        <button
+          data-cy="toggle-dataset-panel"
+          @click="features.datasetPanel = !features.datasetPanel"
+        >
+          datasetPanel: {{ features.datasetPanel ? 'on' : 'off' }}
+        </button>
+        <button
+          data-cy="toggle-extraction-panel"
+          @click="features.extractionPanel = !features.extractionPanel"
+        >
+          extractionPanel: {{ features.extractionPanel ? 'on' : 'off' }}
+        </button>
+        <button
+          data-cy="toggle-magnifier"
+          @click="features.magnifier = !features.magnifier"
+        >
+          magnifier: {{ features.magnifier ? 'on' : 'off' }}
+        </button>
+        <button
+          data-cy="toggle-data-table"
+          @click="features.dataTable = !features.dataTable"
+        >
+          dataTable: {{ features.dataTable ? 'on' : 'off' }}
+        </button>
+        <button data-cy="toggle-compact" @click="compact = !compact">
+          compact: {{ compact ? 'on' : 'off' }}
+        </button>
         <button data-cy="clear-log" @click="clearLog">clear log</button>
         <button data-cy="mount-second" @click="toggleSecond">
           second digitizer: {{ secondMounted ? 'on' : 'off' }}
@@ -79,21 +112,38 @@
         </label>
       </div>
 
-      <starry-digitizer
-        v-if="mounted && image"
-        ref="digitizer"
-        data-cy="digitizer-1"
-        :image="image"
-        :project="project"
-        :readonly="readonly"
-        :dataset-name-candidates="datasetNameCandidates"
-        :features="features"
-        @update:project="onUpdateProject"
-        @ready="onReady"
-        @change="onChange"
-        @image-replaced="onImageReplaced"
-        @error="onError"
-      ></starry-digitizer>
+      <!-- INFO: the pane the digitizer lives in. In "compact" mode it has a
+           fixed height and hands the library its layout custom properties, the
+           way a host embeds the digitizer in one screenful of its own UI. -->
+      <div class="host-pane" :class="{ 'host-pane--compact': compact }">
+        <starry-digitizer
+          v-if="mounted && image"
+          ref="digitizer"
+          data-cy="digitizer-1"
+          :image="image"
+          :project="project"
+          :readonly="readonly"
+          :dataset-name-candidates="datasetNameCandidates"
+          :features="features"
+          @update:project="onUpdateProject"
+          @ready="onReady"
+          @change="onChange"
+          @image-replaced="onImageReplaced"
+          @error="onError"
+        >
+          <!-- INFO: the sidebar slots receive the measured sidebar width so
+               host chrome can line up with the column it sits in. -->
+          <template #aside-top="{ width }">
+            <div class="host-slot" data-cy="slot-aside-top">
+              host aside-top ·
+              <span data-cy="aside-top-width">{{ width }}</span>
+            </div>
+          </template>
+          <template #footer>
+            <div class="host-slot" data-cy="slot-footer">host footer</div>
+          </template>
+        </starry-digitizer>
+      </div>
 
       <!-- INFO: a second instance on the same page, to prove the digitizer no
            longer relies on document-wide canvas ids. -->
@@ -176,7 +226,16 @@ const features = reactive({
   imageUpload: false,
   zipExportImport: false,
   csvExport: true,
+  axisPanel: true,
+  datasetPanel: true,
+  extractionPanel: true,
+  magnifier: true,
+  dataTable: true,
 })
+
+// INFO: fixed-height embedding, driven purely by the library's layout custom
+// properties (see .host-pane--compact below).
+const compact = ref(false)
 
 const updateCount = ref(0)
 const readyCount = ref(0)
@@ -542,6 +601,29 @@ body {
   padding: 6px 10px;
   font-size: 12px;
   font-family: monospace;
+}
+
+/* INFO: everything below is the host's own CSS — the library exposes the
+   sizes it uses as custom properties, so no internal class is touched. */
+.host-pane--compact {
+  height: 70vh;
+  --sd-height: 100%;
+  --sd-left-sidebar-width: 210px;
+  --sd-left-sidebar-min-width: 210px;
+  --sd-right-sidebar-width: 200px;
+  --sd-right-sidebar-min-width: 200px;
+}
+
+/* INFO: the point of compact mode is that the page itself does not scroll,
+   so the host's own debug dump steps aside while it is on. */
+.host-app--compact .host-output {
+  display: none;
+}
+
+.host-slot {
+  font-size: 11px;
+  color: #666;
+  padding: 2px 4px;
 }
 
 .host-output pre {

@@ -11,10 +11,10 @@
       position: 'absolute',
       top: `${yPx * magnifier.scale}px`,
       left: `${xPx * magnifier.scale}px`,
-      transform: `scale(${magnifier.scale}) translate(-${
-        canvasHandler.cursor.xPx - magnifierHalfSize / magnifier.scale
-      }px, -${
-        canvasHandler.cursor.yPx - magnifierHalfSize / magnifier.scale
+      transform: `scale(${magnifier.scale}) translate(${
+        magnifierHalfSize / magnifier.scale - canvasHandler.cursor.xPx
+      }px, ${
+        magnifierHalfSize / magnifier.scale - canvasHandler.cursor.yPx
       }px)`,
       'transform-origin': 'top left',
       'pointer-events': 'none',

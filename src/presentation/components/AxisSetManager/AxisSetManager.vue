@@ -21,10 +21,7 @@
         class="ml-2"
       />
     </h4>
-    <div
-      class="mb-2 mt-1 pa-0 c__axisSet-list"
-      style="min-height: 8vh; outline: solid 1px gray; max-height: 20vh"
-    >
+    <div class="mb-2 mt-1 pa-0 c__axisSet-list">
       <div
         v-for="axisSet in axisSetRepository.axisSets"
         :key="axisSet.id"
@@ -169,8 +166,13 @@ export default defineComponent({
 // INFO: replaces <v-list density="compact"> + <v-list-item link>: a plain
 // scrollable list whose rows highlight on hover the way the Vuetify one did.
 // The hover rule skips the active row so the yellow highlight stays visible.
+// INFO: heights are custom properties so a host can compact the sidebar
+// without overriding internal class names.
 .c__axisSet-list {
+  min-height: var(--sd-axis-list-min-height, 8vh);
+  max-height: var(--sd-axis-list-max-height, 20vh);
   overflow-y: auto;
+  outline: solid 1px gray;
 }
 .c__axisSet-item {
   cursor: pointer;

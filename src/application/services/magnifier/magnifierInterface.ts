@@ -9,4 +9,5 @@ export interface MagnifierInterface {
   setScale(scale: number): void
   setEffectiveDigits(digits: number): void
   setMarkerSizePx(sizePx: number): void
+  setSizePx(sizePx: number): void
 }

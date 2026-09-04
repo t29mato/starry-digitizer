@@ -4,11 +4,8 @@
     ref="canvasWrapper"
     class="c__canvas-wrapper"
     @click="click"
-    @mousemove="mouseMove"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
-    @mouseenter="mouseEnter"
-    @mouseleave="mouseLeave"
   >
     <canvas id="imageCanvas" ref="imageCanvas"></canvas>
     <canvas
@@ -72,9 +69,6 @@ import {
 } from '@/presentation/utils/projectFileDialog'
 import { MANUAL_MODE } from '@/constants'
 
-// INFO: to adjust the exact position the user clicked.
-const offsetPx = 1
-
 export default defineComponent({
   components: {
     CanvasAxisSet,
@@ -104,11 +98,26 @@ export default defineComponent({
       // INFO: keep the exact bound reference so beforeUnmount can remove the
       // very listener that was added (a fresh .bind() would not match).
       boundKeyDownHandler: null as ((e: KeyboardEvent) => void) | null,
+      boundMouseMoveHandler: null as ((e: MouseEvent) => void) | null,
+      // INFO: whether the cursor was inside the image on the previous
+      // mousemove. Used to clamp the magnifier to the edge on the first event
+      // that leaves the image.
+      cursorWasOnImage: false,
+      // INFO: true while a drag that STARTED on this instance's wrapper is in
+      // progress. mousemove is a document listener (see mounted), so on a page
+      // with more than one <StarryDigitizer> every instance sees every move;
+      // this tells them apart.
+      isDraggingHere: false,
     }
   },
   mounted() {
     this.boundKeyDownHandler = this.keyDownHandler.bind(this)
     document.addEventListener('keydown', this.boundKeyDownHandler)
+    // INFO: mousemove is listened for on document (not on the wrapper) so the
+    // event that crosses the image edge is still received and the magnifier
+    // can be stopped exactly at the edge (#255).
+    this.boundMouseMoveHandler = this.mouseMove.bind(this)
+    document.addEventListener('mousemove', this.boundMouseMoveHandler)
 
     // INFO: The image itself is loaded by StarryDigitizer.vue through
     // digitizerOperations.applyImage; this component only owns the canvases.
@@ -129,6 +138,10 @@ export default defineComponent({
       document.removeEventListener('keydown', this.boundKeyDownHandler)
       this.boundKeyDownHandler = null
     }
+    if (this.boundMouseMoveHandler) {
+      document.removeEventListener('mousemove', this.boundMouseMoveHandler)
+      this.boundMouseMoveHandler = null
+    }
     this.canvasHandler.detachCanvases([
       'wrapper',
       'imageCanvas',
@@ -137,6 +150,13 @@ export default defineComponent({
     ])
   },
   methods: {
+    // INFO: the element this component owns via a template ref — passed to
+    // getMouseCoordFromMouseEvent instead of an id lookup so that several
+    // digitizer instances can share a page. Undefined before mount / after
+    // unmount, in which case the util falls back to offsetX/Y.
+    imageCanvasElement(): HTMLCanvasElement | undefined {
+      return this.$refs.imageCanvas as HTMLCanvasElement | undefined
+    },
     // REFACTOR: modeに応じてpointなりpickColorなりを呼び出す形に変更する
     point(e: MouseEvent): void {
       // INFO: readonly option and View All mode are both view-only
@@ -151,13 +171,13 @@ export default defineComponent({
       const isOnCanvasPoint = target.className === 'canvas-point'
 
       // INFO: クリック座標を画像のオリジナル座標に変換
-      const xPx = isOnCanvasPoint
-        ? (e.offsetX + parseFloat(target.style.left) - offsetPx) /
-          this.canvasHandler.scale
-        : (e.offsetX - offsetPx) / this.canvasHandler.scale
-      const yPx = isOnCanvasPoint
-        ? (e.offsetY + parseFloat(target.style.top)) / this.canvasHandler.scale
-        : e.offsetY / this.canvasHandler.scale
+      // (クリック対象が既存プロット上かどうかに関わらず同じ計算式を使う)
+      const canvasCoord = getMouseCoordFromMouseEvent(
+        e,
+        this.imageCanvasElement(),
+      )
+      const xPx = canvasCoord.xPx / this.canvasHandler.scale
+      const yPx = canvasCoord.yPx / this.canvasHandler.scale
 
       // INFO: 画像範囲外のクリックを無視する
       if (
@@ -222,47 +242,95 @@ export default defineComponent({
 
       this.canvasHandler.mouseDrag(coord.xPx, coord.yPx)
     },
+    // INFO: bound to document, so this also fires outside canvasWrapper (#255)
     mouseMove(e: MouseEvent) {
-      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
+      const wrapper = this.$refs.canvasWrapper as HTMLDivElement | undefined
+      if (!wrapper) {
+        return
+      }
 
-      // INFO: カーソルが画像canvas要素の範囲内かどうかを判定
+      // INFO: getMouseCoordFromMouseEvent is relative to the image canvas'
+      // bounding rect, so it stays correct for events outside canvasWrapper.
+      const { xPx, yPx } = getMouseCoordFromMouseEvent(
+        e,
+        this.imageCanvasElement(),
+      )
       const cursorXPx = xPx / this.canvasHandler.scale
       const cursorYPx = yPx / this.canvasHandler.scale
-      this.canvasHandler.isCursorOnCanvas =
+      const isOnImage =
         cursorXPx >= 0 &&
         cursorYPx >= 0 &&
         cursorXPx <= this.canvasHandler.originalWidth &&
         cursorYPx <= this.canvasHandler.originalHeight
 
+      // INFO: カーソルがcanvasWrapper内かつ画像canvas要素の範囲内かどうかを判定
+      const wrapperRect = wrapper.getBoundingClientRect()
+      const isInsideWrapper =
+        e.clientX >= wrapperRect.left &&
+        e.clientX <= wrapperRect.right &&
+        e.clientY >= wrapperRect.top &&
+        e.clientY <= wrapperRect.bottom
+      this.canvasHandler.isCursorOnCanvas = isInsideWrapper && isOnImage
+
+      // INFO: 左クリックされている状態
+      const isClicking = e.buttons === 1
+
+      // INFO: the listener is on document (#255), so every instance on the
+      // page receives this event. Another instance's image can easily cover
+      // the same coordinates, so "is the cursor over MY wrapper" is the check
+      // that tells them apart — `isOnImage` alone is not enough.
+      if (!isInsideWrapper && !this.isDraggingHere && !this.cursorWasOnImage) {
+        return
+      }
+
+      // INFO: 画像の外ではMagnifierを動かさない(気が散るため)。
+      // 画像から出た最初のイベントだけは端にクランプした位置へ更新し、
+      // Magnifierが画像の端でぴったり止まって見えるようにする (#255)。
+      // ドラッグ中(範囲選択・マスク描画)は例外として追従を続ける
+      if (!isOnImage && !isClicking && !this.cursorWasOnImage) {
+        return
+      }
+      this.cursorWasOnImage = isOnImage
+
       this.axisSetRepository.activeAxisSet.isAdjusting = false
       this.datasetRepository.activeDataset.pointsAreAdjusting = false
+
+      const clampedXPx = Math.min(
+        Math.max(cursorXPx, 0),
+        this.canvasHandler.originalWidth,
+      )
+      const clampedYPx = Math.min(
+        Math.max(cursorYPx, 0),
+        this.canvasHandler.originalHeight,
+      )
       this.canvasHandler.setCursor({
-        xPx: cursorXPx,
-        yPx: cursorYPx,
+        xPx: clampedXPx,
+        yPx: clampedYPx,
       })
-      // INFO: 左クリックされていない状態
-      const isClicking = e.buttons === 1
       if (isClicking) {
-        this.mouseDrag({ xPx, yPx })
+        this.mouseDrag({
+          xPx: clampedXPx * this.canvasHandler.scale,
+          yPx: clampedYPx * this.canvasHandler.scale,
+        })
       }
-    },
-    mouseEnter() {
-      // INFO: 正確な判定はmouseMoveで行うが、初期値としてtrueにする
-      this.canvasHandler.isCursorOnCanvas = true
-    },
-    mouseLeave() {
-      this.canvasHandler.isCursorOnCanvas = false
     },
     mouseDown(e: MouseEvent) {
       if (this.options.readonly) return
       if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
-      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
+      // INFO: bound on the wrapper, so it only fires for this instance.
+      this.isDraggingHere = true
+
+      const { xPx, yPx } = getMouseCoordFromMouseEvent(
+        e,
+        this.imageCanvasElement(),
+      )
 
       this.canvasHandler.mouseDown(xPx, yPx)
     },
     mouseUp() {
+      this.isDraggingHere = false
       if (this.options.readonly) return
       if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
