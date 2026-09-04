@@ -8,7 +8,15 @@ import { extractColorSwatches } from '@/application/utils/colorPaletteUtils'
 import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 import { MANUAL_MODE, MASK_MODE } from '@/constants'
 import { Coord, ManualMode, MaskMode } from '@/@types/types'
-export class CanvasHandler implements CanvasHandlerInterface {
+import { PixelSource } from '@/application/ports/pixelSource'
+
+// INFO: callers outside this class must change mode / cursor state through the
+// setters (setManualMode, setMaskMode, setIsCursorOnCanvas) instead of assigning
+// the fields directly. The setters keep the mutually exclusive modes consistent
+// and are the single hook point where change notification will be emitted once
+// the engine stops relying on Vue's reactive() wrapper — see
+// docs/design/engine-boundary.md §1.4.
+export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   isDrawnMask = false
   imageElement: HTMLImageElement
   scale = 1
@@ -315,6 +323,29 @@ export class CanvasHandler implements CanvasHandlerInterface {
     return ctx.getImageData(0, 0, this.originalWidth, this.originalHeight).data
   }
 
+  // INFO: PixelSource implementation. These are thin aliases over the existing
+  // canvas-flavoured members so that `Extractor.execute()` can take the port
+  // instead of the whole canvas handler.
+  get width(): number {
+    return this.originalWidth
+  }
+
+  get height(): number {
+    return this.originalHeight
+  }
+
+  get hasMask(): boolean {
+    return this.isDrawnMask
+  }
+
+  getImagePixels(): Uint8ClampedArray {
+    return this.originalImageCanvasColors
+  }
+
+  getMaskPixels(): Uint8ClampedArray {
+    return this.originalSizeMaskCanvasColors
+  }
+
   get colorSwatches() {
     if (!this.imageElement) {
       throw new Error('imageElement is undefined.')
@@ -529,14 +560,25 @@ export class CanvasHandler implements CanvasHandlerInterface {
     this.cursor = coord
   }
 
+  setIsCursorOnCanvas(value: boolean) {
+    this.isCursorOnCanvas = value
+  }
+
+  // INFO: the two modes are mutually exclusive, so activating one clears the
+  // other. Clearing a mode (UNSET) must NOT clear the counterpart: switching
+  // datasets turns the mask tool off while the plot-add mode has to stay on.
   setManualMode(mode: ManualMode) {
     this.manualMode = mode
-    this.maskMode = MASK_MODE.UNSET
+    if (mode !== MANUAL_MODE.UNSET) {
+      this.maskMode = MASK_MODE.UNSET
+    }
   }
 
   setMaskMode(mode: MaskMode) {
     this.maskMode = mode
-    this.manualMode = MANUAL_MODE.UNSET
+    if (mode !== MASK_MODE.UNSET) {
+      this.manualMode = MANUAL_MODE.UNSET
+    }
   }
 
   setPenToolSizePx(size: number) {

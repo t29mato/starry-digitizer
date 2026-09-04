@@ -105,7 +105,7 @@ export default defineComponent({
       this.canvasHandler.clearMask()
       // INFO: マスク削除後はマスク描画されておらず消しゴムツールを使う必要ないため。
       if (this.canvasHandler.maskMode === MASK_MODE.ERASER) {
-        this.canvasHandler.maskMode = MASK_MODE.UNSET
+        this.canvasHandler.setMaskMode(MASK_MODE.UNSET)
       }
     },
   },

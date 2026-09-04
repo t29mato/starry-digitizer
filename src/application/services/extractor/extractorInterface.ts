@@ -1,4 +1,4 @@
-import { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
+import { PixelSource } from '@/application/ports/pixelSource'
 import { Coord } from '@/@types/types'
 import ExtractStrategyInterface from '@/application/strategies/extractStrategies/extractStrategyInterface'
 
@@ -15,7 +15,7 @@ export interface ExtractorInterface {
   setColorPicker(color: string): void
   setSwatches(colorSwatches: string[]): void
 
-  execute(canvasHandler: CanvasHandlerInterface): Coord[]
+  execute(source: PixelSource): Coord[]
 
   get targetColor(): { R: number; G: number; B: number }
   get targetColorHex(): string

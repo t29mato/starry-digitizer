@@ -140,7 +140,7 @@ describe('ProjectService', () => {
       dataset.externalId = 'sample-1'
       datasetRepository.addDataset(dataset)
       canvasHandler.scale = 1.5
-      canvasHandler.manualMode = MANUAL_MODE.ADD
+      canvasHandler.setManualMode(MANUAL_MODE.ADD)
 
       const dto = projectService.toProjectDTO()
 
@@ -217,7 +217,7 @@ describe('ProjectService', () => {
 
     it('tolerates a DTO with no canvasHandler and leaves the canvas untouched', () => {
       canvasHandler.scale = 3
-      canvasHandler.manualMode = MANUAL_MODE.DELETE
+      canvasHandler.setManualMode(MANUAL_MODE.DELETE)
       const dto = buildProjectDTO() as Record<string, unknown>
       delete dto.canvasHandler
 
@@ -299,7 +299,7 @@ describe('ProjectService', () => {
       datasetRepository.setActiveDataset(2)
 
       canvasHandler.scale = 1.75
-      canvasHandler.manualMode = MANUAL_MODE.ADD
+      canvasHandler.setManualMode(MANUAL_MODE.ADD)
 
       const first = projectService.toProjectDTO()
       projectService.restoreProject(first)

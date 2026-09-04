@@ -1,4 +1,4 @@
-import { CanvasHandlerInterface } from '../canvasHandler/canvasHandlerInterface'
+import { PixelSource } from '../../ports/pixelSource'
 
 import { ExtractorInterface } from './extractorInterface'
 import ExtractStrategyInterface from '../../strategies/extractStrategies/extractStrategyInterface'
@@ -32,13 +32,15 @@ export class Extractor implements ExtractorInterface {
     this.updateSwatches(colorSwatches)
   }
 
-  execute(canvasHandler: CanvasHandlerInterface): Coord[] {
+  // INFO: takes the `PixelSource` port, not the canvas handler, so extraction
+  // has no canvas/DOM dependency of its own.
+  execute(source: PixelSource): Coord[] {
     return this.strategy.execute(
-      canvasHandler.imageElement.height,
-      canvasHandler.imageElement.width,
-      canvasHandler.originalImageCanvasColors,
-      canvasHandler.originalSizeMaskCanvasColors,
-      canvasHandler.isDrawnMask,
+      source.height,
+      source.width,
+      source.getImagePixels(),
+      source.getMaskPixels(),
+      source.hasMask,
       [this.targetColor.R, this.targetColor.G, this.targetColor.B],
       this.colorDistancePct,
     )

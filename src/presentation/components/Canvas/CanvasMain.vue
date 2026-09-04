@@ -220,7 +220,7 @@ export default defineComponent({
         this.datasetRepository.activeDataset.inactivatePoints()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
         if (!this.axisSetRepository.activeAxisSet.nextAxis) {
-          this.canvasHandler.manualMode = MANUAL_MODE.ADD
+          this.canvasHandler.setManualMode(MANUAL_MODE.ADD)
         }
         return
       }
@@ -270,7 +270,7 @@ export default defineComponent({
         e.clientX <= wrapperRect.right &&
         e.clientY >= wrapperRect.top &&
         e.clientY <= wrapperRect.bottom
-      this.canvasHandler.isCursorOnCanvas = isInsideWrapper && isOnImage
+      this.canvasHandler.setIsCursorOnCanvas(isInsideWrapper && isOnImage)
 
       // INFO: 左クリックされている状態
       const isClicking = e.buttons === 1

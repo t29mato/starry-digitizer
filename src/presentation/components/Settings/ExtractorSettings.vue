@@ -113,6 +113,7 @@ import { useDigitizerContext } from '@/application/digitizerContext'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { SdButton, SdCheckbox, SdSelect, SdTextField } from '@/presentation/ui'
 import { MANUAL_MODE } from '@/constants'
+import { ManualMode } from '@/@types/types'
 
 import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
 import { toggleInterpolation } from '@/application/utils/interpolationToggle'
@@ -159,7 +160,7 @@ export default defineComponent({
           value: MANUAL_MODE.DELETE,
           dataCy: 'manual-delete',
         },
-      ],
+      ] as { label: string; value: ManualMode; dataCy: string }[],
     }
   },
   props: {
@@ -181,7 +182,7 @@ export default defineComponent({
     }
   },
   methods: {
-    changeManualMode(value: number) {
+    changeManualMode(value: ManualMode) {
       this.datasetRepository.activeDataset.inactivatePoints()
       if (this.canvasHandler.manualMode === value) {
         this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
@@ -203,6 +204,7 @@ export default defineComponent({
       this.axisSetRepository.activeAxisSet.inactivateAxis()
       try {
         this.datasetRepository.setPoints(
+          // INFO: the canvas handler is passed here as a PixelSource
           this.extractor.execute(this.canvasHandler),
         )
         this.datasetRepository.sortPoints()

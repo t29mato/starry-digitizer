@@ -1,6 +1,7 @@
 import { ManualMode, MaskMode } from '@/@types/types'
 import { Coord } from '@/@types/types'
 import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
+import { PixelSource } from '@/application/ports/pixelSource'
 
 // INFO: the DOM elements the presentation layer lends to the engine. Every
 // key is optional because the wrapper/main canvases and the magnifier mask
@@ -13,7 +14,7 @@ export type AttachedCanvasElements = {
   magnifierMaskCanvas?: HTMLCanvasElement
 }
 
-export interface CanvasHandlerInterface {
+export interface CanvasHandlerInterface extends PixelSource {
   isDrawnMask: boolean
   imageElement: HTMLImageElement
   scale: number
@@ -69,8 +70,9 @@ export interface CanvasHandlerInterface {
   resize(width: number, height: number): void
   setUploadImageUrl(url: string): void
   setCursor(coord: Coord): void
-  setManualMode(mode: number): void
-  setMaskMode(mode: number): void
+  setIsCursorOnCanvas(value: boolean): void
+  setManualMode(mode: ManualMode): void
+  setMaskMode(mode: MaskMode): void
   setPenToolSizePx(size: number): void
   setEraserSizePx(size: number): void
 }

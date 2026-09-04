@@ -200,7 +200,7 @@ export default defineComponent({
       )
       // INFO: データセットが変えた時はマスクをクリアすることが多いので。
       this.canvasHandler.clearMask()
-      this.canvasHandler.maskMode = MASK_MODE.UNSET
+      this.canvasHandler.setMaskMode(MASK_MODE.UNSET)
     },
     handleOnClickDataset(id: number) {
       if (
@@ -217,7 +217,7 @@ export default defineComponent({
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.setActiveDataset(0)
       this.canvasHandler.clearMask()
-      this.canvasHandler.maskMode = MASK_MODE.UNSET
+      this.canvasHandler.setMaskMode(MASK_MODE.UNSET)
     },
     handleOnClickAddDatasetButton() {
       if (!this.shouldContinueSwitchDataset()) return

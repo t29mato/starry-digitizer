@@ -89,7 +89,7 @@ export class ProjectService implements ProjectServiceInterface {
     // INFO: display-only state; migrateProject guarantees defaults
     if (dto.canvasHandler) {
       this.canvasHandler.scale = dto.canvasHandler.scale
-      this.canvasHandler.manualMode = dto.canvasHandler.manualMode
+      this.canvasHandler.setManualMode(dto.canvasHandler.manualMode)
     }
   }
 

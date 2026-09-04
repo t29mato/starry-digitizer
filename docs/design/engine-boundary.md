@@ -147,16 +147,32 @@ Node バッチ処理は魅力的だが、**現時点で具体的な利用者が�
 
 ただし B-2 に進みやすいよう、**今のうちに `PixelSource` の形だけ決めておく**。
 
+**実施済み(2026-09-04)。** `src/application/ports/pixelSource.ts` に以下を定義した。
+
 ```ts
 export interface PixelSource {
   readonly width: number
   readonly height: number
+  /** RGBA pixels of the original-size image */
   getImagePixels(): Uint8ClampedArray
+  /** RGBA pixels of the original-size mask */
   getMaskPixels(): Uint8ClampedArray
+  /** whether the user has drawn a selection mask */
+  readonly hasMask: boolean
 }
 ```
 
-`Extractor.execute()` は既に `canvasHandler` からこの 4 つしか読んでいない(`extractor.ts:35-45`)ので、引数を `CanvasHandlerInterface` から `PixelSource` に変えるだけで、抽出は canvas から独立する。**これは B-1 の範囲内で今すぐできる**(1 日)。
+`Extractor.execute()` は既に `canvasHandler` からこの 5 つしか読んでいなかったので、引数を
+`CanvasHandlerInterface` から `PixelSource` に変えるだけで抽出は canvas から独立した。
+`CanvasHandlerInterface` は `PixelSource` を継承し、`CanvasHandler` は既存の
+`originalWidth` / `originalHeight` / `originalImageCanvasColors` /
+`originalSizeMaskCanvasColors` / `isDrawnMask` に対する薄いエイリアスとしてこれを実装している
+(既存メンバーはすべてそのまま)。呼び出し側(`ExtractorSettings.vue`)は渡す値を変えておらず、
+宣言型だけが変わった。
+
+canvas を一切使わない手書きの `PixelSource` で抽出が走ることは
+`src/application/services/extractor/extractor.pixelSource.test.ts` で担保している。
+残る B-2 の作業(node-canvas 実装、`colorSwatches` / `resize` の分離)は Phase 4 のまま。
 
 ---
 

@@ -13,7 +13,7 @@ import { DatasetRepository } from '@/domain/repositories/datasetRepository/datas
 import { Dataset } from '@/domain/models/dataset/dataset'
 import { createEmptyProject } from '@/application/dto/projectDTO'
 import { DigitizerError } from '@/application/errors'
-import { MANUAL_MODE, POINT_MODE } from '@/constants'
+import { MANUAL_MODE, MASK_MODE, POINT_MODE } from '@/constants'
 
 const DATA_URL = 'data:image/png;base64,iVBORw0KGgo='
 
@@ -24,6 +24,19 @@ const buildContext = () => {
   const canvasHandler = {
     scale: 1,
     manualMode: MANUAL_MODE.UNSET,
+    maskMode: MASK_MODE.UNSET,
+    isCursorOnCanvas: false,
+    // INFO: mode / cursor state is only reachable through the setters on the
+    // real CanvasHandler, so the stub mirrors them onto its own fields.
+    setManualMode: jest.fn((mode: number) => {
+      canvasHandler.manualMode = mode as typeof canvasHandler.manualMode
+    }),
+    setMaskMode: jest.fn((mode: number) => {
+      canvasHandler.maskMode = mode as typeof canvasHandler.maskMode
+    }),
+    setIsCursorOnCanvas: jest.fn((value: boolean) => {
+      canvasHandler.isCursorOnCanvas = value
+    }),
     colorSwatches: ['#ffffff'],
     initializeImageElement: jest.fn(() => Promise.resolve()),
     drawFitSizeImage: jest.fn(),
