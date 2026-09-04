@@ -84,15 +84,20 @@ function assertOverlayScaleMatchesImageScale(naturalWidth = NATURAL_WIDTH) {
  * The image really was re-fitted to the frame, so the invariant above is not
  * passing simply because everything happens to sit at 100%.
  *
- * The viewport is 1280x700 and the sample is 1180x980, so a fit is always a
- * shrink here.
+ * INFO: this asks that a fit HAPPENED, not which direction it went. An earlier
+ * version required the canvas to be NARROWER than the image, which only holds
+ * while the frame is smaller than the figure. A host that composes the panels
+ * itself and drops the left sidebar gets a much wider canvas column (measured:
+ * 692 -> 944px at 1920x1080), so an 800px figure is fitted UPWARDS and a
+ * correct state failed this assertion.
  */
-function assertImageWasFittedToTheFrame(): void {
+function assertImageWasFittedToTheFrame(naturalWidth = NATURAL_WIDTH): void {
   cy.get('[data-cy=image-canvas]').should(($image) => {
+    const imageScale = ($image[0] as HTMLCanvasElement).width / naturalWidth
     expect(
-      ($image[0] as HTMLCanvasElement).width,
-      'image canvas width after a fit',
-    ).to.be.lessThan(NATURAL_WIDTH)
+      Math.abs(imageScale - 1),
+      `image scale ${imageScale} must differ from 1:1`,
+    ).to.be.greaterThan(0.01)
   })
 }
 
