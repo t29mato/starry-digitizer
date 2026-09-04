@@ -76,6 +76,11 @@ import {
   getDatasetValues as computeDatasetValues,
   type DatasetValues,
 } from '@/application/utils/datasetValues'
+import {
+  MAX_EFFECTIVE_DIGITS,
+  MIN_EFFECTIVE_DIGITS,
+  isValidEffectiveDigits,
+} from '@/application/services/valueFormat/valueFormat'
 
 export interface StarryDigitizerProps {
   /** Image to digitize. Blob recommended (hosts fetch signed URLs themselves); data URL / URL also accepted. */
@@ -100,6 +105,14 @@ export interface StarryDigitizerProps {
   confirmImageReplace?: boolean
   /** Debounce (ms) for update:project / change. */
   updateDebounceMs?: number
+  /**
+   * Significant digits the extracted values are rounded to (1-10, default 4)
+   * — `getDatasetValues()`, the `change` event, the data table and the CSV
+   * copy. Omitted = the user's setting in the data-table panel, which starts
+   * at 4. Give it when the host hides that panel (`features.dataTable: false`)
+   * or wants to own the precision itself.
+   */
+  effectiveDigits?: number
 }
 
 const props = withDefaults(defineProps<StarryDigitizerProps>(), {
@@ -112,6 +125,7 @@ const props = withDefaults(defineProps<StarryDigitizerProps>(), {
   context: undefined,
   confirmImageReplace: true,
   updateDebounceMs: 300,
+  effectiveDigits: undefined,
 })
 
 const emit = defineEmits<{
@@ -156,6 +170,34 @@ provide(
       value: options.value[key as keyof DigitizerOptions],
     }),
   }),
+)
+
+// ---------------------------------------------------------------------------
+// Output precision
+// ---------------------------------------------------------------------------
+// INFO: watched (and applied immediately) rather than read once at mount, for
+// the same reason `image`/`project`/`features` are: every other prop is live,
+// and a host that offers its own precision control would otherwise see it
+// take effect only on the next remount. Applying it on every change also
+// keeps the prop authoritative over the in-app field — the host asked for a
+// specific precision, so it wins until it says otherwise.
+//
+// An out-of-range value is warned about and ignored instead of thrown:
+// throwing inside a watcher would break the host's render over a display
+// setting, and ignoring leaves the previous (valid) precision in place.
+watch(
+  () => props.effectiveDigits,
+  (digits) => {
+    if (digits === undefined) return
+    if (!isValidEffectiveDigits(digits)) {
+      console.warn(
+        `[starry-digitizer] effectiveDigits must be an integer between ${MIN_EFFECTIVE_DIGITS} and ${MAX_EFFECTIVE_DIGITS}; ignoring ${digits}`,
+      )
+      return
+    }
+    ctx.valueFormat.setEffectiveDigits(digits)
+  },
+  { immediate: true },
 )
 
 // INFO: the sidebars are flex items with min/max bounds, so their rendered
@@ -294,7 +336,7 @@ function getDatasetValues(): DatasetValues[] {
   return computeDatasetValues(
     ctx.axisSetRepository,
     ctx.datasetRepository,
-    ctx.magnifier.effectiveDigits,
+    ctx.valueFormat.effectiveDigits,
   )
 }
 

@@ -5,6 +5,7 @@ import { CanvasHandlerManager } from '@/application/services/canvasHandler/manag
 import { ConfirmerManager } from '@/application/services/confirmer/manager/confirmerManager'
 import { ExtractorManager } from '@/application/services/extractor/manager/extractorManager'
 import { MagnifierManager } from '@/application/services/magnifier/manager/magnifierManager'
+import { ValueFormatManager } from '@/application/services/valueFormat/manager/valueFormatManager'
 import { InterpolatorManager } from '@/application/services/interpolator/manager/interpolatorManager'
 import { ProjectService } from '@/application/services/projectService/projectService'
 import { HistoryManager } from '@/application/services/historyManager/historyManager'
@@ -14,6 +15,7 @@ import type { CanvasHandlerInterface } from '@/application/services/canvasHandle
 import type { ConfirmerInterface } from '@/application/services/confirmer/confirmerInterface'
 import type { ExtractorInterface } from '@/application/services/extractor/extractorInterface'
 import type { MagnifierInterface } from '@/application/services/magnifier/magnifierInterface'
+import type { ValueFormatInterface } from '@/application/services/valueFormat/valueFormatInterface'
 import type { InterpolatorInterface } from '@/application/services/interpolator/interpolatorInterface'
 import type { ProjectServiceInterface } from '@/application/services/projectService/projectServiceInterface'
 import type { HistoryManagerInterface } from '@/application/services/historyManager/historyManagerInterface'
@@ -40,6 +42,10 @@ export interface DigitizerContext {
   extractor: ExtractorInterface
   confirmer: ConfirmerInterface
   magnifier: MagnifierInterface
+  // INFO: how extracted values are presented (significant digits). Read by
+  // the CSV copy, the data table, getDatasetValues() and the magnifier's
+  // read-out alike, so it is its own service rather than magnifier state.
+  valueFormat: ValueFormatInterface
   projectService: ProjectServiceInterface
   historyManager: HistoryManagerInterface
 }
@@ -76,6 +82,7 @@ export function createDigitizerContext(): DigitizerContext {
     extractor: new ExtractorManager().getNewInstance(),
     confirmer: new ConfirmerManager().getNewInstance(),
     magnifier: new MagnifierManager().getNewInstance(),
+    valueFormat: new ValueFormatManager().getNewInstance(),
     projectService: new ProjectService(
       axisSetRepository,
       datasetRepository,

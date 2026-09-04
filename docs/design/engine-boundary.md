@@ -19,7 +19,7 @@
 
 ### 1.1 事実
 
-`createDigitizerContext()` は 9 つのサービスをまとめて `reactive()` で包んでいる
+`createDigitizerContext()` は 10 のサービスをまとめて `reactive()` で包んでいる
 (`src/application/digitizerContext.ts:67-81`)。`domain` + `application` の 62 ファイル・4,514 行のうち、
 **`vue` を import しているのはこの 1 ファイルだけ**で、しかも `inject` / `provide` / `reactive` の 3 つだけである。
 `src/domain/` には `vue` の import が 1 つもない。同ファイルには既にこの注記がある。

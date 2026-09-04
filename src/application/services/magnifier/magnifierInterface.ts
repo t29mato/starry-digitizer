@@ -3,11 +3,9 @@ export interface MagnifierInterface {
   magnifierSettingError: string
   crosshairSizePx: number
   sizePx: number
-  effectiveDigits: number
   markerSizePx: number
 
   setScale(scale: number): void
-  setEffectiveDigits(digits: number): void
   setMarkerSizePx(sizePx: number): void
   setSizePx(sizePx: number): void
 }

@@ -22,7 +22,7 @@ export function getDatasetTableData(
   const values = datasetToValues(
     dataset,
     axisSet,
-    ctx.magnifier.effectiveDigits,
+    ctx.valueFormat.effectiveDigits,
   )
   return values.points.map(({ x, y }) => ({
     X: Number.isNaN(x) ? 'NaN' : x.toExponential(),

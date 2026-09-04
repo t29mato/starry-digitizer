@@ -161,7 +161,7 @@ provideDigitizerContext(ctx)
 provideDigitizerOptions({ ...DEFAULT_OPTIONS, datasetNameCandidates: sampleNames })
 
 await loadProject(ctx, savedProject, imageBlob)
-const values = getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, ctx.magnifier.effectiveDigits)
+const values = getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, ctx.valueFormat.effectiveDigits)
 </script>
 
 <template>
@@ -216,7 +216,7 @@ const stop = effect(() => {
     getDatasetValues(
       ctx.axisSetRepository,
       ctx.datasetRepository,
-      ctx.magnifier.effectiveDigits,
+      ctx.valueFormat.effectiveDigits,
     ),
   )
 })
@@ -291,9 +291,11 @@ async function commit() {
 | `assetBaseUrl` | `string` | — | Base URL for the tesseract.js worker / core / language files. |
 | `confirmImageReplace` | `boolean` | `true` | Ask before replacing an image that already has axes/points. |
 | `updateDebounceMs` | `number` | `300` | Debounce for `update:project` / `change`. |
+| `effectiveDigits` | `number` | `4` | Significant digits the extracted values are rounded to (1–10). Overrides the in-app "Effective digits" field, so pass it when you hide the data table (`features.dataTable: false`) or want to own the precision. |
 
 `image` and `project` are watched: assigning new values re-initializes the component,
-so the same `<StarryDigitizer>` can be reused when switching figures.
+so the same `<StarryDigitizer>` can be reused when switching figures. `effectiveDigits`
+is watched too and applies immediately, so a host can drive it from its own control.
 
 ### `features` defaults
 
@@ -404,9 +406,20 @@ interface DatasetValues {
 
 `points` are rounded to a **significant-digit** count, not returned at full float
 precision: with the default of 4, a point at 299.86 K comes back as 299.9. The
-count is the "Effective digits" field in the magnifier settings (1–10), so it is
-a user setting rather than a constant. `pixelPoints` is never rounded and round-
-trips exactly, so a host that needs full precision can convert the pixels itself.
+count is a setting rather than a constant: the user changes it with the
+"Effective digits" field next to the data table (1–10), and the host can set it
+with the `effectiveDigits` prop or through `ctx.valueFormat.setEffectiveDigits()`,
+which is what to do when the data table is hidden. `pixelPoints` is never rounded
+and round-trips exactly, so a host that needs full precision can convert the
+pixels itself.
+
+**Changed in 3.0.0.** The setting used to live on the magnifier service and in
+the magnifier's settings dialog, which made it unreachable with
+`features.magnifier: false`. Read `ctx.valueFormat.effectiveDigits` instead of
+`ctx.magnifier.effectiveDigits`, and call
+`ctx.valueFormat.setEffectiveDigits(n)` instead of
+`ctx.magnifier.setEffectiveDigits(n)`; both members are gone from
+`MagnifierInterface`.
 
 Do not use an absolute or relative epsilon to compare `points` against expected
 values — the error scales with the value and with the digit setting. The useful
@@ -484,6 +497,7 @@ rather than the internal `.c__canvas-wrapper` / `.c__table-wrapper` classes.
 |---|---|
 | `data-table-wrapper` | Outer `<div>` around the table — the scrolling frame capped by `--sd-table-max-height`. Measure the table area here. |
 | `data-table` | The `<table>` of extracted values itself (`thead`/`tbody` rows live under it). |
+| `effective-digits` | The "Effective digits" number input below the table (1–10 significant digits). |
 
 #### Image (`ImageSettings`)
 

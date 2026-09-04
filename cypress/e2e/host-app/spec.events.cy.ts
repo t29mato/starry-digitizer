@@ -109,7 +109,7 @@ describe('host app: change payload', () => {
         expect(dataset.pixelPoints).to.have.length(3)
         dataset.pixelPoints.forEach((pixel, index) => {
           const expectedValue = expectedLinearValue(axisSet, pixel)
-          // INFO: the library rounds to the magnifier's effective digits,
+          // INFO: the library rounds to the configured effective digits,
           // hence a relative tolerance rather than a strict equality.
           expect(dataset.points[index].x).to.be.closeTo(
             expectedValue.x,

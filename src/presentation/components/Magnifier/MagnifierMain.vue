@@ -128,9 +128,20 @@ export default defineComponent({
     MagnifierExtractSize,
   },
   setup() {
-    const { magnifier, canvasHandler, axisSetRepository, datasetRepository } =
-      useDigitizerContext()
-    return { magnifier, canvasHandler, axisSetRepository, datasetRepository }
+    const {
+      magnifier,
+      valueFormat,
+      canvasHandler,
+      axisSetRepository,
+      datasetRepository,
+    } = useDigitizerContext()
+    return {
+      magnifier,
+      valueFormat,
+      canvasHandler,
+      axisSetRepository,
+      datasetRepository,
+    }
   },
 
   // INFO: the magnifier box is square and its size drives canvas geometry and
@@ -180,7 +191,7 @@ export default defineComponent({
           x: this.axisSetRepository.activeAxisSet.xIsLogScale,
           y: this.axisSetRepository.activeAxisSet.yIsLogScale,
         },
-        this.magnifier.effectiveDigits,
+        this.valueFormat.effectiveDigits,
       )
       const values = calculator.calculateXYValues(
         this.canvasHandler.cursor.xPx,

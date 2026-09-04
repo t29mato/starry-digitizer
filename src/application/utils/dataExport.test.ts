@@ -39,7 +39,7 @@ const buildContext = () => {
   const ctx = {
     axisSetRepository,
     datasetRepository,
-    magnifier: { effectiveDigits: 4 },
+    valueFormat: { effectiveDigits: 4 },
   } as unknown as DigitizerContext
 
   return { ctx, axisSetRepository, datasetRepository }

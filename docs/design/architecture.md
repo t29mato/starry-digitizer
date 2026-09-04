@@ -374,6 +374,7 @@ src/application/utils/projectFileOperations.ts:6:  (コメント内の言及の�
 | 複数のドメインモデルにまたがる計算 | `src/domain/services/` | `axisSetCalculator.ts:1` のコメントがこの基準を明文化している |
 | モデルの集合とアクティブ選択の管理 | `src/domain/repositories/` | 永続化ではない。ID 採番と「今どれか」がここ |
 | UI から調整する設定値を持ち、操作を提供するもの | `src/application/services/<name>/` に `xxx.ts` + `xxxInterface.ts` | `magnifier`, `extractor`, `confirmer` と同じ形。生成に知識が要るなら `manager/` も足す |
+| 出力値の表現方針(丸め・書式) | `src/application/services/valueFormat/` | `effectiveDigits` はここ。**どの UI パネルに置くかとは独立**に保つこと — ホストは `features` でパネルを消せるので、パネルに設定を閉じ込めると制御手段ごと消える(3.0.0 で magnifier から切り出した理由) |
 | 複数のサービス/リポジトリをまたぐ 1 つの操作 | `src/application/utils/`(`digitizerOperations.ts` に寄せる) | 「画像を差し替えたらデータと履歴も消す」のような手順。全入口が同じ関数を通ることが目的(`digitizerOperations.ts:10-13`) |
 | ピクセルを処理するアルゴリズム | `src/application/strategies/` | 引数は素の数値と `Uint8ClampedArray`。canvas を引数に取らない |
 | 保存形式に現れるもの | `src/application/dto/` + `converters.ts` + `migrateProject` | **フィールドを増やしたら `migrateProject` に既定値を書く。読めなくなる変更なら MAJOR を上げる**(`projectDTO.ts:7-18`) |

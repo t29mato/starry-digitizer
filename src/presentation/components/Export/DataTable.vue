@@ -28,8 +28,37 @@
         </tbody>
       </table>
     </div>
-    <div v-if="options.features.csvExport" class="mt-1">
-      <sd-button @click="copyData" size="small">Copy to Clipboard</sd-button>
+    <div class="c__footer mt-1">
+      <sd-button
+        v-if="options.features.csvExport"
+        @click="copyData"
+        size="small"
+        >Copy to Clipboard</sd-button
+      >
+      <!-- INFO: "Effective digits" used to be a magnifier setting, but it
+           rounds every extracted value the library hands out — these cells,
+           the CSV above, and getDatasetValues() / the `change` event. It sits
+           next to the table because that is the output it visibly governs:
+           typing a new value re-renders the cells immediately.
+           This panel is hidden by `features.dataTable: false`, so it cannot
+           be the only way to reach the setting — a host that hides it uses
+           the `effectiveDigits` prop instead (which also overrides this
+           field). -->
+      <div class="c__digits">
+        <sd-text-field
+          class="c__digits-field"
+          :model-value="valueFormat.effectiveDigits"
+          type="number"
+          :min="minEffectiveDigits"
+          :max="maxEffectiveDigits"
+          label="Effective digits"
+          data-cy="effective-digits"
+          @change="onChangeEffectiveDigits"
+        ></sd-text-field>
+        <p v-if="effectiveDigitsError" class="c__error text-caption text-red">
+          {{ effectiveDigitsError }}
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -37,7 +66,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { SdButton } from '@/presentation/ui'
+import { SdButton, SdTextField } from '@/presentation/ui'
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import {
@@ -45,19 +74,27 @@ import {
   copyRowsToClipboard,
   TableRow,
 } from '@/application/utils/dataExport'
+import {
+  MAX_EFFECTIVE_DIGITS,
+  MIN_EFFECTIVE_DIGITS,
+  isValidEffectiveDigits,
+} from '@/application/services/valueFormat/valueFormat'
 
 type Column = 'X' | 'Y'
 
 export default defineComponent({
-  components: { SdButton },
+  components: { SdButton, SdTextField },
   setup() {
     const ctx = useDigitizerContext()
     const options = useDigitizerOptions()
-    return { ctx, options }
+    return { ctx, valueFormat: ctx.valueFormat, options }
   },
   data() {
     return {
       columns: ['X', 'Y'] as Column[],
+      effectiveDigitsError: '',
+      minEffectiveDigits: MIN_EFFECTIVE_DIGITS,
+      maxEffectiveDigits: MAX_EFFECTIVE_DIGITS,
       // INFO: sorting is a view-only concern — it never touches the dataset,
       // so `sortedRows` always sorts a copy of `tableData`.
       sortColumn: null as Column | null,
@@ -106,6 +143,17 @@ export default defineComponent({
       const parsed = Number(value)
       return Number.isNaN(parsed) ? value : String(parsed)
     },
+    onChangeEffectiveDigits(event: Event) {
+      const digits = parseInt((<HTMLInputElement>event.target).value)
+      this.effectiveDigitsError = ''
+      // INFO: the service throws on an out-of-range value; check first so the
+      // user gets the inline message they always got instead of an exception.
+      if (!isValidEffectiveDigits(digits)) {
+        this.effectiveDigitsError = `Value must be between ${MIN_EFFECTIVE_DIGITS} and ${MAX_EFFECTIVE_DIGITS}`
+        return
+      }
+      this.valueFormat.setEffectiveDigits(digits)
+    },
     async copyData() {
       // INFO: copies exactly what the user sees, i.e. in the displayed sort
       // order.
@@ -147,6 +195,23 @@ export default defineComponent({
     text-align: center;
     font-weight: 600;
   }
+}
+
+.c__footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.c__digits-field {
+  // INFO: the left sidebar is 260px wide at its narrowest; keep the number
+  // field from eating the row the Copy button shares with it.
+  max-width: 110px;
+}
+
+.c__error {
+  margin: 2px 0 0;
 }
 
 .c__sortable {

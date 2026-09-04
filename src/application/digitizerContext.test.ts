@@ -34,6 +34,22 @@ describe('createDigitizerContext', () => {
     expect(b.extractor.colorDistancePct).toBe(1)
   })
 
+  // INFO: effectiveDigits used to live on Magnifier. It is per-instance state
+  // like the extraction settings above, so two mounts must not share it.
+  test('two contexts own separate value formats', () => {
+    const a = createDigitizerContext()
+    const b = createDigitizerContext()
+
+    expect(a.valueFormat).not.toBe(b.valueFormat)
+    expect(a.valueFormat.effectiveDigits).toBe(4)
+    expect(b.valueFormat.effectiveDigits).toBe(4)
+
+    a.valueFormat.setEffectiveDigits(7)
+
+    expect(a.valueFormat.effectiveDigits).toBe(7)
+    expect(b.valueFormat.effectiveDigits).toBe(4)
+  })
+
   test('switching the strategy of one context leaves the other on its own', () => {
     const a = createDigitizerContext()
     const b = createDigitizerContext()

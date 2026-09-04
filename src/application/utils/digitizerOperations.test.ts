@@ -69,7 +69,7 @@ const buildContext = () => {
     interpolator,
     extractor,
     confirmer: {},
-    magnifier: { effectiveDigits: 4 },
+    valueFormat: { effectiveDigits: 4 },
     projectService,
     historyManager,
   }
