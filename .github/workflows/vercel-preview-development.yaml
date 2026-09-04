@@ -41,9 +41,12 @@ jobs:
         uses: codecov/codecov-action@v4.2.0
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  # INFO: runs on every PR. It has no `needs` and nothing needs it, so it is off
+  # the critical path — Deploy-Preview waits for UnitTest only, and the preview
+  # arrives at the same time whether this job runs or not. It used to be gated
+  # on `github.base_ref == 'main'` (issue #211).
   E2E-Test:
     runs-on: ubuntu-latest
-    if: github.base_ref == 'main' # https://github.com/t29mato/starry-digitizer/issues/211
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -54,16 +57,28 @@ jobs:
           cache: 'yarn'
       - name: install npm packages
         run: yarn install
+      # INFO: no `record` / `parallel`. Those upload to Cypress Cloud, whose free
+      # tier is metered; running the suite inside the runner is not, because
+      # Actions minutes are unlimited for public repositories. Parallelism
+      # requires recording, and 26 specs on one runner is fast enough.
+      # Failures are diagnosed from the artifacts below instead of a dashboard.
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
           start: yarn dev
           wait-on: 'http://localhost:8888'
-          record: true
-          parallel: true
         env:
-          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Cypress artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-artifacts
+          path: |
+            cypress/screenshots
+            cypress/videos
+          if-no-files-found: ignore
+          retention-days: 7
   Deploy-Preview:
     runs-on: ubuntu-latest
     needs: [UnitTest]
