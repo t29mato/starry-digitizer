@@ -1,7 +1,7 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import dts from "vite-plugin-dts";
-import path, { resolve } from "path";
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import dts from 'vite-plugin-dts'
+import path, { resolve } from 'path'
 
 // INFO: Library build (`yarn lib-build`). Deliberately separate from
 // vite.config.js: the app build enables Sentry, vite-plugin-pwa and
@@ -17,8 +17,8 @@ export default defineConfig({
   plugins: [
     vue(),
     dts({
-      tsconfigPath: resolve(__dirname, "tsconfig.lib.json"),
-      outDir: "library-build/dist",
+      tsconfigPath: resolve(__dirname, 'tsconfig.lib.json'),
+      outDir: 'library-build/dist',
       // INFO: emits index.d.ts next to index.js so `types` in package.json
       // resolves for both the import and the require condition.
       insertTypesEntry: true,
@@ -34,11 +34,11 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
   },
   build: {
-    outDir: "library-build/dist",
+    outDir: 'library-build/dist',
     emptyOutDir: true,
     // INFO: public/ holds standalone-app assets (favicon, PWA icons, sample
     // image). None of them belong in the npm package.
@@ -55,20 +55,22 @@ export default defineConfig({
       // already emits; shared code lands in chunks/ and is imported by all
       // three, so a host importing two entries still gets one copy of it.
       entry: {
-        index: resolve(__dirname, "src/library-main.ts"),
-        core: resolve(__dirname, "src/core-main.ts"),
-        vue: resolve(__dirname, "src/vue-main.ts"),
+        index: resolve(__dirname, 'src/library-main.ts'),
+        core: resolve(__dirname, 'src/core-main.ts'),
+        vue: resolve(__dirname, 'src/vue-main.ts'),
       },
-      formats: ["es", "cjs"],
+      formats: ['es', 'cjs'],
       fileName: (format, entryName) =>
-        `${entryName}.${format === "es" ? "js" : "cjs"}`,
+        `${entryName}.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
-      output: {
-        // INFO: code shared by two or more entries. Named so `lib-check` and a
-        // host inspecting the tarball can tell entry files from shared chunks.
-        chunkFileNames: "chunks/[name]-[hash].js",
-      },
+      // INFO: chunkFileNames is deliberately NOT overridden. package.json says
+      // `"type": "module"`, so a shared chunk of the CJS build must keep the
+      // .cjs extension Vite gives it — naming every chunk `.js` makes Node read
+      // the CJS chunks as ESM and `require('starry-digitizer')` dies with
+      // "Cannot find module './datasetValues-<hash>.js'". Multi-entry builds are
+      // the first ones to emit shared chunks at all, so this only became
+      // reachable with the three entry points.
       // INFO: `vue` and `@vue/reactivity` are the peer dependencies; the
       // runtime deps below are
       // installed by the host through package.json `dependencies`. @mdi/js
@@ -76,7 +78,7 @@ export default defineConfig({
       // the host carries no icon package. UI framework: none (see
       // docs/design/framework-dependency-review.md).
       external: (id: string) => {
-        if (id.endsWith(".css") || id.endsWith(".scss")) return false;
+        if (id.endsWith('.css') || id.endsWith('.scss')) return false
         return [
           /^vue$/,
           /^vue\//,
@@ -87,8 +89,8 @@ export default defineConfig({
           /^tesseract\.js/,
           /^jszip$/,
           /^curve-interpolator/,
-        ].some((pattern) => pattern.test(id));
+        ].some((pattern) => pattern.test(id))
       },
     },
   },
-});
+})
