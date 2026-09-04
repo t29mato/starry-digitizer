@@ -146,4 +146,26 @@ describe('host app: two digitizers on one page', () => {
       .invoke('attr', 'width')
       .then((width) => expect(Number(width)).to.be.lessThan(SECOND_IMAGE_WIDTH))
   })
+
+  // INFO: radio inputs with the same `name` are ONE group per document, so a
+  // hard-coded name made the two instances share their calibration mode:
+  // picking "4 Points" in one cleared the other's selection. Reported by an
+  // embedding host that put three axis panels on a page.
+  it('keeps each instance\'s calibration-mode radios in their own group', () => {
+    cy.get(`${FIRST} [data-cy=calibration-mode] input[type=radio]`)
+      .first()
+      .invoke('attr', 'name')
+      .then((firstName) => {
+        expect(firstName).to.be.a('string').and.not.be.empty
+
+        cy.get(`${SECOND} [data-cy=calibration-mode] input[type=radio]`)
+          .first()
+          .invoke('attr', 'name')
+          .should('not.equal', firstName)
+      })
+
+    cy.get(`${FIRST} [data-cy=calibration-mode-4]`).check({ force: true })
+    cy.get(`${SECOND} [data-cy=calibration-mode-2]`).should('be.checked')
+    cy.get(`${FIRST} [data-cy=calibration-mode-4]`).should('be.checked')
+  })
 })

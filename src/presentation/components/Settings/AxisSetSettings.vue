@@ -103,7 +103,7 @@
           v-for="option in pointModeOptions"
           :key="option.value"
           type="radio"
-          name="calibration-mode"
+          :name="calibrationModeName"
           :value="option.value"
           :label="option.label"
           :data-cy="option.dataCy"
@@ -210,6 +210,14 @@ import {
 } from '@/presentation/ui'
 import type { SdRadioOption } from '@/presentation/ui'
 
+// INFO: radio inputs with the same `name` form ONE group per document, not per
+// component, so two <StarryDigitizer> instances on a page would fight over the
+// calibration mode: picking "4 Points" in one clears the other's selection.
+// The engine has no DOM-id lookups left for exactly this reason (spec R7), and
+// this attribute was the last thing tying the panels to a document-wide name.
+// Vue 3.5's useId() would do this, but the supported peer range starts at 3.3.
+let calibrationModeGroupSeq = 0
+
 export default defineComponent({
   components: {
     SdButton,
@@ -293,6 +301,7 @@ export default defineComponent({
   },
   data() {
     return {
+      calibrationModeName: `calibration-mode-${(calibrationModeGroupSeq += 1)}`,
       mdiInformationOutline,
       //NOTE: initialize axis values as string because it sometimes is displayed like '1e+10'
       displayVal: {
