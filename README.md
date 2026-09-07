@@ -98,9 +98,11 @@ whichever entry point you use; every rule in it is scoped under the
 import 'starry-digitizer/styles'
 ```
 
-Colors can be themed through CSS custom properties, e.g.
-`.starry-digitizer { --sd-primary: #1e3a5f; }` (see `src/presentation/styles/base.scss`
-for the full list).
+Colors and typography can be themed through CSS custom properties, e.g.
+`.starry-digitizer { --sd-primary: #1e3a5f; }`. There are 16 theme tokens: 13
+for color and geometry (`--sd-primary`, `--sd-text`, `--sd-radius`, …) and the
+three typography ones described under [Typography](#typography) below (see
+`src/presentation/styles/base.scss` for the full list).
 
 The library's own values for those tokens are declared on `:where(:root)`, which has
 zero specificity. Three things follow:
@@ -119,6 +121,54 @@ Layout sizes are a separate group and stay on the wrapper — see
 [Layout (CSS custom properties)](#layout-css-custom-properties). They describe one
 instance's box, so they must not be hoisted to `:root`.
 
+#### Typography
+
+The three typography tokens default to `inherit`:
+
+| Token | Default | Applied to |
+|---|---|---|
+| `--sd-font` | `inherit` | `font-family` of `.starry-digitizer` |
+| `--sd-font-size` | `inherit` | `font-size` of `.starry-digitizer` |
+| `--sd-line-height` | `inherit` | `line-height` of `.starry-digitizer` |
+
+So out of the box the digitizer renders in whatever font, size and line height
+the host page already uses; it brings no typeface of its own.
+
+**Why.** The library is embedded inside other applications, and a region that
+switches to its own font is the one thing that gives that away at a glance —
+the user sees "a second app pasted into this page" before reading a word of it.
+Inheriting removes the seam. Colors do not have this problem (the host is
+expected to pick them), which is why only these three default to `inherit`.
+
+A host that wants a specific look sets the tokens like any other:
+
+```css
+.starry-digitizer {
+  --sd-font: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --sd-font-size: 14px;
+  --sd-line-height: 1.4;
+}
+```
+
+That is exactly what the standalone app does (`src/app-style.css`) to keep its
+historical Roboto / 14px / 1.4 appearance.
+
+Two consequences worth knowing:
+
+- **Every size inside the library is relative.** All relative font sizes are
+  `em`, never `rem` — the built `style.css` contains no `rem` at all — so the
+  whole sheet scales with the inherited base size instead of resolving against
+  the host page's `<html>`.
+- **Dialogs and snackbars inherit from `<body>`, not from your container.**
+  `SdDialog` and `SdSnackbar` are teleported to `<body>`; the teleported root
+  still carries `.starry-digitizer` (so tokens and utilities apply), but with
+  `--sd-font-size: inherit` it inherits the *body's* font, not the font of the
+  container the panels sit in. With `body { font-size: 18px }` the dialog title
+  (`1.25em`) measures 22.5px. A host that sets its typography on its own
+  wrapper element rather than on `body` or `:root` will see the dialogs alone
+  fall back to the body size — set the typography on `body`/`:root`, or set
+  `--sd-font-size` explicitly.
+
 ### Choosing an entry point
 
 The package has three entry points. They all ship in the same tarball; which one
@@ -128,13 +178,22 @@ you import decides how much of the library — and how much of Vue — you pull 
 |---|---|---|---|
 | `starry-digitizer` (default) | `<StarryDigitizer>` plus everything the other two entries export | `vue`, `@vue/reactivity` | Anything that wants the ready-made three-column editor. This is the surface the package always had — existing hosts need no change. |
 | `starry-digitizer/vue` | The 13 panels, `provideDigitizerContext()` / `useDigitizerContext()` and the UI options (`provideDigitizerOptions()`, `createDigitizerOptions()`, `DEFAULT_OPTIONS`, `features`) | `vue`, `@vue/reactivity` | A Vue host that lays the panels out itself. |
-| `starry-digitizer/core` | State (`createDigitizerContext()`), the operations that mutate it, `ProjectDTO` and the other DTOs, `DigitizerError`, the `PixelSource` port, and `effect` / `computed` / `ref` / `stop` re-exported from `@vue/reactivity` | `@vue/reactivity` only | A host that is not written in Vue (React, Svelte, plain JavaScript), or that wants the engine with no UI at all. |
+| `starry-digitizer/core` | State (`createDigitizerContext()`), the operations that mutate it, `ProjectDTO` and the other DTOs, `DigitizerError`, the `PixelSource` port, the mode constants (`MANUAL_MODE`, `MASK_MODE`, `POINT_MODE`, `STYLE`), the history types (`HistoryChange`, `HistoryChangeType`, `HistoryChangeListener`), and `effect` / `computed` / `ref` / `stop` re-exported from `@vue/reactivity` | `@vue/reactivity` only | A host that is not written in Vue (React, Svelte, plain JavaScript), or that wants the engine with no UI at all. |
 
-`starry-digitizer/core` never touches Vue's renderer, but it **runs in a
-browser, not in Node**: extraction needs a 2D canvas context and loading an
-image needs the browser's image decoder. See
+`starry-digitizer/core` never touches Vue's renderer. That is not a convention:
+`scripts/lib-check.mjs` walks the built `core.js` / `core.cjs` and every module
+they import, and fails the build if any of them imports `vue`, a `vue/*`
+subpath or `@vue/runtime-*`. It runs on every `npm run lib-build`
+(`npm run lib-check`), so the entry cannot quietly regain the renderer.
+
+It does, however, **run in a browser, not in Node**: extraction needs a 2D
+canvas context and loading an image needs the browser's image decoder. See
 [docs/design/engine-boundary.md](docs/design/engine-boundary.md) for where the
 boundary is drawn and why.
+
+The panels (`ExtractorSettings`, `AxisSetManager`, …) are Vue components and
+ship only in `starry-digitizer/vue`. There is no React or Svelte build of them:
+a non-Vue host composes `core` with canvases and UI of its own.
 
 Whichever entry you import, the stylesheet is the same single import — there is
 one bundled stylesheet for the whole library:
@@ -201,7 +260,7 @@ read a plain `DigitizerOptions` (`options.readonly`, no `.value`).
 `createDigitizerOptions(partial)` fills the rest in from the defaults. Use it
 rather than spreading `DEFAULT_OPTIONS` yourself: `features` is nested, so
 `{ ...DEFAULT_OPTIONS, features: { magnifier: false } }` would drop the other
-seven flags, while `createDigitizerOptions({ features: { magnifier: false } })`
+nine flags, while `createDigitizerOptions({ features: { magnifier: false } })`
 merges them.
 
 ```vue
@@ -326,7 +385,7 @@ the canvas elements and the rendering.
 
 ```ts
 import {
-  createDigitizerContext, applyImage, getDatasetValues, effect,
+  createDigitizerContext, applyImage, getDatasetValues, effect, stop,
 } from 'starry-digitizer/core'
 
 const ctx = createDigitizerContext()
@@ -339,7 +398,7 @@ ctx.canvasHandler.attachCanvases({
 await applyImage(ctx, imageBlob)
 
 // Runs now, and again whenever anything it read has changed.
-const stop = effect(() => {
+const runner = effect(() => {
   renderMyOwnTable(
     getDatasetValues(
       ctx.axisSetRepository,
@@ -349,8 +408,9 @@ const stop = effect(() => {
   )
 })
 
-// on teardown
-stop()
+// on teardown — `effect()` returns a runner that re-runs the effect when
+// called, so unsubscribing goes through `stop(runner)`, not `runner()`.
+stop(runner)
 ```
 
 Notes:
@@ -368,6 +428,92 @@ Notes:
 - `@vue/reactivity` must resolve to a single copy in the host. In a Vue host it
   already does — `vue` depends on it and re-exports the same functions — but if
   you pin `vue` and `@vue/reactivity` to different versions, deduplicate them.
+- Drive modes with the exported constants rather than bare numbers:
+  `canvasHandler.setManualMode(MANUAL_MODE.ADD)`,
+  `canvasHandler.setMaskMode(MASK_MODE.PEN)`,
+  `axisSet.pointMode = POINT_MODE.FOUR_POINTS`. `STYLE` holds the marker sizes
+  and opacities the built-in canvas layers draw with, for a host that renders
+  its own overlay and wants it to match.
+
+##### `effect` tracks what the function reads, nothing else
+
+This is the one thing to get right, because getting it wrong looks like "the
+library stopped notifying me". `effect(fn)` runs `fn` immediately, records the
+reactive properties `fn` actually touched during that run, and re-runs `fn`
+when one of *those* changes. It is not "notify me when anything in the context
+changes": a property the callback never read is a property the callback is not
+subscribed to. Two consequences:
+
+- Read everything you want to react to **inside** the effect. Reading it before
+  the `effect()` call, or behind an `if` that was false on the first run,
+  subscribes to nothing.
+- Keep the effect narrow. An effect that reads only the values it renders will
+  not re-run when an unrelated part of the state moves.
+
+```ts
+// Re-runs on point/axis changes, because getDatasetValues() reads them.
+effect(() => render(getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, 4)))
+
+// Does NOT re-run on anything: the read happened before the effect started.
+const values = getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, 4)
+effect(() => render(values))
+```
+
+##### Bridging to React (`useSyncExternalStore`)
+
+`effect` gives you the two halves `useSyncExternalStore` wants: a `subscribe`
+that returns an unsubscribe function, and a snapshot getter. Note that the
+first `effect()` run happens synchronously inside `subscribe`, so skip it —
+React has the snapshot already — and return `stop` as the teardown.
+
+```ts
+import { useCallback, useMemo, useSyncExternalStore } from 'react'
+import {
+  effect, stop, getDatasetValues,
+  type DigitizerContext, type DatasetValues,
+} from 'starry-digitizer/core'
+
+function useDatasetValues(ctx: DigitizerContext): DatasetValues[] {
+  const read = useCallback(
+    () =>
+      getDatasetValues(
+        ctx.axisSetRepository,
+        ctx.datasetRepository,
+        ctx.valueFormat.effectiveDigits,
+      ),
+    [ctx],
+  )
+
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
+      let first = true
+      // INFO: read() inside the effect — that read is what subscribes.
+      const runner = effect(() => {
+        read()
+        if (first) { first = false; return }
+        onStoreChange()
+      })
+      return () => stop(runner)
+    },
+    [read],
+  )
+
+  // INFO: getSnapshot must return a stable value between changes, so cache the
+  // array and only replace it when the effect above says something moved.
+  const cache = useMemo(() => ({ value: read() }), [read])
+  return useSyncExternalStore(
+    (onStoreChange) =>
+      subscribe(() => { cache.value = read(); onStoreChange() }),
+    () => cache.value,
+  )
+}
+```
+
+The same shape works for any single value — `ctx.historyManager.canUndo`,
+`ctx.canvasHandler.scale`, `ctx.datasetRepository.activeDataset.id`. For
+"a capture just happened", which is an event rather than a value, use
+`ctx.historyManager.subscribe()` instead (see
+[The "single undo stack" recipe](#the-single-undo-stack-recipe)).
 
 ### Usage
 
@@ -418,6 +564,7 @@ async function commit() {
 | `features` | `Partial<StarryDigitizerFeatures>` | see below | Hides UI the host does not need. |
 | `assetBaseUrl` | `string` | — | Base URL for the tesseract.js worker / core / language files. |
 | `confirmImageReplace` | `boolean` | `true` | Ask before replacing an image that already has axes/points. |
+| `confirm` | `ConfirmDialog` | `DEFAULT_CONFIRM` (`window.confirm`) | Dialog used for every "are you sure?" the digitizer asks. See [Confirmation dialogs](#confirmation-dialogs-confirm). |
 | `updateDebounceMs` | `number` | `300` | Debounce for `update:project` / `change`. |
 | `effectiveDigits` | `number` | `4` | Significant digits the extracted values are rounded to (1–10). Overrides the in-app "Effective digits" field, so pass it when you hide the data table (`features.dataTable: false`) or want to own the precision. |
 
@@ -438,8 +585,49 @@ is watched too and applies immediately, so a host can drive it from its own cont
 | `extractionPanel` | `true` | Manual / automatic extraction. |
 | `magnifier` | `true` | The magnifier. |
 | `dataTable` | `true` | The table of extracted values. |
+| `keyboardShortcuts` | `true` | Whether the canvas frame listens for keys at all (undo/redo, zoom, mode switches, arrow-key nudges, ⌘S/⌘O). Set to `false` in a host that owns its own shortcut system: no listener is registered, so nothing in the digitizer can swallow a key or call `preventDefault()` on the host's behalf, and the canvas frame drops out of the tab order. The host drives the same actions from its own handlers. See [Keyboard shortcuts](#keyboard-shortcuts). |
+
+`keyboardShortcuts` is the odd one out: it hides no UI, it hands key handling
+back to the host. Every other flag removes something from the screen.
 
 Any key you pass in `features` overrides the derived default.
+
+### Confirmation dialogs (`confirm`)
+
+Every "are you sure?" the digitizer asks — deleting a dataset that has points,
+deleting all datasets, removing an axis set, replacing an image that already has
+work on it, discarding unconfirmed interpolated points — goes through one
+function:
+
+```ts
+type ConfirmDialog = (message: string) => boolean | Promise<boolean>
+```
+
+`message` is the exact plain-text question (no markup). Resolve `true` to go
+ahead, `false` to cancel; a synchronous host dialog may return a plain boolean.
+
+The default is `DEFAULT_CONFIRM`, which calls `window.confirm`. It is a wrapper
+rather than `window.confirm` itself so the lookup happens at call time — test
+doubles (`cy.on('window:confirm')`, `jest.spyOn`) replace the property on
+`window` after the module has been evaluated, and a captured reference would
+keep calling the original.
+
+Pass your own to ask in the host's own modal. A native dialog is the one thing
+that immediately gives away that a second app is embedded in the page: the OS
+chrome looks and sits nowhere near the host's own modals.
+
+```vue
+<StarryDigitizer :confirm="(message) => myModal.confirm(message)" />
+```
+
+Hosts composing the panels themselves pass it through the options
+(`createDigitizerOptions({ confirm })`) and should call their own confirmations
+through `requestConfirmation(options, message)` rather than `options.confirm`
+directly. Both are exported. `requestConfirmation` adds the failure handling:
+if the host dialog throws or rejects, it warns and falls back to
+`window.confirm` rather than silently dropping the action (answering `false`)
+or silently performing a destructive one (answering `true`). Anything other
+than a resolved `true` counts as "no".
 
 ### Slots
 
@@ -504,7 +692,24 @@ would be circular.
 | `update:project` | `ProjectDTO` | Axes, points, datasets or view state changed (debounced). Usable as `v-model:project`. |
 | `change` | `{ project: ProjectDTO, datasets: DatasetValues[] }` | Same moment as `update:project`, with physical values included. |
 | `image-replaced` | `{ blob: Blob }` | The user replaced the image (only when `features.imageUpload` is true). |
+| `history-change` | `HistoryChange` | The undo/redo stacks moved. Emitted **synchronously**, after the change. See [The "single undo stack" recipe](#the-single-undo-stack-recipe). |
 | `error` | `{ code, message, cause? }` | Failures are emitted, never thrown or `alert()`-ed. |
+
+```ts
+type HistoryChangeType = 'capture' | 'undo' | 'redo' | 'clear'
+
+interface HistoryChange {
+  type: HistoryChangeType
+  canUndo: boolean   // stack state AFTER the change
+  canRedo: boolean   // stack state AFTER the change
+}
+```
+
+`'capture'` means the user just did something undoable inside the digitizer.
+`'undo'` / `'redo'` are normally the host's own calls coming back. `'clear'`
+means the history was discarded (project load / `reset()`), and is emitted only
+when there actually was history to discard — a notification always means the
+undo/redo state changed.
 
 Error codes (`DigitizerErrorCode`): `IMAGE_LOAD_FAILED`, `INVALID_IMAGE_TYPE`,
 `DTO_VERSION_UNSUPPORTED`, `PROJECT_INVALID`, `ZIP_INVALID`, `EXPORT_FAILED`.
@@ -517,7 +722,18 @@ getProject(): ProjectDTO
 getDatasetValues(): DatasetValues[]
 exportZip(): Promise<Blob>
 reset(): void
+
+// Undo history, for a host that owns ⌘Z itself
+undo(): void
+redo(): void
+canUndo: boolean          // reactive; bind a menu item's :disabled to it
+canRedo: boolean
+
+context: DigitizerContext // the instance's state, for panels/effects
 ```
+
+`canUndo` / `canRedo` are exposed as computeds, so they unwrap to plain
+booleans on the template ref and stay reactive.
 
 `getDatasetValues()` returns each dataset converted with **its own** axis set, log
 scales and graph tilt already applied:
@@ -555,6 +771,150 @@ values — the error scales with the value and with the digit setting. The usefu
 tolerance is one pixel expressed in axis units (`axis range / plot height in px`,
 or `decades / height` on a log axis), which is also the precision the digitizer
 can actually resolve.
+
+### Keyboard shortcuts
+
+**The listeners belong to the instance, not to the document.** `CanvasMain`
+binds `keydown` to its own canvas frame (`[data-cy=canvas-wrapper]`), so keys
+reach *one* digitizer:
+
+- **When the frame has focus.** The frame carries `tabindex="0"`, so it is in
+  the tab order and can be reached without a mouse. Clicking the canvas — the
+  first thing anyone does with it — focuses it too. The focus ring is drawn for
+  `:focus-visible` only: a ring painted around the image on every click would be
+  noise, while a ring after Tab is the only sign that the keys now go to the
+  digitizer.
+- **Or while the pointer is over the frame.** Focus alone would be a regression
+  for the standalone app, where `+` / `-` / `0` have always worked on a freshly
+  opened page, so a second listener is attached to `document` for exactly as
+  long as the pointer is inside the frame — the same "this instance, not the
+  others" rule the mouse already follows. Move the pointer off the digitizer and
+  the host page has its keys back. A digitizer that is both focused and hovered
+  still acts once.
+
+| Keys | Action | Conditions |
+|---|---|---|
+| `⌘Z` / `Ctrl+Z`, `⇧⌘Z` / `Ctrl+Shift+Z` | Undo / redo | Not in `readonly` |
+| `⌘S`, `⌘O` (`Ctrl` too) | Save / load project ZIP | `features.zipExportImport`; `⌘O` also needs not-`readonly` |
+| `+` / `=`, `-`, `0`, `f` | Zoom in, zoom out, original size, fit | Always (no modifier — `⌘+`/`⌘-` are the browser's own page zoom and cannot be overridden) |
+| `a`, `e`, `d` | Manual mode: add / edit / delete | Not in `readonly`, not in View All |
+| `⌘A` / `Ctrl+A` | Select every point of the active dataset | Not in `readonly`, not in View All |
+| `Escape` | Deselect points | Not in `readonly`, not in View All |
+| `Backspace` / `Delete` | Delete the selected points | Not in `readonly`, not in View All |
+| `↑` `↓` `←` `→` | Nudge the selected points 1px (10px with `Shift`) | Not in `readonly`, not in View All |
+
+**Inside a text field the digitizer keeps its hands off.** When the event target
+is an `<input>`, a `<textarea>` or an element with `contentEditable`, no
+shortcut runs — `⌘Z` there is the browser's own character-level undo, as it has
+always been, so a user correcting a mistyped axis value gets the text back
+rather than losing a point.
+
+`features.keyboardShortcuts: false` removes the listeners entirely (and the
+`tabindex`, so the frame leaves the tab order). Nothing in the digitizer then
+observes a key or calls `preventDefault()`, which is what a host with its own
+shortcut system needs — see the recipe below.
+
+### The "single undo stack" recipe
+
+A host that lets the user edit its own fields next to the digitizer (a sample
+name, a unit, a comment) has **two undo stacks**: its own, and the digitizer's.
+Both answer to `⌘Z`, so what the key does depends on where the user last
+clicked — undo the digitizer's last point in one spot, the host's last edit an
+inch away. This recipe merges them into one.
+
+**1. Give `⌘Z` a single owner.**
+
+```vue
+<StarryDigitizer
+  ref="digitizer"
+  :features="{ keyboardShortcuts: false }"
+  @history-change="onHistoryChange"
+/>
+```
+
+With `keyboardShortcuts: false` the digitizer never registers a key listener,
+so the host's own handler is the only one that sees `⌘Z`.
+
+**2. Record the digitizer's captures on the host's stack.**
+
+```ts
+type HostEntry = { kind: 'digitizer' } | { kind: 'host'; undo: () => void }
+
+const undoStack: HostEntry[] = []
+let redoStack: HostEntry[] = []
+
+function onHistoryChange(change: HistoryChange) {
+  switch (change.type) {
+    case 'capture':
+      // The user did something undoable in the digitizer: push a marker and
+      // drop the redo stack, exactly as a host edit would.
+      undoStack.push({ kind: 'digitizer' })
+      redoStack = []
+      break
+    case 'undo':
+    case 'redo':
+      // Our own call coming back. Pushing here would add an entry for the very
+      // undo we just performed, and the user could never get past it.
+      break
+    case 'clear':
+      // Project load or reset(): the digitizer's snapshots are gone, so the
+      // markers pointing at them are meaningless.
+      undoStack.length = 0
+      redoStack = []
+      break
+  }
+}
+```
+
+**3. Dispatch `⌘Z` by who owns the top of the stack.**
+
+```ts
+function onUndo() {
+  const entry = undoStack.pop()
+  if (!entry) return
+  if (entry.kind === 'host') {
+    entry.undo()
+    redoStack.push(entry)
+    return
+  }
+  // The digitizer's internal stack is capped at 50 snapshots, so a marker can
+  // outlive the snapshot it refers to. Drop the marker and stop — do not fall
+  // through to a host entry the user did not ask to undo.
+  if (!digitizer.value!.canUndo) return
+  digitizer.value!.undo()
+  redoStack.push(entry)
+}
+```
+
+Rules worth restating, because each one is a bug if missed:
+
+- **`'capture'` is the only type that pushes.** `'undo'` and `'redo'` are the
+  echo of your own calls.
+- **`'clear'` empties your stack too.** It arrives on project load and on
+  `reset()`, and only when there really was history to discard.
+- **`canUndo` can be `false` while your marker still exists.** The internal
+  stack keeps at most 50 snapshots; older ones are dropped silently.
+- **`history-change` is delivered synchronously**, from inside the operation
+  that moved the stacks. Do not change digitizer state from the handler — that
+  re-enters the manager and notifies again. Record the event and get out; write
+  anything back from your own event-loop turn.
+- A listener that throws is caught and logged (`console.error`) rather than
+  breaking the user's undo, so a bug in your bookkeeping stays a bookkeeping
+  bug.
+
+**Hosts that place the panels themselves** have no component to emit from, and
+use the manager directly. It is the same event:
+
+```ts
+const unsubscribe = ctx.historyManager.subscribe((change) => { /* as above */ })
+// ctx.historyManager.undo() / .redo() / .canUndo / .canRedo
+```
+
+`subscribe()` returns the unsubscribe function and is what `<StarryDigitizer>`
+uses internally to emit `history-change`. It exists because `canUndo` is state
+while "a capture just happened" is an event: two captures in a row leave
+`canUndo` at `true` throughout, and a reactive watcher would coalesce them —
+but a host stack needs exactly one entry per capture.
 
 ### Datasets and external IDs
 
@@ -691,16 +1051,16 @@ so the contract is exercised on every run.
 
 ### Known limitations
 
-- **Keyboard shortcuts and paste are document-wide.** Several
-  `<StarryDigitizer>` instances can now share a page — each one draws into its
-  own canvases, keeps its own datasets and has its own magnifier (see
-  `cypress/e2e/host-app/spec.multi-instance.cy.ts`). What is still shared are
-  the `document`-level listeners: a keyboard shortcut (undo/redo, zoom,
-  arrow-key nudges, Delete) is handled by *every* mounted instance, and a
-  pasted image is loaded into every instance that has `features.imageUpload`
-  on. Mount one instance at a time if those shortcuts matter to your users.
-  The `id` attributes on the canvases (`#imageCanvas` and friends) are still
-  fixed and will be duplicated in the DOM; nothing in the library resolves
+- **Image paste is document-wide.** Several `<StarryDigitizer>` instances can
+  share a page — each one draws into its own canvases, keeps its own datasets,
+  has its own magnifier and, since keys are bound to the canvas frame, its own
+  [keyboard shortcuts](#keyboard-shortcuts) (see
+  `cypress/e2e/host-app/spec.multi-instance.cy.ts`). What is still shared is the
+  `paste` listener: a pasted image is loaded into *every* mounted instance that
+  has `features.imageUpload` on. Hosts that supply the image themselves already
+  get `imageUpload: false` by default, which removes the listener with the
+  panel. The `id` attributes on the canvases (`#imageCanvas` and friends) are
+  still fixed and will be duplicated in the DOM; nothing in the library resolves
   them by id any more, and your own selectors should not either — use the
   `data-cy` markers above, scoped by your own container element.
 - **No UMD build.** ESM and CJS only (`index.js`/`index.cjs`, and the same pair
@@ -749,4 +1109,4 @@ Previously, the Starrydata project used [WebPlotDigitizer](https://github.com/au
 
 ## License
 
-See [LICENSE](LICENSE) file for details.
+See [LICENSE](LICENSE.txt) file for details.

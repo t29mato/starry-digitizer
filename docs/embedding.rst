@@ -31,8 +31,16 @@ props / events / メソッドの一覧など API の詳細は、リポジトリ�
 2. 前提(ホスト側で用意するもの)
 ========================================
 
-peerDependency は ``vue``\ (^3.3)だけです。UI フレームワーク(Vuetify 等)やアイコンフォントは
-**不要** で、コンポーネントは自前の最小 UI(素の Vue + scoped CSS、インライン SVG アイコン)を持ちます。
+peerDependency は ``vue``\ (^3.3)と ``@vue/reactivity``\ (^3.3)の 2 つです。
+このうち必須なのは ``@vue/reactivity`` だけで(エンジンの変更通知がこれです)、
+``vue`` は ``peerDependenciesMeta`` で optional にしてあります。
+``<StarryDigitizer>`` やパネルを使うなら ``vue`` が要り、``starry-digitizer/core``
+だけを使うなら不要、という切り分けです(10.9 を参照)。Vue のホストが追加でインストール
+するものはありません。``vue`` パッケージが ``@vue/reactivity`` に依存し同じ関数を
+再エクスポートしているため、両方とも 1 つの実体に解決されます。
+
+UI フレームワーク(Vuetify 等)やアイコンフォントは **不要** で、コンポーネントは自前の
+最小 UI(素の Vue + scoped CSS、インライン SVG アイコン)を持ちます。
 ホストが React や素の JavaScript でも、Vue ランタイム 1 つを足すだけで動きます。
 
 パッケージは npm レジストリには公開していません。リポジトリを clone して ``npm pack`` で
@@ -60,6 +68,10 @@ tarball をホスト側リポジトリにコミットしておくと、``package
 .. code-block:: css
 
    .starry-digitizer { --sd-primary: #1e3a5f; }
+
+書体・文字サイズ・行送りは既定でホストのものを **継承** します(``--sd-font`` /
+``--sd-font-size`` / ``--sd-line-height`` の既定値が ``inherit``)。ライブラリ独自の
+書体には切り替わりません。理由と上書き方法は 10.8 を参照してください。
 
 
 3. 基本的な流れ
@@ -110,6 +122,25 @@ tarball をホスト側リポジトリにコミットしておくと、``package
        @error="(e) => showToast(e.message)"
      />
    </template>
+
+5 つ目の責務として、\ **確認ダイアログ** をホストの流儀に寄せることもできます。
+データセットの削除、軸セットの削除、作業済み画像の差し替えなど「本当によいですか」を
+訊く箇所はすべて 1 つの関数を通ります。既定は ``window.confirm`` を呼ぶ ``DEFAULT_CONFIRM``
+で、``confirm`` prop に自前のダイアログを渡すとホスト自身のモーダルで訊けます。
+ネイティブダイアログは、埋め込まれた別アプリの存在を一瞬で露呈させる典型なので、
+自前のモーダルを持つホストは渡しておくとよいです。
+
+.. code-block:: vue
+
+   <StarryDigitizer :confirm="(message) => myModal.confirm(message)" />
+
+型は ``ConfirmDialog``\ 、すなわち ``(message: string) => boolean | Promise<boolean>``
+です。``message`` はマークアップを含まない平文で、``true`` に解決したときだけ処理が
+進みます。パネルを自前配置するホストは ``createDigitizerOptions({ confirm })`` で渡し、
+自分の確認も ``options.confirm`` を直接呼ぶのではなく ``requestConfirmation(options, message)``
+経由で呼んでください。ホストのダイアログが例外を投げたり reject したりしたときに、
+黙って処理を握りつぶす(``false`` 扱い)ことも、誰も同意していない破壊的操作を走らせる
+(``true`` 扱い)こともせず、警告を出して ``window.confirm`` に落とすためです。
 
 
 4. 画像の渡し方
@@ -334,11 +365,16 @@ canvas 要素の持ち主なので、1 つの context につき 1 つだけ配�
 10.5 のようにパネルを自前配置するとき、\ ``.starry-digitizer`` クラスを **どの要素に付けるか**
 で見た目が変わります。配布 CSS は 2 層に分かれているためです。
 
-- **テーマトークン 15 個**\ (``--sd-primary`` / ``--sd-text`` / ``--sd-font`` /
-  ``--sd-radius`` など)は ``:where(:root)`` にあり、\ **ラッパの外でも解決されます**\ 。
-- **基準フォント**\ (``font-family`` / ``font-size`` / ``line-height`` / ``color`` /
-  ``box-sizing``)と ``h4`` / ``h5`` の既定、\ **余白・flex ユーティリティ**\
+- **テーマトークン 16 個**\ (``--sd-primary`` / ``--sd-text`` / ``--sd-radius`` などの
+  色・形状 13 個と、タイポグラフィの ``--sd-font`` / ``--sd-font-size`` /
+  ``--sd-line-height`` の 3 個)は ``:where(:root)`` にあり、\ **ラッパの外でも解決されます**\ 。
+- **トークンを実際に適用する宣言**\ (``font-family: var(--sd-font)`` /
+  ``font-size: var(--sd-font-size)`` / ``line-height: var(--sd-line-height)`` /
+  ``color`` / ``box-sizing``)と ``h4`` / ``h5`` の既定、\ **余白・flex ユーティリティ**\
   (``.d-flex`` / ``.pa-1`` / ``.mb-2`` など)は ``.starry-digitizer`` 配下のままです。
+
+つまりトークンは外でも「解決」されますが、それを要素に「適用」するルールはラッパ配下に
+しかありません。ラッパを置かないとタイポグラフィのトークンは **どこにも当たりません**\ 。
 
 置き方は実質 3 通りです。
 
@@ -361,6 +397,11 @@ canvas 要素の持ち主なので、1 つの context につき 1 つだけ配�
 幅 320px の列に実際にマウントし、ホスト側の地の文は ``font-family: system-ui`` /
 ``font-size: 16px``)。
 
+タイポグラフィの既定が ``inherit`` になる前の測定なので、\ **ラッパには当時のライブラリ
+既定と同じ** ``--sd-font: Roboto…`` / ``--sd-font-size: 14px`` / ``--sd-line-height: 1.4``
+**を指定した状態**\ として読んでください。トークンを何も指定しない現在の既定では、A の
+パネルもホストの地の文(この例では 16px / system-ui)をそのまま継ぎます。
+
 .. list-table::
    :header-rows: 1
    :widths: 26 25 25 24
@@ -381,18 +422,26 @@ canvas 要素の持ち主なので、1 つの context につき 1 つだけ配�
      - 効く
      - **効かない**\ (付ける要素が無い)
      - 効く
-   * - パネルの基準フォント
+   * - ``--sd-font-size`` などの反映先
+     - パネルだけ
+     - **どこにも当たらない**\ (適用する要素が無い)
+     - パネル + 中に入れたホスト UI
+   * - パネルの基準フォント(トークン未指定)
+     - 16px / system-ui(ホストの地の文)
+     - 16px / system-ui(ホストの地の文)
+     - 16px / system-ui(ホストの地の文)
+   * - パネルの基準フォント(14px / Roboto を指定)
      - 14px / Roboto
-     - **16px / system-ui**\ (ホストの地の文)
+     - **16px / system-ui のまま**
      - 14px / Roboto
    * - パネルの ``line-height`` / ``color`` / ``box-sizing``
-     - 1.4 / ``--sd-text`` / ``border-box``
+     - トークンの値 / ``--sd-text`` / ``border-box``
      - **normal / 初期値 / content-box**
-     - 1.4 / ``--sd-text`` / ``border-box``
+     - トークンの値 / ``--sd-text`` / ``border-box``
    * - パネルの ``<h4>`` の margin
-     - ``10px 0 4px``\ (17.6px / 600)
+     - ``10px 0 4px``\ (``font-size: 1.1em``)
      - **21.28px 0**\ (16px / 700 = ブラウザ既定)
-     - ``10px 0 4px``\ (17.6px / 600)
+     - ``10px 0 4px``\ (``font-size: 1.1em``)
    * - ``.d-flex`` / ``.pa-1`` / ``.mb-2``
      - ``flex`` / 4px / 8px
      - **効かない**\ (``block`` / 0 / 0)
@@ -400,12 +449,12 @@ canvas 要素の持ち主なので、1 つの context につき 1 つだけ配�
    * - ホスト領域のフォント
      - 16px / system-ui のまま
      - 16px / system-ui のまま
-     - **14px / Roboto に化ける**
+     - 既定では 16px / system-ui のまま。\ **トークンを指定すると一緒に化ける**
    * - ホスト領域の ``<h4>`` / ``.d-flex``
      - ブラウザ既定のまま
      - ブラウザ既定のまま
      - **ライブラリの値に化ける**
-   * - パネル 3 枚の合計高さ
+   * - パネル 3 枚の合計高さ(14px / Roboto を指定)
      - 603.0px
      - 873.4px
      - 603.0px
@@ -416,45 +465,384 @@ canvas 要素の持ち主なので、1 つの context につき 1 つだけ配�
 (10.6 の ``--sd-height`` など)も、この要素にまとめて書けます。ラッパは 1 ページに
 何個あっても構いません。パネルを離れた場所に置くなら、その領域ごとにラッパを付けてください。
 
-**C の落とし穴**\ : ホストの UI までライブラリのフォントに化けます。上の実測では、
-ラッパの中に入れたホスト領域が 16px / system-ui から 14px / Roboto になり、
-ホスト側の ``<h4>`` の margin が ``21.28px 0`` から ``10px 0 4px`` に、
-ホスト側にたまたま存在した ``.d-flex`` が ``block`` から ``flex`` に変わりました。
-ホストが自分のクラス名に ``d-flex`` / ``pa-1`` など同名のユーティリティを使っていると、
-ラッパの中では意図しない側が当たります。
+**C の落とし穴**\ : ラッパの中に入れたホストの UI にも、ライブラリの ``h4`` / ``h5``
+既定とユーティリティが当たります。上の実測では、ホスト側の ``<h4>`` の margin が
+``21.28px 0`` から ``10px 0 4px`` に、ホスト側にたまたま存在した ``.d-flex`` が
+``block`` から ``flex`` に変わりました。ホストが自分のクラス名に ``d-flex`` /
+``pa-1`` など同名のユーティリティを使っていると、ラッパの中では意図しない側が当たります。
+
+書体については、タイポグラフィのトークンが ``inherit`` 既定になったことで
+**何も指定しなければ化けなくなりました**\ (実測時はここでホスト領域が 16px / system-ui
+から 14px / Roboto に化けていました)。ただし ``.starry-digitizer { --sd-font-size: 14px }``
+のように指定すると、その宣言はラッパ配下すべてに効くので、C ではホストの UI も一緒に
+そのサイズになります。書体を指定したいなら A で分離してください。
 
 **B の落とし穴**\ : **色は出るので、パッと見は動いているように見えます**\ 。
 テーマトークンは ``:where(:root)`` にあるため、プライマリ色のボタンは A と同じ
 ``rgb(30, 136, 229)`` で塗られ、ホストが ``:root`` に書いた上書きもそのまま効きます。
-壊れるのはフォントとユーティリティだけです。しかもその差はパネルによっては小さく、
-``AxisSetManager`` は 108.6px → 122.3px、\ ``DatasetManager`` は 178.6px → 192.3px と
-**10% 程度しか伸びません**\ 。「少し余白が違う」ようにしか見えず、見落とします
-(flex 行を多く持つ ``ExtractorSettings`` だけは 315.8px → 558.8px と明確に崩れます)。
+壊れるのはユーティリティと、書体トークンを指定していればその適用だけです。しかもその差は
+パネルによっては小さく、14px / Roboto を指定した上の条件では ``AxisSetManager`` が
+108.6px → 122.3px、\ ``DatasetManager`` が 178.6px → 192.3px と **10% 程度しか伸びません**\ 。
+「少し余白が違う」ようにしか見えず、見落とします(flex 行を多く持つ ``ExtractorSettings``
+だけは 315.8px → 558.8px と明確に崩れます)。トークンを何も指定しない既定ではフォント
+サイズが A と B で揃うぶん、差はさらに小さくなり、いっそう見落としやすくなります。
 なお ``.starry-digitizer { --sd-primary: … }`` という文書化済みのテーマ上書きは、
 B では付ける要素が無いため **黙って無視されます**\ 。
 
 この線引きは意図的です。色や書体のようなテーマトークンはページ全体で 1 組あればよいので
 ``:where(:root)`` に置き(``:where()`` で詳細度が 0 になるため、ホストの ``:root`` でも
 ``.starry-digitizer`` でも必ずホスト側が勝ちます)、パネルを複数の領域に分けて配置しても
-同じ 15 個を重複定義せずに済みます。一方、\ **レイアウト変数**\
+同じ 16 個を重複定義せずに済みます。一方、\ **レイアウト変数**\
 (``--sd-height`` / ``--sd-*-sidebar-*`` / ``--sd-canvas-*`` / ``--sd-magnifier-size`` など)は
 1 インスタンスの箱を記述するもので、同一ページの 2 つのインスタンスが別の値を取るのが正しいため、
 ``:root`` へは逃がさず ``.starry-digitizer`` に残してあります。ユーティリティクラスも
 グローバルに撒くとホストの CSS と衝突するため、ラッパ配下のままです。
 
+10.8 書体はホストから継承する
+--------------------------------------------------
 
-11. 制約
+タイポグラフィのトークンは 3 つあり、\ **既定値はいずれも** ``inherit`` **です**\ 。
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 16 54
+
+   * - トークン
+     - 既定値
+     - ``.starry-digitizer`` での適用先
+   * - ``--sd-font``
+     - ``inherit``
+     - ``font-family``
+   * - ``--sd-font-size``
+     - ``inherit``
+     - ``font-size``
+   * - ``--sd-line-height``
+     - ``inherit``
+     - ``line-height``
+
+つまり何も指定しなければ、ライブラリはホストのページが既に使っている書体・文字サイズ・
+行送りをそのまま使います。ライブラリ独自の書体は持ち込みません。
+
+**なぜそうしたか**\ : ライブラリは他のアプリの中に埋め込まれます。ある領域だけ書体が
+変わっていると、読むより先に「ここだけ別のアプリが貼り付けてある」と見た目で分かって
+しまいます。継承にすればその継ぎ目が消えます。配色にはこの問題がない(ホストが選ぶのが
+当然)ため、``inherit`` 既定にしたのはこの 3 つだけです。
+
+特定の見た目にしたいホストは、他のトークンと同じように指定します。
+
+.. code-block:: css
+
+   .starry-digitizer {
+     --sd-font: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+     --sd-font-size: 14px;
+     --sd-line-height: 1.4;
+   }
+
+スタンドアロンアプリ自身がこれをしています(``src/app-style.css``)。従来どおりの
+Roboto / 14px / 1.4 の見た目は、こうして固定した結果です。
+
+付随する性質が 2 つあります。
+
+- **ライブラリ内部のサイズはすべて相対値です。** 相対的な文字サイズはすべて ``em`` で
+  書かれており、``rem`` はビルド後の ``style.css`` に 1 つも残っていません。``rem`` は
+  ホストページの ``<html>`` に対して解決されてしまうため、継承した基準サイズと噛み合わない
+  からです。``em`` なのでシート全体が基準サイズに合わせて一体で拡縮します。
+- **ダイアログとスナックバーは** ``<body>`` **の書体を継ぎます。** ``SdDialog`` と
+  ``SdSnackbar`` は ``<body>`` 直下へ teleport されます。teleport 先のルート要素も
+  ``.starry-digitizer`` クラスを持つのでトークンとユーティリティは効きますが、
+  ``--sd-font-size`` が ``inherit`` である以上、継ぐのは **パネルを置いたコンテナでは
+  なく** ``<body>`` の書体です。``body { font-size: 18px }`` のホストでは、ダイアログの
+  タイトル(``1.25em``)は 22.5px になります。タイポグラフィを ``body`` や ``:root``
+  ではなく自分のラッパ要素だけに設定しているホストでは、\ **ダイアログだけが** ``body``
+  **のサイズに落ちます**\ 。teleport 先が ``body`` である以上避けにくいので、回避策は
+  ``body`` / ``:root`` 側に設定するか、``--sd-font-size`` を明示的に指定するかです。
+
+10.9 ``starry-digitizer/core`` — Vue に依存しないエンジン
+------------------------------------------------------------
+
+この章の冒頭で示した薄いラッパーは、「Vue アプリを 1 つマウントして既製の UI をそのまま
+使う」方法でした。UI もホスト側で描きたい場合は、``starry-digitizer/core`` を直接使います。
+状態・操作・DTO だけが入っており、\ **Vue のレンダラには依存しません**\ 。
+
+これは規約ではなく機械的に検査されています。``scripts/lib-check.mjs`` がビルド後の
+``core.js`` / ``core.cjs`` とそこから辿れる全モジュールを走査し、``vue`` / ``vue/*`` /
+``@vue/runtime-*`` の import が 1 つでもあればビルドを失敗させます
+(``npm run lib-build`` が毎回 ``lib-check`` を実行します)。
+
+- **変更通知は** ``@vue/reactivity`` **です。** core から ``effect`` / ``computed`` /
+  ``ref`` / ``stop`` / ``reactive`` / ``readonly`` / ``effectScope`` と各種ガード
+  (``isReactive`` / ``isRef`` / ``unref`` / ``toRaw`` / ``markRaw``)を再エクスポート
+  しているので、ホストが直接 import する必要はありません。``watch`` は再エクスポート
+  していません(``@vue/reactivity`` に入ったのは Vue 3.5 からで、対応 peer 範囲は 3.3
+  からのため)。
+- **ブラウザ必須です。** DOM ツリーは要りません(canvas はホストが渡します)が、
+  2D canvas コンテキストと画像デコーダが要るため、Node パッケージではありません。
+- **パネルは Vue 専用です。** ``ExtractorSettings`` / ``AxisSetManager`` などは
+  ``starry-digitizer/vue`` にしか入っておらず、React 版・Svelte 版はありません。
+  React のホストは core と自前の canvas / UI を組み合わせます。
+- モードは再エクスポートされた定数で指定してください(``MANUAL_MODE`` / ``MASK_MODE`` /
+  ``POINT_MODE``)。``STYLE`` は組み込みの canvas レイヤが使うマーカーの寸法・不透明度で、
+  自前でオーバーレイを描くときに見た目を合わせるために使えます。
+
+``effect`` は「その関数が読んだものだけ」を追跡する
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ここが一番の落とし穴です。``effect(fn)`` は ``fn`` を即座に 1 回実行し、\ **その実行中に
+実際に読まれた** リアクティブなプロパティを記録して、それらが変わったときだけ ``fn`` を
+再実行します。「context のどこかが変われば通知」ではありません。コールバックが読んで
+いないプロパティは、購読していないプロパティです。
+
+.. code-block:: ts
+
+   // 点や軸が変われば再実行される(getDatasetValues() がそれらを読むため)
+   effect(() =>
+     render(getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, 4)),
+   )
+
+   // 何が起きても再実行されない(読み取りが effect の外で済んでいる)
+   const values = getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, 4)
+   effect(() => render(values))
+
+反応させたい値は必ず effect の **中で** 読んでください。初回実行で ``false`` だった
+``if`` の内側での読み取りも購読されません。逆に effect は狭く保つほど、無関係な状態変化
+で再実行されなくなります。
+
+React へのつなぎ込み(``useSyncExternalStore``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``effect`` は ``useSyncExternalStore`` が要求する 2 つ、すなわち「解除関数を返す
+subscribe」と「スナップショットの getter」に素直に対応します。``effect()`` の初回実行は
+``subscribe`` の中で同期的に起きるので、その 1 回は読み飛ばします。解除は
+``stop(runner)`` です(``effect()`` が返すのは呼ぶと再実行される runner なので、
+``runner()`` は解除になりません)。
+
+.. code-block:: ts
+
+   import { useCallback, useMemo, useSyncExternalStore } from 'react'
+   import {
+     effect, stop, getDatasetValues,
+     type DigitizerContext, type DatasetValues,
+   } from 'starry-digitizer/core'
+
+   function useDatasetValues(ctx: DigitizerContext): DatasetValues[] {
+     const read = useCallback(
+       () =>
+         getDatasetValues(
+           ctx.axisSetRepository,
+           ctx.datasetRepository,
+           ctx.valueFormat.effectiveDigits,
+         ),
+       [ctx],
+     )
+
+     const subscribe = useCallback(
+       (onStoreChange: () => void) => {
+         let first = true
+         // read() を effect の中で呼ぶ。この読み取りが購読になる。
+         const runner = effect(() => {
+           read()
+           if (first) { first = false; return }
+           onStoreChange()
+         })
+         return () => stop(runner)
+       },
+       [read],
+     )
+
+     // getSnapshot は変化が無い間は同じ値を返す必要があるので、
+     // 上の effect が動いたときだけ差し替える。
+     const cache = useMemo(() => ({ value: read() }), [read])
+     return useSyncExternalStore(
+       (onStoreChange) =>
+         subscribe(() => { cache.value = read(); onStoreChange() }),
+       () => cache.value,
+     )
+   }
+
+同じ形が単一の値(``ctx.historyManager.canUndo`` / ``ctx.canvasHandler.scale`` /
+``ctx.datasetRepository.activeDataset.id`` など)にもそのまま使えます。ただし
+「いま capture が起きた」は値ではなくイベントなので、そちらは
+``ctx.historyManager.subscribe()`` を使ってください(12. を参照)。
+
+
+11. キーボードショートカットの範囲
+========================================
+
+**リスナーは document ではなくインスタンスの canvas 枠に付いています**\ 。
+``CanvasMain`` が自分の canvas 枠(``[data-cy=canvas-wrapper]``)に ``keydown`` を
+バインドするため、キーは 1 つのデジタイザにだけ届きます。効くのは次の 2 つの場合です。
+
+- **枠にフォーカスがあるとき。** 枠は ``tabindex="0"`` を持つのでタブ順に入り、
+  マウス無しでも到達できます。canvas をクリックしてもフォーカスは入ります。
+  フォーカスリングは ``:focus-visible`` のときだけ描かれます。クリックのたびに画像の
+  周りにリングが出るのはノイズですが、Tab で来たときは「キーがデジタイザに行くように
+  なった」ことを示す唯一の手がかりだからです。
+- **または、ポインタが枠の上にあるとき。** フォーカスだけを条件にすると、開いた直後の
+  ページで ``+`` / ``-`` / ``0`` が効かなくなり、スタンドアロンアプリの退行になります。
+  そこでポインタが枠の内側にある **あいだだけ** ``document`` にもう 1 つリスナーを
+  張っています。これはマウスが既に従っている「他ではなくこのインスタンス」と同じ規則
+  です。ポインタを外せばホストのページにキーが戻ります。フォーカスとホバーが同時でも
+  処理は 1 回だけです。
+
+.. list-table::
+   :header-rows: 1
+   :widths: 32 34 34
+
+   * - キー
+     - 動作
+     - 条件
+   * - ``⌘Z`` / ``Ctrl+Z``、``⇧⌘Z`` / ``Ctrl+Shift+Z``
+     - Undo / Redo
+     - ``readonly`` では無効
+   * - ``⌘S`` / ``⌘O``\ (``Ctrl`` も可)
+     - プロジェクト ZIP の保存 / 読み込み
+     - ``features.zipExportImport``\ 。``⌘S`` は ``readonly`` でも使えますが、
+       状態を上書きする ``⌘O`` は無効
+   * - ``+`` / ``=``、``-``、``0``、``f``
+     - 拡大 / 縮小 / 等倍 / フィット
+     - 常時(修飾キー無し。``⌘+`` 等はブラウザのページズームで上書きできないため)
+   * - ``a`` / ``e`` / ``d``
+     - 手動モード(追加 / 編集 / 削除)
+     - ``readonly`` と View All では無効
+   * - ``⌘A`` / ``Ctrl+A``
+     - アクティブなデータセットの全点を選択
+     - ``readonly`` と View All では無効
+   * - ``Escape``
+     - 選択解除
+     - ``readonly`` と View All では無効
+   * - ``Backspace`` / ``Delete``
+     - 選択中の点を削除
+     - ``readonly`` と View All では無効
+   * - ``↑`` ``↓`` ``←`` ``→``
+     - 選択中の点を 1px 移動(``Shift`` で 10px)
+     - ``readonly`` と View All では無効
+
+**入力欄の中では手を出しません。** イベントの対象が ``<input>`` / ``<textarea>`` /
+``contentEditable`` の要素のときは、どのショートカットも動きません。そこでの ``⌘Z`` は
+従来どおりブラウザ標準の文字単位の取り消しです。軸の値を打ち間違えたユーザーは、
+点を失うのではなく文字が戻ります。
+
+``features`` の ``keyboardShortcuts`` を ``false`` にすると、リスナーは登録されず
+``tabindex`` も付かなくなります(枠はタブ順から外れます)。デジタイザの中の何もキーを
+拾わず ``preventDefault()`` も呼ばないので、独自のショートカット体系を持つホストは
+これを使ってください。次節がその使い方です。
+
+
+12. Undo をホスト側で 1 本にまとめる
+========================================
+
+デジタイザの隣でホスト自身の入力欄(サンプル名・単位・コメントなど)も編集できる画面では、
+**Undo のスタックが 2 本** あります。ホスト自身のものと、デジタイザのものです。どちらも
+``⌘Z`` に反応するため、\ **直前にどこをクリックしたかで** ``⌘Z`` **の結果が変わります**\ 。
+ある場所ではデジタイザの打点が取り消され、数センチ隣ではホストの編集が取り消される、
+という状態です。ここでは 2 本を 1 本にまとめます。
+
+**1. ⌘Z の所有者を 1 つにする。**
+
+.. code-block:: vue
+
+   <StarryDigitizer
+     ref="digitizer"
+     :features="{ keyboardShortcuts: false }"
+     @history-change="onHistoryChange"
+   />
+
+``keyboardShortcuts: false`` ならデジタイザはキーのリスナーを一切登録しないので、
+``⌘Z`` を見るのはホストのハンドラだけになります。
+
+**2. デジタイザ側の capture をホストのスタックに記録する。**
+
+.. code-block:: ts
+
+   type HostEntry = { kind: 'digitizer' } | { kind: 'host'; undo: () => void }
+
+   const undoStack: HostEntry[] = []
+   let redoStack: HostEntry[] = []
+
+   function onHistoryChange(change: HistoryChange) {
+     switch (change.type) {
+       case 'capture':
+         // ユーザーがデジタイザ側で取り消せる操作をした。印を積み、
+         // ホスト自身の編集と同じように redo スタックを捨てる。
+         undoStack.push({ kind: 'digitizer' })
+         redoStack = []
+         break
+       case 'undo':
+       case 'redo':
+         // 自分が呼んだ結果が返ってきているだけ。ここで積むと、いま実行した
+         // undo に対する項目が増えてしまい、永久に戻れなくなる。
+         break
+       case 'clear':
+         // プロジェクト読み込みや reset()。デジタイザ側のスナップショットが
+         // 消えたので、それを指す印も意味を失う。
+         undoStack.length = 0
+         redoStack = []
+         break
+     }
+   }
+
+**3. スタックの先頭が誰のものかで ⌘Z を振り分ける。**
+
+.. code-block:: ts
+
+   function onUndo() {
+     const entry = undoStack.pop()
+     if (!entry) return
+     if (entry.kind === 'host') {
+       entry.undo()
+       redoStack.push(entry)
+       return
+     }
+     // デジタイザ内部のスタックは 50 件が上限なので、印がスナップショットより
+     // 長生きすることがある。その場合は印だけ捨てて終わる。ユーザーが指示して
+     // いないホスト側の項目まで巻き込んで取り消してはいけない。
+     if (!digitizer.value!.canUndo) return
+     digitizer.value!.undo()
+     redoStack.push(entry)
+   }
+
+外すとそのままバグになる点を、あらためて並べます。
+
+- **積むのは** ``'capture'`` **だけです。** ``'undo'`` / ``'redo'`` は自分の呼び出しの
+  こだまです。
+- ``'clear'`` **ではホストのスタックも捨てます。** プロジェクト読み込みと ``reset()``
+  で届き、しかも実際に履歴があったときにしか届きません(通知が来た = 状態が動いた)。
+- **印が残っていても** ``canUndo`` **が** ``false`` **のことがあります。** 内部スタックの
+  上限は 50 件で、古いものは黙って捨てられます。
+- ``history-change`` **は同期で届きます。** スタックを動かした処理の内側から呼ばれるので、
+  ハンドラの中でデジタイザの状態を書き換えないでください。マネージャに再入し、また通知が
+  飛びます。記録だけして抜け、書き戻しは自分のイベントループの回で行ってください。
+- リスナーが例外を投げても握りつぶされて ``console.error`` に出るだけで、ユーザーの
+  Undo は壊れません。記録側のバグは記録側で止まります。
+
+**パネルを自前配置しているホスト** にはイベントを出すコンポーネントがないので、マネージャを
+直接使います。中身は同じイベントです。
+
+.. code-block:: ts
+
+   const unsubscribe = ctx.historyManager.subscribe((change) => { /* 上と同じ */ })
+   // ctx.historyManager.undo() / .redo() / .canUndo / .canRedo
+
+``subscribe()`` は解除関数を返します。``<StarryDigitizer>`` が ``history-change`` を
+emit するのに使っているのもこれです。``canUndo`` は状態ですが「いま capture が起きた」は
+イベントである、というのがこの API がある理由です。capture が 2 回続いても ``canUndo``
+は ``true`` のままで、リアクティブな watcher なら 2 回を 1 回にまとめてしまいます。
+ホストのスタックは capture 1 回につき 1 項目を積む必要があります。
+
+
+13. 制約
 ========================================
 
 - 同一ページに複数の ``<StarryDigitizer>`` を置くこと自体は可能になりました。
   canvas 要素はコンポーネントから明示的に engine へ渡されるようになったため、
   各インスタンスは自分の canvas に描画し、データセットも拡大鏡も独立しています
-  (``cypress/e2e/host-app/spec.multi-instance.cy.ts`` で検証)。
-  ただし **``document`` レベルのイベントは共有** されます。
-  キーボードショートカット(undo/redo・ズーム・矢印キー・Delete)は
-  マウント済みの **すべての** インスタンスが処理し、画像のペーストは
-  ``features.imageUpload`` が有効なすべてのインスタンスに読み込まれます。
-  これらのショートカットが重要な用途では、インスタンスは 1 つに留めてください。
+  (``cypress/e2e/host-app/spec.multi-instance.cy.ts`` で検証)。キーボード
+  ショートカットも canvas 枠にバインドされるようになったのでインスタンスごとです
+  (11. を参照)。
+  ただし **画像のペーストは今も** ``document`` **レベル** で、
+  ``features.imageUpload`` が有効な **すべての** インスタンスに読み込まれます。
+  ホストが画像を渡す構成では ``imageUpload`` の既定が ``false`` になるため、
+  パネルごとリスナーも無くなります。
   また canvas の ``id``(``#imageCanvas`` など)は固定のままで DOM 上は重複します。
   ライブラリ内部は id 解決をしなくなりましたが、ホスト側のセレクタでも
   id に依存しないでください。
@@ -462,7 +850,7 @@ B では付ける要素が無いため **黙って無視されます**\ 。
 - 未校正の軸を持つデータセットの ``getDatasetValues()`` は ``NaN``(JSON では ``null``)を返します。
 
 
-12. 動作を確認できる最小構成
+14. 動作を確認できる最小構成
 ========================================
 
 リポジトリの ``examples/host-app`` に、Vue 3 の最小ホストがあります。
