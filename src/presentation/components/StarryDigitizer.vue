@@ -81,6 +81,7 @@ import {
   MIN_EFFECTIVE_DIGITS,
   isValidEffectiveDigits,
 } from '@/application/services/valueFormat/valueFormat'
+import type { HistoryChange } from '@/application/services/historyManager/historyManagerInterface'
 
 export interface StarryDigitizerProps {
   /** Image to digitize. Blob recommended (hosts fetch signed URLs themselves); data URL / URL also accepted. */
@@ -134,6 +135,14 @@ const emit = defineEmits<{
   change: [payload: { project: ProjectDTO; datasets: DatasetValues[] }]
   'image-replaced': [payload: { blob: Blob }]
   error: [payload: DigitizerErrorPayload]
+  /**
+   * The undo/redo stacks moved. `type: 'capture'` means the user just did
+   * something undoable inside the digitizer — that is the one a host keeping
+   * a single, shared undo stack pushes an entry for. `'undo'` / `'redo'` are
+   * usually the host's own calls coming back and should be ignored by that
+   * bookkeeping. Emitted synchronously, after the change.
+   */
+  'history-change': [payload: HistoryChange]
 }>()
 
 // INFO: One state set per component instance. When the host passes
@@ -142,6 +151,28 @@ const emit = defineEmits<{
 const ownsContext = props.context === undefined
 const ctx: DigitizerContext = props.context ?? createDigitizerContext()
 provide(DIGITIZER_CONTEXT_KEY, ctx)
+
+// ---------------------------------------------------------------------------
+// Undo history
+// ---------------------------------------------------------------------------
+// INFO: subscribed here rather than in onMounted so that nothing that happens
+// during the initial load can slip past. The engine is the source of the
+// event, so a capture made by a panel the host placed itself (or by
+// CanvasMain's keyboard handler) is reported just the same.
+const unsubscribeHistory = ctx.historyManager.subscribe((change) => {
+  emit('history-change', change)
+})
+
+function undo(): void {
+  ctx.historyManager.undo()
+}
+
+function redo(): void {
+  ctx.historyManager.redo()
+}
+
+const canUndo = computed(() => ctx.historyManager.canUndo)
+const canRedo = computed(() => ctx.historyManager.canRedo)
 
 const options = computed<DigitizerOptions>(() =>
   createDigitizerOptions({
@@ -350,10 +381,19 @@ defineExpose({
   getDatasetValues,
   exportZip,
   reset,
+  // INFO: for a host that owns ⌘Z itself — "if the top of my stack is a
+  // digitizer entry, call digitizer.undo()". `canUndo` / `canRedo` are
+  // exposed as computeds, so they unwrap to plain booleans on the template
+  // ref and stay reactive (menu items can bind `:disabled` to them).
+  undo,
+  redo,
+  canUndo,
+  canRedo,
   context: ctx,
 })
 
 onBeforeUnmount(() => {
+  unsubscribeHistory()
   sidebarObserver?.disconnect()
   sidebarObserver = undefined
   if (debounceTimer !== undefined) clearTimeout(debounceTimer)

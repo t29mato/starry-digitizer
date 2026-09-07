@@ -1,3 +1,4 @@
+import { addDataset } from '@/application/utils/datasetOperations'
 import { createDigitizerContext } from './digitizerContext'
 
 // INFO: R7 — several <StarryDigitizer> may live on one page. Each mount gets
@@ -72,5 +73,56 @@ describe('createDigitizerContext', () => {
     expect(
       (ctx.extractor.strategy as { minDiameterPx: number }).minDiameterPx,
     ).toBe(7)
+  })
+})
+
+// INFO: `historyManager.capture()` is called from the application use cases
+// (datasetOperations) and from CanvasMain.vue alike, and the context hands out
+// a reactive() PROXY of the manager rather than the instance itself. A host
+// that subscribes through `ctx.historyManager` therefore has to hear captures
+// made by either — which is why the notification lives in the manager and not
+// at the call sites.
+describe('history notifications through the context', () => {
+  test('a listener hears a capture made by an application use case', () => {
+    const ctx = createDigitizerContext()
+    const listener = jest.fn()
+    ctx.historyManager.subscribe(listener)
+
+    addDataset(ctx)
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener).toHaveBeenCalledWith({
+      type: 'capture',
+      canUndo: true,
+      canRedo: false,
+    })
+  })
+
+  test('undo through the context is reported as undo, not as a new capture', () => {
+    // INFO: the loop this prevents — a host that pushed an entry for the undo
+    // it just performed would never be able to leave the digitizer's history.
+    const ctx = createDigitizerContext()
+    addDataset(ctx)
+    const listener = jest.fn()
+    ctx.historyManager.subscribe(listener)
+
+    ctx.historyManager.undo()
+
+    expect(listener).toHaveBeenCalledWith({
+      type: 'undo',
+      canUndo: false,
+      canRedo: true,
+    })
+  })
+
+  test('two contexts own separate history listeners', () => {
+    const a = createDigitizerContext()
+    const b = createDigitizerContext()
+    const listener = jest.fn()
+    a.historyManager.subscribe(listener)
+
+    b.historyManager.capture()
+
+    expect(listener).not.toHaveBeenCalled()
   })
 })

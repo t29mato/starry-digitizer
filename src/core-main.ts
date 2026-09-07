@@ -34,6 +34,18 @@ export {
 } from '@vue/reactivity'
 export type { ReactiveEffectRunner } from '@vue/reactivity'
 
+// INFO: `reactive()` reports state ("can I undo?"); it cannot report an event
+// ("a capture just happened"), and two captures in a row would look like one
+// to a watcher. `ctx.historyManager.subscribe(listener)` is that event, for a
+// host that keeps its own undo stack and needs one entry per capture. These
+// are the types of what the listener receives — the same payload
+// <StarryDigitizer> re-emits as `history-change`.
+export type {
+  HistoryChange,
+  HistoryChangeType,
+  HistoryChangeListener,
+} from './application/services/historyManager/historyManagerInterface'
+
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------

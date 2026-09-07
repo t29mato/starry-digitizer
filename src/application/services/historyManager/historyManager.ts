@@ -1,4 +1,9 @@
-import { HistoryManagerInterface } from './historyManagerInterface'
+import {
+  HistoryChange,
+  HistoryChangeListener,
+  HistoryChangeType,
+  HistoryManagerInterface,
+} from './historyManagerInterface'
 import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
 import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 import { AxisSetDTO } from '@/application/dto/axisSetDTO'
@@ -30,6 +35,12 @@ interface HistorySnapshot {
 export class HistoryManager implements HistoryManagerInterface {
   private undoStack: HistorySnapshot[] = []
   private redoStack: HistorySnapshot[] = []
+  // INFO: the notification lives HERE, not at the call sites, because
+  // `capture()` is called from several layers — the dataset use cases
+  // (application/utils/datasetOperations.ts) and CanvasMain.vue alike — and a
+  // host must not have to know which. Anything that moves the stacks reports
+  // it, whoever asked.
+  private listeners: HistoryChangeListener[] = []
 
   constructor(
     private axisSetRepository: AxisSetRepositoryInterface,
@@ -50,6 +61,7 @@ export class HistoryManager implements HistoryManagerInterface {
       this.undoStack.shift()
     }
     this.redoStack = []
+    this.notify('capture')
   }
 
   undo(): void {
@@ -59,6 +71,7 @@ export class HistoryManager implements HistoryManagerInterface {
     const previous = this.undoStack.pop() as HistorySnapshot
     this.redoStack.push(this.buildSnapshot())
     this.restore(previous)
+    this.notify('undo')
   }
 
   redo(): void {
@@ -68,11 +81,62 @@ export class HistoryManager implements HistoryManagerInterface {
     const next = this.redoStack.pop() as HistorySnapshot
     this.undoStack.push(this.buildSnapshot())
     this.restore(next)
+    this.notify('redo')
   }
 
   clear(): void {
+    // INFO: `loadProject()` / `reset()` clear on every mount and every project
+    // load, usually with nothing on the stacks. Staying quiet then keeps the
+    // rule a host can rely on: a notification means the undo/redo state
+    // actually changed.
+    const hadHistory = this.canUndo || this.canRedo
     this.undoStack = []
     this.redoStack = []
+    if (hadHistory) {
+      this.notify('clear')
+    }
+  }
+
+  subscribe(listener: HistoryChangeListener): () => void {
+    this.listeners.push(listener)
+    let subscribed = true
+    return () => {
+      if (!subscribed) {
+        return
+      }
+      subscribed = false
+      const index = this.listeners.indexOf(listener)
+      if (index !== -1) {
+        this.listeners.splice(index, 1)
+      }
+    }
+  }
+
+  // INFO: called AFTER the stacks have moved (and after restore()), so a
+  // listener sees the state it is being told about rather than a half-applied
+  // one. The payload is read-only data with nothing to write back, and it says
+  // WHICH call moved the stacks, so a host driving a shared undo stack can
+  // ignore the 'undo'/'redo' it caused itself instead of treating it as a new
+  // user action — that is the loop this design has to avoid.
+  private notify(type: HistoryChangeType): void {
+    if (this.listeners.length === 0) {
+      return
+    }
+    const change: HistoryChange = {
+      type,
+      canUndo: this.canUndo,
+      canRedo: this.canRedo,
+    }
+    // INFO: iterate a copy — a listener may unsubscribe itself (or another)
+    // while we are delivering.
+    this.listeners.slice().forEach((listener) => {
+      try {
+        listener(change)
+      } catch (error) {
+        // INFO: a host's bookkeeping must never break the user's undo.
+        console.error('[starry-digitizer] history listener failed', error)
+      }
+    })
   }
 
   private buildSnapshot(): HistorySnapshot {
