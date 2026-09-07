@@ -4,6 +4,8 @@
 // The host-app specs live under cypress/e2e/host-app and have their own
 // helpers; nothing here may assume the App.vue menu bar exists there.
 
+import { keepSessionOnNextVisit } from './e2e'
+
 export type Coord = { x: number; y: number }
 
 /**
@@ -30,8 +32,16 @@ export function pressKey(
  * every spec that clicks the canvas at fixed coordinates must pin the scale
  * first. `0` is the documented "Reset to 100%" shortcut.
  */
-export function visitApp(options?: Partial<Cypress.VisitOptions>): void {
-  cy.visit('/', options)
+export function visitApp(
+  options?: Partial<Cypress.VisitOptions> & { keepSession?: boolean },
+): void {
+  // INFO: every visit starts from an empty auto-save unless the test says
+  // otherwise, because that is what a reload meant before the auto-save
+  // existed and what the specs assume. `keepSession: true` is for the specs
+  // that assert a setting survives a reload.
+  const { keepSession, ...visitOptions } = options ?? {}
+  if (keepSession) keepSessionOnNextVisit()
+  cy.visit('/', visitOptions)
   waitForImage()
   resetZoom()
 }

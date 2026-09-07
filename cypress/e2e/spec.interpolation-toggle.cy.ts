@@ -95,7 +95,10 @@ describe('interpolation toggle', () => {
     cy.get('#switch-interpolation').click()
     cy.get('#switch-interpolation').should('be.checked')
 
-    visitApp()
+    // INFO: keepSession because this is the one spec that WANTS the auto-saved
+    // session to survive the reload — every other visit starts from an empty
+    // one (cypress/support/e2e.ts).
+    visitApp({ keepSession: true })
 
     cy.get('#switch-interpolation').should('be.checked')
     cy.get('#interpolation-interval').should('exist')

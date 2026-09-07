@@ -1,6 +1,6 @@
 /* eslint-disable jest/expect-expect */
 // INFO: Cypressのshould methodでアサーションは実質、実施してるので
-import { pressKey } from '../support/app'
+import { pressKey, visitApp } from '../support/app'
 
 describe('template spec', () => {
   beforeEach(() => {
@@ -25,7 +25,9 @@ describe('template spec', () => {
 
   it('asserts that interpolation on/off settings are remained after reload (localStorage feature)', () => {
     cy.get('#switch-interpolation').click()
-    cy.visit('/')
+    // INFO: keepSession — this spec asserts the setting survives a reload, so
+    // it must NOT get the empty auto-save every other visit starts from.
+    visitApp({ keepSession: true })
 
     // INFO: the plain checkbox that replaced <v-switch> has no `value`
     // attribute, so the checked state is asserted directly.

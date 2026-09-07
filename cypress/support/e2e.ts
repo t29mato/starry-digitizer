@@ -30,17 +30,28 @@ import './commands'
 // app's own window before it boots — the only point early enough to beat the
 // restore in mounted().
 //
-// INFO: only the FIRST load of each test is cleared. Two specs reload on
-// purpose to assert that a setting survives it ("remembers the setting across
-// a reload"); wiping on every load would make that impossible to pass.
-let sessionCleared = false
+// INFO: cleared on EVERY load by default. Before the auto-save existed, a
+// reload always produced a brand-new app, and the specs were written against
+// that: spec.project-round-trip reloads mid-test and asserts "a fresh app has
+// no points". Keeping the session by default silently broke that assumption
+// (it found the 2 points from before the reload). The specs that DO want the
+// session to survive a reload are the ones testing persistence, and they now
+// say so at the call site — see keepSession in cypress/support/app.ts.
+let keepNextSession = false
+
+/** Keep the auto-saved session across the next cy.visit() of this test. */
+export function keepSessionOnNextVisit(): void {
+  keepNextSession = true
+}
 
 beforeEach(() => {
-  sessionCleared = false
+  keepNextSession = false
 })
 
 Cypress.on('window:before:load', (win) => {
-  if (sessionCleared) return
-  sessionCleared = true
+  if (keepNextSession) {
+    keepNextSession = false
+    return
+  }
   win.indexedDB.deleteDatabase('starry-digitizer-app')
 })
