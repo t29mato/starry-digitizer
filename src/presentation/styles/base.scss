@@ -49,14 +49,23 @@
   --sd-text-disabled: rgba(0, 0, 0, 0.38);
   --sd-highlight: #fff9c4; // yellow-lighten-4
   --sd-radius: 4px;
-  --sd-font: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --sd-font-size: 14px;
+  // INFO: the three typography tokens default to `inherit` on purpose. The
+  // library is embedded in other apps and the maintainer's rule is that a user
+  // must not be able to tell a digitizer is embedded — a region that switches
+  // to Roboto/14px/1.4 inside a host page announces itself immediately. With
+  // `inherit` the wrapper simply keeps whatever the host is already using, and
+  // a host that *wants* the old look (or any other) still overrides the token:
+  //   .starry-digitizer { --sd-font-size: 14px }
+  // The standalone app does exactly that in src/app-style.css.
+  --sd-font: inherit;
+  --sd-font-size: inherit;
+  --sd-line-height: inherit;
 }
 
 .starry-digitizer {
   font-family: var(--sd-font);
   font-size: var(--sd-font-size);
-  line-height: 1.4;
+  line-height: var(--sd-line-height);
   color: var(--sd-text);
   box-sizing: border-box;
 
@@ -66,14 +75,25 @@
     box-sizing: inherit;
   }
 
+  // INFO: every relative font-size below is `em`, never `rem`. `rem` resolves
+  // against the *host page's* <html>, so with the base font inheriting from the
+  // host these headings would have kept a fixed size and stopped scaling with
+  // the surrounding text — the exact mismatch the inherit-by-default change is
+  // meant to remove. `em` resolves against the parent, so the whole sheet now
+  // scales as one. The multipliers are unchanged because the standalone app
+  // sets `html { font-size: 14px }` and `.starry-digitizer` also resolves to
+  // 14px, i.e. 1rem and 1em were already the same 14px there (measured).
+  // Keep new relative sizes in `em`, and remember `em` compounds: a utility
+  // class placed inside an element that already changed font-size scales off
+  // that element, not off the wrapper.
   h4 {
     margin: 10px 0 4px;
-    font-size: 1.1rem;
+    font-size: 1.1em;
     font-weight: 600;
   }
   h5 {
     margin: 8px 0 2px;
-    font-size: 0.8125rem;
+    font-size: 0.8125em;
     font-weight: 600;
   }
 
@@ -178,16 +198,16 @@
 
   // ---- typography -----------------------------------------------------
   .text-caption {
-    font-size: 0.75rem;
+    font-size: 0.75em;
     letter-spacing: 0.03em;
   }
   .text-overline {
-    font-size: 0.75rem;
+    font-size: 0.75em;
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
   .text-h5 {
-    font-size: 1.5rem;
+    font-size: 1.5em;
     font-weight: 400;
   }
   .text-right {
