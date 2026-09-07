@@ -35,9 +35,7 @@
           <td>
             <sd-checkbox
               :model-value="axisSetRepository.activeAxisSet.xIsLogScale"
-              @update:model-value="
-                axisSetRepository.activeAxisSet.xIsLogScale = Boolean($event)
-              "
+              @update:model-value="setXIsLogScale(Boolean($event))"
               id="x-is-log"
               data-cy="x-is-log"
               :disabled="options.readonly"
@@ -75,9 +73,7 @@
           <td>
             <sd-checkbox
               :model-value="axisSetRepository.activeAxisSet.yIsLogScale"
-              @update:model-value="
-                axisSetRepository.activeAxisSet.yIsLogScale = Boolean($event)
-              "
+              @update:model-value="setYIsLogScale(Boolean($event))"
               id="y-is-log"
               data-cy="y-is-log"
               :disabled="options.readonly"
@@ -200,6 +196,17 @@ import {
   AXIS_NAMES,
   matchOcrWordsToAxisValues,
 } from '@/application/utils/axisOcrMatcher'
+// INFO: the axis-set use cases carry the undo snapshot, so "Clear Axes",
+// "Auto-detect" and the log-scale / calibration-mode switches stay undoable
+// whoever asks for them — a host replacing this panel included. The snapshot
+// belongs where the mutation is, not where the click is; see
+// axisSetOperations.ts.
+import {
+  clearAxisSetCoords,
+  setAxisValues,
+  setLogScale,
+  setPointMode as setPointModeOperation,
+} from '@/application/utils/axisSetOperations'
 import { mdiInformationOutline } from '@mdi/js'
 import {
   SdButton,
@@ -227,10 +234,10 @@ export default defineComponent({
     SdTooltip,
   },
   setup() {
-    const { axisSetRepository, datasetRepository, canvasHandler } =
-      useDigitizerContext()
+    const ctx = useDigitizerContext()
+    const { axisSetRepository, datasetRepository, canvasHandler } = ctx
     const options = useDigitizerOptions()
-    return { axisSetRepository, datasetRepository, canvasHandler, options }
+    return { ctx, axisSetRepository, datasetRepository, canvasHandler, options }
   },
   computed: {
     errorMessage(): string {
@@ -333,10 +340,18 @@ export default defineComponent({
   },
   methods: {
     setPointMode(value: string | number | boolean) {
-      this.axisSetRepository.activeAxisSet.pointMode =
+      setPointModeOperation(
+        this.ctx,
         Number(value) === POINT_MODE.FOUR_POINTS
           ? POINT_MODE.FOUR_POINTS
-          : POINT_MODE.TWO_POINTS
+          : POINT_MODE.TWO_POINTS,
+      )
+    },
+    setXIsLogScale(value: boolean) {
+      setLogScale(this.ctx, 'x', value)
+    },
+    setYIsLogScale(value: boolean) {
+      setLogScale(this.ctx, 'y', value)
     },
     selectAll(event: Event) {
       ;(event.target as HTMLInputElement).select()
@@ -409,23 +424,6 @@ export default defineComponent({
       this.exitViewAllModeIfNeeded()
       this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
     },
-    setAxisValue(axisName: 'x1' | 'x2' | 'y1' | 'y2', value: number) {
-      const activeAxisSet = this.axisSetRepository.activeAxisSet
-      switch (axisName) {
-        case 'x1':
-          activeAxisSet.setX1Value(value)
-          return
-        case 'x2':
-          activeAxisSet.setX2Value(value)
-          return
-        case 'y1':
-          activeAxisSet.setY1Value(value)
-          return
-        case 'y2':
-          activeAxisSet.setY2Value(value)
-          return
-      }
-    },
     async handleOnClickAutoDetectAxisValues() {
       this.ocrErrorMessage = ''
 
@@ -463,12 +461,11 @@ export default defineComponent({
           return
         }
 
-        AXIS_NAMES.forEach((axisName) => {
-          const value = matches[axisName]
-          if (value !== undefined) {
-            this.setAxisValue(axisName, value)
-          }
-        })
+        // INFO: one capture for the whole batch — the user pressed one
+        // button, so ⌘Z has to put all of the values back at once. The
+        // detection has already run at this point, so a failed or empty read
+        // leaves nothing on the undo stack (same order rule as extraction).
+        setAxisValues(this.ctx, matches)
       } catch (e) {
         console.error('failed to auto-detect axis values', { cause: e })
         this.ocrErrorMessage =
@@ -479,7 +476,9 @@ export default defineComponent({
     },
     clearAxisSet() {
       this.exitViewAllModeIfNeeded()
-      this.axisSetRepository.activeAxisSet.clearAxisCoords()
+      // INFO: the coordinates were placed by clicking the figure and cannot be
+      // re-derived, so this goes through the use case that captures them.
+      clearAxisSetCoords(this.ctx)
       this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
     },
   },

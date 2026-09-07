@@ -956,8 +956,23 @@ but a host stack needs exactly one entry per capture.
 #### Undo granularity: what counts as one entry
 
 **One thing the user did = one `'capture'`.** A host stack built on the recipe
-above is only as good as that promise, so here is the whole list of what the
-digitizer captures:
+above is only as good as that promise, so both lists below are complete: the
+first says what the digitizer captures, the second says what it deliberately
+does not, and **there is no third list**. They come from an exhaustive audit —
+every state-changing method and property assignment on the domain models and
+repositories (`Dataset`, `Axis`, `AxisSet`, `DatasetRepository`,
+`AxisSetRepository`) cross-referenced against every call site under
+`src/presentation/**` and `src/application/**` — not from spot checks. You do
+not have to test an operation yourself to find out which side it is on.
+
+Why the second list matters as much as the first: an operation that changes
+data without capturing does not merely fail to be undoable. **`⌘Z` still does
+something — it undoes the operation before it**, and the user is given no
+indication that they just lost something else. So everything that changes what
+the digitizer would export is on the first list; the second list is only view
+state, where there is nothing to lose.
+
+**Captured (undoable):**
 
 | The user did | Entries |
 |---|---|
@@ -965,9 +980,29 @@ digitizer captures:
 | Delete a point — by clicking it in DELETE mode, or Backspace/Delete on the selection | 1 each |
 | Nudge the selected points or an axis marker with an arrow key | 1 per key **press** — holding the key down is one entry, not one per repeat |
 | Confirm an interpolation | 1 |
+| Turn interpolation **off** (it re-creates the anchor points under new ids) | 1 |
 | Automatic extraction ("Run") | 1 |
 | Add / delete / clear a dataset, delete all datasets | 1 each |
-| Switch dataset, "view all", change zoom / mode / mask, toggle interpolation | 0 — nothing undoable changed |
+| Add / delete an axis set | 1 each — deleting also re-binds every dataset that pointed at it, all under the one entry |
+| Click another row in the XY Axes list (it re-binds the **active dataset** to that axis set) | 1 |
+| "Clear XY Axes" | 1 |
+| "Auto-fill values (OCR)" | 1 for the whole batch, not one per axis |
+| Flip the X or Y axis to/from log scale | 1 each |
+| "Consider graph tilt" | 1 |
+| Switch the calibration mode (2 Points / 4 Points) | 1 |
+
+**Not captured, on purpose:**
+
+| The user did | Why there is no entry |
+|---|---|
+| Select / deselect points (click, ⌘-click, rubber-band, Escape, ⌘A), click an axis marker to edit it | Selection is not data, so selecting never pushes an entry. (Undo does *restore* the selection that was current when the snapshot was taken, so the arrow keys keep working right after a `⌘Z`.) |
+| Switch dataset, "view all" | Selection again. Unlike the XY Axes list, picking a dataset row writes nothing. |
+| Change zoom, manual mode (Add / Edit / Delete), mask tool, or paint a mask | View and tool state; none of it is in `ProjectDTO`. |
+| Turn interpolation **on**, change the interpolation interval | Only `tempPoints` change, and no snapshot holds those. An entry here would cost a `⌘Z` press that appears to do nothing. |
+| "Show axes marker" | Draws or hides the marker overlay; no exported value changes. |
+| Type a dataset name, an axis-set name or an axis value (x1/x2/y1/y2) | Text input, one keystroke at a time. A capture per keystroke would fill your stack with one entry per character; inside a focused field `⌘Z` is the **browser's** own text undo, which is what a user expects there. The value is still in `ProjectDTO` and is restored by any later undo that crosses it. |
+| Extraction settings (algorithm, colour, distance %), magnifier settings, significant digits | Tool configuration, not project data. |
+| Load a project, replace the image, `reset()` | These `clear()` the history instead — the snapshots belonged to the previous figure. You are told: `type: 'clear'`. |
 
 Two details behind the arrow-key row, in case they surface as a bug report:
 
@@ -977,9 +1012,10 @@ Two details behind the arrow-key row, in case they surface as a bug report:
   tapping the key three times is still three entries. A few environments (some
   Linux/X11 setups, older browsers) never set `repeat`; there it degrades to one
   entry per keystroke, which is what it always used to be.
-- Undo restores points and axes, not the selection: after a `⌘Z` nothing is
-  selected, so the next arrow key moves nothing until the user picks a point
-  again.
+- Undo restores the selection along with the points and axes, so the arrow keys
+  go on nudging the same point right after a `⌘Z`. Selecting is still not a
+  capture point (see the second table above) — the selection rides along in the
+  snapshot rather than making one.
 
 ### Datasets and external IDs
 

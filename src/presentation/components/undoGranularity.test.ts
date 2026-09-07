@@ -6,13 +6,22 @@
 // and an operation that captures many times fills the host's stack with
 // entries that do not match anything the user remembers doing.
 //
-// The four cases here are the ones that were wrong: automatic extraction,
-// confirming an interpolation and deleting a point by click captured nothing
-// at all, and an arrow key held down captured once per OS key-repeat event.
+// The first four cases here are the ones found in the earlier round:
+// automatic extraction, confirming an interpolation and deleting a point by
+// click captured nothing at all, and an arrow key held down captured once per
+// OS key-repeat event.
+//
+// The rest came out of the exhaustive audit that followed (every state-changing
+// method on the repositories/models cross-referenced against its call sites —
+// see README "Undo granularity"). They are all the same shape: a destructive
+// change to project data made from a panel that never captured, so ⌘Z undid
+// something ELSE and said nothing about it.
 import { mount, VueWrapper } from '@vue/test-utils'
 import type { ComponentPublicInstance } from 'vue'
 
 import ExtractorSettings from './Settings/ExtractorSettings.vue'
+import AxisSetSettings from './Settings/AxisSetSettings.vue'
+import AxisSetManager from './AxisSetManager/AxisSetManager.vue'
 import CanvasPoint from './Canvas/CanvasPoint.vue'
 import CanvasMain from './Canvas/CanvasMain.vue'
 import {
@@ -334,6 +343,191 @@ describe('one operation is one undo entry', () => {
 
       expect(capture).toHaveBeenCalledTimes(1)
       expect(ctx.axisSetRepository.activeAxisSet.x1.coord.xPx).toBe(14)
+    })
+  })
+
+  // INFO: the switch does not just stop drawing the preview — it DELETES every
+  // anchor point and adds a copy of it back under a new id at the end of
+  // `points`. The embedding host reported this one by name: flip the switch,
+  // press ⌘Z, and the point you plotted a minute ago disappears instead.
+  describe('turning interpolation off', () => {
+    function setup(): { ctx: DigitizerContext; wrapper: VueWrapper } {
+      const ctx = createDigitizerContext()
+      attachGuideCanvas(ctx)
+      const dataset = ctx.datasetRepository.activeDataset
+      dataset.addPoint(10, 10)
+      dataset.addManuallyAddedPointId(dataset.lastPointId)
+      dataset.addPoint(50, 50)
+      dataset.addManuallyAddedPointId(dataset.lastPointId)
+      ctx.interpolator.setIsActive(true)
+      ctx.interpolator.updatePreview()
+      return { ctx, wrapper: mountWithContext(ExtractorSettings, ctx) }
+    }
+
+    function flipSwitch(w: VueWrapper, on: boolean): Promise<void> {
+      return w.get('#switch-interpolation').setValue(on)
+    }
+
+    it('restores the anchor points it re-created when undone', async () => {
+      const { ctx, wrapper: w } = setup()
+      wrapper = w
+      const before = pointsOf(ctx)
+      const anchorsBefore = [
+        ...ctx.datasetRepository.activeDataset.manuallyAddedPointIds,
+      ]
+
+      await flipSwitch(w, false)
+      // INFO: same coordinates, different ids — that is precisely why the
+      // exported rows change and why this has to be undoable.
+      expect(pointsOf(ctx)).not.toStrictEqual(before)
+
+      ctx.historyManager.undo()
+
+      expect(pointsOf(ctx)).toStrictEqual(before)
+      expect(
+        ctx.datasetRepository.activeDataset.manuallyAddedPointIds,
+      ).toStrictEqual(anchorsBefore)
+    })
+
+    it('captures exactly once', async () => {
+      const { ctx, wrapper: w } = setup()
+      wrapper = w
+      const capture = jest.spyOn(ctx.historyManager, 'capture')
+
+      await flipSwitch(w, false)
+
+      expect(capture).toHaveBeenCalledTimes(1)
+    })
+
+    it('captures nothing when it is turned back on', async () => {
+      const { ctx, wrapper: w } = setup()
+      wrapper = w
+      await flipSwitch(w, false)
+      const capture = jest.spyOn(ctx.historyManager, 'capture')
+
+      // INFO: turning it ON writes tempPoints only, which no snapshot holds.
+      // An entry here would cost the user a ⌘Z press that does nothing.
+      await flipSwitch(w, true)
+
+      expect(capture).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('clearing the calibration ("Clear XY Axes")', () => {
+    function setup(): { ctx: DigitizerContext; wrapper: VueWrapper } {
+      const ctx = createDigitizerContext()
+      ctx.axisSetRepository.activeAxisSet.addAxisCoord({ xPx: 10, yPx: 90 })
+      ctx.axisSetRepository.activeAxisSet.addAxisCoord({ xPx: 90, yPx: 10 })
+      return { ctx, wrapper: mountWithContext(AxisSetSettings, ctx) }
+    }
+
+    function clickClear(w: VueWrapper): Promise<void> {
+      const button = w
+        .findAll('button')
+        .find((b) => b.text() === 'Clear XY Axes')
+      if (!button) throw new Error('the Clear XY Axes button is not rendered')
+      return button.trigger('click')
+    }
+
+    it('restores the axis coordinates when undone', async () => {
+      const { ctx, wrapper: w } = setup()
+      wrapper = w
+      const before = { ...ctx.axisSetRepository.activeAxisSet.x1.coord }
+
+      await clickClear(w)
+      expect(ctx.axisSetRepository.activeAxisSet.hasAtLeastOneAxis).toBe(false)
+
+      ctx.historyManager.undo()
+
+      expect(ctx.axisSetRepository.activeAxisSet.x1.coord).toStrictEqual(before)
+    })
+
+    it('captures exactly once', async () => {
+      const { ctx, wrapper: w } = setup()
+      wrapper = w
+      const capture = jest.spyOn(ctx.historyManager, 'capture')
+
+      await clickClear(w)
+
+      expect(capture).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  // INFO: flipping an axis to log scale changes EVERY value the dataset
+  // exports. It looks like a view setting and is not one.
+  describe('switching an axis to log scale', () => {
+    it('flips back when undone, in one entry', async () => {
+      const ctx = createDigitizerContext()
+      const w = mountWithContext(AxisSetSettings, ctx)
+      wrapper = w
+      const capture = jest.spyOn(ctx.historyManager, 'capture')
+
+      await w.get('#x-is-log').setValue(true)
+      expect(ctx.axisSetRepository.activeAxisSet.xIsLogScale).toBe(true)
+      expect(capture).toHaveBeenCalledTimes(1)
+
+      ctx.historyManager.undo()
+
+      expect(ctx.axisSetRepository.activeAxisSet.xIsLogScale).toBe(false)
+    })
+  })
+
+  describe('the axis-set list', () => {
+    function setup(): { ctx: DigitizerContext; wrapper: VueWrapper } {
+      const ctx = createDigitizerContext()
+      return { ctx, wrapper: mountWithContext(AxisSetManager, ctx) }
+    }
+
+    it('undoes adding an axis set', async () => {
+      const { ctx, wrapper: w } = setup()
+      wrapper = w
+      const capture = jest.spyOn(ctx.historyManager, 'capture')
+
+      await w.get('[data-cy=add-axis-set]').trigger('click')
+      expect(ctx.axisSetRepository.axisSets).toHaveLength(2)
+      expect(capture).toHaveBeenCalledTimes(1)
+
+      ctx.historyManager.undo()
+
+      expect(ctx.axisSetRepository.axisSets).toHaveLength(1)
+    })
+
+    it('undoes removing an axis set, calibration and all', async () => {
+      const { ctx, wrapper: w } = setup()
+      wrapper = w
+      await w.get('[data-cy=add-axis-set]').trigger('click')
+      // INFO: an uncalibrated, unrenamed axis set is removed without a
+      // confirmation dialog (atLeastOneCoordOrValueIsChanged is false), which
+      // keeps this test about the history rather than about the dialog.
+      const capture = jest.spyOn(ctx.historyManager, 'capture')
+
+      await w.get('[data-cy=remove-axis-set]').trigger('click')
+      expect(ctx.axisSetRepository.axisSets).toHaveLength(1)
+      expect(capture).toHaveBeenCalledTimes(1)
+
+      ctx.historyManager.undo()
+
+      expect(ctx.axisSetRepository.axisSets).toHaveLength(2)
+      expect(ctx.datasetRepository.activeDataset.axisSetId).toBe(2)
+    })
+
+    it('undoes re-binding the active dataset by clicking another row', async () => {
+      const { ctx, wrapper: w } = setup()
+      wrapper = w
+      await w.get('[data-cy=add-axis-set]').trigger('click')
+      expect(ctx.datasetRepository.activeDataset.axisSetId).toBe(2)
+      const capture = jest.spyOn(ctx.historyManager, 'capture')
+
+      // INFO: clicking a row is not a selection here — it moves the active
+      // dataset onto that axis set, so every value it exports is now
+      // calibrated against different axes.
+      await w.findAll('.c__axisSet-item')[0].trigger('click')
+      expect(ctx.datasetRepository.activeDataset.axisSetId).toBe(1)
+      expect(capture).toHaveBeenCalledTimes(1)
+
+      ctx.historyManager.undo()
+
+      expect(ctx.datasetRepository.activeDataset.axisSetId).toBe(2)
     })
   })
 })

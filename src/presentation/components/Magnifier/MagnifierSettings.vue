@@ -38,7 +38,8 @@
              extracted value the library hands out, not the magnifier, so it
              now lives with the data table (see DataTable.vue). -->
         <sd-checkbox
-          v-model="axisSetRepository.activeAxisSet.considerGraphTilt"
+          :model-value="axisSetRepository.activeAxisSet.considerGraphTilt"
+          @update:model-value="onChangeConsiderGraphTilt(Boolean($event))"
           :disabled="options.readonly"
           label="Consider graph tilt"
         ></sd-checkbox>
@@ -55,13 +56,15 @@ import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { defineComponent } from 'vue'
 import { SdButton, SdCheckbox, SdDialog, SdTextField } from '@/presentation/ui'
+import { setConsiderGraphTilt } from '@/application/utils/axisSetOperations'
 
 export default defineComponent({
   components: { SdButton, SdCheckbox, SdDialog, SdTextField },
   setup() {
-    const { magnifier, axisSetRepository } = useDigitizerContext()
+    const ctx = useDigitizerContext()
+    const { magnifier, axisSetRepository } = ctx
     const options = useDigitizerOptions()
-    return { magnifier, axisSetRepository, options }
+    return { ctx, magnifier, axisSetRepository, options }
   },
   data() {
     return {
@@ -98,6 +101,13 @@ export default defineComponent({
         return
       }
       this.magnifier.setMarkerSizePx(sizePx)
+    },
+    // INFO: through the use case, not a v-model on the domain object: the tilt
+    // correction changes every value the digitizer exports, so it needs an
+    // undo snapshot. The other fields in this dialog are magnifier view
+    // settings and stay outside the history.
+    onChangeConsiderGraphTilt(value: boolean) {
+      setConsiderGraphTilt(this.ctx, value)
     },
   },
 })

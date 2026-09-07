@@ -82,6 +82,21 @@ export {
   confirmInterpolation,
   deletePoint,
 } from './application/utils/pointOperations'
+// INFO: the axis-set use cases. A host that replaces <AxisSetManager> /
+// <AxisSetSettings> drives them through these — they carry the undo capture,
+// so clearing the calibration, auto-detecting axis values, adding/removing an
+// axis set and flipping log scale / tilt / calibration mode stay undoable
+// whoever asks for them. See README "Undo granularity".
+export {
+  activateAxisSet,
+  addAxisSet,
+  removeAxisSet,
+  clearAxisSetCoords,
+  setAxisValues,
+  setLogScale,
+  setConsiderGraphTilt,
+  setPointMode,
+} from './application/utils/axisSetOperations'
 export { getDatasetValues } from './application/utils/datasetValues'
 export type { DatasetValues } from './application/utils/datasetValues'
 export { loadImageAsDataUrl } from './application/utils/imageLoader'

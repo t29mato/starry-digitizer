@@ -21,12 +21,20 @@ const buildContext = () => {
     clearPreview: jest.fn(),
   }
 
+  // INFO: a stub rather than a real HistoryManager — what is under test here
+  // is WHETHER the toggle captures, not what a snapshot contains (that is
+  // covered end-to-end in components/undoGranularity.test.ts).
+  const historyManager = {
+    capture: jest.fn(),
+  }
+
   const ctx = {
     datasetRepository,
     interpolator,
+    historyManager,
   } as unknown as DigitizerContext
 
-  return { ctx, datasetRepository, interpolator }
+  return { ctx, datasetRepository, interpolator, historyManager }
 }
 
 describe('toggleInterpolation', () => {
@@ -84,5 +92,36 @@ describe('toggleInterpolation', () => {
 
     expect(dataset.manuallyAddedPointIds).toHaveLength(0)
     expect(dataset.points).toHaveLength(1)
+  })
+
+  // INFO: turning the switch off DELETES every anchor point and re-adds a copy
+  // under a new id at the end of `points` — a change to the exported rows, so
+  // it has to be undoable. Without the capture a ⌘Z right after the switch
+  // undoes whatever the user did BEFORE it, silently.
+  it('captures once before re-materializing the anchor points', () => {
+    const dataset = c.datasetRepository.activeDataset
+    dataset.addPoint(10, 20)
+    dataset.addManuallyAddedPointId(dataset.lastPointId)
+
+    toggleInterpolation(c.ctx, false)
+
+    expect(c.historyManager.capture).toHaveBeenCalledTimes(1)
+  })
+
+  // INFO: the counterpart. Turning interpolation ON only writes tempPoints,
+  // which no snapshot holds, so an entry there would cost the user a ⌘Z press
+  // that appears to do nothing.
+  it('captures nothing when turned on', () => {
+    toggleInterpolation(c.ctx, true)
+
+    expect(c.historyManager.capture).not.toHaveBeenCalled()
+  })
+
+  it('captures nothing when turning off with no anchor points to restore', () => {
+    c.datasetRepository.activeDataset.addPoint(10, 20)
+
+    toggleInterpolation(c.ctx, false)
+
+    expect(c.historyManager.capture).not.toHaveBeenCalled()
   })
 })

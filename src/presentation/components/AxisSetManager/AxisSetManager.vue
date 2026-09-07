@@ -59,15 +59,28 @@ import {
   requestConfirmation,
   useDigitizerOptions,
 } from '@/presentation/digitizerOptions'
-import { MANUAL_MODE } from '@/constants'
+// INFO: the axis-set use cases live in the application layer so a host that
+// replaces this panel gets the same behaviour (call order, undo capture,
+// dataset re-binding) without reimplementing it. This component only decides
+// whether to ask the user first. See axisSetOperations.ts.
+import {
+  activateAxisSet,
+  addAxisSet,
+  removeAxisSet,
+} from '@/application/utils/axisSetOperations'
 
 export default defineComponent({
   components: { SdButton, SdTextField },
   setup() {
-    const { canvasHandler, axisSetRepository, datasetRepository } =
-      useDigitizerContext()
+    const ctx = useDigitizerContext()
+    const { axisSetRepository, datasetRepository } = ctx
     const options = useDigitizerOptions()
-    return { canvasHandler, axisSetRepository, datasetRepository, options }
+    return {
+      ctx,
+      axisSetRepository,
+      datasetRepository,
+      options,
+    }
   },
   data() {
     return {
@@ -88,30 +101,15 @@ export default defineComponent({
     },
   },
   methods: {
-    activateAxisSet(id: number) {
-      this.axisSetRepository.setActiveAxisSet(id)
-      this.datasetRepository.activeDataset.setAxisSetId(id)
-
-      //NOTE: If axis coords are not calibrated, change manualMode for calibration. Otherwise automatically set to ADD mode
-      if (this.axisSetRepository.activeAxisSet.nextAxis) {
-        this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
-      } else {
-        this.canvasHandler.setManualMode(MANUAL_MODE.ADD)
-      }
-    },
     handleOnClickAxisSet(id: number) {
       if (id === this.axisSetRepository.activeAxisSetId) return
 
-      this.activateAxisSet(id)
+      // INFO: not a mere selection — it re-binds the active dataset to this
+      // axis set, so it goes through the use case (and its undo snapshot).
+      activateAxisSet(this.ctx, id)
     },
     handleOnClickAddAxisSetButton() {
-      this.axisSetRepository.createNewAxisSet()
-      this.activateAxisSet(this.axisSetRepository.lastAxisSetId)
-    },
-    removeActiveAxisSet() {
-      this.axisSetRepository.removeAxisSet(
-        this.axisSetRepository.activeAxisSetId,
-      )
+      addAxisSet(this.ctx)
     },
     async handleOnClickRemoveAxisSetButton() {
       //TODO: Move these logics to domain service and add test...
@@ -162,26 +160,14 @@ export default defineComponent({
         }
       }
 
-      this.removeActiveAxisSet()
-
-      // INFO: re-read the connections instead of reusing the list built for
-      // the message: a dataset moved to another axis set while the dialog was
-      // open must keep that one, and a dataset moved *onto* the target in the
-      // meantime must still be rescued — no dataset may be left pointing at
-      // an axis set that no longer exists.
-      this.datasetRepository.datasets
-        .filter((dataset) => dataset.axisSetId === targetAxisSet.id)
-        .forEach((dataset) => {
-          dataset.setAxisSetId(alternativeAxisSet.id)
-        })
-
-      this.axisSetRepository.setActiveAxisSet(alternativeAxisSet.id)
-
-      if (alternativeAxisSet.nextAxis) {
-        this.canvasHandler.setManualMode(MANUAL_MODE.UNSET)
-      } else {
-        this.canvasHandler.setManualMode(MANUAL_MODE.ADD)
-      }
+      // INFO: the removal, the re-binding of every orphaned dataset and the
+      // manual-mode follow-up all live in the use case, so they happen under
+      // ONE undo snapshot — the user pressed one button. It also re-reads the
+      // connections instead of reusing the list built for the message: a
+      // dataset moved to another axis set while the dialog was open must keep
+      // that one, and a dataset moved *onto* the target in the meantime must
+      // still be rescued.
+      removeAxisSet(this.ctx, targetAxisSet.id, alternativeAxisSet.id)
     },
   },
 })
