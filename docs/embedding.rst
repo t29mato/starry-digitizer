@@ -745,39 +745,86 @@ subscribe」と「スナップショットの getter」に素直に対応しま�
      - 条件
    * - ``⌘Z`` / ``Ctrl+Z``、``⇧⌘Z`` / ``Ctrl+Shift+Z``
      - Undo / Redo
-     - ``readonly`` では無効
+     - ``features.keyboardHistory``\ 。``readonly`` では無効
    * - ``⌘S`` / ``⌘O``\ (``Ctrl`` も可)
      - プロジェクト ZIP の保存 / 読み込み
-     - ``features.zipExportImport``\ 。``⌘S`` は ``readonly`` でも使えますが、
-       状態を上書きする ``⌘O`` は無効
+     - ``features.keyboardFile`` と ``features.zipExportImport``\ 。``⌘S`` は
+       ``readonly`` でも使えますが、状態を上書きする ``⌘O`` は無効
    * - ``+`` / ``=``、``-``、``0``、``f``
      - 拡大 / 縮小 / 等倍 / フィット
-     - 常時(修飾キー無し。``⌘+`` 等はブラウザのページズームで上書きできないため)
+     - ``features.keyboardEditing``\ (修飾キー無し。``⌘+`` 等はブラウザの
+       ページズームで上書きできないため)
    * - ``a`` / ``e`` / ``d``
      - 手動モード(追加 / 編集 / 削除)
-     - ``readonly`` と View All では無効
+     - ``features.keyboardEditing``\ 。``readonly`` と View All では無効
    * - ``⌘A`` / ``Ctrl+A``
      - アクティブなデータセットの全点を選択
-     - ``readonly`` と View All では無効
+     - ``features.keyboardEditing``\ 。``readonly`` と View All では無効
    * - ``Escape``
      - 選択解除
-     - ``readonly`` と View All では無効
+     - ``features.keyboardEditing``\ 。``readonly`` と View All では無効
    * - ``Backspace`` / ``Delete``
      - 選択中の点を削除
-     - ``readonly`` と View All では無効
+     - ``features.keyboardEditing``\ 。``readonly`` と View All では無効
    * - ``↑`` ``↓`` ``←`` ``→``
      - 選択中の点を 1px 移動(``Shift`` で 10px)
-     - ``readonly`` と View All では無効
+     - ``features.keyboardEditing``\ 。``readonly`` と View All では無効
 
 **入力欄の中では手を出しません。** イベントの対象が ``<input>`` / ``<textarea>`` /
 ``contentEditable`` の要素のときは、どのショートカットも動きません。そこでの ``⌘Z`` は
 従来どおりブラウザ標準の文字単位の取り消しです。軸の値を打ち間違えたユーザーは、
 点を失うのではなく文字が戻ります。
 
+.. _keyboard-groups:
+
+11.1 グループ単位で切る
+--------------------------------------------------
+
 ``features`` の ``keyboardShortcuts`` を ``false`` にすると、リスナーは登録されず
 ``tabindex`` も付かなくなります(枠はタブ順から外れます)。デジタイザの中の何もキーを
-拾わず ``preventDefault()`` も呼ばないので、独自のショートカット体系を持つホストは
-これを使ってください。次節がその使い方です。
+拾わず ``preventDefault()`` も呼びません。
+
+ただし、たいていのホストにはこれは切りすぎです。キーは
+「\ **このキーの持ち主はページに 1 人しか居られないか**\ 」という 1 つの問いで
+2 つに分かれます。
+
+- ``⌘Z`` / ``⇧⌘Z``\ (``keyboardHistory``)と ``⌘S`` / ``⌘O``\ (``keyboardFile``)は
+  ページ全体に意味を持つキーです。リスナーが 2 つあると 1 回の意図が 2 回効きます。
+  デジタイザ側のリスナーが ``historyManager.undo()`` を直接呼び、ホスト側のリスナーも
+  自分の印を pop して ``undo()`` を呼ぶからです。
+- それ以外(``keyboardEditing``)は、\ **キャンバス枠にフォーカスかポインタがあるとき
+  だけ** 効きます。ホストのキーとは初めから衝突しません。
+
+そこで ``keyboardShortcuts`` は **3 つのグループの既定値** になりました。優先順位は
+グループごとに次の通りです。
+
+1. ``keyboardHistory`` / ``keyboardFile`` / ``keyboardEditing`` を明示していれば、それが勝つ
+2. なければ ``keyboardShortcuts``
+3. それもなければ ``true``
+
+つまり ``{}`` なら全部有効、\ ``{ keyboardShortcuts: false }`` なら全部無効(従来どおり)、
+そして次が **組み込み時の標準構成**\ ――\ ``⌘Z`` はホストが持ち、編集キーはライブラリに
+任せる形です。
+
+.. code-block:: vue
+
+   <StarryDigitizer
+     ref="digitizer"
+     :features="{ keyboardShortcuts: false, keyboardEditing: true }"
+     @history-change="onHistoryChange"
+   />
+
+``⌘Z`` / ``⌘S`` / ``⌘O`` はデジタイザを素通りします(拾わないし
+``preventDefault()`` もしない)。見るのはホストのリスナーだけなので、1 回押せば 1 回
+戻ります。一方で矢印キーの微調整・``Backspace`` / ``Delete``・``Escape``・``⌘A``・
+ズーム・モード切替はライブラリ側に残ります。capture を置く位置(移動は「群の最初」、
+削除は「変更の場所」)や ``KeyboardEvent.repeat`` による束ね(12. 参照)といった
+難所を、ホストに写経させずに済みます。編集キーはフォーカス経由でも届くので、この構成でも
+``tabindex`` は付いたままです。
+
+``keyboardShortcuts: false`` を単独で使うのは、ホストが本当に **すべての操作** を自分で
+駆動する場合だけにしてください。そのときは編集キーも自前で実装することになります。
+``⌘Z`` の側の作り方は次節です。
 
 
 12. Undo をホスト側で 1 本にまとめる
@@ -795,12 +842,16 @@ subscribe」と「スナップショットの getter」に素直に対応しま�
 
    <StarryDigitizer
      ref="digitizer"
-     :features="{ keyboardShortcuts: false }"
+     :features="{ keyboardShortcuts: false, keyboardEditing: true }"
      @history-change="onHistoryChange"
    />
 
-``keyboardShortcuts: false`` ならデジタイザはキーのリスナーを一切登録しないので、
-``⌘Z`` を見るのはホストのハンドラだけになります。
+効いているのは ``keyboardHistory``\ (``keyboardShortcuts: false`` を引き継いで off)
+です。デジタイザは ``⌘Z`` を拾わず ``preventDefault()`` も呼ばないので、\ ``⌘Z`` を
+見るのはホストのハンドラだけになります。``keyboardEditing: true`` は矢印キー・
+``Delete``・ズーム・モード切替をライブラリ側に残すためのものです(:ref:`keyboard-groups`)。
+ホストが編集キーまで自分で実装するつもりなら、``keyboardShortcuts: false`` だけでも
+構いません。
 
 **2. デジタイザ側の capture をホストのスタックに記録する。**
 

@@ -313,6 +313,67 @@ describe('createDigitizerOptions', () => {
     expect(createDigitizerOptions().features.keyboardShortcuts).toBe(true)
   })
 
+  describe('the keyboard groups fall back to keyboardShortcuts', () => {
+    // INFO: `keyboardShortcuts` was one flag before the split, and hosts in
+    // the wild pass it. It now names no key of its own — it is the default
+    // the three groups fall back to, so the old two configurations keep
+    // meaning exactly what they meant (see its JSDoc for the precedence).
+    it('leaves every group on when the host says nothing', () => {
+      const features = createDigitizerOptions().features
+
+      expect(features.keyboardHistory).toBe(true)
+      expect(features.keyboardFile).toBe(true)
+      expect(features.keyboardEditing).toBe(true)
+    })
+
+    it('turns every group off with keyboardShortcuts: false alone', () => {
+      const features = createDigitizerOptions({
+        features: { keyboardShortcuts: false },
+      }).features
+
+      expect(features.keyboardHistory).toBe(false)
+      expect(features.keyboardFile).toBe(false)
+      expect(features.keyboardEditing).toBe(false)
+    })
+
+    it('lets a host keep the editing keys while taking the rest', () => {
+      // INFO: the embedding host's actual configuration: its own Cmd+Z (and
+      // Cmd+S), the digitizer's own arrow keys / Delete / zoom / mode keys.
+      const features = createDigitizerOptions({
+        features: { keyboardShortcuts: false, keyboardEditing: true },
+      }).features
+
+      expect(features.keyboardHistory).toBe(false)
+      expect(features.keyboardFile).toBe(false)
+      expect(features.keyboardEditing).toBe(true)
+    })
+
+    it('lets an explicit group flag win over keyboardShortcuts', () => {
+      const features = createDigitizerOptions({
+        features: { keyboardShortcuts: true, keyboardHistory: false },
+      }).features
+
+      expect(features.keyboardHistory).toBe(false)
+      expect(features.keyboardFile).toBe(true)
+      expect(features.keyboardEditing).toBe(true)
+    })
+
+    it('applies the same precedence through a live options source', () => {
+      // INFO: the facade resolves per read, so a host that flips the flags at
+      // runtime gets the same rule as createDigitizerOptions().
+      const source = reactive<DigitizerOptionsInit>({
+        features: { keyboardShortcuts: false },
+      })
+      const { options } = mountWithOptions(source)
+
+      expect(options.features.keyboardEditing).toBe(false)
+
+      source.features = { keyboardShortcuts: false, keyboardEditing: true }
+      expect(options.features.keyboardEditing).toBe(true)
+      expect(options.features.keyboardHistory).toBe(false)
+    })
+  })
+
   it('keeps every other flag when a host turns axisOcr off', () => {
     const options = createDigitizerOptions({ features: { axisOcr: false } })
 

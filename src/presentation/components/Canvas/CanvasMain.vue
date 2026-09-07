@@ -4,7 +4,7 @@
     ref="canvasWrapper"
     class="c__canvas-wrapper"
     data-cy="canvas-wrapper"
-    :tabindex="options.features.keyboardShortcuts ? 0 : undefined"
+    :tabindex="isAnyKeyboardGroupEnabled ? 0 : undefined"
     @click="click"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
@@ -133,13 +133,16 @@ export default defineComponent({
   },
   mounted() {
     // INFO: attached through a watcher rather than once, so a host that flips
-    // features.keyboardShortcuts at runtime is obeyed immediately (`immediate`
-    // does the initial attach). While the flag is off NO listener exists —
-    // registering one and then ignoring the key would still let the digitizer
-    // swallow it, which is exactly what a host with its own shortcuts asks us
-    // not to do.
+    // a keyboard feature flag at runtime is obeyed immediately (`immediate`
+    // does the initial attach). While EVERY group is off NO listener exists —
+    // registering one and then ignoring every key would still let the
+    // digitizer swallow keys, which is exactly what a host with its own
+    // shortcuts asks us not to do. With some group on the listener has to
+    // exist, so the groups that are off are skipped inside the handlers
+    // instead — before preventDefault(), so a key of a disabled group is
+    // left exactly as it arrived and the host's own listener still gets it.
     this.$watch(
-      () => this.options.features.keyboardShortcuts,
+      () => this.isAnyKeyboardGroupEnabled,
       (enabled: boolean) => {
         if (enabled) {
           this.attachKeyboardShortcuts()
@@ -198,6 +201,21 @@ export default defineComponent({
       'maskCanvas',
       'tempMaskCanvas',
     ])
+  },
+  computed: {
+    // INFO: "does this instance listen for keys at all". The frame only needs
+    // a listener — and a place in the tab order — while at least one group is
+    // on; which group answers a given key is decided per key, in the handlers.
+    // Note that the editing group alone is enough: its keys arrive through
+    // focus, so the frame stays focusable even when the host owns ⌘Z/⌘S/⌘O.
+    isAnyKeyboardGroupEnabled(): boolean {
+      const { features } = this.options
+      return (
+        features.keyboardHistory ||
+        features.keyboardFile ||
+        features.keyboardEditing
+      )
+    },
   },
   methods: {
     // INFO: only re-fits while the engine says a fit is still owed. Without
@@ -279,7 +297,7 @@ export default defineComponent({
     },
     mouseEnter(): void {
       this.isPointerOverWrapper = true
-      if (this.options.features.keyboardShortcuts) {
+      if (this.isAnyKeyboardGroupEnabled) {
         this.attachHoverShortcuts()
       }
     },
@@ -505,9 +523,12 @@ export default defineComponent({
         return
       }
 
+      // INFO: the remaining shortcuts all edit points/axes, so they share the
+      // zoom keys' flag (both only fire while this frame is focused/hovered).
+      if (!this.options.features.keyboardEditing) return
+
       if (this.datasetRepository.isViewAllMode) return
 
-      // INFO: the remaining shortcuts all edit points/axes.
       if (this.options.readonly) return
 
       if (!this.shouldProcessKeyEvent(e)) {
@@ -528,6 +549,12 @@ export default defineComponent({
       return targetName === 'INPUT' || targetName === 'TEXTAREA'
     },
     handleHistoryShortcut(e: KeyboardEvent): boolean {
+      // INFO: returning before preventDefault() is the whole point of the
+      // flag: with it off, ⌘Z passes through this listener untouched and the
+      // host's own handler is the only thing that sees it.
+      if (!this.options.features.keyboardHistory) {
+        return false
+      }
       // INFO: undo/redo replay edits, so they are disabled in readonly mode.
       if (this.options.readonly) {
         return false
@@ -548,6 +575,11 @@ export default defineComponent({
       return true
     },
     handleFileShortcut(e: KeyboardEvent): boolean {
+      // INFO: ⌘S/⌘O are page-wide keys the host may want for its own save,
+      // so they have a flag of their own (see features.keyboardFile).
+      if (!this.options.features.keyboardFile) {
+        return false
+      }
       // INFO: ZIP save/load is an optional feature of the embedded digitizer.
       if (!this.options.features.zipExportImport) {
         return false
@@ -586,6 +618,11 @@ export default defineComponent({
     // below) since Cmd/Ctrl+Plus/Minus/0 are reserved by the browser itself
     // for page zoom and can't be overridden from a web page.
     handleZoomShortcut(e: KeyboardEvent): boolean {
+      // INFO: zoom belongs to the editing group — it is a control of this
+      // widget (no modifier, only while focused/hovered), not a page-wide key.
+      if (!this.options.features.keyboardEditing) {
+        return false
+      }
       if (this.isTypingTarget(e)) {
         return false
       }

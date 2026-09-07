@@ -7,8 +7,8 @@ import type { InjectionKey, Ref } from 'vue'
  * The first four switch individual controls; the next five hide whole panels,
  * for hosts that already provide the same thing in their own UI (a sample
  * picker, a point-list editor, ...) and would otherwise show it twice.
- * `keyboardShortcuts` is the odd one out: it hides nothing, it hands key
- * handling back to the host.
+ * The four `keyboard*` flags are the odd ones out: they hide nothing, they
+ * hand key handling back to the host.
  */
 export interface StarryDigitizerFeatures {
   /** Show the image file input / accept drag&drop + paste. */
@@ -34,19 +34,57 @@ export interface StarryDigitizerFeatures {
   /** Show the table of extracted values. */
   dataTable: boolean
   /**
-   * Let the canvas handle keyboard shortcuts (undo/redo, zoom, mode switches,
-   * arrow-key nudges, Cmd+S/Cmd+O).
+   * All keyboard shortcuts at once — the default the three groups below fall
+   * back to, and nothing else. It handles no key of its own.
+   *
+   * **Precedence**, applied per group:
+   *
+   * 1. the group flag (`keyboardHistory` / `keyboardFile` /
+   *    `keyboardEditing`) when the host states it explicitly — it always wins;
+   * 2. otherwise `keyboardShortcuts`, when the host states that;
+   * 3. otherwise `true`.
+   *
+   * So `{}` leaves every group on, `{ keyboardShortcuts: false }` turns every
+   * group off (what the flag has always meant), and
+   * `{ keyboardShortcuts: false, keyboardEditing: true }` turns everything off
+   * except the editing group — the host owns ⌘Z, ⌘S and ⌘O, the canvas keeps
+   * its arrow keys, Delete, zoom and mode switches.
+   */
+  keyboardShortcuts: boolean
+  /**
+   * ⌘Z / Ctrl+Z and ⇧⌘Z / Ctrl+Shift+Z (undo / redo).
    *
    * Off for hosts that own a shortcut system of their own: ⌘Z has a single
    * owner on a page, and a host whose ⌘Z means "undo my last edit" cannot
-   * also let it mean "undo the digitizer's last point". Off means the
-   * listeners are never registered at all, so nothing the digitizer contains
-   * can swallow a key or call preventDefault() on the host's behalf — the
-   * host drives the same actions from its own handlers instead, through the
-   * context <StarryDigitizer> exposes (`historyManager.undo()`,
-   * `canvasHandler.scaleUp()`, ...).
+   * also let it mean "undo the digitizer's last point" — with both listening,
+   * one press undoes twice. Off means the digitizer neither acts on the key
+   * nor calls preventDefault() on it, so it reaches the host's own listener
+   * untouched; the host drives the same action through the context
+   * <StarryDigitizer> exposes (`historyManager.undo()`).
    */
-  keyboardShortcuts: boolean
+  keyboardHistory: boolean
+  /**
+   * ⌘S / ⌘O (Ctrl too): save / load the project ZIP.
+   *
+   * Same nature as `keyboardHistory` — modifier keys that mean something
+   * page-wide, and a host whose ⌘S means "save my record" needs them left
+   * alone. Separate from it because a flag must not disable a key it is not
+   * named after: a host can keep the digitizer's ⌘S while owning ⌘Z, or the
+   * reverse. `features.zipExportImport` still has to be on for either key to
+   * do anything.
+   */
+  keyboardFile: boolean
+  /**
+   * The keys that belong to the focused widget rather than to the page: the
+   * arrow-key nudges, Backspace / Delete, Escape, ⌘A, the zoom keys
+   * (`+` `-` `0` `f`) and the mode switches (`a` `e` `d`).
+   *
+   * These only ever fire while the canvas frame has focus or the pointer is
+   * over it, so they do not compete with the host for a key — which is why a
+   * host that takes ⌘Z can leave this group on and keep the point editing it
+   * would otherwise have to reimplement.
+   */
+  keyboardEditing: boolean
 }
 
 /**
@@ -112,6 +150,57 @@ export const DEFAULT_FEATURES: StarryDigitizerFeatures = {
   magnifier: true,
   dataTable: true,
   keyboardShortcuts: true,
+  keyboardHistory: true,
+  keyboardFile: true,
+  keyboardEditing: true,
+}
+
+const FEATURE_KEYS = Object.keys(
+  DEFAULT_FEATURES,
+) as (keyof StarryDigitizerFeatures)[]
+
+/**
+ * The keyboard groups, in the order they are tried in CanvasMain. Each falls
+ * back to `keyboardShortcuts` when the host has not named it — see the
+ * precedence rule on `keyboardShortcuts`.
+ */
+const KEYBOARD_FEATURE_KEYS = [
+  'keyboardHistory',
+  'keyboardFile',
+  'keyboardEditing',
+] as const
+
+const KEYBOARD_FEATURE_KEY_SET = new Set<keyof StarryDigitizerFeatures>(
+  KEYBOARD_FEATURE_KEYS,
+)
+
+/**
+ * One feature flag, resolved against what the host actually stated.
+ *
+ * Everything reads flags through here so the precedence rule lives in one
+ * place: an explicit group flag wins, `keyboardShortcuts` is the fallback for
+ * the keyboard groups, and DEFAULT_FEATURES is the fallback for everything.
+ */
+function resolveFeature<K extends keyof StarryDigitizerFeatures>(
+  features: Partial<StarryDigitizerFeatures> | undefined,
+  key: K,
+): StarryDigitizerFeatures[K] {
+  const stated = features?.[key]
+  if (stated !== undefined) {
+    return stated
+  }
+  if (KEYBOARD_FEATURE_KEY_SET.has(key)) {
+    return features?.keyboardShortcuts ?? DEFAULT_FEATURES[key]
+  }
+  return DEFAULT_FEATURES[key]
+}
+
+function resolveFeatures(
+  features: Partial<StarryDigitizerFeatures> | undefined,
+): StarryDigitizerFeatures {
+  return Object.fromEntries(
+    FEATURE_KEYS.map((key) => [key, resolveFeature(features, key)]),
+  ) as unknown as StarryDigitizerFeatures
 }
 
 /**
@@ -119,7 +208,7 @@ export const DEFAULT_FEATURES: StarryDigitizerFeatures = {
  * control in its default position, to compare against), but do not build an
  * options object by spreading this: `features` is nested, so
  * `{ ...DEFAULT_OPTIONS, features: { magnifier: false } }` replaces the whole
- * feature set and silently drops the other nine flags. Pass the partial
+ * feature set and silently drops the other twelve flags. Pass the partial
  * straight to provideDigitizerOptions() — or, if you need a complete object
  * in hand, build it with createDigitizerOptions().
  */
@@ -135,7 +224,7 @@ export const DEFAULT_OPTIONS: DigitizerOptions = {
 /**
  * Partial options, with `features` partial too: the nested object is merged
  * against DEFAULT_FEATURES rather than replacing it, so a host can turn one
- * feature off without having to restate the other nine.
+ * feature off without having to restate the other twelve.
  *
  * This is what provideDigitizerOptions() takes, so a host never has to name
  * an option it does not care about.
@@ -162,7 +251,7 @@ export function createDigitizerOptions(
 ): DigitizerOptions {
   return {
     readonly: init.readonly ?? DEFAULT_OPTIONS.readonly,
-    features: { ...DEFAULT_FEATURES, ...init.features },
+    features: resolveFeatures(init.features),
     datasetNameCandidates:
       init.datasetNameCandidates ?? DEFAULT_OPTIONS.datasetNameCandidates,
     assetBaseUrl: init.assetBaseUrl ?? DEFAULT_OPTIONS.assetBaseUrl,
@@ -228,9 +317,6 @@ export type DigitizerOptionsSource =
   | (() => DigitizerOptionsInit)
 
 const OPTION_KEYS = Object.keys(DEFAULT_OPTIONS) as (keyof DigitizerOptions)[]
-const FEATURE_KEYS = Object.keys(
-  DEFAULT_FEATURES,
-) as (keyof StarryDigitizerFeatures)[]
 
 /**
  * An object with exactly `keys`, each read through `readKey` at the moment it
@@ -293,10 +379,9 @@ function resolveDigitizerOptions(
 
   // INFO: `features` is nested, so it needs a facade of its own — otherwise a
   // host that turns one flag off would hand the panels an object missing the
-  // other nine. Built once, so `options.features` keeps a stable identity.
-  const features = facade<StarryDigitizerFeatures>(
-    FEATURE_KEYS,
-    (key) => read().features?.[key] ?? DEFAULT_FEATURES[key],
+  // other twelve. Built once, so `options.features` keeps a stable identity.
+  const features = facade<StarryDigitizerFeatures>(FEATURE_KEYS, (key) =>
+    resolveFeature(read().features, key),
   )
 
   return facade<DigitizerOptions>(OPTION_KEYS, (key) =>

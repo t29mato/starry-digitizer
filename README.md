@@ -622,10 +622,20 @@ is watched too and applies immediately, so a host can drive it from its own cont
 | `extractionPanel` | `true` | Manual / automatic extraction. |
 | `magnifier` | `true` | The magnifier. |
 | `dataTable` | `true` | The table of extracted values. |
-| `keyboardShortcuts` | `true` | Whether the canvas frame listens for keys at all (undo/redo, zoom, mode switches, arrow-key nudges, ⌘S/⌘O). Set to `false` in a host that owns its own shortcut system: no listener is registered, so nothing in the digitizer can swallow a key or call `preventDefault()` on the host's behalf, and the canvas frame drops out of the tab order. The host drives the same actions from its own handlers. See [Keyboard shortcuts](#keyboard-shortcuts). |
+| `keyboardShortcuts` | `true` | The default the three `keyboard*` groups below fall back to; it owns no key of its own. `false` alone still means what it always meant — the canvas listens for nothing, registers no listener, and drops out of the tab order. See [Keyboard shortcuts](#keyboard-shortcuts). |
+| `keyboardHistory` | `keyboardShortcuts` | `⌘Z` / `⇧⌘Z` (undo / redo). Turn it off in a host that owns `⌘Z`: the digitizer then neither acts on the key nor calls `preventDefault()` on it, so the host's own listener is the only one that sees it. |
+| `keyboardFile` | `keyboardShortcuts` | `⌘S` / `⌘O` (save / load project ZIP). Same nature as `keyboardHistory` — page-wide keys a host may want for its own save. `features.zipExportImport` still has to be on for either key to do anything. |
+| `keyboardEditing` | `keyboardShortcuts` | The keys that belong to the focused widget: arrow-key nudges, `Backspace`/`Delete`, `Escape`, `⌘A`, zoom (`+` `-` `0` `f`) and the mode switches (`a` `e` `d`). They only fire while the canvas frame is focused or hovered, so they never compete with the host for a key — leave them on and you keep the point editing you would otherwise have to reimplement. |
 
-`keyboardShortcuts` is the odd one out: it hides no UI, it hands key handling
-back to the host. Every other flag removes something from the screen.
+The four `keyboard*` flags are the odd ones out: they hide no UI, they hand key
+handling back to the host. Every other flag removes something from the screen.
+
+**Precedence for the keyboard groups**, applied per group: an explicit
+`keyboardHistory` / `keyboardFile` / `keyboardEditing` wins; otherwise
+`keyboardShortcuts`; otherwise `true`. So `{}` leaves everything on,
+`{ keyboardShortcuts: false }` turns everything off, and
+`{ keyboardShortcuts: false, keyboardEditing: true }` gives the host `⌘Z`,
+`⌘S` and `⌘O` while the canvas keeps its editing keys.
 
 Any key you pass in `features` overrides the derived default.
 
@@ -831,14 +841,14 @@ reach *one* digitizer:
 
 | Keys | Action | Conditions |
 |---|---|---|
-| `⌘Z` / `Ctrl+Z`, `⇧⌘Z` / `Ctrl+Shift+Z` | Undo / redo | Not in `readonly` |
-| `⌘S`, `⌘O` (`Ctrl` too) | Save / load project ZIP | `features.zipExportImport`; `⌘O` also needs not-`readonly` |
-| `+` / `=`, `-`, `0`, `f` | Zoom in, zoom out, original size, fit | Always (no modifier — `⌘+`/`⌘-` are the browser's own page zoom and cannot be overridden) |
-| `a`, `e`, `d` | Manual mode: add / edit / delete | Not in `readonly`, not in View All |
-| `⌘A` / `Ctrl+A` | Select every point of the active dataset | Not in `readonly`, not in View All |
-| `Escape` | Deselect points | Not in `readonly`, not in View All |
-| `Backspace` / `Delete` | Delete the selected points | Not in `readonly`, not in View All |
-| `↑` `↓` `←` `→` | Nudge the selected points 1px (10px with `Shift`) | Not in `readonly`, not in View All |
+| `⌘Z` / `Ctrl+Z`, `⇧⌘Z` / `Ctrl+Shift+Z` | Undo / redo | `features.keyboardHistory`; not in `readonly` |
+| `⌘S`, `⌘O` (`Ctrl` too) | Save / load project ZIP | `features.keyboardFile` and `features.zipExportImport`; `⌘O` also needs not-`readonly` |
+| `+` / `=`, `-`, `0`, `f` | Zoom in, zoom out, original size, fit | `features.keyboardEditing` (no modifier — `⌘+`/`⌘-` are the browser's own page zoom and cannot be overridden) |
+| `a`, `e`, `d` | Manual mode: add / edit / delete | `features.keyboardEditing`; not in `readonly`, not in View All |
+| `⌘A` / `Ctrl+A` | Select every point of the active dataset | `features.keyboardEditing`; not in `readonly`, not in View All |
+| `Escape` | Deselect points | `features.keyboardEditing`; not in `readonly`, not in View All |
+| `Backspace` / `Delete` | Delete the selected points | `features.keyboardEditing`; not in `readonly`, not in View All |
+| `↑` `↓` `←` `→` | Nudge the selected points 1px (10px with `Shift`) | `features.keyboardEditing`; not in `readonly`, not in View All |
 
 **Inside a text field the digitizer keeps its hands off.** When the event target
 is an `<input>`, a `<textarea>` or an element with `contentEditable`, no
@@ -846,10 +856,46 @@ shortcut runs — `⌘Z` there is the browser's own character-level undo, as it 
 always been, so a user correcting a mistyped axis value gets the text back
 rather than losing a point.
 
+#### Turning them off, in groups
+
 `features.keyboardShortcuts: false` removes the listeners entirely (and the
 `tabindex`, so the frame leaves the tab order). Nothing in the digitizer then
-observes a key or calls `preventDefault()`, which is what a host with its own
-shortcut system needs — see the recipe below.
+observes a key or calls `preventDefault()`.
+
+That is more than most hosts want. The keys split in two by a single question —
+**can a page have more than one owner of this key?**
+
+- `⌘Z` / `⇧⌘Z` (`keyboardHistory`) and `⌘S` / `⌘O` (`keyboardFile`) mean
+  something page-wide. Two listeners means one press acting twice: the
+  digitizer's listener calls `historyManager.undo()` while the host's pops its
+  own marker and calls `undo()` again.
+- Everything else (`keyboardEditing`) only fires while this canvas frame is
+  focused or the pointer is over it, so it cannot collide with the host at all.
+
+**The usual embedded configuration** — the host owns `⌘Z`, the library keeps the
+editing keys:
+
+```vue
+<StarryDigitizer
+  ref="digitizer"
+  :features="{ keyboardShortcuts: false, keyboardEditing: true }"
+  @history-change="onHistoryChange"
+/>
+```
+
+`⌘Z`, `⌘S` and `⌘O` now pass through the digitizer untouched — not acted on, not
+`preventDefault()`ed — so the host's own listener is the only one that sees
+them, and one press undoes once. The arrow-key nudges, `Backspace`/`Delete`,
+`Escape`, `⌘A`, the zoom keys and the mode switches keep working, with the
+capture placement and the `KeyboardEvent.repeat` bundling the library already
+gets right (see [Undo granularity](#undo-granularity-what-counts-as-one-entry)) — reimplementing those in
+the host would be the same hard problem solved twice, in two places that then
+have to be fixed twice. The frame keeps its `tabindex`, because those keys still
+arrive by focus.
+
+Reach for the full `keyboardShortcuts: false` only when the host really does
+want to drive *every* action itself; then it must reimplement the editing keys
+too. See the recipe below for the `⌘Z` half.
 
 ### The "single undo stack" recipe
 
@@ -864,13 +910,19 @@ inch away. This recipe merges them into one.
 ```vue
 <StarryDigitizer
   ref="digitizer"
-  :features="{ keyboardShortcuts: false }"
+  :features="{ keyboardShortcuts: false, keyboardEditing: true }"
   @history-change="onHistoryChange"
 />
 ```
 
-With `keyboardShortcuts: false` the digitizer never registers a key listener,
-so the host's own handler is the only one that sees `⌘Z`.
+`keyboardHistory` (off here, because `keyboardShortcuts: false` is what it falls
+back to) is what matters: the digitizer neither acts on `⌘Z` nor calls
+`preventDefault()` on it, so the host's own handler is the only one that sees
+it. `keyboardEditing: true` keeps the arrow keys, `Delete`, the zoom keys and
+the mode switches in the library, where they cannot collide with the host —
+leave it out (or write plain `keyboardShortcuts: false`) only if the host
+intends to reimplement those too. See
+[Turning them off, in groups](#turning-them-off-in-groups).
 
 **2. Record the digitizer's captures on the host's stack.**
 
