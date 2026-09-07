@@ -4,9 +4,12 @@
     ref="canvasWrapper"
     class="c__canvas-wrapper"
     data-cy="canvas-wrapper"
+    :tabindex="options.features.keyboardShortcuts ? 0 : undefined"
     @click="click"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
+    @mouseenter="mouseEnter"
+    @mouseleave="mouseLeave"
   >
     <canvas id="imageCanvas" ref="imageCanvas" data-cy="image-canvas"></canvas>
     <canvas
@@ -104,8 +107,16 @@ export default defineComponent({
     return {
       // INFO: keep the exact bound reference so beforeUnmount can remove the
       // very listener that was added (a fresh .bind() would not match).
+      // Non-null also means "currently registered", which is what tells the
+      // attach/detach pair below apart from a second attach.
       boundKeyDownHandler: null as ((e: KeyboardEvent) => void) | null,
+      boundHoverKeyDownHandler: null as ((e: KeyboardEvent) => void) | null,
       boundMouseMoveHandler: null as ((e: MouseEvent) => void) | null,
+      // INFO: whether the pointer is inside this instance's wrapper, from the
+      // wrapper's own mouseenter/mouseleave (so it is true over the whole
+      // frame, not just over the image the way isCursorOnCanvas is). It gates
+      // the hover path of the keyboard shortcuts, see attachHoverShortcuts.
+      isPointerOverWrapper: false,
       // INFO: whether the cursor was inside the image on the previous
       // mousemove. Used to clamp the magnifier to the edge on the first event
       // that leaves the image.
@@ -121,8 +132,23 @@ export default defineComponent({
     }
   },
   mounted() {
-    this.boundKeyDownHandler = this.keyDownHandler.bind(this)
-    document.addEventListener('keydown', this.boundKeyDownHandler)
+    // INFO: attached through a watcher rather than once, so a host that flips
+    // features.keyboardShortcuts at runtime is obeyed immediately (`immediate`
+    // does the initial attach). While the flag is off NO listener exists —
+    // registering one and then ignoring the key would still let the digitizer
+    // swallow it, which is exactly what a host with its own shortcuts asks us
+    // not to do.
+    this.$watch(
+      () => this.options.features.keyboardShortcuts,
+      (enabled: boolean) => {
+        if (enabled) {
+          this.attachKeyboardShortcuts()
+        } else {
+          this.detachKeyboardShortcuts()
+        }
+      },
+      { immediate: true },
+    )
     // INFO: mousemove is listened for on document (not on the wrapper) so the
     // event that crosses the image edge is still received and the magnifier
     // can be stopped exactly at the edge (#255).
@@ -159,10 +185,7 @@ export default defineComponent({
     }
   },
   beforeUnmount() {
-    if (this.boundKeyDownHandler) {
-      document.removeEventListener('keydown', this.boundKeyDownHandler)
-      this.boundKeyDownHandler = null
-    }
+    this.detachKeyboardShortcuts()
     if (this.boundMouseMoveHandler) {
       document.removeEventListener('mousemove', this.boundMouseMoveHandler)
       this.boundMouseMoveHandler = null
@@ -195,6 +218,74 @@ export default defineComponent({
     // unmount, in which case the util falls back to offsetX/Y.
     imageCanvasElement(): HTMLCanvasElement | undefined {
       return this.$refs.imageCanvas as HTMLCanvasElement | undefined
+    },
+    // INFO: keydown is bound to THIS instance's wrapper, not to document the
+    // way mousemove is. The library is embedded in host pages: a document
+    // listener made every Cmd+Z pressed anywhere on the host page undo a point
+    // here (the host's own undo lost its key), and on a page with several
+    // <StarryDigitizer>s it fired in all of them at once — mouse events tell
+    // the instances apart (isDraggingHere), keys had no equivalent.
+    // The wrapper carries tabindex, so clicking the canvas — the first thing
+    // anyone does with it — is what makes the keys arrive.
+    attachKeyboardShortcuts(): void {
+      const wrapper = this.$refs.canvasWrapper as HTMLDivElement | undefined
+      if (!wrapper || this.boundKeyDownHandler) {
+        return
+      }
+      this.boundKeyDownHandler = this.keyDownHandler.bind(this)
+      wrapper.addEventListener('keydown', this.boundKeyDownHandler)
+      if (this.isPointerOverWrapper) {
+        this.attachHoverShortcuts()
+      }
+    },
+    detachKeyboardShortcuts(): void {
+      const wrapper = this.$refs.canvasWrapper as HTMLDivElement | undefined
+      if (this.boundKeyDownHandler) {
+        wrapper?.removeEventListener('keydown', this.boundKeyDownHandler)
+        this.boundKeyDownHandler = null
+      }
+      this.detachHoverShortcuts()
+    },
+    // INFO: focus alone would be a regression for the standalone app, where
+    // '+' / '-' / '0' have always worked on a freshly opened page. So the
+    // shortcuts also work while the pointer is over this digitizer, which is
+    // the same "this instance, not the others" rule the mouse already follows.
+    // That needs a document listener (focus is elsewhere, so the keydown never
+    // reaches the wrapper), and it exists ONLY while the pointer is inside:
+    // move the mouse off the digitizer and the host page has its keys back.
+    attachHoverShortcuts(): void {
+      if (this.boundHoverKeyDownHandler) {
+        return
+      }
+      this.boundHoverKeyDownHandler = this.hoverKeyDownHandler.bind(this)
+      document.addEventListener('keydown', this.boundHoverKeyDownHandler)
+    },
+    detachHoverShortcuts(): void {
+      if (!this.boundHoverKeyDownHandler) {
+        return
+      }
+      document.removeEventListener('keydown', this.boundHoverKeyDownHandler)
+      this.boundHoverKeyDownHandler = null
+    },
+    hoverKeyDownHandler(e: KeyboardEvent): void {
+      const wrapper = this.$refs.canvasWrapper as HTMLDivElement | undefined
+      // INFO: a key pressed while the wrapper itself has focus already reached
+      // the wrapper listener and bubbles on to document. Skipping it here is
+      // what keeps a focused AND hovered digitizer from undoing twice.
+      if (wrapper && e.target instanceof Node && wrapper.contains(e.target)) {
+        return
+      }
+      this.keyDownHandler(e)
+    },
+    mouseEnter(): void {
+      this.isPointerOverWrapper = true
+      if (this.options.features.keyboardShortcuts) {
+        this.attachHoverShortcuts()
+      }
+    },
+    mouseLeave(): void {
+      this.isPointerOverWrapper = false
+      this.detachHoverShortcuts()
     },
     // REFACTOR: modeに応じてpointなりpickColorなりを呼び出す形に変更する
     point(e: MouseEvent): void {
@@ -692,6 +783,19 @@ export default defineComponent({
     flex: 1 1 auto;
     height: var(--sd-canvas-height, 80vh);
     min-height: var(--sd-canvas-min-height, 240px);
+
+    // INFO: the frame is focusable (tabindex, see attachKeyboardShortcuts), so
+    // it can be reached with Tab and keys arrive without a mouse. The ring is
+    // :focus-visible only — clicking the canvas focuses it too, and painting a
+    // ring around the image on every click would be noise. When Tab is what
+    // got here the ring is the only sign that the keys now go to the
+    // digitizer, so it replaces the plain 1px border rather than adding to it.
+    &:focus {
+      outline: solid 1px gray;
+    }
+    &:focus-visible {
+      outline: solid 2px var(--sd-secondary, #1976d2);
+    }
   }
 }
 </style>

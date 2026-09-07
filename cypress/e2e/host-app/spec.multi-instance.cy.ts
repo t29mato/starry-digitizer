@@ -3,12 +3,13 @@
 // buys: before it, every instance resolved document.getElementById('...') to
 // the FIRST instance's canvases, so the second one drew nothing.
 //
-// The last spec here pins the one thing that is still shared: the
-// document-level keydown listener in CanvasMain.vue. Keep it in sync with the
-// "Known limitations" sections of README.md and docs/embedding.rst.
+// The last spec here pins what used to be the one thing still shared: the
+// keydown listener, which lived on `document` and so fired in every instance
+// at once. It is now bound to each instance's own canvas frame.
 
 import {
   FIRST_IMAGE_WIDTH,
+  pressKey,
   SECOND_IMAGE_WIDTH,
   visitHostApp,
 } from '../../support/hostApp'
@@ -55,11 +56,12 @@ describe('host app: two digitizers on one page', () => {
       'contain.text',
       'second digitizer: on',
     )
-    // INFO: '0' is "original size" — it reaches both instances (see the
-    // known-limitation spec below), which is exactly what we want here.
+    // INFO: '0' is "original size", and each instance only hears the keys
+    // aimed at its own canvas frame, so both have to be told separately.
     // INFO: force, because with two digitizers stacked the page is taller
-    // than the viewport and <body>'s center is covered.
-    cy.get('body').trigger('keydown', { key: '0', force: true })
+    // than the viewport and the second frame is scrolled out of view.
+    pressKey('0', { force: true }, FIRST)
+    pressKey('0', { force: true }, SECOND)
     cy.get(`${SECOND} [data-cy=image-canvas]`).should(
       'have.attr',
       'width',
@@ -129,22 +131,31 @@ describe('host app: two digitizers on one page', () => {
     cy.get(`${SECOND} .dataset-count-1`).should('contain.text', '3')
   })
 
-  it('KNOWN LIMITATION: document-level keyboard shortcuts reach every instance', () => {
+  it('sends a keyboard shortcut only to the instance it was aimed at', () => {
     calibrateIn(FIRST, [50, 390], [400, 50])
     addPointsIn(FIRST, [[200, 200]])
     calibrateIn(SECOND, [40, 300], [300, 40])
     addPointsIn(SECOND, [[120, 160]])
 
-    // INFO: CanvasMain.vue listens on `document`, so every mounted instance
-    // handles the same keypress. Here that means both zoom out together.
-    cy.get('body').trigger('keydown', { key: '-', force: true })
+    // INFO: this used to be a known limitation — the listener was on
+    // `document`, so one keypress zoomed every instance on the page.
+    // INFO: the shortcuts also answer while the pointer is over a frame (see
+    // CanvasMain.vue), and Cypress' synthetic clicks leave the pointer
+    // "inside" whatever they clicked last. Take it off both frames first, so
+    // this asserts the aimed-at path and nothing else.
+    cy.get(`${FIRST} [data-cy=canvas-wrapper]`).trigger('mouseleave')
+    cy.get(`${SECOND} [data-cy=canvas-wrapper]`).trigger('mouseleave')
 
-    cy.get(`${FIRST} [data-cy=image-canvas]`)
-      .invoke('attr', 'width')
-      .then((width) => expect(Number(width)).to.be.lessThan(FIRST_IMAGE_WIDTH))
+    pressKey('-', { force: true }, SECOND)
+
     cy.get(`${SECOND} [data-cy=image-canvas]`)
       .invoke('attr', 'width')
       .then((width) => expect(Number(width)).to.be.lessThan(SECOND_IMAGE_WIDTH))
+    cy.get(`${FIRST} [data-cy=image-canvas]`).should(
+      'have.attr',
+      'width',
+      String(FIRST_IMAGE_WIDTH),
+    )
   })
 
   // INFO: radio inputs with the same `name` are ONE group per document, so a

@@ -8,6 +8,7 @@ import {
   addPoints,
   calibrateAxes,
   FIRST_IMAGE_WIDTH,
+  pressKey,
   readCount,
   SECOND_IMAGE_WIDTH,
   visitHostApp,
@@ -142,7 +143,7 @@ describe('host app: features.imageUpload', () => {
     cy.get('[data-cy=image-replaced-count]').should('have.text', '1')
     // INFO: a replaced image is drawn fit-to-wrapper; zoom back to 100% so
     // the canvas reports the new figure's intrinsic width.
-    cy.get('body').trigger('keydown', { key: '0' })
+    pressKey('0')
     cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',
@@ -158,7 +159,7 @@ describe('host app: features.imageUpload', () => {
       { force: true },
     )
     cy.get('[data-cy=image-replaced-count]').should('have.text', '1')
-    cy.get('body').trigger('keydown', { key: '0' })
+    pressKey('0')
     cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',
@@ -244,8 +245,8 @@ describe('host app: features.zipExportImport', () => {
       'contain.text',
       'zipExportImport: off',
     )
-    cy.get('body').trigger('keydown', { key: 's', metaKey: true })
-    cy.get('body').trigger('keydown', { key: 'o', metaKey: true })
+    pressKey('s', { metaKey: true })
+    pressKey('o', { metaKey: true })
     cy.wait(500)
     cy.get('@anchorClick').should('not.have.been.called')
     cy.get('@inputClick').should('not.have.been.called')
@@ -258,10 +259,51 @@ describe('host app: features.zipExportImport', () => {
       'contain.text',
       'zipExportImport: on',
     )
-    cy.get('body').trigger('keydown', { key: 's', metaKey: true })
+    pressKey('s', { metaKey: true })
     cy.get('@anchorClick').should('have.been.calledOnce')
-    cy.get('body').trigger('keydown', { key: 'o', metaKey: true })
+    pressKey('o', { metaKey: true })
     cy.get('@inputClick').should('have.been.calledOnce')
+  })
+})
+
+describe('host app: features.keyboardShortcuts', () => {
+  beforeEach(() => {
+    visitHostApp()
+    calibrateAxes()
+    addPoints(POINTS)
+    cy.get('.canvas-point').should('have.length', POINTS.length)
+  })
+
+  it('answers Cmd+Z and the zoom keys while on (the default)', () => {
+    cy.get('[data-cy=toggle-keyboard-shortcuts]').should(
+      'contain.text',
+      'keyboardShortcuts: on',
+    )
+
+    pressKey('z', { ctrlKey: true, metaKey: true })
+    cy.get('.canvas-point').should('have.length', POINTS.length - 1)
+  })
+
+  it('registers no key listener at all while off', () => {
+    cy.get('[data-cy=toggle-keyboard-shortcuts]').click()
+    cy.get('[data-cy=toggle-keyboard-shortcuts]').should(
+      'contain.text',
+      'keyboardShortcuts: off',
+    )
+    // INFO: the frame is only focusable because the shortcuts need somewhere
+    // to arrive; with them off it must not even be a tab stop in the host's
+    // page — which is also the observable proof that nothing was registered.
+    cy.get('[data-cy=canvas-wrapper]').should('not.have.attr', 'tabindex')
+
+    pressKey('z', { ctrlKey: true, metaKey: true })
+    pressKey('-')
+
+    cy.get('.canvas-point').should('have.length', POINTS.length)
+    cy.get('[data-cy=image-canvas]').should(
+      'have.attr',
+      'width',
+      String(FIRST_IMAGE_WIDTH),
+    )
   })
 })
 

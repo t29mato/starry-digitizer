@@ -1,12 +1,14 @@
 /* eslint-disable jest/expect-expect */
 // INFO: Cypressのshould methodでアサーションは実質、実施してるので
+import { pressKey } from '../support/app'
+
 describe('template spec', () => {
   beforeEach(() => {
     cy.visit('/')
 
     // INFO: Reset to 100% zoom — the header button was replaced by the
     // View menu / '0' keyboard shortcut (issue #148).
-    cy.get('body').trigger('keydown', { key: '0' })
+    pressKey('0')
   })
 
   //INFO: アンカーポイントと仮で補間された点の区別ができないのでその合計数を検証

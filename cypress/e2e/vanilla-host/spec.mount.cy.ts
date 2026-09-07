@@ -18,7 +18,9 @@ interface DatasetValuesLike {
 function mountSample(): void {
   cy.get('[data-cy=load-sample]').click()
   cy.get('[data-cy=status]').should('contain.text', 'ready')
-  cy.get('body').trigger('keydown', { key: '0' })
+  // INFO: the zoom shortcut is listened for on the canvas frame, not on
+  // document, so the keydown has to be dispatched there.
+  cy.get('[data-cy=canvas-wrapper]').trigger('keydown', { key: '0' })
   cy.get('[data-cy=image-canvas]').should('have.attr', 'width', String(IMAGE_WIDTH))
 }
 

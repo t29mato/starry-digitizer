@@ -8,6 +8,7 @@ import {
   calibrateAxes,
   DatasetValuesLike,
   FIRST_IMAGE_WIDTH,
+  pressKey,
   ProjectLike,
   readJson,
   SECOND_IMAGE_WIDTH,
@@ -32,7 +33,7 @@ describe('host app: changing the image prop', () => {
   it('draws the new figure without remounting the component', () => {
     cy.get('[data-cy=swap-image]').click()
     cy.get('[data-cy=ready-count]').should('have.text', '2')
-    cy.get('body').trigger('keydown', { key: '0' })
+    pressKey('0')
     cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',
@@ -54,7 +55,7 @@ describe('host app: changing the image prop', () => {
   it('starts from an empty sheet when the host clears the project too', () => {
     cy.get('[data-cy=remount-other]').click()
     cy.get('[data-cy=ready-count]').should('have.text', '2')
-    cy.get('body').trigger('keydown', { key: '0' })
+    pressKey('0')
     cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',
@@ -84,7 +85,7 @@ describe('host app: changing the project prop', () => {
     cy.get('.c__axisSet-item input').should('have.value', 'Fixture Axes')
     cy.get('[data-cy=x2-value]').should('have.value', '20')
     // INFO: the image prop did not change, so the first figure stays on screen.
-    cy.get('body').trigger('keydown', { key: '0' })
+    pressKey('0')
     cy.get('[data-cy=image-canvas]').should(
       'have.attr',
       'width',

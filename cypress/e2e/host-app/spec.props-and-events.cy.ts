@@ -4,6 +4,8 @@
 // v-model:project. Covers acceptance criteria 1 and 4 of the integration
 // spec, plus the readonly prop.
 
+import { pressKey } from '../../support/hostApp'
+
 const POINT_POSITIONS: [number, number][] = [
   [200, 200],
   [250, 150],
@@ -49,7 +51,7 @@ describe('host app: props, events and remounting', () => {
     // component's `ready` emit rather than for the DOM alone.
     cy.get('[data-cy=ready]').should('contain.text', 'version')
     // INFO: reset to 100% zoom so click coordinates map to fixed pixels.
-    cy.get('body').trigger('keydown', { key: '0' })
+    pressKey('0')
   })
 
   it('emits update:project and restores the same state after a remount', () => {

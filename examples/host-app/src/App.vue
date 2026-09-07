@@ -100,6 +100,12 @@
         >
           dataTable: {{ features.dataTable ? 'on' : 'off' }}
         </button>
+        <button
+          data-cy="toggle-keyboard-shortcuts"
+          @click="features.keyboardShortcuts = !features.keyboardShortcuts"
+        >
+          keyboardShortcuts: {{ features.keyboardShortcuts ? 'on' : 'off' }}
+        </button>
         <button data-cy="toggle-compact" @click="compact = !compact">
           compact: {{ compact ? 'on' : 'off' }}
         </button>
@@ -238,6 +244,7 @@ const features = reactive({
   extractionPanel: true,
   magnifier: true,
   dataTable: true,
+  keyboardShortcuts: true,
 })
 
 // INFO: fixed-height embedding, driven purely by the library's layout custom

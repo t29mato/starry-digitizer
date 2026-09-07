@@ -16,6 +16,7 @@ import {
   assertMenuItemChecked,
   canvasPoints,
   assertTableRow,
+  pressKey,
 } from '../support/app'
 
 const ORIGIN = { x: 60, y: 380 }
@@ -68,20 +69,20 @@ describe('View menu', () => {
   })
 
   it('zooms with the keyboard shortcuts too', () => {
-    cy.get('body').trigger('keydown', { key: '+' })
+    pressKey('+')
     assertScale('110%', Math.trunc(ORIGINAL_WIDTH * 1.1))
 
-    cy.get('body').trigger('keydown', { key: '-' })
+    pressKey('-')
     assertScale('100%', ORIGINAL_WIDTH)
 
-    cy.get('body').trigger('keydown', { key: 'f' })
+    pressKey('f')
     cy.get('[data-cy=image-canvas]').should(($canvas) => {
       expect(($canvas[0] as HTMLCanvasElement).width).to.be.lessThan(
         ORIGINAL_WIDTH,
       )
     })
 
-    cy.get('body').trigger('keydown', { key: '0' })
+    pressKey('0')
     assertScale('100%', ORIGINAL_WIDTH)
   })
 

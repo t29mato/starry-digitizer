@@ -11,6 +11,25 @@ export const SECOND_IMAGE_WIDTH = 845
 export const UPDATE_DEBOUNCE_MS = 300
 
 /**
+ * Dispatches a keyboard shortcut at a digitizer's canvas frame.
+ *
+ * INFO: the shortcuts are listened for on the frame, not on `document`, so
+ * that a Cmd+Z pressed anywhere else on the host page stays the host's. That
+ * also makes `scope` meaningful: aiming at one instance's frame is how a spec
+ * says WHICH digitizer on the page should hear the key.
+ */
+export function pressKey(
+  key: string,
+  options: Record<string, unknown> = {},
+  scope = '',
+): void {
+  cy.get(`${scope} [data-cy=canvas-wrapper]`.trim()).trigger('keydown', {
+    key,
+    ...options,
+  })
+}
+
+/**
  * Loads the host app and waits until the digitizer has mounted and reported
  * itself ready, then pins the canvas to 100% zoom so click coordinates map
  * to image pixels 1:1.
@@ -18,7 +37,7 @@ export const UPDATE_DEBOUNCE_MS = 300
 export function visitHostApp(): void {
   cy.visit('/')
   cy.get('[data-cy=ready]').should('contain.text', 'version')
-  cy.get('body').trigger('keydown', { key: '0' })
+  pressKey('0')
   cy.get('[data-cy=image-canvas]').should('have.attr', 'width', String(FIRST_IMAGE_WIDTH))
 }
 

@@ -4,9 +4,11 @@ import type { InjectionKey, Ref } from 'vue'
 /**
  * Feature toggles. All default to "on" in the standalone app.
  *
- * The first four switch individual controls; the rest hide whole panels, for
- * hosts that already provide the same thing in their own UI (a sample picker,
- * a point-list editor, ...) and would otherwise show it twice.
+ * The first four switch individual controls; the next five hide whole panels,
+ * for hosts that already provide the same thing in their own UI (a sample
+ * picker, a point-list editor, ...) and would otherwise show it twice.
+ * `keyboardShortcuts` is the odd one out: it hides nothing, it hands key
+ * handling back to the host.
  */
 export interface StarryDigitizerFeatures {
   /** Show the image file input / accept drag&drop + paste. */
@@ -31,6 +33,20 @@ export interface StarryDigitizerFeatures {
   magnifier: boolean
   /** Show the table of extracted values. */
   dataTable: boolean
+  /**
+   * Let the canvas handle keyboard shortcuts (undo/redo, zoom, mode switches,
+   * arrow-key nudges, Cmd+S/Cmd+O).
+   *
+   * Off for hosts that own a shortcut system of their own: ⌘Z has a single
+   * owner on a page, and a host whose ⌘Z means "undo my last edit" cannot
+   * also let it mean "undo the digitizer's last point". Off means the
+   * listeners are never registered at all, so nothing the digitizer contains
+   * can swallow a key or call preventDefault() on the host's behalf — the
+   * host drives the same actions from its own handlers instead, through the
+   * context <StarryDigitizer> exposes (`historyManager.undo()`,
+   * `canvasHandler.scaleUp()`, ...).
+   */
+  keyboardShortcuts: boolean
 }
 
 /**
@@ -63,6 +79,7 @@ export const DEFAULT_FEATURES: StarryDigitizerFeatures = {
   extractionPanel: true,
   magnifier: true,
   dataTable: true,
+  keyboardShortcuts: true,
 }
 
 export const DEFAULT_OPTIONS: DigitizerOptions = {

@@ -3,11 +3,13 @@
 // restored through the host API path (loadProject(dto, blob)) must yield the
 // same getDatasetValues() output.
 
+import { pressKey } from '../../support/hostApp'
+
 describe('host app: ZIP path and API path agree', () => {
   beforeEach(() => {
     cy.visit('/')
     cy.get('[data-cy=ready]').should('contain.text', 'version')
-    cy.get('body').trigger('keydown', { key: '0' })
+    pressKey('0')
   })
 
   it('produces identical dataset values after a ZIP round trip', () => {

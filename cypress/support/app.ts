@@ -7,6 +7,22 @@
 export type Coord = { x: number; y: number }
 
 /**
+ * Dispatches a keyboard shortcut at the digitizer.
+ *
+ * INFO: the shortcuts used to be listened for on `document`, so `body` was as
+ * good a target as any. They now live on the canvas frame itself, so that a
+ * Cmd+Z pressed elsewhere on an embedding page belongs to the host, not to
+ * us. `.trigger()` dispatches on the element it is chained off, so the frame
+ * is what specs must aim at.
+ */
+export function pressKey(
+  key: string,
+  options: Partial<KeyboardEventInit> = {},
+): void {
+  cy.get('[data-cy=canvas-wrapper]').trigger('keydown', { key, ...options })
+}
+
+/**
  * Visit the app and wait until the sample image has actually been decoded and
  * drawn, then reset the zoom to 100%.
  *
@@ -55,7 +71,7 @@ export function resetZoom(expectedWidth = 1180): void {
 
 /** One "Reset to 100%" attempt, retried until the canvas reports `expected`. */
 function pressResetZoom(expected: number, attemptsLeft: number): void {
-  cy.get('body').trigger('keydown', { key: '0' })
+  pressKey('0')
   cy.get('[data-cy=image-canvas]').then(($canvas) => {
     const width = ($canvas[0] as HTMLCanvasElement).width
     if (width === expected) return
@@ -274,23 +290,14 @@ export function pointCount(
 /** Triggers the Ctrl/Cmd+Z undo shortcut. */
 export function undo(times = 1): void {
   for (let i = 0; i < times; i++) {
-    cy.get('body').trigger('keydown', {
-      key: 'z',
-      ctrlKey: true,
-      metaKey: true,
-    })
+    pressKey('z', { ctrlKey: true, metaKey: true })
   }
 }
 
 /** Triggers the Ctrl/Cmd+Shift+Z redo shortcut. */
 export function redo(times = 1): void {
   for (let i = 0; i < times; i++) {
-    cy.get('body').trigger('keydown', {
-      key: 'z',
-      ctrlKey: true,
-      metaKey: true,
-      shiftKey: true,
-    })
+    pressKey('z', { ctrlKey: true, metaKey: true, shiftKey: true })
   }
 }
 

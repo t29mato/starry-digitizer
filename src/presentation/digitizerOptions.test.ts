@@ -158,6 +158,16 @@ describe('createDigitizerOptions', () => {
     expect(createDigitizerOptions().features.axisOcr).toBe(true)
   })
 
+  it('ships keyboardShortcuts on by default', () => {
+    // INFO: opt-out, like axisOcr: the standalone app and every host that
+    // says nothing keep Cmd+Z / +/-/0 / the mode keys. Only a host with a
+    // shortcut system of its own — where Cmd+Z already means something —
+    // turns it off, and then the canvas registers no key listener at all.
+    expect(DEFAULT_FEATURES.keyboardShortcuts).toBe(true)
+    expect(DEFAULT_OPTIONS.features.keyboardShortcuts).toBe(true)
+    expect(createDigitizerOptions().features.keyboardShortcuts).toBe(true)
+  })
+
   it('keeps every other flag when a host turns axisOcr off', () => {
     const options = createDigitizerOptions({ features: { axisOcr: false } })
 

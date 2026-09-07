@@ -1,10 +1,12 @@
 /* eslint-disable jest/expect-expect */
+import { pressKey } from '../support/app'
+
 describe('undo/redo', () => {
   beforeEach(() => {
     cy.visit('/')
     // INFO: Reset to 100% zoom — the header button was replaced by the
     // View menu / '0' keyboard shortcut (issue #148).
-    cy.get('body').trigger('keydown', { key: '0' })
+    pressKey('0')
   })
 
   it('undoes and redoes a point addition with the Ctrl/Cmd+Z shortcut', () => {
@@ -18,19 +20,10 @@ describe('undo/redo', () => {
 
     cy.get('.canvas-point').should('have.length', 1)
 
-    cy.get('body').trigger('keydown', {
-      key: 'z',
-      ctrlKey: true,
-      metaKey: true,
-    })
+    pressKey('z', { ctrlKey: true, metaKey: true })
     cy.get('.canvas-point').should('have.length', 0)
 
-    cy.get('body').trigger('keydown', {
-      key: 'z',
-      ctrlKey: true,
-      metaKey: true,
-      shiftKey: true,
-    })
+    pressKey('z', { ctrlKey: true, metaKey: true, shiftKey: true })
     cy.get('.canvas-point').should('have.length', 1)
   })
 
