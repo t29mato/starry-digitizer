@@ -1,8 +1,16 @@
 <template>
   <div class="d-flex justify-space-between align-center flex-wrap">
+    <!-- INFO: the dataset name is free text the user (or the host, through the
+         project DTO) owns, and an empty one is a normal state — the dataset
+         panel shows a grey `dataset N` placeholder for exactly that. Rendering
+         it unconditionally left `Dataset:  / XY Axes: …`, a separator floating
+         after nothing. The segment is dropped whole instead; inventing a name
+         here would show one the host never set. -->
     <div class="c__current-dataset-and-axis">
-      Dataset: <span>{{ currentDatasetName }}</span> / XY Axes:
-      <span>{{ axisSetRepository.activeAxisSet.name }}</span>
+      <template v-if="currentDatasetName">
+        Dataset: <span>{{ currentDatasetName }}</span> /
+      </template>
+      XY Axes: <span>{{ axisSetRepository.activeAxisSet.name }}</span>
     </div>
     <span class="mb-1">{{ showCanvasScale }}</span>
   </div>
@@ -32,11 +40,13 @@ export default defineComponent({
     showCanvasScale(): string {
       return Math.trunc(this.canvasHandler.scale * 100) + '%'
     },
+    // INFO: trimmed, so a name of only spaces counts as "no name" and takes
+    // the same path as an empty one instead of printing an invisible label.
     currentDatasetName(): string {
       if (this.datasetRepository.activeDatasetId === 0) {
         return 'All Datasets (View Only)'
       }
-      return this.datasetRepository.activeDataset.name
+      return this.datasetRepository.activeDataset.name.trim()
     },
   },
 })

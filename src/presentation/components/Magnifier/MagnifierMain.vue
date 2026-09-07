@@ -90,6 +90,18 @@
         <div></div>
         <div></div>
       </div>
+      <!-- INFO: until the cursor has been over the graph once, the box has
+           nothing to magnify: the crosshair sits on an empty area and reads as
+           a broken image rather than as a viewer waiting for a cursor. Cover
+           it with a plain hint instead. -->
+      <div
+        v-if="placeholderMessage"
+        class="c__magnifier__placeholder"
+        data-cy="magnifier-placeholder"
+      >
+        <strong>Magnifier</strong>
+        <span>{{ placeholderMessage }}</span>
+      </div>
     </div>
     <span>x: {{ xyValue.xV }}, y: {{ xyValue.yV }}</span>
     <magnifier-settings
@@ -165,9 +177,39 @@ export default defineComponent({
       resizeObserver: undefined as ResizeObserver | undefined,
       magnifierSettingError: '',
       shouldShowSettingsDialog: false,
+      // INFO: whether this magnifier has ever shown a magnified spot for the
+      // image it currently holds. It is NOT the same as
+      // `canvasHandler.isCursorOnCanvas`: once the user has magnified
+      // something, leaving the image deliberately freezes the view at the
+      // clamped edge (#255) and keeps following an off-image drag, so the hint
+      // must not come back and blank it. Only the very first impression — the
+      // state the user meets before touching anything — is replaced.
+      hasMagnifiedOnce: false,
     }
   },
+  watch: {
+    'canvasHandler.isCursorOnCanvas'(isOnCanvas: boolean) {
+      if (isOnCanvas) this.hasMagnifiedOnce = true
+    },
+    // INFO: a new image starts over: the frozen view belongs to the old one.
+    'canvasHandler.uploadImageUrl'() {
+      this.hasMagnifiedOnce = false
+    },
+  },
   computed: {
+    // INFO: "no image at all" and "image loaded, cursor never on it" are
+    // different situations and get different wording — telling someone to move
+    // the cursor over a graph that is not there would be its own confusion.
+    // Empty string means the real magnified view is shown.
+    placeholderMessage(): string {
+      if (!this.canvasHandler.hasImage) {
+        return 'The magnified view appears here once an image is loaded.'
+      }
+      if (!this.hasMagnifiedOnce) {
+        return 'Move the cursor over the graph to magnify it.'
+      }
+      return ''
+    },
     // magnifierHalfSize(): number {
     //   return this.magnifier.sizePx / 2
     // },
@@ -253,6 +295,45 @@ $_white-outline-pos-value: calc(50% - #{$_white-outline-size} - 1px);
     overflow: hidden;
     position: relative;
     outline: 1px solid grey;
+    // INFO: the box used to have no background of its own, so every part of
+    // it the magnified image does not cover (three quarters of it before the
+    // first hover, and a corner of it whenever the cursor is near an edge)
+    // was transparent and showed the HOST page through. On a host that paints
+    // a transparency checkerboard behind images, that read as "the image is
+    // broken". Painting our own surface keeps the panel opaque wherever it is
+    // embedded; a host restyles it through --sd-surface like everything else.
+    background-color: var(--sd-surface, #ffffff);
+  }
+
+  // INFO: above every overlay in the box — points (1-2), the corner marks (3)
+  // and the extract-size guides (5) — so none of them shows through the hint,
+  // but below the settings button (100), which stays reachable.
+  &__placeholder {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
+    // INFO: percentage padding follows the box, which the host resizes with
+    // --sd-magnifier-size / the sidebar width, so the text keeps its margins
+    // when the box is small instead of overflowing.
+    padding: 6%;
+    text-align: center;
+    background-color: var(--sd-surface-variant, #f5f5f5);
+    color: var(--sd-text-medium, rgba(0, 0, 0, 0.6));
+    // INFO: the magnifier can be shrunk well below 300px; the text has to
+    // shrink with it rather than spill out of the frame.
+    font-size: 0.75em;
+    line-height: 1.35;
+    overflow: hidden;
+
+    strong {
+      font-size: 1.15em;
+      color: var(--sd-text, rgba(0, 0, 0, 0.87));
+    }
   }
 
   &__white-outlines {

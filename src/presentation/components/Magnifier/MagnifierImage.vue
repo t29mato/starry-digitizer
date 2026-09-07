@@ -2,7 +2,13 @@
   <div>
     <!-- INFO: 端付近ではtranslate値が負になるため、`-${...}` 形式だと
          `--Npx` という不正なCSSになりMagnifierが固まる (#255) -->
+    <!-- INFO: v-if, not just an empty src: `src=""` makes the browser request
+         the document itself, fail, and draw its broken-image icon plus the alt
+         text inside the magnifier — the literal "this looks broken" the
+         placeholder exists to avoid. The canvases below stay mounted either
+         way, because canvasHandler/interpolator hold references to them. -->
     <img
+      v-if="canvasHandler.hasImage"
       :src="canvasHandler.uploadImageUrl"
       alt="the image you uploaded"
       :style="{
