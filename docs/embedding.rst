@@ -136,7 +136,7 @@ tarball をホスト側リポジトリにコミットしておくと、``package
 
 型は ``ConfirmDialog``\ 、すなわち ``(message: string) => boolean | Promise<boolean>``
 です。``message`` はマークアップを含まない平文で、``true`` に解決したときだけ処理が
-進みます。パネルを自前配置するホストは ``createDigitizerOptions({ confirm })`` で渡し、
+進みます。パネルを自前配置するホストは ``provideDigitizerOptions({ confirm })`` で渡し、
 自分の確認も ``options.confirm`` を直接呼ぶのではなく ``requestConfirmation(options, message)``
 経由で呼んでください。ホストのダイアログが例外を投げたり reject したりしたときに、
 黙って処理を握りつぶす(``false`` 扱い)ことも、誰も同意していない破壊的操作を走らせる
@@ -293,7 +293,7 @@ React 用のコード例と、``file:`` 依存に固有の Vite 設定(``resolve
 
    import {
      createDigitizerContext, provideDigitizerContext,
-     provideDigitizerOptions, DEFAULT_OPTIONS,
+     provideDigitizerOptions,
      CanvasHeader, CanvasMain, CanvasFooter,
      AxisSetManager, AxisSetSettings, ExtractorSettings, MagnifierMain,
      loadProject, getDatasetValues,
@@ -301,7 +301,7 @@ React 用のコード例と、``file:`` 依存に固有の Vite 設定(``resolve
 
    const ctx = createDigitizerContext()
    provideDigitizerContext(ctx)
-   provideDigitizerOptions({ ...DEFAULT_OPTIONS, datasetNameCandidates: sampleNames })
+   provideDigitizerOptions({ datasetNameCandidates: sampleNames })
 
 公開しているパネル: ``CanvasHeader`` / ``CanvasMain`` / ``CanvasFooter`` /
 ``AxisSetManager`` / ``AxisSetSettings`` / ``DatasetManager`` / ``DataTable`` /
@@ -310,6 +310,31 @@ React 用のコード例と、``file:`` 依存に固有の Vite 設定(``resolve
 
 同じ context を共有するので、どこに置いても状態は同期します。``CanvasMain`` は
 canvas 要素の持ち主なので、1 つの context につき 1 つだけ配置してください。
+
+パネルを自前配置するホストは、``<StarryDigitizer>`` を経由しない以上、options を
+``provideDigitizerOptions()`` に自分で渡すしかありません。ここには
+**変えたい項目だけ** を渡します。``features`` も部分指定でよく、書かなかった項目は
+既定値のまま残ります。
+
+.. code-block:: ts
+
+   provideDigitizerOptions({ features: { magnifier: false } })
+
+``DEFAULT_OPTIONS`` を spread して options を組むのはやめてください。``features``
+は入れ子なので、``{ ...DEFAULT_OPTIONS, features: { magnifier: false } }`` は
+feature セット全体を置き換えてしまい、残り 9 個のフラグ(軸パネル・データセット
+パネル・データ表など)が黙って消えます。``DEFAULT_OPTIONS`` は既定値を読むための
+ものであって、options を組み立てるためのものではありません。
+
+完全な ``DigitizerOptions`` をホスト自身が手元に持ちたいとき(保存する、他所へ渡す、
+比較する)は ``createDigitizerOptions(partial)`` が同じ既定値の埋め方をして完全な
+オブジェクトを返します。パネルに渡すだけなら不要です。
+
+setup 後に変わる options(権限確認で決まる ``readonly``\ 、fetch で届く候補名)は、
+``ref`` / ``computed`` / ``reactive()`` オブジェクト / getter のいずれでも渡せます。
+どれで渡しても、パネル側は ``.value`` なしの ``options.readonly`` を読み、書かれ
+なかった項目は既定値で埋まった状態で見えます。``reactive()`` で渡したオブジェクトは
+コピーされないので、あとから単一フィールドを代入するとそのままパネルに伝わります。
 
 既製レイアウトのまま差し込み口だけ増やしたい場合は、名前付きスロット
 ``aside-top`` / ``aside-bottom`` / ``right-sidebar-footer`` / ``footer`` が使えます。

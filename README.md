@@ -226,7 +226,7 @@ import {
   createDigitizerContext, loadProject, getDatasetValues,
 } from 'starry-digitizer/core'
 import {
-  provideDigitizerContext, provideDigitizerOptions, DEFAULT_OPTIONS,
+  provideDigitizerContext, provideDigitizerOptions,
   CanvasHeader, CanvasMain, CanvasFooter, AxisSetManager, AxisSetSettings,
   ExtractorSettings, MagnifierMain,
 } from 'starry-digitizer/vue'
@@ -234,7 +234,7 @@ import 'starry-digitizer/styles'
 
 const ctx = createDigitizerContext()
 provideDigitizerContext(ctx)
-provideDigitizerOptions({ ...DEFAULT_OPTIONS, datasetNameCandidates: sampleNames })
+provideDigitizerOptions({ datasetNameCandidates: sampleNames })
 
 await loadProject(ctx, savedProject, imageBlob)
 const values = getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, ctx.valueFormat.effectiveDigits)
@@ -248,6 +248,27 @@ const values = getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, ct
 </template>
 ```
 
+##### Pass only what you want to change
+
+`provideDigitizerOptions()` takes a **partial** set of options, `features`
+included. Name the ones you care about; every other option, and every other
+feature flag, keeps its default:
+
+```ts
+provideDigitizerOptions({ features: { magnifier: false } })
+```
+
+Do not build the object by spreading `DEFAULT_OPTIONS`. `features` is nested,
+so `{ ...DEFAULT_OPTIONS, features: { magnifier: false } }` replaces the whole
+feature set and drops the other nine flags — the axis panel, the dataset panel
+and the data table go with the magnifier. `DEFAULT_OPTIONS` is there to read a
+default from, not to build options with.
+
+`createDigitizerOptions(partial)` does the same filling-in and returns a
+complete `DigitizerOptions`. Reach for it when the host wants that object in
+its own hands — to store it, to hand it around, to compare against. Providing
+options to the panels does not need it.
+
 ##### Options that change after setup
 
 Most hosts only know some of their options later: whether the user may edit at
@@ -255,20 +276,15 @@ all comes from a permission check, and the dataset name candidates come from a
 fetch. `provideDigitizerOptions()` therefore also accepts a `ref`, a `computed`,
 a `reactive()` object or a getter, and the panels follow every change — this is
 what `<StarryDigitizer>` does with its own props internally. The panels still
-read a plain `DigitizerOptions` (`options.readonly`, no `.value`).
-
-`createDigitizerOptions(partial)` fills the rest in from the defaults. Use it
-rather than spreading `DEFAULT_OPTIONS` yourself: `features` is nested, so
-`{ ...DEFAULT_OPTIONS, features: { magnifier: false } }` would drop the other
-nine flags, while `createDigitizerOptions({ features: { magnifier: false } })`
-merges them.
+read a plain `DigitizerOptions` (`options.readonly`, no `.value`), complete
+whatever the source left out.
 
 ```vue
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { createDigitizerContext } from 'starry-digitizer/core'
 import {
-  provideDigitizerContext, provideDigitizerOptions, createDigitizerOptions,
+  provideDigitizerContext, provideDigitizerOptions,
   CanvasHeader, CanvasMain, CanvasFooter, DatasetManager,
 } from 'starry-digitizer/vue'
 
@@ -277,13 +293,11 @@ const sampleNames = ref<string[]>([])
 
 provideDigitizerContext(createDigitizerContext())
 provideDigitizerOptions(
-  computed(() =>
-    createDigitizerOptions({
-      readonly: !canEdit.value,
-      datasetNameCandidates: sampleNames.value,
-      features: { imageUpload: false },
-    }),
-  ),
+  computed(() => ({
+    readonly: !canEdit.value,
+    datasetNameCandidates: sampleNames.value,
+    features: { imageUpload: false },
+  })),
 )
 
 // Both reach the panels when they resolve: the point/axis editing unlocks and
@@ -621,7 +635,7 @@ chrome looks and sits nowhere near the host's own modals.
 ```
 
 Hosts composing the panels themselves pass it through the options
-(`createDigitizerOptions({ confirm })`) and should call their own confirmations
+(`provideDigitizerOptions({ confirm })`) and should call their own confirmations
 through `requestConfirmation(options, message)` rather than `options.confirm`
 directly. Both are exported. `requestConfirmation` adds the failure handling:
 if the host dialog throws or rejects, it warns and falls back to

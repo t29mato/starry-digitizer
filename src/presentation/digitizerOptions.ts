@@ -114,6 +114,15 @@ export const DEFAULT_FEATURES: StarryDigitizerFeatures = {
   keyboardShortcuts: true,
 }
 
+/**
+ * The values every option falls back to. Read them (to show a host's own
+ * control in its default position, to compare against), but do not build an
+ * options object by spreading this: `features` is nested, so
+ * `{ ...DEFAULT_OPTIONS, features: { magnifier: false } }` replaces the whole
+ * feature set and silently drops the other nine flags. Pass the partial
+ * straight to provideDigitizerOptions() — or, if you need a complete object
+ * in hand, build it with createDigitizerOptions().
+ */
 export const DEFAULT_OPTIONS: DigitizerOptions = {
   readonly: false,
   features: DEFAULT_FEATURES,
@@ -126,7 +135,10 @@ export const DEFAULT_OPTIONS: DigitizerOptions = {
 /**
  * Partial options, with `features` partial too: the nested object is merged
  * against DEFAULT_FEATURES rather than replacing it, so a host can turn one
- * feature off without having to restate the other eight.
+ * feature off without having to restate the other nine.
+ *
+ * This is what provideDigitizerOptions() takes, so a host never has to name
+ * an option it does not care about.
  */
 export interface DigitizerOptionsInit
   extends Partial<Omit<DigitizerOptions, 'features'>> {
@@ -139,6 +151,11 @@ export interface DigitizerOptionsInit
  * DEFAULT_OPTIONS by hand does not do the same thing: `features` is nested, so
  * `{ ...DEFAULT_OPTIONS, features: { magnifier: false } }` would silently drop
  * every other feature flag.
+ *
+ * Only needed when the host wants a complete object in its own hands — to
+ * store it, to hand it around, to compare against. Just providing options to
+ * the panels does not: provideDigitizerOptions() takes the partial as it is
+ * and fills in the same defaults.
  */
 export function createDigitizerOptions(
   init: DigitizerOptionsInit = {},
@@ -195,43 +212,96 @@ export async function requestConfirmation(
 }
 
 /**
- * What provideDigitizerOptions() accepts: a plain object, a reactive() one, a
- * ref/computed holding one, or a getter returning one. Whichever the host
- * passes, useDigitizerOptions() hands back the same plain-looking
- * DigitizerOptions and readers write `options.readonly` — no `.value`.
+ * What provideDigitizerOptions() accepts: a *partial* set of options, as a
+ * plain object, a reactive() one, a ref/computed holding one, or a getter
+ * returning one. Anything the host leaves out is filled in from the defaults,
+ * so `{ readonly: true }` and `{ features: { magnifier: false } }` are both
+ * complete options as far as the panels are concerned.
+ *
+ * Whichever the host passes, useDigitizerOptions() hands back a full,
+ * plain-looking DigitizerOptions: readers write `options.readonly` — no
+ * `.value`, and no `?? DEFAULT_OPTIONS.readonly`.
  */
 export type DigitizerOptionsSource =
-  | DigitizerOptions
-  | Ref<DigitizerOptions>
-  | (() => DigitizerOptions)
+  | DigitizerOptionsInit
+  | Ref<DigitizerOptionsInit>
+  | (() => DigitizerOptionsInit)
+
+const OPTION_KEYS = Object.keys(DEFAULT_OPTIONS) as (keyof DigitizerOptions)[]
+const FEATURE_KEYS = Object.keys(
+  DEFAULT_FEATURES,
+) as (keyof StarryDigitizerFeatures)[]
 
 /**
- * Flatten a ref/getter source into an object whose property reads go through
- * to the current value. A plain object needs no wrapper, and neither does a
- * reactive() one (reading a property off it already tracks), so those are
- * passed through as they are.
+ * An object with exactly `keys`, each read through `readKey` at the moment it
+ * is asked for. Everything else (`constructor`, `hasOwnProperty`, ...) behaves
+ * as it would on a plain object.
+ *
+ * A proxy rather than a merged copy, because copying is what breaks the two
+ * things this module has to keep: a copy taken at provide() time never sees
+ * the host's later changes, and a copy taken off a reactive() source reads
+ * every field eagerly — which would subscribe the reader to all of them and
+ * make any option change re-render every panel. Reading one property here
+ * touches exactly that property of the source, so Vue tracks exactly it.
+ *
+ * The facade is a read-only view: the host owns the source object and mutates
+ * that, and nothing in the library writes to the injected options.
+ */
+function facade<T extends object>(
+  keys: (keyof T)[],
+  readKey: (key: keyof T) => T[keyof T],
+): T {
+  const known = new Set<PropertyKey>(keys as PropertyKey[])
+
+  return new Proxy({} as T, {
+    get: (target, key, receiver) =>
+      known.has(key)
+        ? readKey(key as keyof T)
+        : Reflect.get(target, key, receiver),
+    has: (target, key) => known.has(key) || Reflect.has(target, key),
+    ownKeys: () => keys as (string | symbol)[],
+    getOwnPropertyDescriptor: (target, key) =>
+      known.has(key)
+        ? {
+            enumerable: true,
+            configurable: true,
+            value: readKey(key as keyof T),
+          }
+        : Reflect.getOwnPropertyDescriptor(target, key),
+  })
+}
+
+/**
+ * Turn whatever the host passed into the complete DigitizerOptions the panels
+ * read — without ever copying it, so a reactive()/ref/getter source stays
+ * live and a partial one stays partial until the moment a field is read.
+ *
+ * The defaults are applied per property rather than by running the source
+ * through createDigitizerOptions(): that helper reads *every* field, so doing
+ * it on each access would make a reader of `options.readonly` depend on all of
+ * them, and one dataset-name change would re-render every panel.
  */
 function resolveDigitizerOptions(
   source: DigitizerOptionsSource,
 ): DigitizerOptions {
-  if (typeof source !== 'function' && !isRef(source)) return source
+  const read: () => DigitizerOptionsInit =
+    typeof source === 'function'
+      ? source
+      : isRef(source)
+      ? () => source.value
+      : () => source
 
-  const read = (): DigitizerOptions =>
-    typeof source === 'function' ? source() : source.value
+  // INFO: `features` is nested, so it needs a facade of its own — otherwise a
+  // host that turns one flag off would hand the panels an object missing the
+  // other nine. Built once, so `options.features` keeps a stable identity.
+  const features = facade<StarryDigitizerFeatures>(
+    FEATURE_KEYS,
+    (key) => read().features?.[key] ?? DEFAULT_FEATURES[key],
+  )
 
-  // INFO: a proxy rather than the ref itself, so descendants keep reading
-  // `options.readonly` and still see every change: each property access reads
-  // the ref again (and, inside a render/computed, subscribes to it).
-  return new Proxy({} as DigitizerOptions, {
-    get: (_target, key) => read()[key as keyof DigitizerOptions],
-    has: (_target, key) => key in read(),
-    ownKeys: () => Reflect.ownKeys(read()),
-    getOwnPropertyDescriptor: (_target, key) => ({
-      enumerable: true,
-      configurable: true,
-      value: read()[key as keyof DigitizerOptions],
-    }),
-  })
+  return facade<DigitizerOptions>(OPTION_KEYS, (key) =>
+    key === 'features' ? features : read()[key] ?? DEFAULT_OPTIONS[key],
+  )
 }
 
 /**
@@ -240,9 +310,11 @@ function resolveDigitizerOptions(
  * provideDigitizerContext(); otherwise every panel falls back to
  * DEFAULT_OPTIONS.
  *
- * Pass a ref/computed/reactive object (see DigitizerOptionsSource) when the
- * options change after setup — permission-driven `readonly`, dataset name
- * candidates that arrive from a fetch — and the panels follow along.
+ * Pass only what you want to change — `{ features: { magnifier: false } }` is
+ * enough, everything else keeps its default. Pass a ref/computed/reactive
+ * object or a getter (see DigitizerOptionsSource) when the options change
+ * after setup — permission-driven `readonly`, dataset name candidates that
+ * arrive from a fetch — and the panels follow along.
  */
 export function provideDigitizerOptions(options: DigitizerOptionsSource): void {
   provide(DIGITIZER_OPTIONS_KEY, resolveDigitizerOptions(options))
