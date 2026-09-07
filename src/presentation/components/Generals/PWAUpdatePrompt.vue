@@ -94,8 +94,18 @@ export default defineComponent({
   border-radius: 4px;
   background-color: #fff;
   color: rgba(0, 0, 0, 0.87);
-  font-size: 0.875rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+// INFO: the 0.875 multiplier is on the three text blocks, not on the box.
+// It used to be `font-size: 0.875rem` on `.c__pwa-update-prompt`, which was
+// harmless while the size was anchored to <html>; as `em` the box would also
+// become the reference for the two SdButtons in `.c__actions`, and their own
+// `0.75em` would compound down to 9.19px instead of the 10.5px they render at
+// today. The box has no text of its own, so this is a no-op for the look.
+.c__title,
+.c__notes-title,
+.c__notes {
+  font-size: 0.875em;
 }
 .c__title {
   margin: 0 0 4px;

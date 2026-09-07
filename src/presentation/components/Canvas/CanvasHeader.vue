@@ -44,7 +44,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .c {
   &__current-dataset-and-axis {
-    font-size: 0.9rem;
+    font-size: 0.9em;
     color: rgb(73, 73, 73);
     margin-right: 40px;
 

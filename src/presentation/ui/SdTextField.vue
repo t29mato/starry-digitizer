@@ -101,7 +101,7 @@ function onInput(event: Event) {
   width: 100%;
 
   &__label {
-    font-size: 0.75rem;
+    font-size: 0.75em;
     color: var(--sd-text-medium, rgba(0, 0, 0, 0.6));
     margin-bottom: 2px;
   }
@@ -128,7 +128,7 @@ function onInput(event: Event) {
   &__prefix,
   &__suffix {
     flex: 0 0 auto;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     color: var(--sd-text-medium, rgba(0, 0, 0, 0.6));
     white-space: nowrap;
@@ -150,7 +150,7 @@ function onInput(event: Event) {
     outline: none;
     background: transparent;
     font: inherit;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     color: inherit;
 

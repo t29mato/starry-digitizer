@@ -96,7 +96,7 @@ function onChange(event: Event) {
     cursor: inherit;
   }
   &__label {
-    font-size: 0.9375rem;
+    font-size: 0.9375em;
     font-weight: 500;
   }
   &--disabled {

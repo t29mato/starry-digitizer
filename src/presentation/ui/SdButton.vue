@@ -90,17 +90,17 @@ const iconSize = computed(() =>
   &--default {
     height: 36px;
     padding: 0 16px;
-    font-size: 0.875rem;
+    font-size: 0.875em;
   }
   &--small {
     height: 28px;
     padding: 0 12px;
-    font-size: 0.75rem;
+    font-size: 0.75em;
   }
   &--x-small {
     height: 20px;
     padding: 0 8px;
-    font-size: 0.625rem;
+    font-size: 0.625em;
   }
   &--icon-only {
     padding: 0;

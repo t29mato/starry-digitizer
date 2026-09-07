@@ -556,7 +556,7 @@ export default defineComponent({
     &__hint {
       display: block;
       padding: 0 2px 0 6px;
-      font-size: 0.75rem;
+      font-size: 0.75em;
       font-weight: 500;
       white-space: nowrap;
     }
@@ -574,7 +574,7 @@ export default defineComponent({
 
       &__label {
         margin: 6px 0 2px;
-        font-size: 0.75rem;
+        font-size: 0.75em;
         font-weight: 500;
       }
     }

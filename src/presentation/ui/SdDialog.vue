@@ -80,7 +80,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
   &__title {
     padding: 16px 20px 8px;
-    font-size: 1.25rem;
+    font-size: 1.25em;
     font-weight: 500;
   }
   &__body {

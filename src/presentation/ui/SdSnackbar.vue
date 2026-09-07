@@ -80,7 +80,7 @@ onBeforeUnmount(() => timer && clearTimeout(timer))
     border: 0;
     background: transparent;
     color: inherit;
-    font-size: 1.2rem;
+    font-size: 1.2em;
     cursor: pointer;
   }
 }

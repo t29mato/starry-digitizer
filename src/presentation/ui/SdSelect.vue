@@ -73,7 +73,7 @@ function onChange(event: Event) {
   width: 100%;
 
   &__label {
-    font-size: 0.75rem;
+    font-size: 0.75em;
     color: var(--sd-text-medium, rgba(0, 0, 0, 0.6));
     margin-bottom: 2px;
   }
@@ -96,7 +96,7 @@ function onChange(event: Event) {
   &__prefix {
     flex: 0 0 auto;
     margin-right: 6px;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     color: var(--sd-text-medium, rgba(0, 0, 0, 0.6));
     white-space: nowrap;
@@ -111,7 +111,7 @@ function onChange(event: Event) {
     outline: none;
     background: transparent;
     font: inherit;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
     color: inherit;
     appearance: none;

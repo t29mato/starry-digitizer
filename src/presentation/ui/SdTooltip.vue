@@ -28,7 +28,7 @@ defineProps<{ text: string }>()
     border-radius: var(--sd-radius, 4px);
     background: rgba(50, 50, 50, 0.95);
     color: #fff;
-    font-size: 0.75rem;
+    font-size: 0.75em;
     white-space: normal;
     pointer-events: none;
     opacity: 0;

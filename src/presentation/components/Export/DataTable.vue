@@ -173,7 +173,7 @@ export default defineComponent({
 
 .sd-table {
   border-collapse: collapse;
-  font-size: 0.75rem;
+  font-size: 0.75em;
 
   th,
   td {
@@ -221,6 +221,13 @@ export default defineComponent({
 
 .c__sort-indicator {
   margin-left: 2px;
-  font-size: 0.625rem;
+  // INFO: the arrow sits inside a <th>, which `.sd-table` above already
+  // shrank to 0.75em — and `em` resolves against the parent, so a literal
+  // `0.625em` here would compound to 0.625 × 0.75 of the base. The factor is
+  // the ratio of the two old `rem` values (0.625 / 0.75) so the arrow keeps
+  // the 8.75px it had in the standalone app (measured) while still scaling
+  // with the host's font. Written as `calc()` rather than `0.8333em` so the
+  // computed size is exactly 5/6 of the header text, not 8.7497px.
+  font-size: calc(1em * 5 / 6);
 }
 </style>

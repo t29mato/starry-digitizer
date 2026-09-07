@@ -78,7 +78,7 @@ function onChange(event: Event) {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.875rem;
+    font-size: 0.875em;
     font-weight: 500;
 
     &--placeholder {

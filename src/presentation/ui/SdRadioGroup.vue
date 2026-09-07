@@ -63,7 +63,7 @@ function onUpdate(value: boolean | string | number) {
     align-items: center;
   }
   &__label {
-    font-size: 0.75rem;
+    font-size: 0.75em;
     color: var(--sd-text-medium, rgba(0, 0, 0, 0.6));
   }
 }
