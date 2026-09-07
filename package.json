@@ -34,6 +34,7 @@
     "app-dev-build": "cross-env VITE_APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER vite build --mode development",
     "lib-build": "vite build -c vite.library.config.ts",
     "lib-check": "node scripts/lib-check.mjs",
+    "lib-check:source": "node scripts/lib-check.mjs --source-only",
     "pack-dev": "node scripts/pack-dev.mjs",
     "prepack": "npm run lib-build",
     "prepare": "npm run lib-build || true",
@@ -44,7 +45,7 @@
     "test:coverage": "jest --coverage",
     "coverage:report": "browser-sync start --server \"coverage/lcov-report\"",
     "coverage": "npm run test:coverage && npm run coverage:report",
-    "lint": "eslint src --ext .js,.ts,.vue && vue-tsc"
+    "lint": "node scripts/lib-check.mjs --source-only && eslint src --ext .js,.ts,.vue && vue-tsc"
   },
   "peerDependencies": {
     "vue": "^3.3.4",
