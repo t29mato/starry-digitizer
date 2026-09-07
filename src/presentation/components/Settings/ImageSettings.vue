@@ -28,7 +28,10 @@
 import { defineComponent } from 'vue'
 
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
-import { useDigitizerOptions } from '@/presentation/digitizerOptions'
+import {
+  requestConfirmation,
+  useDigitizerOptions,
+} from '@/presentation/digitizerOptions'
 import { replaceImage } from '@/application/utils/digitizerOperations'
 import { DigitizerError } from '@/application/errors'
 import { SdFileInput } from '@/presentation/ui'
@@ -93,12 +96,19 @@ export default defineComponent({
       // INFO: the host can turn the confirmation off (confirmImageReplace
       // prop) when it drives image loading itself and already asked the user.
       if (this.options.confirmImageReplace && this.hasExistingData()) {
-        const confirmed = window.confirm(
+        const confirmed = await requestConfirmation(
+          this.options,
           'Loading a new image will reset all axis coordinates and datasets. Are you sure you want to continue?',
         )
         if (!confirmed) {
           return
         }
+        // INFO: nothing to re-validate after the dialog, unlike the dataset
+        // and axis-set deletions: the target is the file the user picked,
+        // which is held in `file` and cannot change behind our back. Work
+        // added while the dialog was open is discarded too — that is what
+        // "reset all axis coordinates and datasets" says, and asking again
+        // for the newer points would be worse than honouring the answer.
       }
 
       try {

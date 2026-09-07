@@ -355,6 +355,11 @@ export default defineComponent({
         })
     },
     async handleStartOver() {
+      // INFO: window.confirm on purpose, unlike the library components, which
+      // ask through `options.confirm` so an embedding host can substitute its
+      // own dialog. This is the standalone app's own menu bar: it *is* the
+      // top-level app, there is no host whose UI a native dialog could clash
+      // with, and it has no dialog component of its own to use instead.
       const confirmed = window.confirm(
         'Start over? The image, the axes and all points of this session are discarded, including the auto-saved copy.',
       )

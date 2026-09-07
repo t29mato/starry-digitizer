@@ -53,9 +53,15 @@ export {
   createDigitizerOptions,
   DEFAULT_FEATURES,
   DEFAULT_OPTIONS,
+  DEFAULT_CONFIRM,
   DIGITIZER_OPTIONS_KEY,
+  // INFO: exported for hosts that compose the panels themselves and want the
+  // same "ask, and fall back to the browser dialog if my dialog breaks"
+  // behaviour in their own code.
+  requestConfirmation,
 } from './presentation/digitizerOptions'
 export type {
+  ConfirmDialog,
   DigitizerOptions,
   DigitizerOptionsInit,
   DigitizerOptionsSource,

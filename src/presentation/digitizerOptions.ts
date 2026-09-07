@@ -50,6 +50,32 @@ export interface StarryDigitizerFeatures {
 }
 
 /**
+ * How the digitizer asks the user to confirm a destructive action.
+ *
+ * The default is `window.confirm`, and a host that does nothing keeps the
+ * native dialog. A host with its own dialog component passes one of these
+ * instead, so the question is asked in the host's own UI: a native dialog is
+ * the one thing that immediately gives away that a second app is embedded in
+ * the page — the OS chrome looks and sits nowhere near the host's own modals.
+ *
+ * `message` is the exact text the digitizer would have passed to
+ * `window.confirm` (plain text, no markup). Resolve `true` to go ahead,
+ * `false` to cancel; returning a plain boolean is allowed for hosts whose
+ * dialog is synchronous.
+ */
+export type ConfirmDialog = (message: string) => boolean | Promise<boolean>
+
+/**
+ * The default: the browser's own dialog. Deliberately a wrapper rather than
+ * `window.confirm` itself, so the lookup happens at call time — test doubles
+ * (Cypress's `cy.on('window:confirm')`, jest.spyOn) replace the property on
+ * `window` after this module has been evaluated, and a captured reference
+ * would keep calling the original.
+ */
+export const DEFAULT_CONFIRM: ConfirmDialog = (message: string) =>
+  window.confirm(message)
+
+/**
  * Per-instance UI options derived from <StarryDigitizer> props and provided
  * to every descendant. Components read them with useDigitizerOptions().
  */
@@ -63,6 +89,12 @@ export interface DigitizerOptions {
   assetBaseUrl?: string
   /** Ask before replacing an image that already has axes/points. */
   confirmImageReplace: boolean
+  /**
+   * Asks the user to confirm a destructive action (deleting a dataset,
+   * removing an axis set, replacing the image, ...). Defaults to
+   * `window.confirm`; hosts pass their own dialog. See ConfirmDialog.
+   */
+  confirm: ConfirmDialog
 }
 
 export const DIGITIZER_OPTIONS_KEY: InjectionKey<DigitizerOptions> = Symbol(
@@ -88,6 +120,7 @@ export const DEFAULT_OPTIONS: DigitizerOptions = {
   datasetNameCandidates: [],
   assetBaseUrl: undefined,
   confirmImageReplace: true,
+  confirm: DEFAULT_CONFIRM,
 }
 
 /**
@@ -118,6 +151,46 @@ export function createDigitizerOptions(
     assetBaseUrl: init.assetBaseUrl ?? DEFAULT_OPTIONS.assetBaseUrl,
     confirmImageReplace:
       init.confirmImageReplace ?? DEFAULT_OPTIONS.confirmImageReplace,
+    confirm: init.confirm ?? DEFAULT_OPTIONS.confirm,
+  }
+}
+
+/**
+ * Ask the user, through whichever dialog the host installed, and answer
+ * `true` only for an explicit yes.
+ *
+ * Every confirmation in the library goes through here rather than calling
+ * `options.confirm` directly, for the failure case: a host dialog that throws
+ * or rejects (its modal host unmounted, a network-backed permission check
+ * failed, a plain bug) must not make the user's click vanish without a trace.
+ * Silently answering `false` would drop the action, and silently answering
+ * `true` would run a destructive one nobody agreed to — so we warn and fall
+ * back to the browser dialog. The user is still asked, and still decides;
+ * the fallback is ugly next to the host's UI, which is exactly the right
+ * incentive to fix it. If even that is unavailable (no `window.confirm`, e.g.
+ * a non-browser test environment), the action is cancelled.
+ */
+export async function requestConfirmation(
+  options: Pick<DigitizerOptions, 'confirm'>,
+  message: string,
+): Promise<boolean> {
+  try {
+    return (await options.confirm(message)) === true
+  } catch (error) {
+    console.warn(
+      '[starry-digitizer] the host confirm() failed; falling back to window.confirm',
+      error,
+    )
+    if (
+      options.confirm === DEFAULT_CONFIRM ||
+      typeof window === 'undefined' ||
+      typeof window.confirm !== 'function'
+    ) {
+      // INFO: the browser dialog is what just failed (or does not exist);
+      // calling it again would only throw a second time.
+      return false
+    }
+    return window.confirm(message)
   }
 }
 

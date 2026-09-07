@@ -139,7 +139,10 @@ import {
 
 import { SdButton, SdCombobox, SdTextField } from '@/presentation/ui'
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
-import { useDigitizerOptions } from '@/presentation/digitizerOptions'
+import {
+  requestConfirmation,
+  useDigitizerOptions,
+} from '@/presentation/digitizerOptions'
 import {
   getDatasetTableData,
   copyRowsToClipboard,
@@ -191,34 +194,43 @@ export default defineComponent({
     },
   },
   methods: {
-    shouldContinueSwitchDataset(): boolean {
+    async shouldContinueSwitchDataset(): Promise<boolean> {
       if (this.datasetRepository.activeDataset.tempPoints.length === 0)
         return true
 
-      return window.confirm(
+      return await requestConfirmation(
+        this.options,
         'There are unconfirmed interpolated points. Do you want to discard them and switch to a different dataset?',
       )
     },
-    handleOnClickDataset(id: number) {
+    async handleOnClickDataset(id: number) {
+      if (id === this.datasetRepository.activeDatasetId) return
+
+      if (!(await this.shouldContinueSwitchDataset())) return
+
+      // INFO: awaiting the host's dialog leaves the panel interactive, so the
+      // dataset the user clicked can be gone (or already active) by the time
+      // the answer arrives. Re-check instead of activating a stale id, which
+      // the repository would reject anyway.
       if (
         id === this.datasetRepository.activeDatasetId ||
-        !this.shouldContinueSwitchDataset()
+        !this.datasetRepository.datasets.some((d) => d.id === id)
       )
         return
 
       activateDataset(this.ctx, id)
     },
-    handleOnClickViewAll() {
-      if (!this.shouldContinueSwitchDataset()) return
+    async handleOnClickViewAll() {
+      if (!(await this.shouldContinueSwitchDataset())) return
 
       viewAllDatasets(this.ctx)
     },
-    handleOnClickAddDatasetButton() {
-      if (!this.shouldContinueSwitchDataset()) return
+    async handleOnClickAddDatasetButton() {
+      if (!(await this.shouldContinueSwitchDataset())) return
 
       addDataset(this.ctx)
     },
-    handleOnClickRemoveDatasetButton(datasetId?: number) {
+    async handleOnClickRemoveDatasetButton(datasetId?: number) {
       const targetDataset = datasetId
         ? this.datasetRepository.datasets.find((d) => d.id === datasetId)
         : this.datasetRepository.activeDataset
@@ -231,11 +243,24 @@ export default defineComponent({
         return
       }
 
-      window.confirm(
+      const targetId = targetDataset.id
+      const confirmed = await requestConfirmation(
+        this.options,
         `Are you sure to delete '${targetDataset.name}'? This operation is irreversible.`,
-      ) && removeDataset(this.ctx, targetDataset.id)
+      )
+      if (!confirmed) return
+
+      // INFO: `targetDataset` was resolved before the dialog opened; while it
+      // was up the dataset may have been deleted (or, without an id argument,
+      // a different one may have become active). Delete by the id the user
+      // was asked about, and only while it still exists — never whatever
+      // happens to be active now.
+      if (!this.datasetRepository.datasets.some((d) => d.id === targetId))
+        return
+
+      removeDataset(this.ctx, targetId)
     },
-    handleOnClickRemoveAllDatasetsButton() {
+    async handleOnClickRemoveAllDatasetsButton() {
       const totalPoints = this.totalPointsCount
 
       if (totalPoints === 0) {
@@ -243,9 +268,15 @@ export default defineComponent({
         return
       }
 
-      window.confirm(
+      const confirmed = await requestConfirmation(
+        this.options,
         `Are you sure to delete all ${this.datasetRepository.datasets.length} datasets? This will remove ${totalPoints} data points. This operation is irreversible.`,
-      ) && removeAllDatasets(this.ctx)
+      )
+      // INFO: no staleness check to make here, unlike the single-dataset
+      // delete: "all datasets" names no particular one, so anything created
+      // while the dialog was open is covered by what the user agreed to. The
+      // counts in the message can be out of date by then; the intent is not.
+      if (confirmed) removeAllDatasets(this.ctx)
     },
     async copyDatasetToClipboard(datasetId: number) {
       const dataset = this.datasetRepository.datasets.find(

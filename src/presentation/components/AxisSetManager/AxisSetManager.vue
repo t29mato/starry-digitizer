@@ -55,7 +55,10 @@ import { mdiPlus, mdiMinus } from '@mdi/js'
 
 import { SdButton, SdTextField } from '@/presentation/ui'
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
-import { useDigitizerOptions } from '@/presentation/digitizerOptions'
+import {
+  requestConfirmation,
+  useDigitizerOptions,
+} from '@/presentation/digitizerOptions'
 import { MANUAL_MODE } from '@/constants'
 
 export default defineComponent({
@@ -110,7 +113,7 @@ export default defineComponent({
         this.axisSetRepository.activeAxisSetId,
       )
     },
-    handleOnClickRemoveAxisSetButton() {
+    async handleOnClickRemoveAxisSetButton() {
       //TODO: Move these logics to domain service and add test...
       const targetAxisSet = this.axisSetRepository.activeAxisSet
 
@@ -139,16 +142,38 @@ export default defineComponent({
           .map((dataset) => dataset.name)
           .toString()}`
 
-        if (!window.confirm(confirmMessage)) {
+        if (!(await requestConfirmation(this.options, confirmMessage))) {
+          return
+        }
+
+        // INFO: the host's dialog can take an arbitrary amount of time, and
+        // the digitizer stays interactive behind it — by the time the answer
+        // arrives the user may have switched axis sets, or another one may
+        // have been added or removed. Everything above was computed before
+        // the question was asked, so re-check that the plan the user agreed
+        // to still describes reality and give up if it does not: silently
+        // removing a *different* axis set than the one named in the message
+        // would be far worse than doing nothing.
+        if (
+          this.axisSetRepository.activeAxisSet !== targetAxisSet ||
+          !this.axisSetRepository.axisSets.includes(alternativeAxisSet)
+        ) {
           return
         }
       }
 
       this.removeActiveAxisSet()
 
-      datasetsConnectedToTargetAxisSet.forEach((dataset) => {
-        dataset.setAxisSetId(alternativeAxisSet.id)
-      })
+      // INFO: re-read the connections instead of reusing the list built for
+      // the message: a dataset moved to another axis set while the dialog was
+      // open must keep that one, and a dataset moved *onto* the target in the
+      // meantime must still be rescued — no dataset may be left pointing at
+      // an axis set that no longer exists.
+      this.datasetRepository.datasets
+        .filter((dataset) => dataset.axisSetId === targetAxisSet.id)
+        .forEach((dataset) => {
+          dataset.setAxisSetId(alternativeAxisSet.id)
+        })
 
       this.axisSetRepository.setActiveAxisSet(alternativeAxisSet.id)
 

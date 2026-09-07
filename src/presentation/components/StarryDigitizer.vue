@@ -54,6 +54,7 @@ import { DIGITIZER_CONTEXT_KEY } from '@/presentation/digitizerContextProvider'
 import {
   createDigitizerOptions,
   provideDigitizerOptions,
+  type ConfirmDialog,
   type DigitizerOptions,
   type StarryDigitizerFeatures,
 } from '@/presentation/digitizerOptions'
@@ -104,6 +105,13 @@ export interface StarryDigitizerProps {
   context?: DigitizerContext
   /** Ask before replacing an image that already has axes/points. */
   confirmImageReplace?: boolean
+  /**
+   * Dialog used for every "are you sure?" the digitizer asks. Undefined =
+   * `window.confirm`. Give it a function returning a promise of the user's
+   * answer to ask in the host's own modal instead, so an embedded digitizer
+   * never opens a native dialog the surrounding app would never open.
+   */
+  confirm?: ConfirmDialog
   /** Debounce (ms) for update:project / change. */
   updateDebounceMs?: number
   /**
@@ -125,6 +133,7 @@ const props = withDefaults(defineProps<StarryDigitizerProps>(), {
   assetBaseUrl: undefined,
   context: undefined,
   confirmImageReplace: true,
+  confirm: undefined,
   updateDebounceMs: 300,
   effectiveDigits: undefined,
 })
@@ -186,6 +195,7 @@ const options = computed<DigitizerOptions>(() =>
     datasetNameCandidates: props.datasetNameCandidates,
     assetBaseUrl: props.assetBaseUrl,
     confirmImageReplace: props.confirmImageReplace,
+    confirm: props.confirm,
   }),
 )
 // INFO: provideDigitizerOptions() unwraps the computed for us, so descendants

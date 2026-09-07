@@ -18,9 +18,11 @@ import { MASK_MODE } from '@/constants'
 // "remove dataset" is a capture point and "switch dataset" is not, so the
 // snapshot is taken where the mutation is, not where the click is.
 //
-// What is NOT here on purpose: `window.confirm`. Whether to ask before
+// What is NOT here on purpose: the confirmation. Whether to ask before
 // throwing points away is a presentation decision (wording, modality, i18n),
-// so the callers keep it. These functions always do what they are told.
+// so the callers keep it — DatasetManager.vue asks through
+// `options.confirm`, which a host can point at its own dialog. These
+// functions always do what they are told.
 
 /**
  * The clean-up every "the active dataset is now a different one" path owes.
