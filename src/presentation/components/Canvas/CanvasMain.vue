@@ -655,7 +655,7 @@ export default defineComponent({
       }
 
       // Handle movement keys
-      this.handleMovementKeys(key, e.shiftKey)
+      this.handleMovementKeys(key, e)
     },
     handleSpecialKeys(key: string, e: KeyboardEvent): boolean {
       switch (key) {
@@ -699,10 +699,10 @@ export default defineComponent({
       }
       return false
     },
-    handleMovementKeys(key: string, shiftKeyPressed: boolean) {
+    handleMovementKeys(key: string, e: KeyboardEvent) {
       const vector: Vector = {
         direction: this.getDirectionFromKey(key),
-        distancePx: shiftKeyPressed ? 10 : 1,
+        distancePx: e.shiftKey ? 10 : 1,
       }
 
       // INFO: only capture history when something is actually about to move
@@ -714,7 +714,30 @@ export default defineComponent({
       )
       const hasActivePoints =
         this.datasetRepository.activeDataset.pointsAreActive
-      if (hasActiveAxis || hasActivePoints) {
+      // INFO: `e.repeat` is what makes "hold the arrow key down" ONE undo
+      // entry instead of one per OS key-repeat event. The browser sets it on
+      // every keydown the auto-repeat generated, so the first press of a burst
+      // (repeat === false) takes the snapshot and the repeats ride on it —
+      // which is exactly right for a capture-before-the-change stack: the
+      // state to return to is the one from before the first nudge. No keyup is
+      // involved, so a burst that ends by losing focus (Alt+Tab, an OS dialog)
+      // cannot leave anything pending, and the `history-change` notification
+      // reaches a host the moment the movement starts rather than when the key
+      // is released.
+      //
+      // Tapping the key three times is three presses with repeat === false,
+      // so it stays three entries — a time window could not tell that apart
+      // from a burst. Adding a second arrow key while the first is held is
+      // also repeat === false, i.e. a new entry: the direction changed, so
+      // "back to before it started going down" is the useful place to return
+      // to, and deciding when a two-key burst ENDS would need the keyup this
+      // design deliberately does without.
+      //
+      // DEGRADATION: a few environments (some Linux/X11 setups, old browsers)
+      // never set `repeat`. There, a held key falls back to one entry per
+      // keystroke — the behaviour before this change, and still one
+      // notification per undoable unit as far as the user is concerned.
+      if ((hasActiveAxis || hasActivePoints) && !e.repeat) {
         this.historyManager.capture()
       }
 

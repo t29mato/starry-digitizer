@@ -73,6 +73,15 @@ export {
   clearDatasetPoints,
   viewAllDatasets,
 } from './application/utils/datasetOperations'
+// INFO: the point-level use cases. A host that replaces <ExtractorSettings>
+// or the point overlay with its own UI drives them through these — they carry
+// the undo capture, so "Run", "Confirm" and a delete click stay undoable
+// whoever asks for them. See README "Undo granularity".
+export {
+  extractPoints,
+  confirmInterpolation,
+  deletePoint,
+} from './application/utils/pointOperations'
 export { getDatasetValues } from './application/utils/datasetValues'
 export type { DatasetValues } from './application/utils/datasetValues'
 export { loadImageAsDataUrl } from './application/utils/imageLoader'

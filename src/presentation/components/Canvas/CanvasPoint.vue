@@ -31,14 +31,15 @@ import { Point } from '@/@types/types'
 
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
+import { deletePoint } from '@/application/utils/pointOperations'
 import { MANUAL_MODE, STYLE } from '@/constants'
 
 export default defineComponent({
   setup() {
-    const { interpolator, canvasHandler, datasetRepository } =
-      useDigitizerContext()
+    const ctx = useDigitizerContext()
+    const { interpolator, canvasHandler, datasetRepository } = ctx
     const options = useDigitizerOptions()
-    return { interpolator, canvasHandler, datasetRepository, options }
+    return { ctx, interpolator, canvasHandler, datasetRepository, options }
   },
   data() {
     return {
@@ -165,7 +166,11 @@ export default defineComponent({
           )
           return
         case MANUAL_MODE.DELETE:
-          this.datasetRepository.activeDataset.clearPoint(this.point.id)
+          // INFO: through the use case, not clearPoint() directly — that is
+          // where the undo snapshot is taken. Deleting by click used to be the
+          // one deletion you could not undo, while the very same deletion by
+          // Backspace could be (CanvasMain.handleDeleteKeys).
+          deletePoint(this.ctx, this.point.id)
 
           return
         default:

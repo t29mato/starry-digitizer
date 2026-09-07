@@ -114,6 +114,12 @@ import { ManualMode } from '@/@types/types'
 
 import { forceRenderCanvasPoints } from '@/presentation/hacks/forceRenderCanvasPoints'
 import { toggleInterpolation } from '@/presentation/utils/interpolationToggle'
+// INFO: both of these throw points away, so the undo snapshot belongs with the
+// mutation rather than with this button. See pointOperations.ts.
+import {
+  extractPoints as runExtraction,
+  confirmInterpolation,
+} from '@/application/utils/pointOperations'
 
 export default defineComponent({
   components: {
@@ -188,13 +194,8 @@ export default defineComponent({
     },
     async extractPoints() {
       this.isExtracting = true
-      this.axisSetRepository.activeAxisSet.inactivateAxis()
       try {
-        this.datasetRepository.setPoints(
-          // INFO: the canvas handler is passed here as a PixelSource
-          this.extractor.execute(this.canvasHandler),
-        )
-        this.datasetRepository.sortPoints()
+        runExtraction(this.ctx)
       } catch (e) {
         console.error('failed to extractPoints', { cause: e })
       } finally {
@@ -205,28 +206,14 @@ export default defineComponent({
       toggleInterpolation(this.ctx, Boolean(isActive))
     },
     handleOnConfirmInterpolation() {
-      if (
-        this.datasetRepository.activeDataset.manuallyAddedPointIds.length < 2
-      ) {
+      // INFO: the refusal comes back as `false` instead of an exception —
+      // the use case does not know how this host wants to say "not enough
+      // anchor points", so the wording stays here.
+      if (!confirmInterpolation(this.ctx)) {
         alert(
           'Point 2 or more points by clicking the graph image to execute interpolation.',
         )
-        return
       }
-      const activeDataset = this.datasetRepository.activeDataset
-
-      activeDataset.tempPoints.forEach((tempPoint) => {
-        activeDataset.moveTempPointToPoint(tempPoint.id)
-      })
-      activeDataset.manuallyAddedPointIds.forEach((pointId) => {
-        activeDataset.clearPoint(pointId)
-      })
-
-      this.datasetRepository.activeDataset.switchActivatedPoint(
-        activeDataset.lastPointId,
-      )
-
-      this.interpolator.clearPreview()
     },
     handleOnUpdateInterpolatorInterval(value: string | number) {
       const parsed = parseFloat(String(value))

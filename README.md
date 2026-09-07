@@ -391,6 +391,29 @@ function onDeleteRow(dataset: DatasetInterface) {
 }
 ```
 
+##### Replacing the extraction panel or the point overlay
+
+The three operations that replace or remove points come as use cases for the
+same reason: they carry the undo snapshot, so a host that builds its own "Run"
+button, its own Confirm or its own point overlay keeps ⌘Z working.
+
+```ts
+import {
+  extractPoints,        // (ctx)          run the current algorithm, replace the dataset's points
+  confirmInterpolation, // (ctx)          turn the preview into real points, consume the anchors
+  deletePoint,          // (ctx, pointId) delete one point of the active dataset
+} from 'starry-digitizer/core'
+```
+
+- `extractPoints()` runs the algorithm **before** taking the snapshot, so a
+  failing extraction (no image, no mask match) throws and leaves the history
+  untouched instead of adding an entry that undoes nothing.
+- `confirmInterpolation()` returns `false` — captures and mutates nothing —
+  when there are fewer than two anchor points. The wording of "point at least
+  two" is yours, the same way the confirmation dialogs are.
+- `deletePoint()` ignores an id that is not in the active dataset, and refreshes
+  the interpolation preview when interpolation is on.
+
 #### `starry-digitizer/core` — non-Vue hosts
 
 `core` is the engine without any UI: the same state, operations and DTOs the
@@ -929,6 +952,34 @@ uses internally to emit `history-change`. It exists because `canUndo` is state
 while "a capture just happened" is an event: two captures in a row leave
 `canUndo` at `true` throughout, and a reactive watcher would coalesce them —
 but a host stack needs exactly one entry per capture.
+
+#### Undo granularity: what counts as one entry
+
+**One thing the user did = one `'capture'`.** A host stack built on the recipe
+above is only as good as that promise, so here is the whole list of what the
+digitizer captures:
+
+| The user did | Entries |
+|---|---|
+| Add a point (click), place an axis coordinate | 1 each |
+| Delete a point — by clicking it in DELETE mode, or Backspace/Delete on the selection | 1 each |
+| Nudge the selected points or an axis marker with an arrow key | 1 per key **press** — holding the key down is one entry, not one per repeat |
+| Confirm an interpolation | 1 |
+| Automatic extraction ("Run") | 1 |
+| Add / delete / clear a dataset, delete all datasets | 1 each |
+| Switch dataset, "view all", change zoom / mode / mask, toggle interpolation | 0 — nothing undoable changed |
+
+Two details behind the arrow-key row, in case they surface as a bug report:
+
+- The suppression reads `KeyboardEvent.repeat`, so the snapshot is taken on the
+  first press and the auto-repeat events ride on it. The notification therefore
+  reaches you **when the movement starts**, not when the key is released, and
+  tapping the key three times is still three entries. A few environments (some
+  Linux/X11 setups, older browsers) never set `repeat`; there it degrades to one
+  entry per keystroke, which is what it always used to be.
+- Undo restores points and axes, not the selection: after a `⌘Z` nothing is
+  selected, so the next arrow key moves nothing until the user picks a point
+  again.
 
 ### Datasets and external IDs
 
