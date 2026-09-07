@@ -29,6 +29,18 @@ import './commands'
 // call it directly instead of going through visitApp(), and it runs in the
 // app's own window before it boots — the only point early enough to beat the
 // restore in mounted().
+//
+// INFO: only the FIRST load of each test is cleared. Two specs reload on
+// purpose to assert that a setting survives it ("remembers the setting across
+// a reload"); wiping on every load would make that impossible to pass.
+let sessionCleared = false
+
+beforeEach(() => {
+  sessionCleared = false
+})
+
 Cypress.on('window:before:load', (win) => {
+  if (sessionCleared) return
+  sessionCleared = true
   win.indexedDB.deleteDatabase('starry-digitizer-app')
 })
