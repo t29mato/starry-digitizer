@@ -15,6 +15,7 @@ import {
   canvasPoints,
   pointCount,
   tableRows,
+  waitForSavedInterpolation,
 } from '../support/app'
 
 const ORIGIN = { x: 60, y: 380 }
@@ -94,6 +95,10 @@ describe('interpolation toggle', () => {
   it('remembers the setting across a reload', () => {
     cy.get('#switch-interpolation').click()
     cy.get('#switch-interpolation').should('be.checked')
+
+    // INFO: the switch is saved asynchronously, so the reload has to wait for
+    // the write instead of racing it — see waitForSavedInterpolation.
+    waitForSavedInterpolation(true)
 
     // INFO: keepSession because this is the one spec that WANTS the auto-saved
     // session to survive the reload — every other visit starts from an empty

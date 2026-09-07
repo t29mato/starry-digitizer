@@ -1,12 +1,17 @@
 /* eslint-disable jest/expect-expect */
-import { pressKey } from '../support/app'
+import { pressKey, visitApp } from '../support/app'
 
 describe('undo/redo', () => {
   beforeEach(() => {
-    cy.visit('/')
-    // INFO: Reset to 100% zoom — the header button was replaced by the
-    // View menu / '0' keyboard shortcut (issue #148).
-    pressKey('0')
+    // INFO: visitApp(), not a bare cy.visit() plus one '0' keypress. Clicks
+    // that arrive before the figure has been decoded are dropped — the app
+    // discards a click outside the image and the image is 0x0 until then — so
+    // the first test lost its first click, the two that followed went to the
+    // axis calibration and no data point was ever plotted ("Expected to find
+    // element: `.canvas-point`, but never found it"). visitApp() retries the
+    // zoom shortcut until the canvas reports the image's real width, which is
+    // the signal that the decode has finished.
+    visitApp()
   })
 
   it('undoes and redoes a point addition with the Ctrl/Cmd+Z shortcut', () => {

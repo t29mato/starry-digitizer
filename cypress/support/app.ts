@@ -4,7 +4,11 @@
 // The host-app specs live under cypress/e2e/host-app and have their own
 // helpers; nothing here may assume the App.vue menu bar exists there.
 
-import { keepSessionOnNextVisit } from './e2e'
+// INFO: from './session', NOT from './e2e'. Importing it from the support
+// file would pull a second copy of that file — listeners, hooks and all —
+// into the spec bundle, and the flag would then be set on a copy the support
+// file's listener does not read. See the note in support/session.ts.
+import { AUTO_SAVE_DB_NAME, keepSessionOnNextVisit } from './session'
 
 export type Coord = { x: number; y: number }
 
@@ -44,6 +48,81 @@ export function visitApp(
   cy.visit('/', visitOptions)
   waitForImage()
   resetZoom()
+}
+
+/**
+ * Waits until the app's auto-save has really written `isInterpolatorActive`
+ * to IndexedDB.
+ *
+ * INFO: the write is fire-and-forget — App.vue watches `interpolator.isActive`
+ * and queues `persistence.saveSettings()`, which resolves on its own time. A
+ * `visitApp()` issued in the same breath as the click can therefore tear the
+ * page down before the IndexedDB transaction commits, and the reload then
+ * finds no setting at all. Driving the app with a real browser, reloading
+ * immediately after the click lost the setting in 2 of 10 runs; waiting for it
+ * to land first made all 10 pass. So the specs that assert "the setting
+ * survives a reload" wait for the save here, which is also the honest reading
+ * of what they mean: first it is saved, then a reload brings it back.
+ *
+ * The connection is closed again before yielding — an open one would block the
+ * `deleteDatabase()` that the next visit issues.
+ */
+export function waitForSavedInterpolation(isActive: boolean): void {
+  readSavedInterpolation(isActive, 60)
+}
+
+function readSavedInterpolation(expected: boolean, attemptsLeft: number): void {
+  cy.window({ log: false })
+    .then(
+      (win) =>
+        new Cypress.Promise<boolean | undefined>((resolve) => {
+          const request = win.indexedDB.open(AUTO_SAVE_DB_NAME)
+          request.onerror = () => resolve(undefined)
+          // INFO: opening a database that does not exist CREATES it, at
+          // version 1 and without any object store — exactly the version the
+          // app then asks for, so its own open() would find it there, skip
+          // `onupgradeneeded` and never get its store. Aborting the
+          // version-change transaction rolls the creation back, leaving
+          // nothing behind for the app to trip over; `onerror` follows and
+          // this attempt simply reports "not saved yet".
+          request.onupgradeneeded = () => request.transaction?.abort()
+          request.onsuccess = () => {
+            const db = request.result
+            // INFO: the store only exists once the app has created it, which
+            // is itself part of what this waits for.
+            if (!db.objectStoreNames.contains('session')) {
+              db.close()
+              resolve(undefined)
+              return
+            }
+            const read = db
+              .transaction('session', 'readonly')
+              .objectStore('session')
+              .get('settings')
+            read.onerror = () => {
+              db.close()
+              resolve(undefined)
+            }
+            read.onsuccess = () => {
+              db.close()
+              const settings = read.result as
+                | { isInterpolatorActive?: boolean }
+                | undefined
+              resolve(settings?.isInterpolatorActive)
+            }
+          }
+        }),
+    )
+    .then((saved) => {
+      if (saved === expected) return
+      if (attemptsLeft === 0) {
+        expect(saved, 'auto-saved isInterpolatorActive').to.equal(expected)
+        return
+      }
+      cy.wait(50, { log: false }).then(() =>
+        readSavedInterpolation(expected, attemptsLeft - 1),
+      )
+    })
 }
 
 /**

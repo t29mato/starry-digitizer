@@ -19,6 +19,12 @@ import './commands'
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
+import {
+  clearAutoSavedSession,
+  consumeKeepSessionRequest,
+  forgetKeepSessionRequest,
+} from './session'
+
 // INFO: the standalone app auto-saves work into IndexedDB and restores it on
 // load (src/appPersistence.ts). Cypress clears cookies and localStorage between
 // tests but NOT IndexedDB, so without this every spec would start with the
@@ -37,21 +43,19 @@ import './commands'
 // (it found the 2 points from before the reload). The specs that DO want the
 // session to survive a reload are the ones testing persistence, and they now
 // say so at the call site — see keepSession in cypress/support/app.ts.
-let keepNextSession = false
-
-/** Keep the auto-saved session across the next cy.visit() of this test. */
-export function keepSessionOnNextVisit(): void {
-  keepNextSession = true
-}
+//
+// INFO: the "keep it this once" flag lives in support/session.ts, on the
+// Cypress object rather than in a module variable, and support/app.ts imports
+// it from THERE rather than from this file. Both details matter — see the
+// note in that module: a module imported by the support file and by the spec
+// is instantiated twice, so a `let` here and a setter called from a spec are
+// two different variables.
 
 beforeEach(() => {
-  keepNextSession = false
+  forgetKeepSessionRequest()
 })
 
 Cypress.on('window:before:load', (win) => {
-  if (keepNextSession) {
-    keepNextSession = false
-    return
-  }
-  win.indexedDB.deleteDatabase('starry-digitizer-app')
+  if (consumeKeepSessionRequest()) return
+  clearAutoSavedSession(win)
 })
