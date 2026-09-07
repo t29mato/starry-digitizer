@@ -19,15 +19,49 @@ import {
 // session doesn't grow the snapshot stack without limit.
 const MAX_HISTORY_SIZE = 50
 
-// INFO: Only axisSets/datasets are captured; canvas zoom/mode and the
-// uploaded image are intentionally out of scope (see docs/design/
-// ux-ideas-implementation-design.md for rationale).
+/**
+ * What was selected when the snapshot was taken.
+ *
+ * INFO: this block is the reason a snapshot is NOT a ProjectDTO. Selection is
+ * session state, not project data: `DatasetDTO` has no `activePointIds` and
+ * `AxisSetDTO` no `activeAxisName`, and adding either would change the shape
+ * hosts persist — a MAJOR bump of PROJECT_DTO_VERSION — for something nobody
+ * wants restored when a saved file is reopened. So the snapshot keeps the DTO
+ * arrays exactly as ProjectService writes them and carries the selection
+ * ALONGSIDE them, keyed by the id of the dataset / axis set it belongs to.
+ * Nothing in this file is ever handed to ProjectService, so the extra block
+ * cannot leak into a saved project.
+ *
+ * WHY it is captured at all: `capture()` happens BEFORE a mutation, so undo
+ * used to land the user on the right points with nothing selected — the next
+ * arrow key did nothing and the "undo, then keep nudging" loop broke. The
+ * selection has to come back with the coordinates it belongs to.
+ */
+interface HistorySelection {
+  /** dataset id → the point ids that were active in it */
+  activePointIds: Record<number, number[]>
+  /** axis set id → the axis being nudged (absent/'' when none was) */
+  activeAxisNames: Record<number, string>
+}
+
+// INFO: Only axisSets/datasets (plus which of their parts were selected) are
+// captured; canvas zoom/mode and the uploaded image are intentionally out of
+// scope (see docs/design/ux-ideas-implementation-design.md for rationale).
 interface HistorySnapshot {
   axisSets: AxisSetDTO[]
   activeAxisSetId: number
   datasets: DatasetDTO[]
   activeDatasetId: number
+  selection: HistorySelection
 }
+
+// INFO: x2y2 is the virtual "move x2 and y2 together" axis. It is derived at
+// runtime and deliberately NOT part of AxisSetDTO, so `fromAxisSetDTO()`
+// rebuilds it at the (-999, -999) sentinel. Restoring a selection that names
+// it would leave the arrow keys pointed at that sentinel and drag x2/y2 along
+// with it, so it is the one axis name a snapshot refuses to bring back — same
+// rule as a point id the snapshot does not carry.
+const UNRESTORABLE_AXIS_NAME = 'x2y2'
 
 // INFO: docs/design/ux-ideas-implementation-design.md — snapshot-based
 // undo/redo built on top of the same AxisSet/Dataset ⇄ DTO conversion
@@ -140,11 +174,26 @@ export class HistoryManager implements HistoryManagerInterface {
   }
 
   private buildSnapshot(): HistorySnapshot {
+    const selection: HistorySelection = {
+      activePointIds: {},
+      activeAxisNames: {},
+    }
+    this.datasetRepository.datasets.forEach((dataset) => {
+      // INFO: every dataset's selection, not just the active one — switching
+      // datasets is itself undoable, and coming back to a dataset with its
+      // selection wiped is the same broken loop one level up.
+      selection.activePointIds[dataset.id] = [...dataset.activePointIds]
+    })
+    this.axisSetRepository.axisSets.forEach((axisSet) => {
+      selection.activeAxisNames[axisSet.id] = axisSet.activeAxisName
+    })
+
     const snapshot: HistorySnapshot = {
       axisSets: this.axisSetRepository.axisSets.map(toAxisSetDTO),
       activeAxisSetId: this.axisSetRepository.activeAxisSetId,
       datasets: this.datasetRepository.datasets.map(toDatasetDTO),
       activeDatasetId: this.datasetRepository.activeDataset.id,
+      selection,
     }
     // INFO: points/etc. in the DTOs are the very same array instances as
     // the live entities'. Without cloning here, a later mutation
@@ -156,15 +205,50 @@ export class HistoryManager implements HistoryManagerInterface {
 
   private restore(snapshot: HistorySnapshot): void {
     this.axisSetRepository.clearAllAxisSets()
-    snapshot.axisSets.forEach((dto) =>
-      this.axisSetRepository.addAxisSet(fromAxisSetDTO(dto)),
-    )
+    snapshot.axisSets.forEach((dto) => {
+      const axisSet = fromAxisSetDTO(dto)
+      const axisName = snapshot.selection.activeAxisNames[dto.id]
+      if (axisName && axisName !== UNRESTORABLE_AXIS_NAME) {
+        // INFO: activateAxisByName() ignores anything that is not an axis
+        // name, so a garbled snapshot leaves the axis set unselected rather
+        // than pointed at nothing.
+        axisSet.activateAxisByName(axisName)
+      }
+      this.axisSetRepository.addAxisSet(axisSet)
+    })
     this.axisSetRepository.setActiveAxisSet(snapshot.activeAxisSetId)
 
     this.datasetRepository.clearAllDatasets()
-    snapshot.datasets.forEach((dto) =>
-      this.datasetRepository.addDataset(fromDatasetDTO(dto)),
-    )
+    snapshot.datasets.forEach((dto) => {
+      const dataset = fromDatasetDTO(dto)
+      dataset.activePointIds = this.restorableActivePointIds(snapshot, dto)
+      this.datasetRepository.addDataset(dataset)
+    })
     this.datasetRepository.setActiveDataset(snapshot.activeDatasetId)
+  }
+
+  /**
+   * The selected point ids of one dataset, minus the ones the snapshot has no
+   * point for.
+   *
+   * INFO: a selection is only ever meaningful together with the points it
+   * names. Undo restores the point layout wholesale, so an id that layout does
+   * not contain — a point added after the capture, an id a host's own call
+   * order left behind — must be dropped here rather than handed to the
+   * domain: `moveActivePoint()` and the point overlay both filter by id and
+   * would silently do nothing, while `clearActivePoints()` would report a
+   * deletion that removed nothing. Dropping is also why this cannot throw:
+   * undo has to land somewhere usable even if the selection is nonsense.
+   */
+  private restorableActivePointIds(
+    snapshot: HistorySnapshot,
+    dto: DatasetDTO,
+  ): number[] {
+    const activePointIds = snapshot.selection.activePointIds[dto.id]
+    if (!activePointIds) {
+      return []
+    }
+    const pointIds = new Set(dto.points.map((point) => point.id))
+    return activePointIds.filter((id) => pointIds.has(id))
   }
 }

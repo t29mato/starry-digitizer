@@ -335,3 +335,145 @@ describe('HistoryManager notifications', () => {
     }).not.toThrow()
   })
 })
+
+// INFO: `capture()` runs BEFORE the mutation, and restoring only the
+// coordinates used to land the user on the right points with NOTHING
+// selected: the next arrow key moved nothing, so "undo, then keep nudging"
+// — the whole reason undo exists during fine adjustment — did not work.
+// Selection travels with the snapshot for that reason, and these tests pin
+// down that it comes back on both undo and redo, and that a selection naming
+// something the restored layout does not contain is dropped rather than
+// handed to the domain.
+describe('HistoryManager selection', () => {
+  test('undo restores the selection, so the arrow keys keep working', () => {
+    const { datasetRepository, historyManager } = setup()
+    const dataset = datasetRepository.activeDataset
+    dataset.addPoint(10, 10)
+
+    historyManager.capture()
+    dataset.moveActivePoint({ direction: 'right', distancePx: 1 })
+    expect(datasetRepository.activeDataset.points[0].xPx).toBe(11)
+
+    historyManager.undo()
+
+    const restored = datasetRepository.activeDataset
+    expect(restored.activePointIds).toStrictEqual([1])
+    expect(restored.points[0].xPx).toBe(10)
+
+    // INFO: the actual complaint — the nudge AFTER the undo has to move
+    // something.
+    restored.moveActivePoint({ direction: 'right', distancePx: 1 })
+    expect(datasetRepository.activeDataset.points[0].xPx).toBe(11)
+  })
+
+  test('redo brings the selection back too', () => {
+    const { datasetRepository, historyManager } = setup()
+    const dataset = datasetRepository.activeDataset
+    dataset.addPoint(10, 10)
+
+    historyManager.capture()
+    dataset.moveActivePoint({ direction: 'right', distancePx: 1 })
+    historyManager.undo()
+    historyManager.redo()
+
+    const restored = datasetRepository.activeDataset
+    expect(restored.activePointIds).toStrictEqual([1])
+    expect(restored.points[0].xPx).toBe(11)
+  })
+
+  test('a multi-point selection survives undo whole', () => {
+    const { datasetRepository, historyManager } = setup()
+    const dataset = datasetRepository.activeDataset
+    dataset.addPoint(1, 1)
+    dataset.addPoint(2, 2)
+    dataset.activateAllPoints()
+
+    historyManager.capture()
+    dataset.inactivatePoints()
+    historyManager.undo()
+
+    expect(datasetRepository.activeDataset.activePointIds).toStrictEqual([1, 2])
+  })
+
+  test('an empty selection stays empty after undo', () => {
+    // INFO: the mirror of the fix — restoring the LAST selection instead of
+    // the captured one would light points up the user never selected.
+    const { datasetRepository, historyManager } = setup()
+
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    expect(datasetRepository.activeDataset.activePointIds).toStrictEqual([1])
+
+    historyManager.undo()
+
+    expect(datasetRepository.activeDataset.activePointIds).toStrictEqual([])
+  })
+
+  test('drops a selected id the restored layout has no point for', () => {
+    const { datasetRepository, historyManager } = setup()
+    const dataset = datasetRepository.activeDataset
+    dataset.addPoint(1, 1)
+    // INFO: a stale id — the point it named is already gone. Restoring it
+    // would leave `pointsAreActive` true with nothing to move, and a
+    // Backspace would report a deletion that deleted nothing.
+    dataset.addActivatedPoint(999)
+
+    historyManager.capture()
+    dataset.addPoint(2, 2)
+    historyManager.undo()
+
+    expect(datasetRepository.activeDataset.activePointIds).toStrictEqual([1])
+  })
+
+  test('undo survives a selection with no points at all behind it', () => {
+    const { datasetRepository, historyManager } = setup()
+    datasetRepository.activeDataset.addActivatedPoint(42)
+
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+
+    expect(() => historyManager.undo()).not.toThrow()
+    expect(datasetRepository.activeDataset.activePointIds).toStrictEqual([])
+  })
+
+  test('restores the selection of datasets other than the active one', () => {
+    const { datasetRepository, historyManager } = setup()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    datasetRepository.createNewDataset()
+    datasetRepository.setActiveDataset(2)
+    datasetRepository.activeDataset.addPoint(2, 2)
+
+    historyManager.capture()
+    datasetRepository.datasets.forEach((dataset) => dataset.inactivatePoints())
+    historyManager.undo()
+
+    const [first, second] = datasetRepository.datasets
+    expect(first.activePointIds).toStrictEqual([1])
+    expect(second.activePointIds).toStrictEqual([1])
+  })
+
+  test('undo restores which axis was being nudged', () => {
+    const { axisSetRepository, historyManager } = setup()
+    axisSetRepository.activeAxisSet.activateAxisByName('x1')
+
+    historyManager.capture()
+    axisSetRepository.activeAxisSet.inactivateAxis()
+    historyManager.undo()
+
+    expect(axisSetRepository.activeAxisSet.activeAxisName).toBe('x1')
+  })
+
+  test('does not restore a selection on the virtual x2y2 axis', () => {
+    // INFO: x2y2 is not in AxisSetDTO — it is rebuilt at the (-999, -999)
+    // sentinel — so bringing its selection back would point the arrow keys at
+    // a coordinate that is not on the image and drag x2/y2 there with it.
+    const { axisSetRepository, historyManager } = setup()
+    axisSetRepository.activeAxisSet.activateAxisByName('x2y2')
+
+    historyManager.capture()
+    axisSetRepository.activeAxisSet.inactivateAxis()
+    historyManager.undo()
+
+    expect(axisSetRepository.activeAxisSet.activeAxisName).toBe('')
+  })
+})
