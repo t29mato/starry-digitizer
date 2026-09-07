@@ -119,4 +119,22 @@ describe('magnifier placeholder', () => {
 
     wrapper.unmount()
   })
+
+  // INFO: the read-out used to show the conversion of pixel (0, 0) before the
+  // cursor had ever been over the graph. On a calibrated figure that is not an
+  // obviously-empty "0px" but a plausible measurement (the embedding host
+  // measured `x: 1.286e+2, y: 3e-5`), which a reader takes for a live value.
+  it('shows a dash instead of a plausible value before the first hover', async () => {
+    ctx.canvasHandler.setUploadImageUrl(IMAGE_URL)
+    const wrapper = mountMagnifier(ctx)
+
+    expect(wrapper.text()).toContain('x: —, y: —')
+
+    ctx.canvasHandler.setIsCursorOnCanvas(true)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).not.toContain('x: —, y: —')
+
+    wrapper.unmount()
+  })
 })

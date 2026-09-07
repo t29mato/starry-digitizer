@@ -227,6 +227,15 @@ export default defineComponent({
       xV: string
       yV: string
     } {
+      // INFO: before the cursor has ever been over the graph, the read-out
+      // would show the conversion of pixel (0, 0). On a calibrated figure that
+      // is not an obviously-empty "0px" but a plausible measurement — the
+      // embedding host measured `x: 1.286e+2, y: 3e-5` — and a reader takes it
+      // for something the magnifier is currently pointing at. A dash cannot be
+      // misread. Same condition as the placeholder above, so the two agree.
+      if (!this.hasMagnifiedOnce) {
+        return { xV: '—', yV: '—' }
+      }
       const calculator = new AxisSetCalculator(
         this.axisSetRepository.activeAxisSet,
         {
