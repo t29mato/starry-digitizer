@@ -71,14 +71,88 @@ export function activateDataset(ctx: DigitizerContext, id: number): void {
 /**
  * Append a dataset and switch to it. The new row inherits the axis set that
  * is active right now, so plotting can continue against the same calibration.
+ *
+ * @returns the id of the row that was just created. INFO: a host that has to
+ * do something with the new row (name it, link it to one of its own records)
+ * used to read `datasetRepository.lastDatasetId` right afterwards, one letter
+ * away from `nextDatasetId` — which type-checks and returns the id of the row
+ * AFTER this one. Returning it removes the choice.
  */
-export function addDataset(ctx: DigitizerContext): void {
+export function addDataset(ctx: DigitizerContext): number {
   const { axisSetRepository, datasetRepository, historyManager } = ctx
 
   historyManager.capture()
   datasetRepository.createNewDataset()
   datasetRepository.lastDataset.setAxisSetId(axisSetRepository.activeAxisSetId)
-  activateDataset(ctx, datasetRepository.lastDatasetId)
+  const id = datasetRepository.lastDatasetId
+  activateDataset(ctx, id)
+  return id
+}
+
+/**
+ * Rename one dataset.
+ *
+ * CAPTURES, unlike the `datasetRepository.editDatasetName()` it wraps. The
+ * name is part of what the digitizer exports — `DatasetDTO.name`, and the
+ * `name` of every row of `getDatasetValues()` — so the rule this file and
+ * axisSetOperations.ts share ("capture where the mutation is, if it changes
+ * what the digitizer would export") makes it a capture point. Leaving it out
+ * is not neutral: undo/redo restore names wholesale, so an uncaptured rename
+ * is silently taken back by the next ⌘Z of some UNRELATED, later action —
+ * exactly the "undo undid something I did not ask it to" bug the extraction
+ * of these use cases was about.
+ *
+ * A host binding this to a text field should call it when the edit is
+ * committed (blur / Enter), not per keystroke: one snapshot per character
+ * would fill the 50-entry history with one rename. (The built-in
+ * DatasetManager panel binds `v-model` straight to `dataset.name` and so
+ * still captures nothing; that is a known gap, not a rule.)
+ *
+ * A rename to the name the dataset already has does nothing at all — same
+ * reasoning as `setLogScale()`: it must not push an undo entry.
+ */
+export function renameDataset(
+  ctx: DigitizerContext,
+  id: number,
+  name: string,
+): void {
+  const { datasetRepository, historyManager } = ctx
+
+  const dataset = datasetRepository.datasets.find((d) => d.id === id)
+  if (!dataset) return
+  if (dataset.name === name) return
+
+  historyManager.capture()
+  datasetRepository.editDatasetName(id, name)
+}
+
+/**
+ * Point a dataset at one of the host's own records, or (with `undefined`)
+ * unlink it.
+ *
+ * INFO: `externalId` is opaque here — nothing in the library reads it — but it
+ * IS exported (`DatasetDTO.externalId`, `getDatasetValues()[].externalId`),
+ * which is what makes it project data and not session state, so it captures
+ * for the same reason renameDataset() does.
+ *
+ * Consequence worth knowing: "create a row and link it" is two use cases and
+ * therefore two undo steps. That is deliberate — each of them changes what
+ * would be exported on its own, and a host is free to link an existing row
+ * without having created it.
+ */
+export function setDatasetExternalId(
+  ctx: DigitizerContext,
+  id: number,
+  externalId: string | undefined,
+): void {
+  const { datasetRepository, historyManager } = ctx
+
+  const dataset = datasetRepository.datasets.find((d) => d.id === id)
+  if (!dataset) return
+  if (dataset.externalId === externalId) return
+
+  historyManager.capture()
+  dataset.setExternalId(externalId)
 }
 
 /**

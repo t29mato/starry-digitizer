@@ -215,7 +215,12 @@ export default defineComponent({
           title: 'View',
           items: [
             { text: 'Zoom In', shortcut: '+', action: this.handleZoomIn },
-            { text: 'Zoom Out', shortcut: '-', action: this.handleZoomOut },
+            {
+              text: 'Zoom Out',
+              shortcut: '-',
+              disabled: !this.canvasHandler.canScaleDown,
+              action: this.handleZoomOut,
+            },
             {
               text: 'Reset to 100%',
               shortcut: '0',

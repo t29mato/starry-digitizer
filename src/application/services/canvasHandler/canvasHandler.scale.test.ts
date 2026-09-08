@@ -206,6 +206,49 @@ describe('CanvasHandler scaling', () => {
     })
   })
 
+  // INFO: hosts draw their own zoom UI and bind scaleDown() straight to a
+  // button, so the bound must be readable (canScaleDown) and hitting it must
+  // not throw at a caller that only pressed an enabled button.
+  describe('the zoom-out lower bound', () => {
+    it('does nothing and does not throw once the bound is reached', () => {
+      const wrapper = createWrapper(WRAPPER_WIDTH, WRAPPER_HEIGHT)
+      attachAllCanvases(canvasHandler, wrapper)
+      loadImage(canvasHandler)
+      canvasHandler.scale = 0.1
+      const untouchedCanvasWidth = canvasHandler.imageCanvas.element.width
+
+      expect(canvasHandler.canScaleDown).toBe(false)
+      expect(() => canvasHandler.scaleDown()).not.toThrow()
+
+      expect(canvasHandler.scale).toBe(0.1)
+      expect(canvasHandler.imageCanvas.element.width).toBe(untouchedCanvasWidth)
+    })
+
+    it('reports that it can still scale down above the bound', () => {
+      loadImage(canvasHandler)
+
+      expect(canvasHandler.canScaleDown).toBe(true)
+
+      canvasHandler.scale = 0.2
+      expect(canvasHandler.canScaleDown).toBe(true)
+    })
+
+    // INFO: a fit-to-frame scale is whatever the frame asked for, so the
+    // current scale is not necessarily a multiple of the 0.1 step and one
+    // step down can overshoot the bound.
+    it('clamps to the bound instead of stepping past it', () => {
+      const wrapper = createWrapper(WRAPPER_WIDTH, WRAPPER_HEIGHT)
+      attachAllCanvases(canvasHandler, wrapper)
+      loadImage(canvasHandler)
+      canvasHandler.scale = 0.15
+
+      canvasHandler.scaleDown()
+
+      expect(canvasHandler.scale).toBeCloseTo(0.1)
+      expect(canvasHandler.canScaleDown).toBe(false)
+    })
+  })
+
   describe('drawOriginalSizeImage', () => {
     it('does not reset the scale when nothing could be resized', () => {
       loadImage(canvasHandler)

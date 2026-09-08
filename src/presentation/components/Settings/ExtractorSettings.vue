@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <div class="sd-panel">
+    <!-- INFO: `sd-panel` is what makes this panel style itself, so a host
+         composing the panels needs no `.starry-digitizer` wrapper around
+         them; inside one it is a no-op. src/presentation/styles/base.scss. -->
     <h4>Manual Extraction</h4>
     <div
       v-if="datasetRepository.isViewAllMode"

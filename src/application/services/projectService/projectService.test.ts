@@ -1,5 +1,21 @@
 import { expect, describe, it, beforeEach } from '@jest/globals'
+import { effect } from '@vue/reactivity'
 import { ProjectService } from './projectService'
+import {
+  DigitizerContext,
+  createDigitizerContext,
+} from '@/application/digitizerContext'
+import {
+  addDataset,
+  removeDataset,
+  renameDataset,
+  setDatasetExternalId,
+} from '@/application/utils/datasetOperations'
+import {
+  setAxisValues,
+  setLogScale,
+  setPointMode,
+} from '@/application/utils/axisSetOperations'
 import { AxisSetRepository } from '@/domain/repositories/axisSetRepository/axisSetRepository'
 import { DatasetRepository } from '@/domain/repositories/datasetRepository/datasetRepository'
 import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandler'
@@ -532,5 +548,148 @@ describe('ProjectService', () => {
       expect(datasetRepository.datasets[1].name).toBe('Round Trip')
       expect(datasetRepository.datasets[1].externalId).toBe('sample-rt')
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// revision
+//
+// INFO: built through createDigitizerContext() rather than `new
+// ProjectService(...)` like the suites above, and every mutation below goes
+// through `ctx`. That is not incidental: `revision` is a computed, and a
+// computed sees a mutation only when it was made through the same reactive()
+// proxy the context hands out. Testing it on raw instances would test
+// something no host can observe.
+// ---------------------------------------------------------------------------
+describe('ProjectService.revision', () => {
+  let ctx: DigitizerContext
+
+  /** Read it, do `mutate`, read it again. */
+  const around = (mutate: () => void): { before: number; after: number } => {
+    const before = ctx.projectService.revision
+    mutate()
+    return { before, after: ctx.projectService.revision }
+  }
+
+  const expectBump = (mutate: () => void) => {
+    const { before, after } = around(mutate)
+    expect(after).toBeGreaterThan(before)
+  }
+
+  beforeEach(() => {
+    ctx = createDigitizerContext()
+  })
+
+  it('does not move while nothing happens', () => {
+    expect(ctx.projectService.revision).toBe(ctx.projectService.revision)
+  })
+
+  it('moves when a point is plotted', () => {
+    expectBump(() => ctx.datasetRepository.activeDataset.addPoint(10, 20))
+  })
+
+  it('moves when a point is dragged — the point object is mutated in place', () => {
+    ctx.datasetRepository.activeDataset.addPoint(10, 20)
+
+    expectBump(() => {
+      ctx.datasetRepository.activeDataset.points[0].xPx = 11
+    })
+  })
+
+  // INFO: the four the host reported as missed by historyManager.subscribe().
+  it('moves when a dataset is renamed', () => {
+    expectBump(() => renameDataset(ctx, ctx.datasetRepository.activeDatasetId, 'renamed'))
+  })
+
+  it('moves when an axis value is set', () => {
+    expectBump(() => setAxisValues(ctx, { x1: 42 }))
+  })
+
+  it('moves when a log scale is toggled', () => {
+    expectBump(() => setLogScale(ctx, 'x', true))
+  })
+
+  it('moves when the point mode changes', () => {
+    expectBump(() => setPointMode(ctx, POINT_MODE.FOUR_POINTS))
+  })
+
+  it('moves when a dataset is linked to a host record', () => {
+    expectBump(() =>
+      setDatasetExternalId(ctx, ctx.datasetRepository.activeDatasetId, 'sample-1'),
+    )
+  })
+
+  it('moves when a dataset is added and when one is removed', () => {
+    let addedId = 0
+    expectBump(() => {
+      addedId = addDataset(ctx)
+    })
+    expectBump(() => removeDataset(ctx, addedId))
+  })
+
+  it('moves on undo and again on redo', () => {
+    addDataset(ctx)
+
+    expectBump(() => ctx.historyManager.undo())
+    expectBump(() => ctx.historyManager.redo())
+  })
+
+  it('moves when a project is restored', () => {
+    expectBump(() => ctx.projectService.restoreProject(buildProjectDTO()))
+  })
+
+  it('does not move for a no-op', () => {
+    setLogScale(ctx, 'x', true)
+    setAxisValues(ctx, { x1: 42 })
+
+    const { before, after } = around(() => {
+      // INFO: all three are guarded as "already what it would be set to", so
+      // nothing is written and the computed is never invalidated. A `revision`
+      // that moved here would send the host off to serialise the project for
+      // nothing, on every keystroke that retypes the same value.
+      setLogScale(ctx, 'x', true)
+      setAxisValues(ctx, { x1: 42 })
+      renameDataset(
+        ctx,
+        ctx.datasetRepository.activeDatasetId,
+        ctx.datasetRepository.activeDataset.name,
+      )
+    })
+
+    expect(after).toBe(before)
+  })
+
+  it('only ever moves forwards, undo included', () => {
+    const seen = [ctx.projectService.revision]
+    ctx.datasetRepository.activeDataset.addPoint(1, 2)
+    seen.push(ctx.projectService.revision)
+    addDataset(ctx)
+    seen.push(ctx.projectService.revision)
+    ctx.historyManager.undo()
+    seen.push(ctx.projectService.revision)
+
+    expect(seen).toStrictEqual([...seen].sort((a, b) => a - b))
+    expect(new Set(seen).size).toBe(seen.length)
+  })
+
+  // INFO: what a host actually writes. `effect` is what core re-exports for a
+  // non-Vue host, and it must re-run without anyone polling. How MANY times it
+  // re-runs is not asserted: `effect` has no scheduler, so one use case that
+  // writes two fields re-runs it twice — which is exactly why the debounce
+  // stays the host's (and StarryDigitizer.vue's) business.
+  it('re-runs a subscriber without the project being serialised', () => {
+    const revisions: number[] = []
+    effect(() => {
+      revisions.push(ctx.projectService.revision)
+    })
+    const afterSubscribing = revisions.length
+
+    ctx.datasetRepository.activeDataset.addPoint(10, 20)
+    renameDataset(ctx, ctx.datasetRepository.activeDatasetId, 'watched')
+
+    expect(afterSubscribing).toBe(1)
+    expect(revisions.length).toBeGreaterThan(afterSubscribing)
+    expect(revisions).toStrictEqual([...revisions].sort((a, b) => a - b))
+    expect(revisions[revisions.length - 1]).toBe(ctx.projectService.revision)
   })
 })

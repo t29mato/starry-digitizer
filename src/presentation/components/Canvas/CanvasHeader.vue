@@ -1,5 +1,8 @@
 <template>
-  <div class="d-flex justify-space-between align-center flex-wrap">
+  <div class="sd-panel d-flex justify-space-between align-center flex-wrap">
+    <!-- INFO: `sd-panel` is what makes this panel style itself, so a host
+         composing the panels needs no `.starry-digitizer` wrapper around
+         them; inside one it is a no-op. src/presentation/styles/base.scss. -->
     <!-- INFO: the dataset name is free text the user (or the host, through the
          project DTO) owns, and an empty one is a normal state — the dataset
          panel shows a grey `dataset N` placeholder for exactly that. Rendering

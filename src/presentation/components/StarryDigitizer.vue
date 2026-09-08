@@ -250,6 +250,11 @@ function measureSidebars() {
 // Errors
 // ---------------------------------------------------------------------------
 function onError(error: unknown) {
+  // INFO: the panels below already emit a DigitizerErrorPayload, so this is
+  // usually a re-normalisation of one — DigitizerError.from() recognises the
+  // payload by its shape and keeps its `code`. `unknown` stays here because
+  // this handler is also the landing point for raw failures thrown by the
+  // load/restore paths below.
   const digitizerError = DigitizerError.from(error, 'PROJECT_INVALID')
   console.error('[starry-digitizer]', digitizerError)
   emit('error', toErrorPayload(digitizerError))
@@ -343,8 +348,16 @@ function emitChange() {
   emit('change', { project, datasets: getDatasetValues() })
 }
 
+// INFO: watch `revision`, not the serialised project. Both fire on exactly
+// the same mutations, but this one walks the state without building a DTO or
+// stringifying it — with a few thousand points that ran on every plotted
+// point. The JSON comparison has NOT gone away: it moved into emitChange(),
+// which runs once per debounce window, and it is still what stops the
+// v-model:project echo loop (`update:project` comes back as a prop change and
+// must not be re-emitted). `revision` decides WHEN to look; the comparison
+// decides WHETHER to emit.
 watch(
-  () => serializeProject(ctx.projectService.toProjectDTO()),
+  () => ctx.projectService.revision,
   () => {
     if (isRestoring) return
     if (debounceTimer !== undefined) clearTimeout(debounceTimer)

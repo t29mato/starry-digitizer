@@ -65,9 +65,15 @@ export {
 // with its own list drives it through these — they carry the call order, the
 // undo capture and the mask/axis-set clean-up a hand-written list would have
 // to rediscover. See README "Replacing the dataset list".
+// `renameDataset` and `setDatasetExternalId` are the two a host reaches for
+// FIRST when it owns the list: the name is what it shows, and `externalId` is
+// how it links a row back to its own record. Both were previously reachable
+// only by writing to the repository and the domain object directly.
 export {
   activateDataset,
   addDataset,
+  renameDataset,
+  setDatasetExternalId,
   removeDataset,
   removeAllDatasets,
   clearDatasetPoints,
@@ -135,6 +141,30 @@ export { MANUAL_MODE, MASK_MODE, POINT_MODE, STYLE } from './constants'
 export type { ManualMode, MaskMode, PointMode } from './@types/types'
 
 // ---------------------------------------------------------------------------
+// The context's own types
+// ---------------------------------------------------------------------------
+// INFO: every field of DigitizerContext, by name. A host that splits its UI
+// across components has to name these types to pass a repository or a service
+// down as a prop, and without them the only way was to peel them off the
+// context — `DigitizerContext['datasetRepository']`, and then
+// `…['datasets'][number]` for a dataset. That second one depends on the
+// container being an array of domain models, which is an implementation
+// detail, not a promise. These are types only: nothing is added to the bundle.
+export type { AxisSetRepositoryInterface } from './domain/repositories/axisSetRepository/axisSetRepositoryInterface'
+export type { DatasetRepositoryInterface } from './domain/repositories/datasetRepository/datasetRepositoryInterface'
+export type { AxisSetInterface } from './domain/models/axisSet/axisSetInterface'
+export type { AxisInterface } from './domain/models/axis/axisInterface'
+export type { DatasetInterface } from './domain/models/dataset/datasetInterface'
+export type { CanvasHandlerInterface } from './application/services/canvasHandler/canvasHandlerInterface'
+export type { AttachedCanvasElements } from './application/services/canvasHandler/canvasHandlerInterface'
+export type { ConfirmerInterface } from './application/services/confirmer/confirmerInterface'
+export type { ExtractorInterface } from './application/services/extractor/extractorInterface'
+export type { InterpolatorInterface } from './application/services/interpolator/interpolatorInterface'
+export type { MagnifierInterface } from './application/services/magnifier/magnifierInterface'
+export type { ProjectServiceInterface } from './application/services/projectService/projectServiceInterface'
+export type { ValueFormatInterface } from './application/services/valueFormat/valueFormatInterface'
+
+// ---------------------------------------------------------------------------
 // Ports
 // ---------------------------------------------------------------------------
 // INFO: the pixel input the extraction algorithms need. Implementing it is how
@@ -144,7 +174,25 @@ export type { PixelSource } from './application/ports/pixelSource'
 // ---------------------------------------------------------------------------
 // Errors
 // ---------------------------------------------------------------------------
-export { DigitizerError } from './application/errors'
+// INFO: `toErrorPayload` and the two guards are here and NOT also on the
+// `/vue` entry, even though it is the panel-composing host that meets a panel
+// `error` event. That host already imports createDigitizerContext() from
+// `/core`, so it costs it nothing — and exporting one function from two
+// subpaths is how a bundler ends up with two copies of it, which is the exact
+// failure mode `isDigitizerErrorLike` exists to survive.
+//
+// `isDigitizerErrorLike` is the guard to branch on rather than
+// `instanceof DigitizerError`: a class identity does not survive a duplicated
+// bundle, a `{ code, message }` shape does. DIGITIZER_ERROR_CODES is exported
+// as a VALUE so a host can validate against the real list instead of
+// hand-copying it — a copy silently stops recognising codes we add later.
+export {
+  DIGITIZER_ERROR_CODES,
+  DigitizerError,
+  isDigitizerErrorCode,
+  isDigitizerErrorLike,
+  toErrorPayload,
+} from './application/errors'
 export type {
   DigitizerErrorCode,
   DigitizerErrorPayload,

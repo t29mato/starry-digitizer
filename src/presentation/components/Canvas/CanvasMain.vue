@@ -2,7 +2,7 @@
   <div
     id="canvasWrapper"
     ref="canvasWrapper"
-    class="c__canvas-wrapper"
+    class="sd-panel c__canvas-wrapper"
     data-cy="canvas-wrapper"
     :tabindex="isAnyKeyboardGroupEnabled ? 0 : undefined"
     @click="click"
@@ -11,6 +11,9 @@
     @mouseenter="mouseEnter"
     @mouseleave="mouseLeave"
   >
+    <!-- INFO: `sd-panel` is what makes this panel style itself, so a host
+         composing the panels needs no `.starry-digitizer` wrapper around
+         them; inside one it is a no-op. src/presentation/styles/base.scss. -->
     <canvas id="imageCanvas" ref="imageCanvas" data-cy="image-canvas"></canvas>
     <canvas
       id="tempMaskCanvas"
@@ -80,6 +83,7 @@ import {
   triggerLoadProjectDialog,
 } from '@/presentation/utils/projectFileDialog'
 import { MANUAL_MODE } from '@/constants'
+import { DigitizerError, toErrorPayload } from '@/application/errors'
 
 export default defineComponent({
   components: {
@@ -602,7 +606,21 @@ export default defineComponent({
     ): Promise<void> {
       const result = await operation
       if (!result.success && result.errorMessage) {
-        this.$emit('error', result.error ?? new Error(result.errorMessage))
+        // INFO: the panel emits the same DigitizerErrorPayload the root
+        // component does. A host composing panels directly (no
+        // <StarryDigitizer> above them) receives this event itself, and an
+        // `error` whose shape depended on which component happened to emit it
+        // would break its `payload.code` branch the moment the root is dropped.
+        this.$emit(
+          'error',
+          toErrorPayload(
+            DigitizerError.from(
+              result.error,
+              'PROJECT_INVALID',
+              result.errorMessage,
+            ),
+          ),
+        )
       }
     },
     // INFO: No modifier key here (mirrors the 'a'/'e'/'d' mode-switch keys

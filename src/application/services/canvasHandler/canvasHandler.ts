@@ -10,6 +10,11 @@ import { MANUAL_MODE, MASK_MODE } from '@/constants'
 import { Coord, ManualMode, MaskMode } from '@/@types/types'
 import { PixelSource } from '@/application/ports/pixelSource'
 
+// INFO: the smallest zoom scaleDown() will go to. Below it the image is too
+// small to place a point on, and a scale of 0 or less would make every overlay
+// coordinate meaningless.
+const MIN_SCALE = 0.1
+
 // INFO: callers outside this class must change mode / cursor state through the
 // setters (setManualMode, setMaskMode, setIsCursorOnCanvas) instead of assigning
 // the fields directly. The setters keep the mutually exclusive modes consistent
@@ -625,11 +630,23 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     this.isFitSizePending = false
   }
 
+  get canScaleDown(): boolean {
+    return this.scale > MIN_SCALE
+  }
+
   scaleDown() {
-    if (this.scale <= 0.1) {
-      throw new Error(`The scale doesn't allow it to be a minus.`)
+    // INFO: a no-op at the lower bound, not a throw. Zoom UI is drawn by the
+    // host, which binds a button straight to this method; a button that is
+    // visible and enabled must never throw at the caller. Hosts that want the
+    // button greyed out read `canScaleDown` instead of guessing the bound.
+    if (!this.canScaleDown) {
+      return
     }
-    const scale = this.scale - 0.1
+    // INFO: clamped, because the current scale is not necessarily a multiple
+    // of the step — a fit-to-frame scale is whatever the frame asked for — and
+    // one step down from 0.15 would otherwise land at 0.05, below the bound
+    // `canScaleDown` promises we stay on.
+    const scale = Math.max(MIN_SCALE, this.scale - 0.1)
     const scaledWidth = this.originalWidth * scale
     const scaledHeight = this.originalHeight * scale
     if (!this.resize(scaledWidth, scaledHeight)) {

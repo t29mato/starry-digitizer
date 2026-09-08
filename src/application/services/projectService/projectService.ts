@@ -1,3 +1,5 @@
+import { computed, reactive } from '@vue/reactivity'
+import type { ComputedRef } from '@vue/reactivity'
 import { ProjectServiceInterface } from './projectServiceInterface'
 import {
   ProjectDTO,
@@ -30,10 +32,41 @@ function loadJSZip(): Promise<typeof JSZip> {
   return jszipModule
 }
 
+// INFO: reading a value is the entire point of the call; the arguments are
+// thrown away. Used by trackProjectState() below, where a bare `axisSet.name`
+// statement would read as dead code (and lint as one).
+function touch(...values: unknown[]): void {
+  void values
+}
+
 export class ProjectService implements ProjectServiceInterface {
   private axisSetRepository: AxisSetRepositoryInterface
   private datasetRepository: DatasetRepositoryInterface
   private canvasHandler: CanvasHandlerInterface
+
+  // INFO: the same repositories again, but as the reactive() proxies the
+  // DigitizerContext hands out. `revision` is a computed, and a computed only
+  // records a dependency on state it reads THROUGH a proxy — the raw
+  // instances this service is constructed with notify nobody. reactive()
+  // caches by target, so these are the very proxies `ctx.datasetRepository`
+  // resolves to and not a second copy: a mutation made by a use case, a panel
+  // or restoreProject() is seen here, whichever of the two references it went
+  // through. (Only a mutation applied to a raw instance obtained outside the
+  // context escapes this — the same blind spot the UI's own re-rendering has,
+  // see digitizerContext.ts.)
+  private observedAxisSetRepository: AxisSetRepositoryInterface
+  private observedDatasetRepository: DatasetRepositoryInterface
+  private observedCanvasHandler: CanvasHandlerInterface
+
+  // INFO: the counter is a plain field, incremented by the computed below and
+  // never read reactively — bumping it inside its own evaluation would
+  // otherwise invalidate that evaluation forever.
+  private revisionCounter = 0
+  // INFO: the ComputedRef is reached through a function, not held in a field.
+  // reactive() UNWRAPS refs stored in properties, so `this.revisionRef.value`
+  // read through the context's proxy would be `(a number).value` — undefined.
+  // A closure over the ref is invisible to the proxy.
+  private readRevision: () => number
 
   constructor(
     axisSetRepository: AxisSetRepositoryInterface,
@@ -43,6 +76,88 @@ export class ProjectService implements ProjectServiceInterface {
     this.axisSetRepository = axisSetRepository
     this.datasetRepository = datasetRepository
     this.canvasHandler = canvasHandler
+
+    this.observedAxisSetRepository = reactive(
+      axisSetRepository,
+    ) as AxisSetRepositoryInterface
+    this.observedDatasetRepository = reactive(
+      datasetRepository,
+    ) as DatasetRepositoryInterface
+    this.observedCanvasHandler = reactive(
+      canvasHandler,
+    ) as CanvasHandlerInterface
+
+    // INFO: a computed rather than a counter every mutation site has to
+    // remember to bump. Vue re-evaluates this exactly when one of the values
+    // trackProjectState() read has actually changed, so a new operation added
+    // anywhere in the library — or a host writing to a domain object directly
+    // — is picked up without anyone having to know `revision` exists. A
+    // forgotten bump is precisely the silent "the host never saved that edit"
+    // bug this is meant to remove.
+    //
+    // Evaluation is lazy: the counter moves on the first read AFTER a change,
+    // so a burst of mutations between two reads costs one step, and reading
+    // twice with nothing in between returns the same number.
+    const revisionRef: ComputedRef<number> = computed(() => {
+      this.trackProjectState()
+      this.revisionCounter += 1
+      return this.revisionCounter
+    })
+    this.readRevision = () => revisionRef.value
+  }
+
+  get revision(): number {
+    return this.readRevision()
+  }
+
+  /**
+   * Read — and only read — every value `toProjectDTO()` puts into the DTO, so
+   * that the computed above depends on all of them and on nothing else.
+   *
+   * MUST MIRROR toProjectDTO()/converters.ts: a field added to the DTO
+   * without a read here would change the project without changing `revision`.
+   * The mirror is written out by hand rather than by calling toProjectDTO()
+   * itself because that is what makes the notification cheap — this walk
+   * allocates nothing, while the DTO copies every point object on every
+   * mutation, which is the cost hosts were paying (and re-stringifying) per
+   * tick before `revision` existed.
+   */
+  private trackProjectState(): void {
+    const axisSetRepository = this.observedAxisSetRepository
+    const datasetRepository = this.observedDatasetRepository
+    const canvasHandler = this.observedCanvasHandler
+
+    touch(axisSetRepository.activeAxisSetId)
+    axisSetRepository.axisSets.forEach((axisSet) => {
+      touch(
+        axisSet.id,
+        axisSet.name,
+        axisSet.xIsLogScale,
+        axisSet.yIsLogScale,
+        axisSet.considerGraphTilt,
+        axisSet.pointMode,
+        axisSet.isVisible,
+      )
+      // INFO: x2y2 is deliberately absent — it is derived at runtime and not
+      // part of AxisSetDTO (see fromAxisSetDTO).
+      ;[axisSet.x1, axisSet.x2, axisSet.y1, axisSet.y2].forEach((axis) => {
+        touch(axis.name, axis.value, axis.coord.xPx, axis.coord.yPx)
+      })
+    })
+
+    touch(datasetRepository.activeDatasetId)
+    datasetRepository.datasets.forEach((dataset) => {
+      touch(dataset.id, dataset.name, dataset.axisSetId, dataset.externalId)
+      dataset.points.forEach((point) => {
+        touch(point.id, point.xPx, point.yPx)
+      })
+      // INFO: forEach(touch) reads every element AND the array itself, which
+      // is what a push/filter has to invalidate.
+      dataset.visiblePointIds.forEach(touch)
+      dataset.manuallyAddedPointIds.forEach(touch)
+    })
+
+    touch(canvasHandler.scale, canvasHandler.manualMode)
   }
 
   toProjectDTO(): ProjectDTO {

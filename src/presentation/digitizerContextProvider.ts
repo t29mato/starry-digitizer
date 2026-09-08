@@ -19,8 +19,14 @@ export function provideDigitizerContext(context: DigitizerContext): void {
 export function useDigitizerContext(): DigitizerContext {
   const context = inject(DIGITIZER_CONTEXT_KEY)
   if (!context) {
+    // INFO: naming BOTH ways out matters now that composing the panels
+    // yourself is a supported arrangement rather than an internal detail. The
+    // message used to say only "render it inside <StarryDigitizer>", which
+    // sends a host that deliberately dropped the root component looking for
+    // the wrong fix.
     throw new Error(
-      'DigitizerContext is not provided. Components must be rendered inside <StarryDigitizer>.',
+      'DigitizerContext is not provided. Render the panels inside <StarryDigitizer>, ' +
+        'or call provideDigitizerContext(createDigitizerContext()) in an ancestor component.',
     )
   }
   return context

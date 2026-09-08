@@ -1,5 +1,8 @@
 <template>
-  <div ref="root" class="c__magnifier mb-0">
+  <div ref="root" class="sd-panel c__magnifier mb-0">
+    <!-- INFO: `sd-panel` is what makes this panel style itself, so a host
+         composing the panels needs no `.starry-digitizer` wrapper around
+         them; inside one it is a no-op. src/presentation/styles/base.scss. -->
     <div ref="box" class="c__magnifier__box">
       <magnifier-settings-btn
         :toggleSettingsDialog="toggleSettingsDialog"

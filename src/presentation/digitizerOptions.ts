@@ -405,6 +405,38 @@ export function provideDigitizerOptions(options: DigitizerOptionsSource): void {
   provide(DIGITIZER_OPTIONS_KEY, resolveDigitizerOptions(options))
 }
 
+// INFO: warned about once per page rather than once per component, because
+// every panel calls useDigitizerOptions() and one forgotten provide would
+// otherwise print a dozen identical lines.
+let hasWarnedAboutMissingOptions = false
+
+/**
+ * The options for the panel calling this, filled out from the defaults.
+ *
+ * Options stay OPTIONAL — a host that provides none gets DEFAULT_OPTIONS, and
+ * that is a supported arrangement. But the default is the widest one there
+ * is (`readonly: false`, every feature on), so a host that MEANT to provide
+ * options and did not gets a fully editable digitizer with every panel back,
+ * looking entirely normal. That is why the fallback warns rather than staying
+ * silent, and why it is deliberately asymmetric with useDigitizerContext(),
+ * which throws: there is no sensible default context, and there is a sensible
+ * default set of options.
+ */
 export function useDigitizerOptions(): DigitizerOptions {
-  return inject(DIGITIZER_OPTIONS_KEY, DEFAULT_OPTIONS)
+  const provided = inject(DIGITIZER_OPTIONS_KEY, undefined)
+  if (provided) {
+    return provided
+  }
+
+  if (!hasWarnedAboutMissingOptions) {
+    hasWarnedAboutMissingOptions = true
+    console.warn(
+      '[starry-digitizer] no options were provided, falling back to ' +
+        'DEFAULT_OPTIONS (readonly: false, every feature on). Call ' +
+        'provideDigitizerOptions({ ... }) in an ancestor of the panels — ' +
+        'next to provideDigitizerContext() — or render them inside ' +
+        '<StarryDigitizer>, which provides them for you.',
+    )
+  }
+  return DEFAULT_OPTIONS
 }

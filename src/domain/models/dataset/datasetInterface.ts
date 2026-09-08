@@ -60,4 +60,5 @@ export interface DatasetInterface {
   pointsSortedByIdAscending(): Points
   pointsSortedByIdDescending(): Points
   setAxisSetId(id: number): void
+  setExternalId(externalId: string | undefined): void
 }

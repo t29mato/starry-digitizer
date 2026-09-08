@@ -77,6 +77,11 @@ export interface CanvasHandlerInterface extends PixelSource {
   clearTempMask(): void
   clearMask(): void
   drawFitSizeImage(): void
+  // INFO: whether scaleDown() would still change the scale — false once the
+  // lower zoom bound is reached, where scaleDown() is a no-op. A host drawing
+  // its own zoom-out button binds this to `:disabled` so the button matches
+  // what pressing it would do.
+  get canScaleDown(): boolean
   scaleDown(): void
   scaleUp(): void
   drawOriginalSizeImage(): void

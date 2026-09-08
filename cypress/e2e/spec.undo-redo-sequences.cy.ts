@@ -15,6 +15,7 @@ import {
   datasetName,
   pointCount,
   addDataset,
+  renameDataset,
   datasetAction,
   selectDataset,
   undo,
@@ -153,5 +154,31 @@ describe('undo/redo sequences', () => {
     canvasPoints().should('have.length', 1)
     assertEditMenu({ undo: 'enabled', redo: 'disabled' })
     assertTableRow(0, '2.5', '25')
+  })
+
+  // INFO: renaming used to take no snapshot of its own, and undo restores the
+  // dataset names wholesale — so the next ⌘Z of an UNRELATED action silently
+  // took the name back with it. The point of this test is the second
+  // assertion: undoing the point must leave the name alone.
+  it('does not take a rename back when an unrelated action is undone', () => {
+    calibrateTwoPoints(ORIGIN, OPPOSITE)
+    setAxisValues({ x1: '0', x2: '10', y1: '0', y2: '100' })
+
+    renameDataset(0, 'Sample A')
+    datasetName(0).should('have.value', 'Sample A')
+
+    clickCanvas(MIDPOINT)
+    canvasPoints().should('have.length', 1)
+
+    undo()
+    canvasPoints().should('have.length', 0)
+    datasetName(0).should('have.value', 'Sample A')
+
+    // And the rename is undoable in its own right, one step per rename.
+    undo()
+    datasetName(0).should('have.value', 'dataset 1')
+
+    redo()
+    datasetName(0).should('have.value', 'Sample A')
   })
 })

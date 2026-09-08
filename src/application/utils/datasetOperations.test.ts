@@ -5,6 +5,8 @@ import {
   clearDatasetPoints,
   removeAllDatasets,
   removeDataset,
+  renameDataset,
+  setDatasetExternalId,
   viewAllDatasets,
 } from './datasetOperations'
 import { DigitizerContext } from '@/application/digitizerContext'
@@ -363,6 +365,98 @@ describe('addDataset', () => {
     expect(c.axisSetRepository.activeAxisSetId).toBe(secondAxisSetId)
     expect(c.canvasHandler.clearMask).toHaveBeenCalled()
     expect(c.historyManager.canUndo).toBe(true)
+  })
+
+  // INFO: the whole reason it returns the id — a host that reached for
+  // `lastDatasetId` afterwards was one letter from `nextDatasetId`, which
+  // type-checks and names the row that does not exist yet.
+  it('returns the id of the row it created', () => {
+    const id = addDataset(c.ctx)
+
+    expect(id).toBe(c.datasetRepository.lastDatasetId)
+    expect(id).toBe(c.datasetRepository.activeDatasetId)
+    expect(addDataset(c.ctx)).not.toBe(id)
+  })
+})
+
+describe('renameDataset', () => {
+  let c: Ctx
+
+  beforeEach(() => {
+    c = buildContext()
+  })
+
+  it('renames the row and captures, so an unrelated undo cannot take the name back', () => {
+    renameDataset(c.ctx, 1, 'Sample A')
+
+    expect(c.datasetRepository.datasets[0].name).toBe('Sample A')
+    expect(c.historyManager.canUndo).toBe(true)
+
+    c.historyManager.undo()
+
+    expect(c.datasetRepository.datasets[0].name).not.toBe('Sample A')
+  })
+
+  it('renames the row it is given, not the active one', () => {
+    c.datasetRepository.createNewDataset()
+    c.datasetRepository.setActiveDataset(2)
+
+    renameDataset(c.ctx, 1, 'Sample A')
+
+    expect(c.datasetRepository.datasets[0].name).toBe('Sample A')
+    expect(c.datasetRepository.datasets[1].name).not.toBe('Sample A')
+  })
+
+  it('does nothing for an unknown id', () => {
+    renameDataset(c.ctx, 999, 'Sample A')
+
+    expect(c.historyManager.canUndo).toBe(false)
+  })
+
+  // INFO: same guard as setLogScale()/setAxisValues() — retyping the name a
+  // dataset already has is not an edit and must not eat an undo step.
+  it('does not capture when the name is unchanged', () => {
+    const { name } = c.datasetRepository.datasets[0]
+
+    renameDataset(c.ctx, 1, name)
+
+    expect(c.historyManager.canUndo).toBe(false)
+  })
+})
+
+describe('setDatasetExternalId', () => {
+  let c: Ctx
+
+  beforeEach(() => {
+    c = buildContext()
+  })
+
+  it('links the row to a host record and captures', () => {
+    setDatasetExternalId(c.ctx, 1, 'sample-42')
+
+    expect(c.datasetRepository.datasets[0].externalId).toBe('sample-42')
+    expect(c.historyManager.canUndo).toBe(true)
+  })
+
+  it('unlinks with undefined', () => {
+    setDatasetExternalId(c.ctx, 1, 'sample-42')
+
+    setDatasetExternalId(c.ctx, 1, undefined)
+
+    expect(c.datasetRepository.datasets[0].externalId).toBeUndefined()
+  })
+
+  it('does nothing for an unknown id, and nothing for the id it already has', () => {
+    setDatasetExternalId(c.ctx, 999, 'sample-42')
+
+    expect(c.historyManager.canUndo).toBe(false)
+
+    setDatasetExternalId(c.ctx, 1, 'sample-42')
+    c.historyManager.clear()
+
+    setDatasetExternalId(c.ctx, 1, 'sample-42')
+
+    expect(c.historyManager.canUndo).toBe(false)
   })
 })
 

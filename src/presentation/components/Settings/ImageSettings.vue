@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <div class="sd-panel">
+    <!-- INFO: `sd-panel` is what makes this panel style itself, so a host
+         composing the panels needs no `.starry-digitizer` wrapper around
+         them; inside one it is a no-op. src/presentation/styles/base.scss. -->
     <!-- INFO: the wrapper carries the margin because SdFileInput forwards
          attrs (including `class`) to the inner <input>, and the test hooks
          (`data-cy="image-file-input"`, plus the legacy `id="fileInput"`) have
@@ -33,7 +36,7 @@ import {
   useDigitizerOptions,
 } from '@/presentation/digitizerOptions'
 import { replaceImage } from '@/application/utils/digitizerOperations'
-import { DigitizerError } from '@/application/errors'
+import { DigitizerError, toErrorPayload } from '@/application/errors'
 import { SdFileInput } from '@/presentation/ui'
 
 export default defineComponent({
@@ -119,8 +122,14 @@ export default defineComponent({
         this.$emit('image-replaced', { blob: file })
       } catch (e) {
         // INFO: no alert()/throw here — embedding hosts render their own error
-        // UI from the `error` event (invalid type, unreadable file, ...).
-        this.$emit('error', DigitizerError.from(e, 'IMAGE_LOAD_FAILED'))
+        // UI from the `error` event (invalid type, unreadable file, ...). The
+        // payload is normalised exactly as the root component normalises it,
+        // so a host that places this panel on its own still branches on
+        // `payload.code` rather than on a raw exception.
+        this.$emit(
+          'error',
+          toErrorPayload(DigitizerError.from(e, 'IMAGE_LOAD_FAILED')),
+        )
       }
     },
     onImageUploaded(event: Event) {

@@ -91,8 +91,9 @@ UI framework the host uses. Runtime dependencies installed automatically:
 `jszip`, `curve-interpolator`, `tesseract.js` (lazy-loaded).
 
 Import the library stylesheet once (anywhere in the app) — the same single import
-whichever entry point you use; every rule in it is scoped under the
-`.starry-digitizer` root class:
+whichever entry point you use; every rule in it is scoped under
+`.starry-digitizer` (a wrapper you write) or `.sd-panel` (a class the library
+puts on every panel's own root element), so nothing reaches your markup:
 
 ```ts
 import 'starry-digitizer/styles'
@@ -111,9 +112,9 @@ zero specificity. Three things follow:
   something more specific. Load order does not matter.
 - **Panels themed without a wrapper.** A host composing the panels itself (see
   `starry-digitizer/vue` below) does not have to wrap each panel in
-  `.starry-digitizer` just to make the colors resolve. Note that the spacing
-  utilities the panels use (`d-flex`, `pa-1`, …) *are* still scoped to that class,
-  so a panel outside a wrapper keeps its colors but loses its padding.
+  `.starry-digitizer` just to make the colors resolve. The spacing utilities
+  (`d-flex`, `pa-1`, …) resolve without a wrapper too — every panel carries
+  `.sd-panel` on its own root — so a panel outside a wrapper is complete.
 - **Per-instance themes still work.** Declaring tokens on a wrapper themes that
   subtree only, so two digitizers on one page can look different.
 
@@ -127,9 +128,9 @@ The three typography tokens default to `inherit`:
 
 | Token | Default | Applied to |
 |---|---|---|
-| `--sd-font` | `inherit` | `font-family` of `.starry-digitizer` |
-| `--sd-font-size` | `inherit` | `font-size` of `.starry-digitizer` |
-| `--sd-line-height` | `inherit` | `line-height` of `.starry-digitizer` |
+| `--sd-font` | `inherit` | `font-family` of `.starry-digitizer` / `.sd-panel` |
+| `--sd-font-size` | `inherit` | `font-size` of `.starry-digitizer` / `.sd-panel` |
+| `--sd-line-height` | `inherit` | `line-height` of `.starry-digitizer` / `.sd-panel` |
 
 So out of the box the digitizer renders in whatever font, size and line height
 the host page already uses; it brings no typeface of its own.
@@ -247,6 +248,26 @@ const values = getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, ct
   </div>
 </template>
 ```
+
+##### No wrapper needed, and your own UI can go anywhere
+
+There is nothing to wrap. Every panel exported from `starry-digitizer/vue`
+carries `.sd-panel` on its own root element, and the stylesheet is scoped to
+that class as well as to `.starry-digitizer`, so a panel styles itself wherever
+you put it — no ancestor of ours required.
+
+Two things follow, and both used to be layout constraints:
+
+- **Your markup can sit between our panels.** Put a toolbar between
+  `CanvasHeader` and `CanvasMain`, a unit selector under `AxisSetSettings`,
+  anything — it will not pick up our base font or our `box-sizing`, because
+  those only apply from `.sd-panel` down. (Inside a `.starry-digitizer` wrapper
+  they still apply to everything, as they always have; that is what the wrapper
+  is for.)
+- **A `.starry-digitizer` wrapper is now optional, not required.** Write one
+  when you want it — to theme a subtree, to set layout custom properties for
+  one instance, or because you already have one. Panels nested inside one
+  render exactly as they do outside it; the two scopes are idempotent.
 
 ##### Pass only what you want to change
 
@@ -517,6 +538,10 @@ Notes:
   picked (`scaleUp` / `scaleDown` / `drawOriginalSizeImage`) leaves fit mode,
   and from then on no layout change overrides it; `drawFitSizeImage()` puts the
   view back into fit mode.
+- **Zooming out stops at 10%, quietly.** `scaleDown()` is a no-op once the
+  lower bound is reached — it does not throw, so a host can bind it straight to
+  a button. Bind `canvasHandler.canScaleDown` to that button's `disabled` to
+  grey it out there.
 - Change notification is `@vue/reactivity`, re-exported here so the host can
   subscribe without importing it itself: `effect`, `stop`, `computed`, `ref`,
   `reactive`, `readonly`, `effectScope`, and the usual guards (`isReactive`,
@@ -909,7 +934,14 @@ when there actually was history to discard — a notification always means the
 undo/redo state changed.
 
 Error codes (`DigitizerErrorCode`): `IMAGE_LOAD_FAILED`, `INVALID_IMAGE_TYPE`,
-`DTO_VERSION_UNSUPPORTED`, `PROJECT_INVALID`, `ZIP_INVALID`, `EXPORT_FAILED`.
+`DTO_VERSION_UNSUPPORTED`, `PROJECT_INVALID`, `ZIP_INVALID`, `EXPORT_FAILED`,
+`AXIS_SET_ALREADY_CALIBRATED`. The same list is exported as a value,
+`DIGITIZER_ERROR_CODES` — read it instead of copying the union, so a code added
+here shows up on your side too. `isDigitizerErrorLike(e)` is the shape check
+that goes with it: `e instanceof DigitizerError` is unreliable when the page
+ends up with two copies of the library, so the guard tests for a known `code`
+and a string `message` instead. Individually composed panels emit the same
+`DigitizerErrorPayload` on their `error` event as the root component does.
 
 ### Methods (template ref)
 

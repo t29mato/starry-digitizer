@@ -1,5 +1,8 @@
 <template>
-  <div class="mt-0 mb-0">
+  <div class="sd-panel mt-0 mb-0">
+    <!-- INFO: `sd-panel` is what makes this panel style itself, so a host
+         composing the panels needs no `.starry-digitizer` wrapper around
+         them; inside one it is a no-op. src/presentation/styles/base.scss. -->
     <h5 class="mb-0">Selection Area</h5>
     <div class="d-flex align-center flex-wrap mb-2">
       <!-- INFO: replacement for <v-btn-toggle>: clicking the active tool

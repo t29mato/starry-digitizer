@@ -6,6 +6,7 @@ jest.mock('@/presentation/styles/base.scss', () => ({}), { virtual: true })
 import { mount } from '@vue/test-utils'
 import StarryDigitizer from './StarryDigitizer.vue'
 import { createDigitizerContext } from '@/application/digitizerContext'
+import { ProjectDTO } from '@/application/dto/projectDTO'
 
 // INFO: <StarryDigitizer> is the API surface a host that does NOT place the
 // panels itself has. It has to be able to (1) hear that the digitizer just did
@@ -121,5 +122,62 @@ describe('<StarryDigitizer> undo history', () => {
     wrapper.unmount()
 
     expect(unsubscribed).toHaveBeenCalledTimes(1)
+  })
+})
+
+// INFO: the root component's own change notification. It watches
+// `projectService.revision` — cheap, and it moves on every mutation — but it
+// still serialises the DTO once per debounce window before emitting, because
+// `update:project` comes back as a `project` prop change under v-model and an
+// unconditional emit would loop.
+describe('<StarryDigitizer> change notifications', () => {
+  const mountWithContext = () => {
+    const context = createDigitizerContext()
+    const wrapper = mount(StarryDigitizer, {
+      props: { context, updateDebounceMs: 0 },
+    })
+    return { wrapper, context }
+  }
+
+  /** Let the mount's loadProject settle, then the 0 ms debounce fire. */
+  const settle = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  }
+
+  it('emits the project once the state has changed', async () => {
+    const { wrapper, context } = mountWithContext()
+    await settle()
+    expect(wrapper.emitted('update:project')).toBeUndefined()
+
+    context.datasetRepository.activeDataset.addPoint(10, 20)
+    await settle()
+
+    const events = wrapper.emitted('update:project')
+    expect(events).toHaveLength(1)
+    const project = events?.[0][0] as ProjectDTO
+    expect(project.datasets[0].points).toStrictEqual([
+      { id: 1, xPx: 10, yPx: 20 },
+    ])
+    expect(wrapper.emitted('change')).toHaveLength(1)
+  })
+
+  it('stays quiet when the serialised project did not change', async () => {
+    const { wrapper, context } = mountWithContext()
+    await settle()
+    context.datasetRepository.activeDataset.addPoint(10, 20)
+    await settle()
+    expect(wrapper.emitted('update:project')).toHaveLength(1)
+
+    // INFO: rewrites `visiblePointIds` with an array of equal contents — a
+    // change as far as the reactivity (and therefore `revision`) is
+    // concerned, but not one the DTO can show. The JSON gate is what has to
+    // catch it.
+    const revisionBefore = context.projectService.revision
+    context.datasetRepository.activeDataset.removeVisiblePointId(999)
+    await settle()
+
+    expect(context.projectService.revision).toBeGreaterThan(revisionBefore)
+    expect(wrapper.emitted('update:project')).toHaveLength(1)
   })
 })

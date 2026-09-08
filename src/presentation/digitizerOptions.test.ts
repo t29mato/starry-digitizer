@@ -40,6 +40,32 @@ function mountWithOptions(source?: DigitizerOptionsSource) {
   return { wrapper, options: injected }
 }
 
+/**
+ * Mounts the same pair against a FRESH copy of the module, so the once-per-page
+ * warning flag starts unset. `mountWithOptions` above shares one module
+ * instance with the rest of the file and would only ever warn on whichever
+ * test ran first.
+ */
+async function mountWithFreshModule(source?: DigitizerOptionsSource) {
+  jest.resetModules()
+  const mod = await import('@/presentation/digitizerOptions')
+
+  const Child = defineComponent({
+    setup() {
+      const injected = mod.useDigitizerOptions()
+      return () => h('div', String(injected.readonly))
+    },
+  })
+  const Parent = defineComponent({
+    setup() {
+      if (source !== undefined) mod.provideDigitizerOptions(source)
+      return () => h(Child)
+    },
+  })
+
+  return { wrapper: mount(Parent), mod }
+}
+
 describe('useDigitizerOptions', () => {
   it('falls back to DEFAULT_OPTIONS when nothing is provided', () => {
     const { options } = mountWithOptions()
@@ -47,6 +73,58 @@ describe('useDigitizerOptions', () => {
     expect(options).toEqual(DEFAULT_OPTIONS)
     expect(options.readonly).toBe(false)
     expect(options.features.magnifier).toBe(true)
+  })
+
+  // INFO: the fallback is the widest set of options there is, so a host that
+  // meant to provide options and forgot gets a fully editable digitizer that
+  // looks completely normal — the failure this warning exists to end. The
+  // fallback itself stays: options really are optional.
+  it('warns when it has to fall back, so a forgotten provide is not silent', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    try {
+      await mountWithFreshModule()
+
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn.mock.calls[0][0]).toContain('provideDigitizerOptions')
+      expect(warn.mock.calls[0][0]).toContain('readonly: false')
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('stays silent once options are provided', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    try {
+      await mountWithFreshModule({ readonly: true })
+
+      expect(warn).not.toHaveBeenCalled()
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  // INFO: every panel calls useDigitizerOptions(), so warning per call would
+  // print a dozen identical lines for one forgotten provide.
+  it('warns only once however many panels ask', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    try {
+      const { mod } = await mountWithFreshModule()
+      const Panel = defineComponent({
+        setup() {
+          mod.useDigitizerOptions()
+          return () => h('div')
+        },
+      })
+      mount(Panel)
+      mount(Panel)
+
+      expect(warn).toHaveBeenCalledTimes(1)
+    } finally {
+      warn.mockRestore()
+    }
   })
 
   it('reads a plain object, as hosts have always passed it', () => {

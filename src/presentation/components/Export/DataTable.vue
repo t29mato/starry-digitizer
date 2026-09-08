@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <div class="sd-panel">
+    <!-- INFO: `sd-panel` is what makes this panel style itself, so a host
+         composing the panels needs no `.starry-digitizer` wrapper around
+         them; inside one it is a no-op. src/presentation/styles/base.scss. -->
     <!-- INFO: `data-table-wrapper` marks the scrolling frame (this is what a
          host measures for height); `data-table` marks the <table> itself. -->
     <div class="c__table-wrapper" data-cy="data-table-wrapper">

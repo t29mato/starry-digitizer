@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <div class="sd-panel">
+    <!-- INFO: `sd-panel` is what makes this panel style itself, so a host
+         composing the panels needs no `.starry-digitizer` wrapper around
+         them; inside one it is a no-op. src/presentation/styles/base.scss. -->
     <h4>
       Datasets
       <sd-button
@@ -59,6 +62,8 @@
                 class="pl-2"
                 variant="underlined"
                 :readonly="options.readonly"
+                @focus="rememberNameBeforeEdit(dataset)"
+                @change="commitName(dataset)"
               />
               <sd-text-field
                 v-else
@@ -68,6 +73,8 @@
                 class="pl-2"
                 variant="underlined"
                 :readonly="options.readonly"
+                @focus="rememberNameBeforeEdit(dataset)"
+                @change="commitName(dataset)"
               />
             </div>
           </div>
@@ -157,6 +164,7 @@ import {
   clearDatasetPoints,
   removeAllDatasets,
   removeDataset,
+  renameDataset,
   viewAllDatasets,
 } from '@/application/utils/datasetOperations'
 
@@ -179,6 +187,8 @@ export default defineComponent({
       mdiContentCopy,
       mdiEraser,
       mdiDelete,
+      // INFO: the name as it was when the field took focus — see commitName().
+      nameBeforeEdit: null as string | null,
       sortKey: 'as added',
       sortKeys: ['as added', 'x', 'y'],
       sortOrder: 'ascending',
@@ -194,6 +204,27 @@ export default defineComponent({
     },
   },
   methods: {
+    // INFO: the name field stays a plain v-model so typing feels normal, and
+    // the UNDO SNAPSHOT is taken on commit instead — one per rename, not one
+    // per keystroke, which would fill the 50-entry history with a single
+    // rename. `nameBeforeEdit` is what makes that possible: v-model has
+    // already overwritten `dataset.name` by the time `change` fires, so the
+    // old name is put back for the instant it takes renameDataset() to
+    // capture it and apply the new one. Without this the rename was captured
+    // by nobody, and the next ⌘Z of an unrelated action silently took the
+    // name back with it — undo restores names wholesale.
+    rememberNameBeforeEdit(dataset: { name: string }): void {
+      this.nameBeforeEdit = dataset.name
+    },
+    commitName(dataset: { id: number; name: string }): void {
+      const committed = dataset.name
+      if (this.nameBeforeEdit === null || committed === this.nameBeforeEdit) {
+        return
+      }
+      dataset.name = this.nameBeforeEdit
+      renameDataset(this.ctx, dataset.id, committed)
+      this.nameBeforeEdit = null
+    },
     async shouldContinueSwitchDataset(): Promise<boolean> {
       if (this.datasetRepository.activeDataset.tempPoints.length === 0)
         return true

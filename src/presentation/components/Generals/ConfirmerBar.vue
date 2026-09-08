@@ -1,8 +1,11 @@
 <template>
   <div
     v-if="confirmer.isActive"
-    class="c__state-confirmer d-flex justify-space-between align-center"
+    class="sd-panel c__state-confirmer d-flex justify-space-between align-center"
   >
+    <!-- INFO: `sd-panel` is what makes this panel style itself, so a host
+         composing the panels needs no `.starry-digitizer` wrapper around
+         them; inside one it is a no-op. src/presentation/styles/base.scss. -->
     <p>{{ confirmer.message }}</p>
     <div class="d-flex">
       <sd-button
