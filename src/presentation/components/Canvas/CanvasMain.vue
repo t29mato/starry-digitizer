@@ -73,6 +73,8 @@ import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { ProjectFileOperationResult } from '@/application/utils/projectFileOperations'
+import { addPoint } from '@/application/utils/pointOperations'
+import { addAxisCoord } from '@/application/utils/axisSetOperations'
 import {
   saveProjectAndDownload,
   triggerLoadProjectDialog,
@@ -126,8 +128,14 @@ export default defineComponent({
       // with more than one <StarryDigitizer> every instance sees every move;
       // this tells them apart.
       isDraggingHere: false,
-      // INFO: watches the canvas frame so a fit that had to be postponed
-      // (see applyPendingFitSize) can be re-run once the frame is laid out.
+      // INFO: watches the canvas frame so the interpolation guide canvas can
+      // follow the size the image canvas ends up with. The fit itself is NOT
+      // driven from here any more — CanvasHandler.attachCanvases() observes
+      // the same wrapper and re-runs a postponed fit, so a core-only host
+      // gets that behaviour too. This observer is created after the engine's
+      // (attachCanvases runs first in mounted()), and ResizeObserver callbacks
+      // fire in observer creation order, so the fit has already been applied
+      // by the time resizeCanvas() reads canvasHandler.scale here.
       wrapperResizeObserver: undefined as ResizeObserver | undefined,
     }
   },
@@ -172,17 +180,14 @@ export default defineComponent({
       new HTMLCanvas(this.$refs.interpolationGuideCanvas as HTMLCanvasElement),
     )
 
-    // INFO: a host may let flex size the canvas frame
-    // (--sd-canvas-height: 0 / --sd-canvas-min-height: 0), so the image can be
-    // handed to the engine while the frame is still 0px high. drawFitSizeImage()
-    // postpones the fit in that window; re-run it here once the frame is
-    // measured. The observer lives in the presentation layer on purpose:
-    // canvasHandler ships in the `starry-digitizer/core` entry and must not
-    // grow another browser API dependency (docs/design/engine-boundary.md §2).
-    // ResizeObserver is guarded because jsdom has none.
+    // INFO: the engine re-runs a postponed fit by itself (attachCanvases
+    // above). What it cannot do is resize the interpolation GUIDE canvas: the
+    // interpolator is not visible from canvasHandler, and the guide canvas is
+    // owned by this component. So the frame is still watched here, for that
+    // one thing. ResizeObserver is guarded because jsdom has none.
     if (typeof ResizeObserver !== 'undefined' && this.$refs.canvasWrapper) {
       this.wrapperResizeObserver = new ResizeObserver(() =>
-        this.applyPendingFitSize(),
+        this.interpolator.resizeCanvas(),
       )
       this.wrapperResizeObserver.observe(this.$refs.canvasWrapper as Element)
     }
@@ -218,18 +223,6 @@ export default defineComponent({
     },
   },
   methods: {
-    // INFO: only re-fits while the engine says a fit is still owed. Without
-    // that guard every layout change (a sidebar opening, the window resizing)
-    // would throw away a zoom the user chose with +/-/0.
-    applyPendingFitSize(): void {
-      if (!this.canvasHandler.hasPendingFitSize) {
-        return
-      }
-      this.canvasHandler.drawFitSizeImage()
-      if (!this.canvasHandler.hasPendingFitSize) {
-        this.interpolator.resizeCanvas()
-      }
-    },
     // INFO: the element this component owns via a template ref — passed to
     // getMouseCoordFromMouseEvent instead of an id lookup so that several
     // digitizer instances can share a page. Undefined before mount / after
@@ -340,12 +333,12 @@ export default defineComponent({
       // INFO: canvas-point element上の時は、point edit modeになるので
       switch (this.canvasHandler.manualMode) {
         case 0:
-          this.historyManager.capture()
-          this.datasetRepository.activeDataset.addPoint(xPx, yPx)
-          this.axisSetRepository.activeAxisSet.inactivateAxis()
-          this.datasetRepository.activeDataset.addManuallyAddedPointId(
-            this.datasetRepository.activeDataset.lastPointId,
-          )
+          // INFO: the state mutation is the operation's (capture, the point,
+          // inactivateAxis, the interpolation-anchor registration); the
+          // conditions above — readonly, view-all, mask drawing, the image
+          // bounds — stay here because they are this component's policy, and
+          // the preview refresh stays in click() for the same reason.
+          addPoint(this.ctx, { xPx, yPx })
           return
         case 1:
           // INFO: CanvasPoint Component -> Click method
@@ -360,11 +353,9 @@ export default defineComponent({
         return
       }
       if (this.axisSetRepository.activeAxisSet.nextAxis) {
-        this.historyManager.capture()
-        this.axisSetRepository.activeAxisSet.addAxisCoord({
-          xPx,
-          yPx,
-        })
+        // INFO: guarded by `nextAxis` right above, so the operation's
+        // AXIS_SET_ALREADY_CALIBRATED case is unreachable from here.
+        addAxisCoord(this.ctx, { xPx, yPx })
         this.datasetRepository.activeDataset.inactivatePoints()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
         if (!this.axisSetRepository.activeAxisSet.nextAxis) {

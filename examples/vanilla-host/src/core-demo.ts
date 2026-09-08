@@ -13,7 +13,10 @@
 // shows the engine underneath it.
 
 import {
+  addAxisCoord,
+  addPoint,
   applyImage,
+  clearAxisSetCoords,
   createDigitizerContext,
   effect,
   extractPoints,
@@ -56,8 +59,12 @@ const ctx: DigitizerContext = createDigitizerContext()
 // ---------------------------------------------------------------------------
 // INFO: the engine needs a browser 2D context; it does not need a UI framework
 // to obtain one. These four elements belong to core.html and are lent to the
-// engine here. `wrapper` is what drawFitSizeImage() measures, so it must have
-// a definite size before an image is applied (core.html gives it 600x420).
+// engine here. `wrapper` is what drawFitSizeImage() measures. Attaching FIRST
+// is the rule (core.html gives the wrapper a definite 600x420), but a host
+// whose frame is sized by flex may still hand the image over before the frame
+// has a height: the engine then postpones the fit, reports it through
+// `canvasHandler.hasPendingFitSize`, and re-runs it itself once the wrapper it
+// was lent gets a size. No observer is owed by the host.
 ctx.canvasHandler.attachCanvases({
   wrapper: $<HTMLDivElement>('#canvasWrapper'),
   imageCanvas: $<HTMLCanvasElement>('#imageCanvas'),
@@ -110,25 +117,29 @@ async function loadSample(): Promise<void> {
 }
 
 function calibrate(): void {
-  const axisSet = ctx.axisSetRepository.activeAxisSet
-  axisSet.clearAxisCoords()
+  // INFO: every step goes through a core operation rather than through the
+  // repository into the domain model, so each one is undoable. addAxisCoord()
+  // throws a DigitizerError('AXIS_SET_ALREADY_CALIBRATED') on a third call,
+  // which is why the calibration is cleared first.
+  clearAxisSetCoords(ctx)
   // INFO: in the default 2-points mode the first coordinate defines x1 AND y1,
   // and the second defines x2/y2 (and the x2y2 corner) — exactly what the two
   // clicks on the figure would do.
-  axisSet.addAxisCoord(ORIGIN_PX)
-  axisSet.addAxisCoord(OPPOSITE_PX)
-  // INFO: the values themselves go through the core operation rather than the
-  // four setters, so the whole batch is one undo entry.
+  addAxisCoord(ctx, ORIGIN_PX)
+  addAxisCoord(ctx, OPPOSITE_PX)
+  // INFO: the values go through the core operation rather than the four
+  // setters, so the whole batch is one undo entry.
   setAxisValues(ctx, AXIS_VALUES)
   status.textContent = 'calibrated'
 }
 
-function addPoint(): void {
-  ctx.historyManager.capture()
-  ctx.datasetRepository.activeDataset.addPoint(
-    SAMPLE_POINT_PX.xPx,
-    SAMPLE_POINT_PX.yPx,
-  )
+function plotSamplePoint(): void {
+  // INFO: NOT `historyManager.capture()` + `activeDataset.addPoint()`. Plotting
+  // is three mutations — the point, ending any axis-marker edit, and
+  // registering the point as an interpolation anchor — and only the operation
+  // carries all three. Omitting the last one is silent: confirmInterpolation()
+  // would refuse forever without raising anything.
+  addPoint(ctx, SAMPLE_POINT_PX)
   status.textContent = 'point added'
 }
 
@@ -165,7 +176,7 @@ $('#load-sample').addEventListener('click', () => {
   })
 })
 $('#calibrate').addEventListener('click', calibrate)
-$('#add-point').addEventListener('click', addPoint)
+$('#add-point').addEventListener('click', plotSamplePoint)
 $('#extract').addEventListener('click', extract)
 $('#clear-points').addEventListener('click', clearPoints)
 $('#get-values').addEventListener('click', printValues)

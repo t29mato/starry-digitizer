@@ -151,7 +151,8 @@ describe('CanvasHandler scaling', () => {
       loadImage(canvasHandler)
       canvasHandler.drawFitSizeImage()
 
-      // INFO: what the ResizeObserver in CanvasMain.vue reacts to.
+      // INFO: the retry, called directly. The engine's own ResizeObserver
+      // does exactly this — see canvasHandler.fitRetry.test.ts.
       setWrapperSize(wrapper, WRAPPER_WIDTH, WRAPPER_HEIGHT)
       canvasHandler.drawFitSizeImage()
 

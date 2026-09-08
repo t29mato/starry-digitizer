@@ -13,6 +13,7 @@ import {
   readJson,
   setAxisValues,
   visitHostApp,
+  visitHostAppUntouched,
 } from '../../support/hostApp'
 
 describe('host app: ready', () => {
@@ -37,6 +38,10 @@ describe('host app: update:project', () => {
   it('is not emitted for the initial load', () => {
     // INFO: restoring the host's own project must not immediately echo back
     // at it — a host that persists on every update would loop forever.
+    // Re-visited untouched on purpose: the shared visitHostApp() pins the zoom
+    // with "0", and the zoom is part of the project DTO, so that keypress is a
+    // real change and would legitimately emit.
+    visitHostAppUntouched()
     cy.wait(800)
     cy.get('[data-cy=update-count]').should('have.text', '0')
     cy.get('[data-cy=change-count]').should('have.text', '0')

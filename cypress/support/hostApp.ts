@@ -30,13 +30,26 @@ export function pressKey(
 }
 
 /**
+ * Loads the host app and waits only until the digitizer reports itself ready.
+ *
+ * INFO: use this instead of visitHostApp() when a spec observes the events of
+ * a PRISTINE mount. visitHostApp() presses "0" to pin the zoom, and the zoom
+ * lives in the project DTO (canvasHandler.scale), so that keypress is a real
+ * project change and legitimately emits update:project / change. Nothing here
+ * touches the digitizer, so the counters stay at 0.
+ */
+export function visitHostAppUntouched(): void {
+  cy.visit('/')
+  cy.get('[data-cy=ready]').should('contain.text', 'version')
+}
+
+/**
  * Loads the host app and waits until the digitizer has mounted and reported
  * itself ready, then pins the canvas to 100% zoom so click coordinates map
  * to image pixels 1:1.
  */
 export function visitHostApp(): void {
-  cy.visit('/')
-  cy.get('[data-cy=ready]').should('contain.text', 'version')
+  visitHostAppUntouched()
   pressKey('0')
   cy.get('[data-cy=image-canvas]').should('have.attr', 'width', String(FIRST_IMAGE_WIDTH))
 }

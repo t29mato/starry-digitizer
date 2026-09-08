@@ -12,7 +12,14 @@ export default defineConfig({
     // the repository root and its own `vue` import resolves against the ROOT
     // node_modules — a second copy of Vue. dedupe pins every `vue` import to
     // this project's copy. Real installs from npm do not need this.
-    dedupe: ['vue'],
+    //
+    // `@vue/reactivity` MUST be deduped alongside `vue`: the library's
+    // DigitizerContext calls `reactive()` from @vue/reactivity (so the core
+    // entry works without the renderer), while the components track their
+    // dependencies through the copy bundled in `vue`. Two copies means two
+    // independent dependency graphs — every mutation lands in the state but
+    // nothing re-renders. See docs/embedding.rst "Deduplicate @vue/reactivity".
+    dedupe: ['vue', '@vue/reactivity'],
   },
   server: {
     // INFO: bind every interface (not just ::1) so Cypress' IPv4 baseUrl

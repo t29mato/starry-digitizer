@@ -393,18 +393,33 @@ function onDeleteRow(dataset: DatasetInterface) {
 
 ##### Replacing the extraction panel or the point overlay
 
-The three operations that replace or remove points come as use cases for the
-same reason: they carry the undo snapshot, so a host that builds its own "Run"
-button, its own Confirm or its own point overlay keeps ⌘Z working.
+The four operations that add, replace or remove points come as use cases for
+the same reason: they carry the undo snapshot, so a host that builds its own
+"Run" button, its own Confirm or its own point overlay keeps ⌘Z working.
 
 ```ts
 import {
+  addPoint,             // (ctx, coord)   plot one point on the active dataset -> its id
   extractPoints,        // (ctx)          run the current algorithm, replace the dataset's points
   confirmInterpolation, // (ctx)          turn the preview into real points, consume the anchors
   deletePoint,          // (ctx, pointId) delete one point of the active dataset
 } from 'starry-digitizer/core'
+
+addPoint(ctx, { xPx: 600, yPx: 500 }) // original-image pixels
 ```
 
+- **`addPoint()` is three mutations, not one**, and this is the one to go
+  through rather than hand-write. Besides the point and the undo snapshot it
+  ends any axis-marker edit (so an arrow key afterwards nudges the point, not
+  the axis) and registers the point as an **interpolation anchor**. Skipping
+  that last step is silent: `confirmInterpolation()` refuses while there are
+  fewer than two anchors and reports the refusal as a `false`, so interpolation
+  is permanently unusable with no error raised anywhere. It returns the new
+  point's id.
+  `coord` is in **original image pixels** — divide a click position by
+  `canvasHandler.scale` first. Whether plotting is allowed at all (readonly,
+  view-all, an active mask tool), whether the coordinate is inside the image,
+  and refreshing the interpolation preview afterwards stay with the caller.
 - `extractPoints()` runs the algorithm **before** taking the snapshot, so a
   failing extraction (no image, no mask match) throws and leaves the history
   untouched instead of adding an entry that undoes nothing.
@@ -413,6 +428,41 @@ import {
   two" is yours, the same way the confirmation dialogs are.
 - `deletePoint()` ignores an id that is not in the active dataset, and refreshes
   the interpolation preview when interpolation is on.
+
+##### Driving the calibration
+
+The axis-set use cases mirror the axis panels, and `addAxisCoord()` is the one
+that replaces the two clicks on the figure:
+
+```ts
+import {
+  addAxisCoord,        // (ctx, coord)   place the next calibration coordinate
+  setAxisValues,       // (ctx, values)  overwrite x1/x2/y1/y2 in one undo entry
+  clearAxisSetCoords,  // (ctx)          throw the calibration away
+  setPointMode,        // (ctx, mode)    POINT_MODE.TWO_POINTS / FOUR_POINTS
+  setLogScale,         // (ctx, axis, v) 'x' | 'y' to/from logarithmic
+  setConsiderGraphTilt,// (ctx, value)   tilt correction
+  activateAxisSet, addAxisSet, removeAxisSet,
+} from 'starry-digitizer/core'
+
+addAxisCoord(ctx, { xPx: 100, yPx: 900 }) // in TWO_POINTS: x1 AND y1
+addAxisCoord(ctx, { xPx: 1100, yPx: 100 }) // x2y2, and x2 / y2 derived from it
+setAxisValues(ctx, { x1: 0, x2: 100, y1: 0, y2: 200 })
+```
+
+**How many axes one `addAxisCoord()` call consumes depends on the point mode**,
+and nothing in the signature says so. `activeAxisSet.nextAxis` names the axis
+the next call will fill and is `null` once the set is complete.
+
+| Mode | Call | Fills |
+|---|---|---|
+| `TWO_POINTS` (default) | 1st | `x1` **and** `y1` |
+| | 2nd | `x2y2`, and `x2` / `y2` derived from it (the rectangle is not clicked) |
+| `FOUR_POINTS` | 1st–4th | one axis each, in the order `nextAxis` reports: `x1`, `x2`, `y1`, `y2` |
+
+A call on a set that is already complete throws
+`DigitizerError` with code `AXIS_SET_ALREADY_CALIBRATED` and captures nothing;
+call `clearAxisSetCoords(ctx)` to start the calibration over.
 
 #### `starry-digitizer/core` — non-Vue hosts
 
@@ -455,6 +505,18 @@ Notes:
 - **Browser only.** `core` does not need a DOM tree — the canvases are handed
   in — but it does need a 2D canvas context and the browser's image decoder, so
   it is not a Node package.
+- **`attachCanvases()` before `applyImage()`, and give the wrapper a size.**
+  The fit-to-frame is measured off the wrapper, so an image applied while the
+  wrapper has no layout (0px high — the normal case for one frame when flex
+  sizes the frame) cannot be fitted yet. This does **not** fail loudly: the
+  promise resolves, `originalWidth` / `originalHeight` are right, and the canvas
+  is blank. The engine handles it for you — it observes the wrapper you lend it
+  and re-runs the fit as soon as the frame is measured — so a host owes no
+  `ResizeObserver` of its own. Read `canvasHandler.hasPendingFitSize` to know
+  the scale is not final yet (a host drawing its own overlay wants that). A
+  zoom the user picked (`scaleUp` / `scaleDown` / `drawOriginalSizeImage`)
+  clears the pending fit, so a later layout change never overrides it.
+  `detachCanvases(['wrapper'])` disconnects the observer.
 - Change notification is `@vue/reactivity`, re-exported here so the host can
   subscribe without importing it itself: `effect`, `stop`, `computed`, `ref`,
   `reactive`, `readonly`, `effectScope`, and the usual guards (`isReactive`,
@@ -462,9 +524,34 @@ Notes:
 - `watch` is **not** re-exported. It only became part of `@vue/reactivity` in
   Vue 3.5 and the supported peer range starts at 3.3; use `effect` (or `vue`'s
   own `watch`, in a Vue host).
-- `@vue/reactivity` must resolve to a single copy in the host. In a Vue host it
-  already does — `vue` depends on it and re-exports the same functions — but if
-  you pin `vue` and `@vue/reactivity` to different versions, deduplicate them.
+- **`@vue/reactivity` must resolve to a single copy in the host — this is the
+  one setup mistake that breaks the component silently.** The engine's state is
+  wrapped with `reactive()` from `@vue/reactivity`, while the components track
+  their dependencies through the copy bundled in `vue`. Two copies means two
+  independent dependency graphs: every click still lands in the project (a
+  `getProject()` dump shows the axes and the points), but nothing re-renders —
+  no axis markers, no plotted points, no mode switch. There is no error and no
+  warning. A normal `npm install` from the registry deduplicates on its own;
+  what splits them is a nested or linked install — most often a `file:` /
+  `link:` dependency, whose bare imports resolve against ITS own
+  `node_modules`. Deduplicate explicitly when that is your setup:
+
+  ```js
+  // vite.config.ts
+  export default defineConfig({
+    resolve: { dedupe: ['vue', '@vue/reactivity'] },
+  })
+  ```
+
+  webpack calls it `resolve.alias` to a single path; pnpm users want
+  `public-hoist-pattern` or a workspace-level version pin. To check from the
+  host, compare the two implementations directly:
+
+  ```js
+  import { reactive } from 'vue'
+  import { reactive as coreReactive } from '@vue/reactivity'
+  console.assert(reactive === coreReactive, 'two copies of @vue/reactivity')
+  ```
 - Drive modes with the exported constants rather than bare numbers:
   `canvasHandler.setManualMode(MANUAL_MODE.ADD)`,
   `canvasHandler.setMaskMode(MASK_MODE.PEN)`,

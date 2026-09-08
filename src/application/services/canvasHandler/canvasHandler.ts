@@ -63,6 +63,18 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   private attachedTempMaskCanvas?: HTMLCanvas
   private attachedMagnifierMaskCanvas?: HTMLCanvas
 
+  // INFO: the retry half of `isFitSizePending`, and it lives HERE rather than
+  // in the component that used to own it. `attachCanvases()` must precede
+  // `applyImage()` and the wrapper must already have layout when the image
+  // arrives — and neither rule fails loudly: drawFitSizeImage() bails out,
+  // the host still gets a resolved promise and the right originalWidth /
+  // originalHeight, and the canvas stays blank. A core-only host had no way
+  // to know it owed an observer, so the engine keeps its own. It costs no new
+  // capability: this class already uses `document`, `Image` and 2D contexts
+  // (docs/design/engine-boundary.md §2 — browser, not Node).
+  private wrapperResizeObserver?: ResizeObserver
+  private observedWrapper?: HTMLDivElement
+
   constructor() {
     this.imageElement = new Image()
   }
@@ -73,6 +85,7 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   attachCanvases(elements: AttachedCanvasElements): void {
     if (elements.wrapper !== undefined) {
       this.attachedWrapper = elements.wrapper
+      this.observeWrapper(elements.wrapper)
     }
     if (elements.imageCanvas !== undefined) {
       this.attachedImageCanvas = new HTMLCanvas(elements.imageCanvas)
@@ -104,6 +117,7 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
       switch (key) {
         case 'wrapper':
           this.attachedWrapper = undefined
+          this.disconnectWrapperResizeObserver()
           break
         case 'imageCanvas':
           this.attachedImageCanvas = undefined
@@ -136,6 +150,37 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
         this.attachedMaskCanvas &&
         this.attachedTempMaskCanvas,
     )
+  }
+
+  // INFO: idempotent on purpose — attachCanvases() is called again whenever a
+  // component remounts, and MagnifierImage.vue calls it without a wrapper at
+  // all. Re-attaching the SAME element keeps the one observer; a different
+  // element replaces it. Stacking observers would re-fit once per stacked
+  // callback, which is wasted work at best.
+  //
+  // ResizeObserver is guarded because jsdom has none; a host without it simply
+  // gets no retry, exactly as before this moved into the engine.
+  private observeWrapper(wrapper: HTMLDivElement): void {
+    if (typeof ResizeObserver === 'undefined') return
+    if (this.observedWrapper === wrapper && this.wrapperResizeObserver) return
+
+    this.disconnectWrapperResizeObserver()
+    this.wrapperResizeObserver = new ResizeObserver(() => {
+      // INFO: the `hasPendingFitSize` guard is the whole contract: re-fit ONLY
+      // while a fit is still owed. Without it every layout change (a sidebar
+      // opening, the window resizing) would throw away a zoom the user chose
+      // with + / - / 0 / f. drawFitSizeImage() clears the flag once it lands.
+      if (!this.isFitSizePending) return
+      this.drawFitSizeImage()
+    })
+    this.wrapperResizeObserver.observe(wrapper)
+    this.observedWrapper = wrapper
+  }
+
+  private disconnectWrapperResizeObserver(): void {
+    this.wrapperResizeObserver?.disconnect()
+    this.wrapperResizeObserver = undefined
+    this.observedWrapper = undefined
   }
 
   async initializeImageElement(imagePath: string) {
@@ -498,8 +543,9 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   }
 
   // INFO: whether a fit-to-frame was asked for but could not be applied yet
-  // (see drawFitSizeImage). The presentation layer watches the frame and calls
-  // drawFitSizeImage() again once it has a size — see CanvasMain.vue.
+  // (see drawFitSizeImage). The engine retries it itself when the attached
+  // wrapper gets a size (see observeWrapper); this stays public because a host
+  // that renders its own overlay needs to know the scale is not final yet.
   get hasPendingFitSize(): boolean {
     return this.isFitSizePending
   }
@@ -516,7 +562,8 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     // INFO: the canvases are not lent to the engine yet (before mount / after
     // unmount), so there is no frame to measure and reading `canvasWrapper`
     // would throw. Same outcome as a frame with no layout: remember the fit is
-    // owed and let the presentation layer re-run it. Reachable now that
+    // owed; attachCanvases() re-runs it once a wrapper is lent in and sized.
+    // Reachable now that
     // loadProject() re-fits after a restore, which a host can trigger without
     // going through the mounted component.
     if (!this.hasCanvases) {

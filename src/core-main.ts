@@ -75,20 +75,26 @@ export {
 } from './application/utils/datasetOperations'
 // INFO: the point-level use cases. A host that replaces <ExtractorSettings>
 // or the point overlay with its own UI drives them through these — they carry
-// the undo capture, so "Run", "Confirm" and a delete click stay undoable
-// whoever asks for them. See README "Undo granularity".
+// the undo capture, so a plot click, "Run", "Confirm" and a delete click stay
+// undoable whoever asks for them. `addPoint()` additionally registers the
+// point as an interpolation anchor, which a hand-written `addPoint()` call
+// silently omits. See README "Undo granularity".
 export {
+  addPoint,
   extractPoints,
   confirmInterpolation,
   deletePoint,
 } from './application/utils/pointOperations'
 // INFO: the axis-set use cases. A host that replaces <AxisSetManager> /
 // <AxisSetSettings> drives them through these — they carry the undo capture,
-// so clearing the calibration, auto-detecting axis values, adding/removing an
-// axis set and flipping log scale / tilt / calibration mode stay undoable
-// whoever asks for them. See README "Undo granularity".
+// so placing a calibration coordinate, clearing the calibration, auto-detecting
+// axis values, adding/removing an axis set and flipping log scale / tilt /
+// calibration mode stay undoable whoever asks for them. `addAxisCoord()` also
+// documents which axes one call consumes in each point mode. See README "Undo
+// granularity".
 export {
   activateAxisSet,
+  addAxisCoord,
   addAxisSet,
   removeAxisSet,
   clearAxisSetCoords,

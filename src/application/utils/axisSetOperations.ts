@@ -1,7 +1,8 @@
 import { DigitizerContext } from '@/application/digitizerContext'
 import { AxisName } from '@/application/utils/axisOcrMatcher'
+import { DigitizerError } from '@/application/errors'
 import { MANUAL_MODE, POINT_MODE } from '@/constants'
-import { PointMode } from '@/@types/types'
+import { Coord, PointMode } from '@/@types/types'
 
 // INFO: The axis-set use cases, extracted from AxisSetManager.vue,
 // AxisSetSettings.vue and MagnifierSettings.vue for the same reason
@@ -131,6 +132,43 @@ export function clearAxisSetCoords(ctx: DigitizerContext): void {
 
   historyManager.capture()
   activeAxisSet.clearAxisCoords()
+}
+
+/**
+ * Place the next calibration coordinate of the active axis set — the "click
+ * the figure to set an axis" gesture, in ORIGINAL IMAGE pixels (divide the
+ * click position by `canvasHandler.scale` first).
+ *
+ * WHICH AXES ONE CALL CONSUMES DEPENDS ON THE MODE, and there is nothing in
+ * the signature that says so — hence this list. `activeAxisSet.nextAxis` names
+ * the axis a call will fill, and is `null` once the set is complete.
+ *
+ * `POINT_MODE.TWO_POINTS` (the default) — two calls:
+ *   1. sets **x1 and y1** to the given coordinate (the bottom-left corner).
+ *   2. sets **x2y2, x2 and y2**: x2 takes the given x with y1's y, y2 takes
+ *      y1's x with the given y. The rectangle is derived, not clicked.
+ *
+ * `POINT_MODE.FOUR_POINTS` — four calls, one axis each, in the order
+ * `nextAxis` reports: **x1, x2, y1, y2**. No coordinate is derived, so a
+ * tilted figure can be calibrated exactly (see `considerGraphTilt`).
+ *
+ * @throws {DigitizerError} `AXIS_SET_ALREADY_CALIBRATED` when the active axis
+ * set has no `nextAxis` left. Nothing is captured or mutated in that case;
+ * call `clearAxisSetCoords(ctx)` first to start the calibration over.
+ */
+export function addAxisCoord(ctx: DigitizerContext, coord: Coord): void {
+  const { axisSetRepository, historyManager } = ctx
+
+  const activeAxisSet = axisSetRepository.activeAxisSet
+  if (!activeAxisSet.nextAxis) {
+    throw new DigitizerError(
+      'AXIS_SET_ALREADY_CALIBRATED',
+      'The active axis set is already fully calibrated. Call clearAxisSetCoords() before placing another coordinate.',
+    )
+  }
+
+  historyManager.capture()
+  activeAxisSet.addAxisCoord(coord)
 }
 
 /**

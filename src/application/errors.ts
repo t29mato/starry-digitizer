@@ -9,6 +9,10 @@ export type DigitizerErrorCode =
   | 'PROJECT_INVALID'
   | 'ZIP_INVALID'
   | 'EXPORT_FAILED'
+  // INFO: addAxisCoord() was called on an axis set whose calibration is
+  // already complete (no `nextAxis` left to fill). A host driving calibration
+  // programmatically branches on this instead of parsing the message.
+  | 'AXIS_SET_ALREADY_CALIBRATED'
 
 export class DigitizerError extends Error {
   readonly code: DigitizerErrorCode

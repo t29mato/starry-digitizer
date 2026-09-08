@@ -37,7 +37,32 @@ peerDependency は ``vue``\ (^3.3)と ``@vue/reactivity``\ (^3.3)の 2 つです
 ``<StarryDigitizer>`` やパネルを使うなら ``vue`` が要り、``starry-digitizer/core``
 だけを使うなら不要、という切り分けです(10.9 を参照)。Vue のホストが追加でインストール
 するものはありません。``vue`` パッケージが ``@vue/reactivity`` に依存し同じ関数を
-再エクスポートしているため、両方とも 1 つの実体に解決されます。
+再エクスポートしているため、通常のインストールでは両方とも 1 つの実体に解決されます。
+
+.. warning::
+
+   ``@vue/reactivity`` が **2 つ** に解決されると、コンポーネントは無言で壊れます。
+   エンジンの状態は ``@vue/reactivity`` の ``reactive()`` で包まれ、コンポーネントは
+   ``vue`` に同梱された方の実装で依存を追跡するため、実体が 2 つあると依存グラフが
+   分かれます。クリックは状態に届く(``getProject()`` には軸も点も入っている)のに
+   **再描画だけが起きない** ——軸マーカーも点も出ず、モードも切り替わりません。
+   例外もログも出ないので、原因に辿り着きにくい種類の不具合です。
+
+   レジストリや tarball からの普通のインストールでは起きません。起きるのは
+   ``file:`` / ``link:`` 依存や pnpm の入れ子配置など、ライブラリ側の bare import が
+   **ライブラリ自身の** ``node_modules`` に解決される構成です
+   (本リポジトリの ``examples/host-app`` がまさにそれで、明示的に dedupe しています)。
+
+   .. code-block:: js
+
+      // vite.config.ts
+      export default defineConfig({
+        resolve: { dedupe: ['vue', '@vue/reactivity'] },
+      })
+
+   確認は、ホスト側で ``import { reactive } from 'vue'`` と
+   ``import { reactive as coreReactive } from '@vue/reactivity'`` が同一関数か
+   比較するのが確実です。
 
 UI フレームワーク(Vuetify 等)やアイコンフォントは **不要** で、コンポーネントは自前の
 最小 UI(素の Vue + scoped CSS、インライン SVG アイコン)を持ちます。
@@ -655,6 +680,18 @@ Roboto / 14px / 1.4 の見た目は、こうして固定した結果です。
   からのため)。
 - **ブラウザ必須です。** DOM ツリーは要りません(canvas はホストが渡します)が、
   2D canvas コンテキストと画像デコーダが要るため、Node パッケージではありません。
+- **``attachCanvases()`` は ``applyImage()`` より先に、かつラッパにサイズを与えてください。**
+  フィット表示の倍率はラッパの実測サイズから決まるため、ラッパがまだ 0px の状態
+  (flex に高さを任せている場合の最初の 1 フレーム。組み込み時にはむしろ普通に起きます)
+  で画像を渡すと、その時点ではフィットできません。\ **しかもエラーになりません**\ ——
+  Promise は解決し、``originalWidth`` / ``originalHeight`` も正しく、canvas だけが
+  真っ白になります。この後始末はエンジン側で行います。``attachCanvases()`` に渡された
+  ラッパを監視し、レイアウトが決まった時点でフィットをやり直すので、\ **ホストが
+  ``ResizeObserver`` を用意する必要はありません**\ 。倍率がまだ確定していないことは
+  ``canvasHandler.hasPendingFitSize`` で分かります(自前でオーバーレイを描くホスト用)。
+  ユーザーが選んだ拡大率(``scaleUp`` / ``scaleDown`` / ``drawOriginalSizeImage``)は
+  保留中のフィットを打ち消すので、後からのレイアウト変化で上書きされることはありません。
+  監視は ``detachCanvases(['wrapper'])`` で解除されます。
 - **パネルは Vue 専用です。** ``ExtractorSettings`` / ``AxisSetManager`` などは
   ``starry-digitizer/vue`` にしか入っておらず、React 版・Svelte 版はありません。
   React のホストは core と自前の canvas / UI を組み合わせます。

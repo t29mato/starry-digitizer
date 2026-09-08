@@ -1,6 +1,7 @@
 import { DigitizerContext } from '@/application/digitizerContext'
+import { Coord } from '@/@types/types'
 
-// INFO: The three point-level use cases that REPLACE OR REMOVE points the user
+// INFO: The point-level use cases that ADD, REPLACE OR REMOVE points the user
 // cannot get back by repeating the gesture: automatic extraction (it throws
 // the whole dataset away and refills it), confirming an interpolation (the
 // anchor points are consumed) and deleting a single point.
@@ -21,6 +22,42 @@ import { DigitizerContext } from '@/application/digitizerContext'
 // presentation decisions — `confirmInterpolation()` reports the refusal as a
 // boolean and `extractPoints()` lets the error out, and the caller decides how
 // to say it.
+
+/**
+ * Plot one point on the active dataset — the ADD-mode click, in ORIGINAL IMAGE
+ * pixels (divide the click position by `canvasHandler.scale` first).
+ *
+ * Adding a point is three mutations, not one, and only the first is obvious:
+ *
+ * 1. `addPoint()` — the point itself, under the undo snapshot.
+ * 2. `inactivateAxis()` — plotting ends any axis-marker edit, so an arrow key
+ *    afterwards nudges the point and not the axis that was last touched.
+ * 3. `addManuallyAddedPointId()` — registers it as an interpolation ANCHOR.
+ *    Skipping this is silent: `confirmInterpolation()` refuses while there are
+ *    fewer than two anchors and reports the refusal as a `false`, so a host
+ *    that plotted points by hand would find interpolation permanently
+ *    unusable with no error raised anywhere.
+ *
+ * What is NOT here, because the caller owns it: whether plotting is allowed at
+ * all (`options.readonly`, view-all mode, an active mask tool), whether the
+ * coordinate is inside the image, and refreshing the interpolation preview
+ * afterwards (`interpolator.updatePreview()`) — the preview is presentation
+ * state the engine does not decide to show.
+ *
+ * @returns the id of the point that was added.
+ */
+export function addPoint(ctx: DigitizerContext, coord: Coord): number {
+  const { axisSetRepository, datasetRepository, historyManager } = ctx
+
+  historyManager.capture()
+
+  const activeDataset = datasetRepository.activeDataset
+  activeDataset.addPoint(coord.xPx, coord.yPx)
+  axisSetRepository.activeAxisSet.inactivateAxis()
+  activeDataset.addManuallyAddedPointId(activeDataset.lastPointId)
+
+  return activeDataset.lastPointId
+}
 
 /**
  * Automatic extraction ("Run"): replace every point in the active dataset

@@ -13,6 +13,7 @@ import {
 } from '@/application/digitizerContext'
 import {
   activateAxisSet,
+  addAxisCoord,
   addAxisSet,
   clearAxisSetCoords,
   removeAxisSet,
@@ -21,6 +22,7 @@ import {
   setLogScale,
   setPointMode,
 } from '@/application/utils/axisSetOperations'
+import { DigitizerError } from '@/application/errors'
 import { POINT_MODE } from '@/constants'
 
 /** The active axis set's four real coordinates, as plain data. */
@@ -275,5 +277,85 @@ describe('axis-set use cases capture exactly one undo entry', () => {
       expect(capture).not.toHaveBeenCalled()
       expect(ctx.axisSetRepository.axisSets).toHaveLength(2)
     })
+  })
+})
+
+// INFO: placing a calibration coordinate used to be the ONLY step of the
+// calibration that was not a use case — a host had to reach through the
+// repository into the domain model (`activeAxisSet.addAxisCoord()`), which
+// captured nothing and threw a bare Error on overflow.
+describe('addAxisCoord', () => {
+  let ctx: DigitizerContext
+
+  beforeEach(() => {
+    ctx = createDigitizerContext()
+  })
+
+  it('captures one entry per placed coordinate', () => {
+    const capture = jest.spyOn(ctx.historyManager, 'capture')
+
+    addAxisCoord(ctx, { xPx: 10, yPx: 90 })
+    addAxisCoord(ctx, { xPx: 90, yPx: 10 })
+
+    expect(capture).toHaveBeenCalledTimes(2)
+  })
+
+  it('undoes back to an uncalibrated axis set', () => {
+    addAxisCoord(ctx, { xPx: 10, yPx: 90 })
+    addAxisCoord(ctx, { xPx: 90, yPx: 10 })
+    expect(ctx.axisSetRepository.activeAxisSet.nextAxis).toBeNull()
+
+    ctx.historyManager.undo()
+    expect(ctx.axisSetRepository.activeAxisSet.nextAxis?.name).toBe('x2y2')
+
+    ctx.historyManager.undo()
+    expect(ctx.axisSetRepository.activeAxisSet.hasAtLeastOneAxis).toBe(false)
+  })
+
+  it('fills x1 AND y1 with the first coordinate in TWO_POINTS mode, and derives the rectangle from the second', () => {
+    addAxisCoord(ctx, { xPx: 10, yPx: 90 })
+    const axisSet = ctx.axisSetRepository.activeAxisSet
+    expect(axisSet.x1.coord).toStrictEqual({ xPx: 10, yPx: 90 })
+    expect(axisSet.y1.coord).toStrictEqual({ xPx: 10, yPx: 90 })
+
+    addAxisCoord(ctx, { xPx: 90, yPx: 10 })
+    expect(axisSet.x2y2.coord).toStrictEqual({ xPx: 90, yPx: 10 })
+    expect(axisSet.x2.coord).toStrictEqual({ xPx: 90, yPx: 90 })
+    expect(axisSet.y2.coord).toStrictEqual({ xPx: 10, yPx: 10 })
+  })
+
+  it('fills one axis per call in FOUR_POINTS mode', () => {
+    setPointMode(ctx, POINT_MODE.FOUR_POINTS)
+    const axisSet = ctx.axisSetRepository.activeAxisSet
+
+    const order: string[] = []
+    for (let i = 0; i < 4; i++) {
+      order.push(String(axisSet.nextAxis?.name))
+      // INFO: non-zero on purpose — an axis at (0, 0) counts as unfilled.
+      addAxisCoord(ctx, { xPx: 10 + i, yPx: 20 + i })
+    }
+
+    expect(order).toStrictEqual(['x1', 'x2', 'y1', 'y2'])
+    expect(axisSet.nextAxis).toBeNull()
+    expect(axisSet.x1.coord).toStrictEqual({ xPx: 10, yPx: 20 })
+    expect(axisSet.x2.coord).toStrictEqual({ xPx: 11, yPx: 21 })
+    expect(axisSet.y1.coord).toStrictEqual({ xPx: 12, yPx: 22 })
+    expect(axisSet.y2.coord).toStrictEqual({ xPx: 13, yPx: 23 })
+  })
+
+  it('throws a DigitizerError and captures nothing once the axis set is full', () => {
+    calibrate(ctx)
+    const capture = jest.spyOn(ctx.historyManager, 'capture')
+
+    let thrown: unknown
+    try {
+      addAxisCoord(ctx, { xPx: 50, yPx: 50 })
+    } catch (error) {
+      thrown = error
+    }
+
+    expect(thrown).toBeInstanceOf(DigitizerError)
+    expect((thrown as DigitizerError).code).toBe('AXIS_SET_ALREADY_CALIBRATED')
+    expect(capture).not.toHaveBeenCalled()
   })
 })
