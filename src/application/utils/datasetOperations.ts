@@ -78,15 +78,84 @@ export function activateDataset(ctx: DigitizerContext, id: number): void {
  * away from `nextDatasetId` — which type-checks and returns the id of the row
  * AFTER this one. Returning it removes the choice.
  */
-export function addDataset(ctx: DigitizerContext): number {
+/**
+ * What a host may set on a dataset in the same breath as creating it, or
+ * change together afterwards with `linkDataset()`.
+ *
+ * An absent field is left alone; `externalId: undefined` cannot be told apart
+ * from "not given" and therefore never unlinks — call
+ * `setDatasetExternalId(ctx, id, undefined)` for that.
+ */
+export interface DatasetInit {
+  name?: string
+  externalId?: string
+}
+
+/**
+ * Append a dataset, bind it to the active axis set, make it active — and,
+ * when `init` is given, name and link it, ALL AS ONE UNDO STEP.
+ *
+ * INFO: `init` exists because "create a row for this sample" is one action to
+ * the user and was three to the undo stack. A host doing it by hand
+ * (addDataset, then renameDataset, then setDatasetExternalId) left ⌘Z showing
+ * a half-made state — the row still there with its name snapped back to
+ * "dataset N" — which is exactly the granularity problem these operations
+ * were extracted to fix. Reported by a host that hit it (friction report
+ * S3-6 follow-up).
+ */
+export function addDataset(ctx: DigitizerContext, init?: DatasetInit): number {
   const { axisSetRepository, datasetRepository, historyManager } = ctx
 
   historyManager.capture()
   datasetRepository.createNewDataset()
-  datasetRepository.lastDataset.setAxisSetId(axisSetRepository.activeAxisSetId)
+  const dataset = datasetRepository.lastDataset
+  dataset.setAxisSetId(axisSetRepository.activeAxisSetId)
   const id = datasetRepository.lastDatasetId
+  // INFO: applied directly rather than through renameDataset() /
+  // setDatasetExternalId(), which would each push a snapshot of their own —
+  // the capture above already covers everything this function does.
+  if (init?.name !== undefined) {
+    datasetRepository.editDatasetName(id, init.name)
+  }
+  if (init?.externalId !== undefined) {
+    dataset.setExternalId(init.externalId)
+  }
   activateDataset(ctx, id)
   return id
+}
+
+/**
+ * Set an existing dataset's name and `externalId` together, as ONE undo step.
+ *
+ * The re-pick counterpart of `addDataset(ctx, init)`: a host that lets the
+ * user point a row at a different record changes both, and doing it with two
+ * calls both doubles the undo steps and leaves a moment where the new
+ * `externalId` sits next to the old name.
+ *
+ * Captures nothing when neither field would actually change.
+ */
+export function linkDataset(
+  ctx: DigitizerContext,
+  id: number,
+  init: DatasetInit,
+): void {
+  const { datasetRepository, historyManager } = ctx
+
+  const dataset = datasetRepository.datasets.find((d) => d.id === id)
+  if (!dataset) return
+
+  const renames = init.name !== undefined && init.name !== dataset.name
+  const relinks =
+    init.externalId !== undefined && init.externalId !== dataset.externalId
+  if (!renames && !relinks) return
+
+  historyManager.capture()
+  if (renames) {
+    datasetRepository.editDatasetName(id, init.name as string)
+  }
+  if (relinks) {
+    dataset.setExternalId(init.externalId)
+  }
 }
 
 /**

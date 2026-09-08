@@ -269,6 +269,15 @@ Two things follow, and both used to be layout constraints:
   one instance, or because you already have one. Panels nested inside one
   render exactly as they do outside it; the two scopes are idempotent.
 
+> **If you delete a wrapper, move its `--sd-*` overrides too.** The wrapper was
+> two things at once: the scope that made our CSS apply, and the element your
+> `--sd-primary` (and the rest) were set on. Only the first is gone. Custom
+> properties inherit, so overrides written as `.starry-digitizer { --sd-*: … }`
+> stop reaching panels the moment the panels are no longer inside one — and
+> nothing fails: the panels keep working, in the default palette. Put those
+> overrides on `.sd-panel`, on a shared ancestor, or on `:root`. A host found
+> this the only way it can be found, by comparing screenshots.
+
 ##### Pass only what you want to change
 
 `provideDigitizerOptions()` takes a **partial** set of options, `features`

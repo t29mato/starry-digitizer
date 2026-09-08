@@ -93,6 +93,39 @@ export function isDigitizerErrorLike(
   )
 }
 
-export function toErrorPayload(error: DigitizerError): DigitizerErrorPayload {
-  return { code: error.code, message: error.message, cause: error.cause }
+/**
+ * The `{ code, message, cause }` a host branches on.
+ *
+ * Give it a `fallbackCode` and it takes ANYTHING — the whole "is this one of
+ * ours, and if not what do I call it" step goes away, so a host's error
+ * handler is one line:
+ *
+ *     onError: (e) => setError(toErrorPayload(e, 'PROJECT_INVALID'))
+ *
+ * Without the second argument the value must already be a DigitizerError.
+ */
+export function toErrorPayload(error: DigitizerError): DigitizerErrorPayload
+export function toErrorPayload(
+  error: unknown,
+  fallbackCode: DigitizerErrorCode,
+  fallbackMessage?: string,
+): DigitizerErrorPayload
+export function toErrorPayload(
+  error: unknown,
+  fallbackCode?: DigitizerErrorCode,
+  fallbackMessage?: string,
+): DigitizerErrorPayload {
+  // INFO: routed through DigitizerError.from() rather than reading the
+  // properties here, so the duck-typing that survives a duplicated bundle is
+  // applied on this path too — the same reason isDigitizerErrorLike() exists.
+  const digitizerError =
+    fallbackCode === undefined
+      ? (error as DigitizerError)
+      : DigitizerError.from(error, fallbackCode, fallbackMessage)
+
+  return {
+    code: digitizerError.code,
+    message: digitizerError.message,
+    cause: digitizerError.cause,
+  }
 }

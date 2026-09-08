@@ -112,6 +112,11 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     Record<keyof AttachedCanvasElements, HTMLElement>
   > = {}
 
+  // INFO: the mask as it was when the mask canvas was last given back, so a
+  // component that remounts (a host toggling its canvas column with `v-if`)
+  // gets the user's mask back instead of a blank one. See takeMaskSnapshot().
+  private detachedMaskSnapshot?: HTMLCanvasElement
+
   constructor() {
     this.imageElement = new Image()
   }
@@ -145,6 +150,75 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
         elements.magnifierMaskCanvas,
       )
     }
+
+    this.redrawAtCurrentScale()
+  }
+
+  /**
+   * Put the image (and the mask) back onto the canvases at the scale that is
+   * already in effect. Called at the end of every attachCanvases().
+   *
+   * INFO: this is what makes REMOUNTING work, and it exists because the fit
+   * retry was not enough. A host that hides its canvas column with `v-if`
+   * destroys the elements and hands over fresh, empty ones when it comes
+   * back — and the only redraw path used to be the wrapper observer's
+   * "re-fit while a fit is owed or the view is in fit mode". Pick a zoom by
+   * hand first and both flags are false, so nobody drew anything: the
+   * digitizer came back as a white canvas, with no exception and no warning.
+   * Measured by a host doing exactly that (friction report S3-4 follow-up:
+   * three round trips at the fit scale pass, one at 1:1 does not).
+   *
+   * drawFitSizeImage() cannot be used here — it would silently replace the
+   * zoom the user chose, which is the thing the fit-mode flag exists to
+   * protect. resize() at the current scale redraws without touching it.
+   */
+  private redrawAtCurrentScale(): void {
+    if (!this.hasCanvases || !this.hasImage) return
+
+    // INFO: resize() carries the mask over from the ATTACHED mask canvas,
+    // which on a remount is a brand-new empty element — the old pixels went
+    // with the old one. So the snapshot taken at detach time is restored
+    // first, and resize() then scales it like any other existing mask.
+    this.restoreDetachedMask()
+
+    this.resize(
+      this.originalWidth * this.scale,
+      this.originalHeight * this.scale,
+    )
+  }
+
+  // INFO: the mask lives only in the canvas element's pixels, so a component
+  // that unmounts takes it with it unless it is copied out first. Kept as a
+  // detached <canvas> rather than ImageData because it is only ever drawn
+  // back, and drawImage() rescales for free.
+  private takeMaskSnapshot(): void {
+    const mask = this.attachedMaskCanvas
+    if (!mask || !this.isDrawnMask) return
+    if (mask.element.width <= 0 || mask.element.height <= 0) return
+
+    const snapshot = document.createElement('canvas')
+    snapshot.width = mask.element.width
+    snapshot.height = mask.element.height
+    const context = snapshot.getContext('2d')
+    if (!context) return
+
+    context.drawImage(mask.element, 0, 0)
+    this.detachedMaskSnapshot = snapshot
+  }
+
+  private restoreDetachedMask(): void {
+    const snapshot = this.detachedMaskSnapshot
+    if (!snapshot) return
+    // INFO: one-shot. Cleared even if the draw below is a no-op, so a stale
+    // mask cannot reappear on a later, unrelated attach.
+    this.detachedMaskSnapshot = undefined
+
+    const mask = this.attachedMaskCanvas
+    if (!mask) return
+
+    mask.element.width = snapshot.width
+    mask.element.height = snapshot.height
+    mask.context.drawImage(snapshot, 0, 0)
   }
 
   /**
@@ -181,6 +255,9 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   }
 
   private detachKeys(keys: readonly (keyof AttachedCanvasElements)[]): void {
+    if (keys.includes('maskCanvas')) {
+      this.takeMaskSnapshot()
+    }
     keys.forEach((key) => {
       this.attachedElements[key] = undefined
       switch (key) {
@@ -550,6 +627,9 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     // the next layout change re-fit an image that is gone.
     this.isFitSizePending = false
     this.isFitSizeMode = false
+    // INFO: the mask belonged to the image that just went away; carrying it
+    // onto the next one would draw someone else's mask over a new figure.
+    this.detachedMaskSnapshot = undefined
     // INFO: only the canvases that are currently attached — clearImage() is
     // also reachable before mount (reset() on a fresh context).
     ;[

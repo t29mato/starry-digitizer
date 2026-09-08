@@ -3,6 +3,7 @@ import {
   activateDataset,
   addDataset,
   clearDatasetPoints,
+  linkDataset,
   removeAllDatasets,
   removeDataset,
   renameDataset,
@@ -526,5 +527,86 @@ describe('with no canvases attached', () => {
     ).not.toThrow()
     expect(() => removeAllDatasets(ctx)).not.toThrow()
     expect(() => viewAllDatasets(ctx)).not.toThrow()
+  })
+})
+
+// INFO: "make a row for this sample" is one action to the user. Done by hand
+// (addDataset, then rename, then link) it was three snapshots, so one ⌘Z left
+// a half-made row on screen — created, but with its name snapped back to
+// "dataset N". Reported by a host that hit exactly that.
+describe('creating and linking in one undo step', () => {
+  let c: Ctx
+
+  beforeEach(() => {
+    c = buildContext()
+  })
+
+  it('addDataset names and links the row it creates', () => {
+    const id = addDataset(c.ctx, { name: 'Sample A', externalId: 'smp-1' })
+    const dataset = c.datasetRepository.datasets.find((d) => d.id === id)
+
+    expect(dataset?.name).toBe('Sample A')
+    expect(dataset?.externalId).toBe('smp-1')
+  })
+
+  it('takes the whole creation back in one undo', () => {
+    const before = c.datasetRepository.datasets.length
+
+    addDataset(c.ctx, { name: 'Sample A', externalId: 'smp-1' })
+    c.historyManager.undo()
+
+    expect(c.datasetRepository.datasets).toHaveLength(before)
+    expect(c.historyManager.canUndo).toBe(false)
+  })
+
+  it('still works with no init, as it always did', () => {
+    const id = addDataset(c.ctx)
+
+    expect(
+      c.datasetRepository.datasets.find((d) => d.id === id)?.name,
+    ).toBeTruthy()
+  })
+
+  it('linkDataset re-points an existing row in one step', () => {
+    const id = addDataset(c.ctx, { name: 'Sample A', externalId: 'smp-1' })
+
+    linkDataset(c.ctx, id, { name: 'Sample B', externalId: 'smp-2' })
+    const dataset = c.datasetRepository.datasets.find((d) => d.id === id)
+
+    expect(dataset?.name).toBe('Sample B')
+    expect(dataset?.externalId).toBe('smp-2')
+
+    // INFO: one undo, and BOTH go back together — no intermediate state with
+    // the new externalId next to the old name.
+    c.historyManager.undo()
+    const undone = c.datasetRepository.datasets.find((d) => d.id === id)
+    expect(undone?.name).toBe('Sample A')
+    expect(undone?.externalId).toBe('smp-1')
+  })
+
+  it('linkDataset captures nothing when neither field changes', () => {
+    const id = addDataset(c.ctx, { name: 'Sample A', externalId: 'smp-1' })
+    c.historyManager.clear()
+
+    linkDataset(c.ctx, id, { name: 'Sample A', externalId: 'smp-1' })
+
+    expect(c.historyManager.canUndo).toBe(false)
+  })
+
+  it('linkDataset leaves out what the caller did not name', () => {
+    const id = addDataset(c.ctx, { name: 'Sample A', externalId: 'smp-1' })
+
+    linkDataset(c.ctx, id, { name: 'Renamed' })
+    const dataset = c.datasetRepository.datasets.find((d) => d.id === id)
+
+    expect(dataset?.name).toBe('Renamed')
+    expect(dataset?.externalId).toBe('smp-1')
+  })
+
+  it('linkDataset does nothing for an unknown id', () => {
+    c.historyManager.clear()
+
+    expect(() => linkDataset(c.ctx, 999, { name: 'nope' })).not.toThrow()
+    expect(c.historyManager.canUndo).toBe(false)
   })
 })

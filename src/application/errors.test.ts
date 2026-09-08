@@ -106,4 +106,42 @@ describe('toErrorPayload', () => {
       toErrorPayload(new DigitizerError('ZIP_INVALID', 'broken zip', cause)),
     ).toEqual({ code: 'ZIP_INVALID', message: 'broken zip', cause })
   })
+
+  // INFO: the one-argument form makes a host import DigitizerError and write
+  // the "is this one of ours" branch itself before it can call this at all.
+  // With a fallback code the whole handler is `toErrorPayload(e, 'CODE')`.
+  describe('with a fallback code, it takes anything', () => {
+    it('keeps the code of a real DigitizerError', () => {
+      const error = new DigitizerError('INVALID_IMAGE_TYPE', 'not an image')
+
+      expect(toErrorPayload(error, 'PROJECT_INVALID')).toEqual({
+        code: 'INVALID_IMAGE_TYPE',
+        message: 'not an image',
+        cause: undefined,
+      })
+    })
+
+    it('keeps the code of an error from another copy of the bundle', () => {
+      // INFO: a duplicated bundle breaks `instanceof`, so the payload shape
+      // is what identifies it — see isDigitizerErrorLike().
+      const foreign = { code: 'ZIP_INVALID', message: 'broken zip' }
+
+      expect(toErrorPayload(foreign, 'PROJECT_INVALID')).toMatchObject({
+        code: 'ZIP_INVALID',
+        message: 'broken zip',
+      })
+    })
+
+    it('falls back for anything else', () => {
+      expect(toErrorPayload(new Error('nope'), 'PROJECT_INVALID')).toMatchObject(
+        { code: 'PROJECT_INVALID', message: 'nope' },
+      )
+    })
+
+    it('takes a fallback message too', () => {
+      expect(
+        toErrorPayload('a string', 'EXPORT_FAILED', 'could not export'),
+      ).toMatchObject({ code: 'EXPORT_FAILED', message: 'could not export' })
+    })
+  })
 })

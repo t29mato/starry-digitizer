@@ -72,6 +72,7 @@ export {
 export {
   activateDataset,
   addDataset,
+  linkDataset,
   renameDataset,
   setDatasetExternalId,
   removeDataset,
@@ -79,6 +80,7 @@ export {
   clearDatasetPoints,
   viewAllDatasets,
 } from './application/utils/datasetOperations'
+export type { DatasetInit } from './application/utils/datasetOperations'
 // INFO: the point-level use cases. A host that replaces <ExtractorSettings>
 // or the point overlay with its own UI drives them through these — they carry
 // the undo capture, so a plot click, "Run", "Confirm" and a delete click stay
@@ -159,6 +161,7 @@ export type { CanvasHandlerInterface } from './application/services/canvasHandle
 export type { AttachedCanvasElements } from './application/services/canvasHandler/canvasHandlerInterface'
 export type { ConfirmerInterface } from './application/services/confirmer/confirmerInterface'
 export type { ExtractorInterface } from './application/services/extractor/extractorInterface'
+export type { HistoryManagerInterface } from './application/services/historyManager/historyManagerInterface'
 export type { InterpolatorInterface } from './application/services/interpolator/interpolatorInterface'
 export type { MagnifierInterface } from './application/services/magnifier/magnifierInterface'
 export type { ProjectServiceInterface } from './application/services/projectService/projectServiceInterface'
