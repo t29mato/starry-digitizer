@@ -87,7 +87,10 @@ export default defineComponent({
     )
   },
   beforeUnmount() {
-    this.canvasHandler.detachCanvases(['magnifierMaskCanvas'])
+    // INFO: by element, not by key — see the same call in CanvasMain.vue.
+    this.canvasHandler.detachCanvases({
+      magnifierMaskCanvas: this.$refs.magnifierMaskCanvas as HTMLCanvasElement,
+    })
   },
   computed: {
     halfSize(): number {

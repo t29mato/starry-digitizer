@@ -529,7 +529,18 @@ Notes:
   and re-runs the fit as soon as the frame is measured — so a host owes no
   `ResizeObserver` of its own. Read `canvasHandler.hasPendingFitSize` to know
   the scale is not final yet (a host drawing its own overlay wants that).
-  `detachCanvases(['wrapper'])` disconnects the observer.
+  `detachCanvases({ wrapper })` disconnects the observer.
+- **One set of canvases per context — one `<CanvasMain>`.** A second one
+  mounted against the same context wins the slots, and the first goes on
+  rendering while drawing nowhere; `attachCanvases()` warns when it replaces
+  an element that was already attached, which is the only notice there is.
+  **Give elements back by element, not by name:**
+  `detachCanvases({ wrapper, imageCanvas, maskCanvas, tempMaskCanvas })` from
+  the component that lent them. Only slots that still hold those exact
+  elements are cleared, so a component unmounting after another has taken
+  over cannot pull the canvases out from under the live one. The key form
+  (`detachCanvases(['wrapper'])`) and the no-argument form still detach
+  unconditionally — use them for a full teardown, not from a component.
 - **The fit follows the frame, a chosen zoom does not.** The same observer also
   re-fits when the frame changes size AFTER a successful fit — a split view
   opening, the window narrowing — so the figure never stays at the old scale

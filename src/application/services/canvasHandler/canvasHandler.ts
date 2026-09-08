@@ -15,6 +15,17 @@ import { PixelSource } from '@/application/ports/pixelSource'
 // coordinate meaningless.
 const MIN_SCALE = 0.1
 
+// INFO: every slot a component can lend an element to, in one place so that
+// attach, detach and the full teardown cannot drift apart — a key missing
+// from a hand-written list is an element that never gets given back.
+const ATTACHABLE_KEYS = [
+  'wrapper',
+  'imageCanvas',
+  'maskCanvas',
+  'tempMaskCanvas',
+  'magnifierMaskCanvas',
+] as const satisfies readonly (keyof AttachedCanvasElements)[]
+
 // INFO: callers outside this class must change mode / cursor state through the
 // setters (setManualMode, setMaskMode, setIsCursorOnCanvas) instead of assigning
 // the fields directly. The setters keep the mutually exclusive modes consistent
@@ -89,6 +100,18 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   // and silently clipped — no exception, no warning.
   private isFitSizeMode = false
 
+  // INFO: the raw elements behind the wrapped canvases above, kept so that
+  // attach and detach can tell WHICH element is in a slot. Without it,
+  // detachCanvases() could only go by key name and one component's unmount
+  // detached another's canvases — see detachCanvases().
+  //
+  // INFO: HTMLElement rather than the per-key element type, because these are
+  // only ever compared by identity — narrowing each slot to its own type buys
+  // nothing here and makes writing one through a `keyof` loop impossible.
+  private attachedElements: Partial<
+    Record<keyof AttachedCanvasElements, HTMLElement>
+  > = {}
+
   constructor() {
     this.imageElement = new Image()
   }
@@ -97,6 +120,13 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   // main canvases, MagnifierImage.vue owns the magnifier mask canvas, and the
   // two components mount independently.
   attachCanvases(elements: AttachedCanvasElements): void {
+    ATTACHABLE_KEYS.forEach((key) => {
+      const element = elements[key]
+      if (element === undefined) return
+      this.warnIfReplacingAttached(key, element)
+      this.attachedElements[key] = element
+    })
+
     if (elements.wrapper !== undefined) {
       this.attachedWrapper = elements.wrapper
       this.observeWrapper(elements.wrapper)
@@ -117,17 +147,42 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     }
   }
 
-  // INFO: pass the keys the unmounting component attached; omit them to drop
-  // every element (used by tests and by a full teardown).
-  detachCanvases(keys?: (keyof AttachedCanvasElements)[]): void {
-    const target = keys ?? [
-      'wrapper',
-      'imageCanvas',
-      'maskCanvas',
-      'tempMaskCanvas',
-      'magnifierMaskCanvas',
-    ]
-    target.forEach((key) => {
+  /**
+   * Give the elements back.
+   *
+   * PASS THE ELEMENTS, not the keys, from a component that is unmounting:
+   * `detachCanvases({ wrapper, imageCanvas, ... })` gives back only the
+   * elements that are still the attached ones, so a second CanvasMain that
+   * has since taken the slot keeps it. The key form detaches unconditionally
+   * and is for a full teardown; omitting the argument drops everything.
+   *
+   * INFO: this is the "one CanvasMain per context" rule made safe rather than
+   * merely documented. Two of them is still not a supported arrangement — the
+   * second one's attach wins and the first stops drawing, which is why
+   * attachCanvases() warns about it — but the failure used to outlive the
+   * mistake: the second component's `beforeUnmount` detached by key and took
+   * the FIRST one's canvases with it, leaving a mounted, visible digitizer
+   * attached to nothing and drawing nowhere. A host that hides its canvas
+   * column with `v-if` hits exactly that.
+   */
+  detachCanvases(
+    target?: (keyof AttachedCanvasElements)[] | AttachedCanvasElements,
+  ): void {
+    if (target !== undefined && !Array.isArray(target)) {
+      const owned = ATTACHABLE_KEYS.filter(
+        (key) =>
+          target[key] !== undefined &&
+          this.attachedElements[key] === target[key],
+      )
+      this.detachKeys(owned)
+      return
+    }
+    this.detachKeys(target ?? ATTACHABLE_KEYS)
+  }
+
+  private detachKeys(keys: readonly (keyof AttachedCanvasElements)[]): void {
+    keys.forEach((key) => {
+      this.attachedElements[key] = undefined
       switch (key) {
         case 'wrapper':
           this.attachedWrapper = undefined
@@ -147,6 +202,28 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
           break
       }
     })
+  }
+
+  // INFO: re-attaching the SAME element is the normal case (a component
+  // remounts, or MagnifierImage attaches its one canvas next to CanvasMain's
+  // four) and says nothing. A DIFFERENT element in a slot that is already
+  // taken is the multiplicity mistake: one context, two CanvasMains. The
+  // first one goes on rendering while drawing nowhere, with no exception and
+  // nothing in the DOM to see — so this is the only notice a host gets.
+  private warnIfReplacingAttached(
+    key: keyof AttachedCanvasElements,
+    element: HTMLElement,
+  ): void {
+    const attached = this.attachedElements[key]
+    if (attached === undefined || attached === element) return
+
+    console.warn(
+      `[starry-digitizer] attachCanvases() replaced the "${key}" element that ` +
+        'was already attached. One DigitizerContext drives one set of ' +
+        'canvases: if two <CanvasMain> are mounted against the same context, ' +
+        'the first stops drawing. Give the second one its own context, or ' +
+        'hide the first with v-show rather than v-if.',
+    )
   }
 
   // INFO: the magnifier mask canvas is deliberately NOT required here. It is

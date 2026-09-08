@@ -60,8 +60,17 @@ export interface CanvasHandlerInterface extends PixelSource {
   get magnifierMaskCanvas(): HTMLCanvas
 
   initializeImageElement(imagePath: string): Promise<unknown>
+  // INFO: ONE set of canvases per context — one <CanvasMain>. Mounting a
+  // second one against the same context makes the first stop drawing (its
+  // attach wins), which is why this warns when it replaces an element that
+  // was already attached.
   attachCanvases(elements: AttachedCanvasElements): void
-  detachCanvases(keys?: (keyof AttachedCanvasElements)[]): void
+  // Give elements back. An unmounting component passes THE ELEMENTS it
+  // attached, so only the slots it still owns are cleared; the key form (and
+  // no argument at all) detaches unconditionally, for a full teardown.
+  detachCanvases(
+    target?: (keyof AttachedCanvasElements)[] | AttachedCanvasElements,
+  ): void
   mouseDown(xPx: number, yPx: number): void
   mouseDragInManualMode(): void
   mouseDragInMaskMode(xPx: number, yPx: number): void

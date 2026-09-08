@@ -204,12 +204,15 @@ export default defineComponent({
     }
     this.wrapperResizeObserver?.disconnect()
     this.wrapperResizeObserver = undefined
-    this.canvasHandler.detachCanvases([
-      'wrapper',
-      'imageCanvas',
-      'maskCanvas',
-      'tempMaskCanvas',
-    ])
+    // INFO: by element, not by key. If a second <CanvasMain> was mounted
+    // against this same context it has already taken these slots, and
+    // detaching by name would leave that live instance drawing nowhere.
+    this.canvasHandler.detachCanvases({
+      wrapper: this.$refs.canvasWrapper as HTMLDivElement,
+      imageCanvas: this.$refs.imageCanvas as HTMLCanvasElement,
+      maskCanvas: this.$refs.maskCanvas as HTMLCanvasElement,
+      tempMaskCanvas: this.$refs.tempMaskCanvas as HTMLCanvasElement,
+    })
   },
   computed: {
     // INFO: "does this instance listen for keys at all". The frame only needs
