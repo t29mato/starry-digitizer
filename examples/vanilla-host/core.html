@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StarryDigitizer core-only host</title>
+    <!--
+      INFO: no <link> to starry-digitizer/styles on purpose. This page uses the
+      `starry-digitizer/core` entry, which ships no UI at all, so there is no
+      library stylesheet to load. Every rule below styles the HOST's own DOM.
+    -->
+    <style>
+      body {
+        margin: 0;
+        padding: 10px;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+      .readouts {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin: 8px 0;
+      }
+      .readouts b {
+        font-weight: 600;
+      }
+      /*
+        INFO: the wrapper's size must be DEFINITE. canvasHandler.drawFitSizeImage()
+        reads offsetWidth/offsetHeight to compute the fit scale, so a
+        content-driven height would be circular (the same reason the library's
+        own CanvasMain.vue pins one).
+      */
+      #canvasWrapper {
+        position: relative;
+        width: 600px;
+        height: 420px;
+        overflow: hidden;
+        outline: solid 1px gray;
+      }
+      #canvasWrapper canvas {
+        display: block;
+      }
+      #maskCanvas,
+      #tempMaskCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0.5;
+      }
+      #values {
+        max-height: 200px;
+        overflow: auto;
+        margin: 8px 0 0;
+        font-size: 12px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        border-top: 1px solid #ddd;
+        padding-top: 6px;
+      }
+      .note {
+        max-width: 720px;
+        border-left: 3px solid #1976d2;
+        padding: 4px 10px;
+        margin: 12px 0;
+        color: #333;
+      }
+      .note code {
+        background: #f2f2f2;
+        padding: 0 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="font-size: 15px; margin: 0 0 8px">
+      starry-digitizer/core — no UI, no Vue renderer
+    </h1>
+
+    <div class="toolbar">
+      <button id="load-sample" data-cy="load-sample">1. Load image</button>
+      <button id="calibrate" data-cy="calibrate">2. Calibrate</button>
+      <button id="add-point" data-cy="add-point">3. Add point</button>
+      <button id="extract" data-cy="extract">Auto extract</button>
+      <button id="clear-points" data-cy="clear-points">Clear points</button>
+      <button id="get-values" data-cy="get-values">getDatasetValues()</button>
+      <span data-cy="status" id="status">idle</span>
+    </div>
+
+    <div class="readouts">
+      <!--
+        Both of these are written by an effect() from starry-digitizer/core.
+        Nothing re-renders them; the effect re-runs when the engine's state
+        changes and writes into the DOM node directly.
+      -->
+      <span>points: <b id="point-count" data-cy="point-count">0</b></span>
+      <span
+        >calibration: <b id="calibration" data-cy="calibration">none</b></span
+      >
+      <span>image: <b id="image-size" data-cy="image-size">none</b></span>
+      <span>effect runs: <b id="effect-runs" data-cy="effect-runs">0</b></span>
+    </div>
+
+    <!--
+      The canvases are the HOST's elements. They are lent to the engine with
+      ctx.canvasHandler.attachCanvases({...}) — the engine never looks anything
+      up by id, so several digitizers can share one page.
+    -->
+    <div id="canvasWrapper" data-cy="canvas-wrapper">
+      <canvas id="imageCanvas" data-cy="image-canvas"></canvas>
+      <canvas id="tempMaskCanvas" data-cy="temp-mask-canvas"></canvas>
+      <canvas id="maskCanvas" data-cy="mask-canvas"></canvas>
+    </div>
+
+    <pre id="values" data-cy="values"></pre>
+
+    <div class="note" data-cy="note">
+      <p>
+        <b>What this page proves.</b> The whole digitizing engine — image
+        decoding and fitting, axis calibration, automatic point extraction and
+        the conversion of pixels to physical values — runs from the
+        <code>starry-digitizer/core</code> entry alone, driven by plain DOM and
+        TypeScript. Change notification comes from the
+        <code>effect()</code> that entry re-exports, and it drives the
+        <i>points</i> / <i>calibration</i> read-outs above by writing into text
+        nodes.
+      </p>
+      <p>
+        <b>What it deliberately does not use.</b> No <code>vue</code> import, no
+        <code>starry-digitizer</code> default entry, no
+        <code>starry-digitizer/vue</code>, and no
+        <code>starry-digitizer/styles</code> — a core-only host has no library
+        UI, so it needs no library stylesheet. The sibling page (<a
+          href="/index.html"
+          >index.html</a
+        >) is the opposite case: the full component mounted from a non-Vue host.
+      </p>
+    </div>
+
+    <script type="module" src="/src/core-demo.ts"></script>
+  </body>
+</html>

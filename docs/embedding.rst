@@ -356,6 +356,32 @@ setup 後に変わる options(権限確認で決まる ``readonly``\ 、fetch �
 ``--sd-height: 100%`` を渡すと、コンポーネントは与えられた高さに収まり、余った高さは
 キャンバスが使い、各サイドバーは内側でスクロールします。ページに縦スクロールは出ません。
 
+どのプロパティが効くかは、埋め込み方によって変わります。
+
+.. list-table::
+   :header-rows: 1
+
+   * - プロパティ
+     - 効く範囲
+   * - ``--sd-height`` / ``--sd-left-sidebar-*`` / ``--sd-right-sidebar-*`` / ``--sd-main-area-margin``
+     - **ルートのレイアウト専用**。``<StarryDigitizer>`` の3カラムを整えるためのもので、
+       パネルを自前配置するホストは自分のコンテナを直接指定します
+   * - ``--sd-canvas-height`` / ``--sd-canvas-min-height``
+     - ``CanvasMain``。どこに置いても効きます
+   * - ``--sd-magnifier-size``
+     - ``MagnifierMain``。同上
+   * - ``--sd-table-max-height`` / ``--sd-axis-list-*`` / ``--sd-dataset-list-*``
+     - データテーブル / 軸セット一覧 / データセット一覧の各パネル。同上
+   * - テーマトークン(``--sd-primary`` / ``--sd-text`` など)
+     - 両方の埋め込み方で効きます
+
+同様に、スロット(``aside-top`` / ``aside-bottom`` / ``right-sidebar-footer`` / ``footer``)と
+``features`` のパネル表示フラグ5種(``axisPanel`` / ``datasetPanel`` / ``extractionPanel`` /
+``magnifier`` / ``dataTable``)も**ルート専用**です。パネルを自前配置するなら「置かない」で済みます。
+ただし「既定レイアウトは使いつつ一部のパネルだけ隠したい」という中間形では引き続き有用です。
+``imageUpload`` / ``zipExportImport`` / ``csvExport`` / ``axisOcr`` / ``keyboard*`` は
+個々のパネルの挙動を切り替えるフラグなので、どちらの埋め込み方でも効きます。
+
 主なプロパティ: ``--sd-height`` / ``--sd-left-sidebar-width`` / ``--sd-right-sidebar-width``
 (および各 ``-min-width`` / ``-max-width``) / ``--sd-main-area-margin`` /
 ``--sd-canvas-height`` / ``--sd-canvas-min-height`` / ``--sd-table-max-height`` /

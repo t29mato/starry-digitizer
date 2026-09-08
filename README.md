@@ -639,6 +639,14 @@ handling back to the host. Every other flag removes something from the screen.
 
 Any key you pass in `features` overrides the derived default.
 
+The five panel flags (`axisPanel`, `datasetPanel`, `extractionPanel`,
+`magnifier`, `dataTable`) only gate what `<StarryDigitizer>` renders — a host
+composing the panels itself simply does not place the ones it does not want.
+They stay useful for the middle ground: keeping the ready-made layout while
+hiding one or two panels the host already provides. The other flags
+(`imageUpload`, `zipExportImport`, `csvExport`, `axisOcr`, `keyboard*`) switch
+behaviour inside individual panels and apply either way.
+
 ### Confirmation dialogs (`confirm`)
 
 Every "are you sure?" the digitizer asks — deleting a dataset that has points,
@@ -678,6 +686,10 @@ than a resolved `true` counts as "no".
 
 ### Slots
 
+> **Root-only.** Slots exist to inject host content into `<StarryDigitizer>`'s
+> three-column layout. A host that composes the panels itself (see "Composing
+> the panels yourself") places its own markup directly and needs none of this.
+
 | Slot | Where | Slot props |
 |---|---|---|
 | `aside-top` | Top of the left sidebar | `width` — the measured column width in px |
@@ -689,7 +701,18 @@ than a resolved `true` counts as "no".
 
 The component is a three-column flex layout. Every size is a custom property on
 the `.starry-digitizer` root, so a host can adjust it without reaching into
-internal class names:
+internal class names.
+
+Which ones still apply depends on how you embed:
+
+| Property | Applies to |
+|---|---|
+| `--sd-height`, `--sd-left-sidebar-*`, `--sd-right-sidebar-*`, `--sd-main-area-margin` | **The root layout only.** They size `<StarryDigitizer>`'s three columns, so a host composing the panels itself sizes its own containers instead. |
+| `--sd-canvas-height`, `--sd-canvas-min-height` | `CanvasMain` — applies wherever that panel is placed. |
+| `--sd-magnifier-size` | `MagnifierMain` — likewise. |
+| `--sd-table-max-height`, `--sd-axis-list-*`, `--sd-dataset-list-*` | The data table / axis-set list / dataset list panels — likewise. |
+| The theme tokens (`--sd-primary`, `--sd-text`, …) | Everything, both ways of embedding. |
+
 
 | Property | Default | Meaning |
 |---|---|---|

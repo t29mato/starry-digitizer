@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify:core": "node scripts/verify-core-bundle.mjs"
   },
   "dependencies": {
     "starry-digitizer": "file:../..",
-    "vue": "^3.3.4"
+    "vue": "^3.3.4",
+    "@vue/reactivity": "^3.3.4"
   },
   "devDependencies": {
     "typescript": "~5.2.2",

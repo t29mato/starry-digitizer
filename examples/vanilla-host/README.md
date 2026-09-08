@@ -10,6 +10,51 @@ you can use the digitizer without adopting Vue anywhere else.
 
 For a Vue 3 host, see `examples/host-app` instead.
 
+## Two pages
+
+| page | entry | what it shows |
+| --- | --- | --- |
+| `index.html` | `starry-digitizer` | the full component mounted into a plain `<div>` (`src/mountDigitizer.ts`) |
+| `core.html` | `starry-digitizer/core` | the engine with **no library UI at all** (`src/core-demo.ts`) |
+
+`core.html` is the proof that the `core` subpath export really is free of Vue's
+renderer. `src/core-demo.ts` imports from `starry-digitizer/core` and from
+nothing else — no `vue`, no default entry, no `starry-digitizer/vue`, and no
+`starry-digitizer/styles`, because a core-only host has no library UI to style.
+It:
+
+1. lends the engine the page's own `#canvasWrapper` + three `<canvas>` elements
+   with `ctx.canvasHandler.attachCanvases({...})` (the wrapper needs a definite
+   size: `drawFitSizeImage()` measures it);
+2. loads the sample PNG as a `Blob` through `applyImage(ctx, blob)`;
+3. calibrates with two `addAxisCoord()` calls and `setAxisValues(ctx, ...)`,
+   with no calibration UI in between;
+4. runs `extractPoints(ctx)` — the automatic extraction, which reads pixels
+   through the `PixelSource` port;
+5. keeps the read-outs up to date with the `effect()` that `core` re-exports,
+   writing straight into text nodes. This is what a React or Svelte host would
+   replace with `setState` or a store write;
+6. prints `getDatasetValues(...)` as JSON.
+
+### `npm run verify:core`
+
+After `npm run build`, this script walks the build manifest from the `core.html`
+entry through its (static and dynamic) imports and fails if any of those chunks
+contains Vue's renderer. The marker is `shapeFlag` — the property every vnode
+carries and the renderer branches on in ~36 places. It is a property name, so
+minifiers keep it, and it exists nowhere but the renderer. `__isTeleport` and
+`__isSuspense` corroborate it.
+
+The script also self-tests: the same markers **must** be found in `index.html`'s
+own chunks, which do contain the renderer. Without that, a stale marker would
+make the check pass while proving nothing. Note that grepping for anything from
+`@vue/shared` would be wrong — `@vue/reactivity` depends on it too, so it is
+legitimately part of `core.html`'s graph.
+
+This complements the repository's `yarn lib-check` (check 3), which greps the
+library's own `core.js` for a `vue` import. That is a static check on a bundle
+built with `vue` marked external; this one looks at what a host actually ships.
+
 ## Run it
 
 The library must be built first, from the repository root:
@@ -24,8 +69,9 @@ Then:
 ```sh
 cd examples/vanilla-host
 npm install
-npm run dev     # http://localhost:5175
-npm run build   # tsc --noEmit && vite build
+npm run dev         # http://localhost:5175 (/ and /core.html)
+npm run build       # tsc --noEmit && vite build (both pages)
+npm run verify:core # asserts core.html's chunks carry no Vue renderer
 ```
 
 The page has a toolbar (`Load sample`, `Get values`, `Get project`,
