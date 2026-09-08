@@ -3,6 +3,7 @@ import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetReposit
 import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 import { DatasetInterface } from '@/domain/models/dataset/datasetInterface'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
+import type { DigitizerContext } from '@/application/digitizerContext'
 
 /**
  * A dataset with its points converted to physical (axis-calibrated) values.
@@ -69,17 +70,51 @@ export function datasetToValues(
 /**
  * All datasets converted with EACH DATASET'S OWN axis set (dataset.axisSetId),
  * not the currently active one.
+ *
+ * Pass the context — `getDatasetValues(ctx)` — like every other operation in
+ * this layer. The three-argument form is kept for a caller that holds the
+ * repositories without a context (and for the digit count: reading
+ * `ctx.valueFormat.effectiveDigits` by hand was the one thing this API asked
+ * hosts to know about).
  */
+export function getDatasetValues(ctx: DigitizerContext): DatasetValues[]
 export function getDatasetValues(
   axisSetRepository: AxisSetRepositoryInterface,
   datasetRepository: DatasetRepositoryInterface,
   effectiveDigits: number,
+): DatasetValues[]
+export function getDatasetValues(
+  ctxOrAxisSetRepository: DigitizerContext | AxisSetRepositoryInterface,
+  datasetRepository?: DatasetRepositoryInterface,
+  effectiveDigits?: number,
 ): DatasetValues[] {
-  return datasetRepository.datasets.map((dataset) =>
+  const [axisSets, datasets, digits] = isContext(ctxOrAxisSetRepository)
+    ? [
+        ctxOrAxisSetRepository.axisSetRepository.axisSets,
+        ctxOrAxisSetRepository.datasetRepository.datasets,
+        ctxOrAxisSetRepository.valueFormat.effectiveDigits,
+      ]
+    : [
+        ctxOrAxisSetRepository.axisSets,
+        // INFO: non-null because the overload signatures make the two forms
+        // exhaustive — the three-argument one always brings both.
+        (datasetRepository as DatasetRepositoryInterface).datasets,
+        effectiveDigits as number,
+      ]
+
+  return datasets.map((dataset) =>
     datasetToValues(
       dataset,
-      axisSetRepository.axisSets.find((a) => a.id === dataset.axisSetId),
-      effectiveDigits,
+      axisSets.find((a) => a.id === dataset.axisSetId),
+      digits,
     ),
   )
+}
+
+// INFO: `axisSetRepository` is a field only the context has; an
+// AxisSetRepository does not carry another repository inside it.
+function isContext(
+  value: DigitizerContext | AxisSetRepositoryInterface,
+): value is DigitizerContext {
+  return (value as DigitizerContext).axisSetRepository !== undefined
 }

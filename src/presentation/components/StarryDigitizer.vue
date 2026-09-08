@@ -364,11 +364,7 @@ function getProject(): ProjectDTO {
 }
 
 function getDatasetValues(): DatasetValues[] {
-  return computeDatasetValues(
-    ctx.axisSetRepository,
-    ctx.datasetRepository,
-    ctx.valueFormat.effectiveDigits,
-  )
+  return computeDatasetValues(ctx)
 }
 
 function exportZip(): Promise<Blob> {

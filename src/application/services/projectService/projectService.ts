@@ -14,7 +14,21 @@ import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetReposit
 import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 import { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
 import { DigitizerError } from '@/application/errors'
-import JSZip from 'jszip'
+import type JSZip from 'jszip'
+
+// INFO: jszip is loaded on demand, not at module scope. It is ~100 kB min and
+// only the ZIP round trip needs it — a host that passes ProjectDTO + image
+// through the API (which is what `features.zipExportImport: false` means, and
+// what Starrydata3 does) must not pay for it. `import type` above keeps the
+// types without emitting a static import. The promise is cached so repeated
+// exports do not re-resolve the module.
+let jszipModule: Promise<typeof JSZip> | undefined
+function loadJSZip(): Promise<typeof JSZip> {
+  if (!jszipModule) {
+    jszipModule = import('jszip').then((mod) => mod.default)
+  }
+  return jszipModule
+}
 
 export class ProjectService implements ProjectServiceInterface {
   private axisSetRepository: AxisSetRepositoryInterface
@@ -123,7 +137,8 @@ export class ProjectService implements ProjectServiceInterface {
     const projectData = this.toProjectDTO()
 
     // Create ZIP file
-    const zip = new JSZip()
+    const JSZipClass = await loadJSZip()
+    const zip = new JSZipClass()
 
     // Add project.json
     zip.file('project.json', JSON.stringify(projectData, null, 2))
@@ -153,9 +168,13 @@ export class ProjectService implements ProjectServiceInterface {
     }
 
     // Load ZIP file
+    // INFO: outside the try below on purpose — a failure to fetch the jszip
+    // chunk is not "this ZIP is invalid", and must not be reported as such.
+    const JSZipClass = await loadJSZip()
+
     let zip: JSZip
     try {
-      zip = await JSZip.loadAsync(zipFile)
+      zip = await JSZipClass.loadAsync(zipFile)
     } catch (error) {
       throw new DigitizerError('ZIP_INVALID', 'Failed to read ZIP file', error)
     }

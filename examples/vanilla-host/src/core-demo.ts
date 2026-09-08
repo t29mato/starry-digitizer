@@ -162,11 +162,7 @@ function clearPoints(): void {
 }
 
 function printValues(): void {
-  const datasets = getDatasetValues(
-    ctx.axisSetRepository,
-    ctx.datasetRepository,
-    ctx.valueFormat.effectiveDigits,
-  )
+  const datasets = getDatasetValues(ctx)
   values.textContent = JSON.stringify(datasets, null, 2)
 }
 

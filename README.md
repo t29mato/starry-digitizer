@@ -486,13 +486,7 @@ await applyImage(ctx, imageBlob)
 
 // Runs now, and again whenever anything it read has changed.
 const runner = effect(() => {
-  renderMyOwnTable(
-    getDatasetValues(
-      ctx.axisSetRepository,
-      ctx.datasetRepository,
-      ctx.valueFormat.effectiveDigits,
-    ),
-  )
+  renderMyOwnTable(getDatasetValues(ctx))
 })
 
 // on teardown — `effect()` returns a runner that re-runs the effect when
@@ -521,6 +515,46 @@ Notes:
   subscribe without importing it itself: `effect`, `stop`, `computed`, `ref`,
   `reactive`, `readonly`, `effectScope`, and the usual guards (`isReactive`,
   `isRef`, `unref`, `toRaw`, `markRaw`).
+
+  **If you have not used it before, four rules cover everything this engine
+  needs.** There is no subscribe-to-this-field call and no event names — an
+  effect subscribes to whatever it happens to read while it runs.
+
+  1. **`effect(fn)` runs `fn` immediately**, and again whenever any state it
+     READ during that run changes. So the initial render is free: you do not
+     call your renderer once and then subscribe.
+  2. **Read inside the effect, not outside.** Only property reads that happen
+     while `fn` is running are tracked. Hoisting a read out of the effect —
+     `const datasets = getDatasetValues(ctx)` above the `effect(...)` — is the
+     mistake that makes an effect fire once and never again.
+  3. **The dependency set is recomputed on every run.** An effect that reads
+     `ctx.datasetRepository.activeDataset` follows the ACTIVE dataset: switch
+     datasets and the next run subscribes to the new one and drops the old.
+     A branch that was not taken this run is not subscribed to.
+  4. **`effect()` returns a runner, and `stop(runner)` unsubscribes.** Calling
+     `runner()` re-runs the effect instead — that is the one API shape here
+     that reads backwards. Stop every effect when the host unmounts, or use
+     `effectScope()` and stop the scope.
+
+  Effects run synchronously, once per mutation, so a burst of clicks means a
+  burst of runs. Debounce inside the effect if the work is expensive — the
+  component's own `update:project` is debounced by 300 ms for this reason.
+  Effects also see intermediate states: an operation that mutates two things
+  fires the effect twice. Nothing in the engine is corrupt in between, but a
+  host that persists on every run will write twice.
+
+  ```ts
+  import { effect, stop, getDatasetValues } from 'starry-digitizer/core'
+
+  // ✅ reads inside — re-runs on every point, axis value and digit change
+  const runner = effect(() => render(getDatasetValues(ctx)))
+
+  // ❌ reads outside — the effect reads nothing, so it never runs again
+  const datasets = getDatasetValues(ctx)
+  effect(() => render(datasets))
+
+  stop(runner)
+  ```
 - `watch` is **not** re-exported. It only became part of `@vue/reactivity` in
   Vue 3.5 and the supported peer range starts at 3.3; use `effect` (or `vue`'s
   own `watch`, in a Vue host).

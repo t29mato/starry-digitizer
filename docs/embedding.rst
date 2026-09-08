@@ -710,17 +710,28 @@ Roboto / 14px / 1.4 の見た目は、こうして固定した結果です。
 .. code-block:: ts
 
    // 点や軸が変われば再実行される(getDatasetValues() がそれらを読むため)
-   effect(() =>
-     render(getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, 4)),
-   )
+   const runner = effect(() => render(getDatasetValues(ctx)))
 
    // 何が起きても再実行されない(読み取りが effect の外で済んでいる)
-   const values = getDatasetValues(ctx.axisSetRepository, ctx.datasetRepository, 4)
+   const values = getDatasetValues(ctx)
    effect(() => render(values))
 
 反応させたい値は必ず effect の **中で** 読んでください。初回実行で ``false`` だった
 ``if`` の内側での読み取りも購読されません。逆に effect は狭く保つほど、無関係な状態変化
 で再実行されなくなります。
+
+依存関係は実行のたびに **作り直されます**\ 。``ctx.datasetRepository.activeDataset``
+を読むエフェクトはアクティブなデータセットを追従し、切り替えると次の実行で新しい方を
+購読して古い方は外れます。
+
+購読の解除は ``stop(runner)`` です。``effect()`` が返す runner は「呼ぶと再実行する」
+ものなので、``runner()`` では解除になりません。ホストのアンマウント時に必ず停止するか、
+``effectScope()`` でまとめて停止してください。
+
+エフェクトは同期的に、変更 1 回につき 1 回走ります。重い処理はエフェクトの中で
+デバウンスしてください(コンポーネントの ``update:project`` を 300ms デバウンス
+しているのも同じ理由です)。2 つの状態を変える操作ではエフェクトが 2 回走ります——
+途中状態が壊れているわけではありませんが、毎回保存するホストは 2 回書きに行きます。
 
 React へのつなぎ込み(``useSyncExternalStore``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -742,11 +753,7 @@ subscribe」と「スナップショットの getter」に素直に対応しま�
    function useDatasetValues(ctx: DigitizerContext): DatasetValues[] {
      const read = useCallback(
        () =>
-         getDatasetValues(
-           ctx.axisSetRepository,
-           ctx.datasetRepository,
-           ctx.valueFormat.effectiveDigits,
-         ),
+         getDatasetValues(ctx),
        [ctx],
      )
 
