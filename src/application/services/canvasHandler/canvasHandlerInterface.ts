@@ -44,9 +44,15 @@ export interface CanvasHandlerInterface extends PixelSource {
   // no layout yet (a host may let flex size it, so the image can arrive before
   // the frame has a height) and the fit is therefore still owed.
   // attachCanvases() observes the wrapper and re-runs drawFitSizeImage() when
-  // it gets a size, but only while this is true — a manual zoom must not be
-  // overridden. A host reads it to know the scale is not final yet.
+  // it gets a size. A host reads it to know the scale is not final yet.
   get hasPendingFitSize(): boolean
+  // Whether the current scale IS a fit (as opposed to a zoom the user picked
+  // with scaleUp / scaleDown / drawOriginalSizeImage). The wrapper observer
+  // re-fits while this is true, so a frame that changes size after a
+  // successful fit — a split view opening, the window narrowing — follows it
+  // instead of leaving the figure clipped at the old scale. A manual zoom
+  // leaves fit mode and is never overridden.
+  get isFittedToFrame(): boolean
   get canvasWrapper(): HTMLDivElement
   get imageCanvas(): HTMLCanvas
   get maskCanvas(): HTMLCanvas

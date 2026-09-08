@@ -75,6 +75,15 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   private wrapperResizeObserver?: ResizeObserver
   private observedWrapper?: HTMLDivElement
 
+  // INFO: whether the CURRENT scale came from a fit rather than from a zoom
+  // the user picked. `isFitSizePending` only covers "a fit was asked for and
+  // could not be applied yet"; this covers "a fit was applied and is still
+  // what the view means", which is what makes a LATER frame change re-fit.
+  // Without it, a frame that shrinks after a successful fit (a split view
+  // opening, the window narrowing) leaves the figure drawn at the old scale
+  // and silently clipped — no exception, no warning.
+  private isFitSizeMode = false
+
   constructor() {
     this.imageElement = new Image()
   }
@@ -166,11 +175,13 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
 
     this.disconnectWrapperResizeObserver()
     this.wrapperResizeObserver = new ResizeObserver(() => {
-      // INFO: the `hasPendingFitSize` guard is the whole contract: re-fit ONLY
-      // while a fit is still owed. Without it every layout change (a sidebar
-      // opening, the window resizing) would throw away a zoom the user chose
-      // with + / - / 0 / f. drawFitSizeImage() clears the flag once it lands.
-      if (!this.isFitSizePending) return
+      // INFO: re-fit while a fit is still owed (the frame had no size yet) AND
+      // while the view is still IN fit mode (a fit landed and the user has not
+      // picked a zoom since). The second half is what makes "the frame alone
+      // changed" work — a split view opening, the window narrowing. A zoom the
+      // user chose with + / - / 0 leaves fit mode, so a later layout change
+      // never throws it away.
+      if (!this.isFitSizePending && !this.isFitSizeMode) return
       this.drawFitSizeImage()
     })
     this.wrapperResizeObserver.observe(wrapper)
@@ -456,6 +467,7 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     // INFO: no image, nothing to fit — a leftover request would otherwise make
     // the next layout change re-fit an image that is gone.
     this.isFitSizePending = false
+    this.isFitSizeMode = false
     // INFO: only the canvases that are currently attached — clearImage() is
     // also reachable before mount (reset() on a fresh context).
     ;[
@@ -546,11 +558,23 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   // (see drawFitSizeImage). The engine retries it itself when the attached
   // wrapper gets a size (see observeWrapper); this stays public because a host
   // that renders its own overlay needs to know the scale is not final yet.
+  // INFO: whether the current scale is a fit rather than a zoom the user
+  // picked — i.e. whether a frame change will re-fit. A host that shows the
+  // zoom level reads this to render "Fit" instead of a percentage.
+  get isFittedToFrame(): boolean {
+    return this.isFitSizeMode
+  }
+
   get hasPendingFitSize(): boolean {
     return this.isFitSizePending
   }
 
   drawFitSizeImage() {
+    // INFO: asking for a fit is what puts the view INTO fit mode, whether or
+    // not this call can land one. Set before the early returns so a fit that
+    // is postponed for want of a frame still counts.
+    this.isFitSizeMode = true
+
     // INFO: no image yet — there is nothing to fit and nothing to remember
     // either: loading one calls back in through changeImage() / applyImage().
     // Distinguishing this from "the frame has no size yet" (below) matters,
@@ -634,10 +658,12 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     this.clearPendingFitSize()
   }
 
-  // INFO: the user picked a zoom by hand, so an owed fit is stale — a later
-  // layout change must not silently override what they chose.
+  // INFO: the user picked a zoom by hand, so an owed fit is stale AND the view
+  // has left fit mode — a later layout change must not silently override what
+  // they chose.
   private clearPendingFitSize() {
     this.isFitSizePending = false
+    this.isFitSizeMode = false
   }
 
   // INFO: returns whether the canvases were actually resized. Callers that

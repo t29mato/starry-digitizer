@@ -4,7 +4,12 @@
 // own hooks or through public CSS custom properties — never by reaching into
 // the library's internals to resize it.
 
-import { calibrateAxes, visitHostApp } from '../../support/hostApp'
+import {
+  calibrateAxes,
+  pressKey,
+  visitHostApp,
+  visitHostAppUntouched,
+} from '../../support/hostApp'
 
 /** The panel each feature flag owns, addressed the way a user would see it. */
 const PANELS = {
@@ -147,6 +152,65 @@ describe('host app: layout slots', () => {
         )
       })
     })
+  })
+})
+
+// INFO: reported by a host that composes the panels itself (friction report
+// S3-1): after a successful fit, changing the FRAME alone left the figure at
+// the old scale and silently clipped. Visited untouched on purpose — pressing
+// "0" (which visitHostApp() does) is the user picking a zoom, and that must
+// keep winning over any later layout change.
+describe('host app: the fit follows the frame', () => {
+  it('re-fits when the host shrinks the pane', () => {
+    visitHostAppUntouched()
+
+    cy.get('[data-cy=image-canvas]')
+      .invoke('attr', 'width')
+      .then((fitted) => {
+        const fittedWidth = Number(fitted)
+        expect(fittedWidth, 'the image was fitted to the frame').to.be
+          .greaterThan(0)
+
+        cy.get('[data-cy=toggle-compact]').click()
+        cy.get('[data-cy=toggle-compact]').should('contain.text', 'compact: on')
+
+        cy.get('[data-cy=image-canvas]')
+          .invoke('attr', 'width')
+          .should((refitted) => {
+            expect(
+              Number(refitted),
+              'the canvas followed the smaller pane',
+            ).to.be.lessThan(fittedWidth)
+          })
+      })
+
+    // INFO: and it still fits — the whole figure inside the frame, which is
+    // what "clipped on the right" was not.
+    cy.get('[data-cy=canvas-wrapper]').then(($wrapper) => {
+      const frame = $wrapper[0].getBoundingClientRect()
+      cy.get('[data-cy=image-canvas]').then(($canvas) => {
+        const canvas = $canvas[0].getBoundingClientRect()
+        expect(canvas.width).to.be.at.most(frame.width + 1)
+        expect(canvas.height).to.be.at.most(frame.height + 1)
+      })
+    })
+  })
+
+  it('never overrides a zoom the user picked', () => {
+    visitHostAppUntouched()
+    // INFO: "0" is 100%; the canvas is then the image's own width.
+    pressKey('0')
+
+    cy.get('[data-cy=image-canvas]')
+      .invoke('attr', 'width')
+      .then((chosen) => {
+        cy.get('[data-cy=toggle-compact]').click()
+        cy.get('[data-cy=toggle-compact]').should('contain.text', 'compact: on')
+
+        cy.get('[data-cy=image-canvas]')
+          .invoke('attr', 'width')
+          .should('equal', chosen)
+      })
   })
 })
 

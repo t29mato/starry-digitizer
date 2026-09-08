@@ -129,8 +129,52 @@ describe('CanvasHandler retries a postponed fit by itself', () => {
     )
   })
 
-  // INFO: the `hasPendingFitSize` guard, which is the whole reason the retry
-  // is allowed to exist. Without it a sidebar opening would undo the zoom.
+  // INFO: reported from a real host (friction report S3-1): a figure that had
+  // already been fitted stayed at the old scale — and was silently clipped on
+  // the right — when only the FRAME changed (a split view opening, the window
+  // narrowing 1920 -> 1440). `hasPendingFitSize` is false by then, so the
+  // retry alone did not cover it; `isFittedToFrame` is what does.
+  it('re-fits when the frame alone changes after a successful fit', () => {
+    const wrapper = createWrapper(WRAPPER_WIDTH, WRAPPER_HEIGHT)
+    attachAllCanvases(canvasHandler, wrapper)
+    loadImage(canvasHandler)
+
+    canvasHandler.drawFitSizeImage()
+    expect(canvasHandler.hasPendingFitSize).toBe(false)
+    expect(canvasHandler.isFittedToFrame).toBe(true)
+    expect(canvasHandler.scale).toBeCloseTo(EXPECTED_FIT_SCALE)
+
+    // INFO: the canvas column halves — the case the report measured.
+    setWrapperSize(wrapper, WRAPPER_WIDTH / 2, WRAPPER_HEIGHT)
+    lastObserver()?.trigger()
+
+    // min(400/400, 600/200) - 0.01
+    expect(canvasHandler.scale).toBeCloseTo(1 - 0.01)
+    expect(canvasHandler.imageCanvas.element.width).toBe(
+      Math.trunc(IMAGE_WIDTH * (1 - 0.01)),
+    )
+    expect(canvasHandler.isFittedToFrame).toBe(true)
+  })
+
+  it('leaves fit mode for good once the user picks a zoom', () => {
+    const wrapper = createWrapper(WRAPPER_WIDTH, WRAPPER_HEIGHT)
+    attachAllCanvases(canvasHandler, wrapper)
+    loadImage(canvasHandler)
+
+    canvasHandler.drawFitSizeImage()
+    expect(canvasHandler.isFittedToFrame).toBe(true)
+
+    canvasHandler.drawOriginalSizeImage()
+    expect(canvasHandler.isFittedToFrame).toBe(false)
+
+    setWrapperSize(wrapper, WRAPPER_WIDTH / 2, WRAPPER_HEIGHT)
+    lastObserver()?.trigger()
+
+    expect(canvasHandler.scale).toBe(1)
+  })
+
+  // INFO: the guard that lets the retry exist at all. Without it a sidebar
+  // opening would undo the zoom.
   it('never overrides a zoom the user chose', () => {
     const wrapper = createWrapper(WRAPPER_WIDTH, WRAPPER_HEIGHT)
     attachAllCanvases(canvasHandler, wrapper)

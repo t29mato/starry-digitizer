@@ -507,10 +507,16 @@ Notes:
   is blank. The engine handles it for you — it observes the wrapper you lend it
   and re-runs the fit as soon as the frame is measured — so a host owes no
   `ResizeObserver` of its own. Read `canvasHandler.hasPendingFitSize` to know
-  the scale is not final yet (a host drawing its own overlay wants that). A
-  zoom the user picked (`scaleUp` / `scaleDown` / `drawOriginalSizeImage`)
-  clears the pending fit, so a later layout change never overrides it.
+  the scale is not final yet (a host drawing its own overlay wants that).
   `detachCanvases(['wrapper'])` disconnects the observer.
+- **The fit follows the frame, a chosen zoom does not.** The same observer also
+  re-fits when the frame changes size AFTER a successful fit — a split view
+  opening, the window narrowing — so the figure never stays at the old scale
+  and clipped. `canvasHandler.isFittedToFrame` says whether the current scale
+  is a fit (render it as "Fit" rather than a percentage). A zoom the user
+  picked (`scaleUp` / `scaleDown` / `drawOriginalSizeImage`) leaves fit mode,
+  and from then on no layout change overrides it; `drawFitSizeImage()` puts the
+  view back into fit mode.
 - Change notification is `@vue/reactivity`, re-exported here so the host can
   subscribe without importing it itself: `effect`, `stop`, `computed`, `ref`,
   `reactive`, `readonly`, `effectScope`, and the usual guards (`isReactive`,

@@ -689,9 +689,15 @@ Roboto / 14px / 1.4 の見た目は、こうして固定した結果です。
   ラッパを監視し、レイアウトが決まった時点でフィットをやり直すので、\ **ホストが
   ``ResizeObserver`` を用意する必要はありません**\ 。倍率がまだ確定していないことは
   ``canvasHandler.hasPendingFitSize`` で分かります(自前でオーバーレイを描くホスト用)。
-  ユーザーが選んだ拡大率(``scaleUp`` / ``scaleDown`` / ``drawOriginalSizeImage``)は
-  保留中のフィットを打ち消すので、後からのレイアウト変化で上書きされることはありません。
   監視は ``detachCanvases(['wrapper'])`` で解除されます。
+- **フィットは枠に追従し、ユーザーが選んだ拡大率は追従しません。** 同じ observer が、
+  フィット成功後に **枠だけ** が変わった場合(左右分割表示に切り替える、ウィンドウを
+  1920px → 1440px に縮める)にもフィットをやり直します。古い倍率のまま右側が切れる
+  ことはありません。現在の倍率がフィットによるものかどうかは
+  ``canvasHandler.isFittedToFrame`` で分かります(拡大率表示を「Fit」にするなど)。
+  ユーザーが選んだ拡大率(``scaleUp`` / ``scaleDown`` / ``drawOriginalSizeImage``)は
+  フィットモードを抜けるので、以降レイアウト変化で上書きされることはありません。
+  ``drawFitSizeImage()`` を呼べばフィットモードに戻ります。
 - **パネルは Vue 専用です。** ``ExtractorSettings`` / ``AxisSetManager`` などは
   ``starry-digitizer/vue`` にしか入っておらず、React 版・Svelte 版はありません。
   React のホストは core と自前の canvas / UI を組み合わせます。
