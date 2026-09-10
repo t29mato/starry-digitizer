@@ -111,6 +111,12 @@ export {
   setConsiderGraphTilt,
   setPointMode,
 } from './application/utils/axisSetOperations'
+// INFO: how big to draw an overlay marker at the current zoom. A host that
+// renders its own point/axis overlay needs this, because marker coordinates
+// scale with the canvas and a fixed marker size therefore swamps the figure
+// at low zoom — the bounds in STYLE keep it visible and hittable at both
+// extremes. The built-in CanvasPoint / CanvasAxis use exactly this.
+export { scaledMarkerSizePx } from './application/utils/markerSize'
 export { getDatasetValues } from './application/utils/datasetValues'
 export type { DatasetValues } from './application/utils/datasetValues'
 export { loadImageAsDataUrl } from './application/utils/imageLoader'

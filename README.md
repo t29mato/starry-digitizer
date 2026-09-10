@@ -643,6 +643,22 @@ Notes:
   `axisSet.pointMode = POINT_MODE.FOUR_POINTS`. `STYLE` holds the marker sizes
   and opacities the built-in canvas layers draw with, for a host that renders
   its own overlay and wants it to match.
+- **A marker's size belongs to the zoom, not to the screen.** Overlay
+  coordinates are image pixels times `canvasHandler.scale`, so a marker drawn
+  at a fixed pixel size covers more and more of the FIGURE as the user zooms
+  out — at 16%, a 10px dot buries 62.5px of the original image, and a figure
+  with a few dozen points hides its own curve. Size your markers with
+  `scaledMarkerSizePx(basePx, canvasHandler.scale, minPx, maxPx)` and the
+  bounds in `STYLE` (`POINT_MIN_SIZE_PX` / `POINT_MAX_SIZE_PX`, and the same
+  pair for temp points and axes). The bounds matter: plain `basePx * scale` is
+  1.6px at 16% — invisible, and unclickable.
+- **Keep the pointer target bigger than the dot.** `STYLE.POINT_HIT_MIN_SIZE_PX`
+  is the floor the built-in `CanvasPoint` gives its (transparent) hit area,
+  independent of how small the dot itself has become. At very low zoom those
+  targets necessarily overlap — points are only a few screen pixels apart —
+  and the marker drawn on top takes the click, which is the one the user sees
+  on top. Editing a dense figure means zooming in; the low zoom is for finding
+  what is missing, and that is what the size rule above protects.
 
 ##### `effect` tracks what the function reads, nothing else
 

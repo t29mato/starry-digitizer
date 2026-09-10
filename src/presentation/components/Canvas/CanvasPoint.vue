@@ -3,25 +3,47 @@
     class="canvas-point"
     :style="{
       position: 'absolute',
-      top: top,
-      left: left,
+      top: hitTop,
+      left: hitLeft,
       cursor: cursor,
-      width: size,
-      height: size,
+      width: hitSize,
+      height: hitSize,
       'box-sizing': 'border-box',
-      'background-color': backgroundColor,
-      // INFO: 白一色の縁取りだと白背景(または明るい背景色)のグラフで見えなく
-      // なるため、白+黒の二重リングにして、明暗どちらの背景でも最低限どちらか
-      // の縁でコントラストを確保する。box-shadowはレイアウトに影響しないため
-      // borderの代わりに使う。
-      'box-shadow': '0 0 0 1px white, 0 0 0 2px black',
-      'border-radius': borderRadius,
+      display: 'flex',
+      'align-items': 'center',
+      'justify-content': 'center',
       visibility: isVisible ? 'visible' : 'hidden',
-      opacity: opacity,
       zIndex: zIndex,
     }"
     @click="click"
-  ></div>
+  >
+    <!-- INFO: two elements, because the pointer target and the dot are no
+         longer the same size. The OUTER one is the hit area (transparent,
+         never smaller than STYLE.POINT_HIT_MIN_SIZE_PX) and keeps
+         `canvas-point` as its ONLY class — CanvasMain identifies a click on a
+         point with `target.className === 'canvas-point'`, and the e2e specs
+         count and position these. This one is the dot, which shrinks with the
+         zoom; `pointer-events: none` keeps it out of the way so the click
+         target stays the outer element.
+         The comment sits INSIDE the root: above it, the SFC compiles to a
+         fragment and the component no longer has a single root element. -->
+    <div
+      :style="{
+        width: size,
+        height: size,
+        'box-sizing': 'border-box',
+        'background-color': backgroundColor,
+        // INFO: 白一色の縁取りだと白背景(または明るい背景色)のグラフで見えなく
+        // なるため、白+黒の二重リングにして、明暗どちらの背景でも最低限どちらか
+        // の縁でコントラストを確保する。box-shadowはレイアウトに影響しないため
+        // borderの代わりに使う。
+        'box-shadow': '0 0 0 1px white, 0 0 0 2px black',
+        'border-radius': borderRadius,
+        opacity: opacity,
+        'pointer-events': 'none',
+      }"
+    ></div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -33,6 +55,7 @@ import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { deletePoint } from '@/application/utils/pointOperations'
 import { MANUAL_MODE, STYLE } from '@/constants'
+import { scaledMarkerSizePx } from '@/application/utils/markerSize'
 
 export default defineComponent({
   setup() {
@@ -91,26 +114,40 @@ export default defineComponent({
 
       return '50%'
     },
+    // INFO: the dot, scaled with the canvas so it stays the same size
+    // relative to the figure — see scaledMarkerSizePx().
+    scaledSizePx(): number {
+      if (this.isTemporary) {
+        return scaledMarkerSizePx(
+          this.tempPointSizePx,
+          this.canvasHandler.scale,
+          STYLE.TEMP_POINT_MIN_SIZE_PX,
+          STYLE.TEMP_POINT_MAX_SIZE_PX,
+        )
+      }
+      return scaledMarkerSizePx(
+        this.pointSizePx,
+        this.canvasHandler.scale,
+        STYLE.POINT_MIN_SIZE_PX,
+        STYLE.POINT_MAX_SIZE_PX,
+      )
+    },
+    // INFO: the pointer target. Never smaller than the dot, and never so small
+    // that a zoomed-out point cannot be grabbed.
+    hitSizePx(): number {
+      return Math.max(this.scaledSizePx, STYLE.POINT_HIT_MIN_SIZE_PX)
+    },
     size(): string {
-      if (this.isTemporary) {
-        return this.tempPointSizePx + 'px'
-      }
-
-      return this.pointSizePx + 'px'
+      return this.scaledSizePx + 'px'
     },
-    top(): string {
-      if (this.isTemporary) {
-        return this.yPx - this.tempPointSizePx / 2 + 'px'
-      }
-
-      return this.yPx - this.pointSizePx / 2 + 'px'
+    hitSize(): string {
+      return this.hitSizePx + 'px'
     },
-    left(): string {
-      if (this.isTemporary) {
-        return this.xPx - this.tempPointSizePx / 2 + 'px'
-      }
-
-      return this.xPx - this.pointSizePx / 2 + 'px'
+    hitTop(): string {
+      return this.yPx - this.hitSizePx / 2 + 'px'
+    },
+    hitLeft(): string {
+      return this.xPx - this.hitSizePx / 2 + 'px'
     },
     zIndex(): string {
       if (this.isTemporary) {

@@ -24,6 +24,7 @@ import {
   assertTableRow,
   clickCanvas,
   assertNoSnackbar,
+  pressKey,
 } from '../support/app'
 
 // INFO: the sample graph the standalone app boots with, and also the image
@@ -151,5 +152,97 @@ describe('canvas: the overlay scale follows the image scale', () => {
       assertImageWasFittedToTheFrame()
       assertOverlayScaleMatchesImageScale()
     })
+  })
+})
+
+// INFO: the other half of the same invariant. The overlays sit at the right
+// PLACE (above), but their SIZE was a flat pixel constant, so the further the
+// user zoomed out the more of the figure each marker covered. Reported from
+// real use at 16%: a few dozen points buried the curve and the axis labels,
+// which is exactly the zoom level used to hunt for missed points.
+describe('marker size follows the zoom', () => {
+  const PLOTTED = [
+    { x: 120, y: 300 },
+    { x: 180, y: 260 },
+    { x: 240, y: 200 },
+  ]
+
+  /** Width of the visible dot inside a point marker (its only child). */
+  function dotWidth(): Cypress.Chainable<number> {
+    return cy
+      .get('.canvas-point')
+      .first()
+      .find('div')
+      .first()
+      .then(($dot) => $dot[0].getBoundingClientRect().width)
+  }
+
+  /** Width of the pointer target — the marker element itself. */
+  function hitWidth(): Cypress.Chainable<number> {
+    return cy
+      .get('.canvas-point')
+      .first()
+      .then(($hit) => $hit[0].getBoundingClientRect().width)
+  }
+
+  beforeEach(() => {
+    visitApp()
+    calibrateTwoPoints(ORIGIN, OPPOSITE)
+    setAxisValues({ x1: '0', x2: '10', y1: '0', y2: '100' })
+    PLOTTED.forEach(clickCanvas)
+    cy.get('.canvas-point').should('have.length', PLOTTED.length)
+  })
+
+  it('draws the marker at its nominal size at 100%', () => {
+    // INFO: visitApp() already pins the zoom to 100% with "0".
+    dotWidth().should('be.closeTo', 10, 0.5)
+  })
+
+  it('shrinks the marker as the user zooms out', () => {
+    dotWidth().then((atFullZoom) => {
+      // INFO: five presses of "-" is 0.1 each, i.e. down to 50%.
+      for (let i = 0; i < 5; i += 1) pressKey('-')
+
+      dotWidth().should((zoomedOut) => {
+        expect(zoomedOut, 'the dot shrank with the figure').to.be.lessThan(
+          atFullZoom,
+        )
+      })
+    })
+  })
+
+  it('stops shrinking at the floor, so the marker stays visible', () => {
+    // INFO: far past the point where plain `size * scale` would have given
+    // 1.6px — invisible, and unclickable.
+    for (let i = 0; i < 12; i += 1) pressKey('-')
+
+    dotWidth().should((atMinimum) => {
+      expect(atMinimum, 'still visible').to.be.at.least(3)
+      expect(atMinimum, 'still smaller than at 100%').to.be.lessThan(10)
+    })
+  })
+
+  it('keeps the marker grabbable however far out the user zooms', () => {
+    for (let i = 0; i < 12; i += 1) pressKey('-')
+
+    // INFO: the hit area is deliberately NOT the visual size. A 3px dot the
+    // user cannot click would trade one unusable view for another.
+    hitWidth().should('be.at.least', 12)
+  })
+
+  it('still deletes the point the user clicks at low zoom', () => {
+    for (let i = 0; i < 12; i += 1) pressKey('-')
+
+    pressKey('d')
+    // INFO: `.last()` rather than `.first()`, and that is a statement about
+    // the feature, not a way round the test. At the minimum zoom these points
+    // are ~6px apart on screen, so the hit areas — which must stay bigger
+    // than that to be clickable at all — necessarily overlap. Whichever
+    // marker is drawn ON TOP takes the click, which is the one the user sees
+    // on top. The earlier ones are covered; editing a dense figure means
+    // zooming in, as it always has.
+    cy.get('.canvas-point').last().click()
+
+    cy.get('.canvas-point').should('have.length', PLOTTED.length - 1)
   })
 })
