@@ -117,6 +117,12 @@ export {
 // at low zoom — the bounds in STYLE keep it visible and hittable at both
 // extremes. The built-in CanvasPoint / CanvasAxis use exactly this.
 export { scaledMarkerSizePx } from './application/utils/markerSize'
+// INFO: and which point a click means once those markers overlap — by
+// distance, not by which element the browser handed the event to. A host with
+// its own overlay has the same problem the moment it gives its markers a hit
+// area larger than the gap between points.
+export { nearestPointId } from './application/utils/pointPicking'
+export type { PickablePoint } from './application/utils/pointPicking'
 export { getDatasetValues } from './application/utils/datasetValues'
 export type { DatasetValues } from './application/utils/datasetValues'
 export { loadImageAsDataUrl } from './application/utils/imageLoader'

@@ -246,3 +246,69 @@ describe('marker size follows the zoom', () => {
     cy.get('.canvas-point').should('have.length', PLOTTED.length - 1)
   })
 })
+
+// INFO: which point a click means when markers overlap. The hit areas have a
+// floor, so wherever points sit closer together than that, several markers
+// cover the same pixel — and the browser gives the click to whichever element
+// is on top rather than to the one the user aimed at. A host measured the cost
+// on real figures: at fit/100%/200%, about a third of clicks in the band where
+// points are 6-12px apart selected the wrong point, and in half of those the
+// winner was not even the closest one.
+describe('overlapping markers: the nearest point takes the click', () => {
+  // INFO: 8px apart at 100% zoom — inside the 12px hit floor, so each marker
+  // covers its neighbour's centre. The smallest arrangement that shows the
+  // reported failure.
+  const FIRST = { x: 150, y: 250 }
+  const SECOND = { x: 158, y: 250 }
+  // The calibration below maps them to these values.
+  const FIRST_VALUE = { x: '3', y: '43.33' }
+  const SECOND_VALUE = { x: '3.267', y: '43.33' }
+
+  /**
+   * Clicks AT one marker's centre while the event goes to another — which is
+   * what the browser does when markers overlap: the topmost element gets it,
+   * wherever the pointer actually was. `trigger` is used rather than `click`
+   * precisely because the pointer position and the receiving element have to
+   * be set independently.
+   */
+  function clickAtCentreOfMarker(index: number, receiverIndex: number): void {
+    cy.get('.canvas-point')
+      .eq(index)
+      .then(($aimed) => {
+        const rect = $aimed[0].getBoundingClientRect()
+        cy.get('.canvas-point')
+          .eq(receiverIndex)
+          .trigger('click', {
+            clientX: rect.left + rect.width / 2,
+            clientY: rect.top + rect.height / 2,
+            force: true,
+          })
+      })
+  }
+
+  beforeEach(() => {
+    visitApp()
+    calibrateTwoPoints(ORIGIN, OPPOSITE)
+    setAxisValues({ x1: '0', x2: '10', y1: '0', y2: '100' })
+    clickCanvas(FIRST)
+    clickCanvas(SECOND)
+    cy.get('.canvas-point').should('have.length', 2)
+    pressKey('d')
+  })
+
+  it('deletes the point clicked, not the one drawn on top of it', () => {
+    // INFO: aimed at the FIRST point, delivered to the SECOND — the exact
+    // situation that used to delete the wrong point.
+    clickAtCentreOfMarker(0, 1)
+
+    cy.get('.canvas-point').should('have.length', 1)
+    assertTableRow(0, SECOND_VALUE.x, SECOND_VALUE.y)
+  })
+
+  it('deletes the other one when that is the one aimed at', () => {
+    clickAtCentreOfMarker(1, 0)
+
+    cy.get('.canvas-point').should('have.length', 1)
+    assertTableRow(0, FIRST_VALUE.x, FIRST_VALUE.y)
+  })
+})

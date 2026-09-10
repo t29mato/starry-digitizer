@@ -654,11 +654,20 @@ Notes:
   1.6px at 16% — invisible, and unclickable.
 - **Keep the pointer target bigger than the dot.** `STYLE.POINT_HIT_MIN_SIZE_PX`
   is the floor the built-in `CanvasPoint` gives its (transparent) hit area,
-  independent of how small the dot itself has become. At very low zoom those
-  targets necessarily overlap — points are only a few screen pixels apart —
-  and the marker drawn on top takes the click, which is the one the user sees
-  on top. Editing a dense figure means zooming in; the low zoom is for finding
-  what is missing, and that is what the size rule above protects.
+  independent of how small the dot itself has become.
+- **When targets overlap, resolve the click by distance, not by z-order.**
+  A hit-area floor means markers overlap wherever points sit closer together
+  than it, and the browser gives the click to whichever element is on top —
+  which is not the point the user was pointing at. Measured on real figures:
+  around a third of clicks in the band where points are 6–12px apart went to
+  the wrong point, and in half of those the winner was not even the nearest
+  one (a click exactly on one point's centre was taken by a point 8.06px
+  away). `nearestPointId(points, coord, hitSizePx)` — exported from `core`,
+  and what `CanvasPoint` now uses — picks the nearest marker covering the
+  click, with ties going to the one on top. Below roughly 40% zoom no rule
+  helps: points there are a fraction of a pixel apart, so editing a dense
+  figure means zooming in. Low zoom is for finding what is missing, which is
+  what the size rule above protects.
 
 ##### `effect` tracks what the function reads, nothing else
 
