@@ -21,6 +21,9 @@ const { version } = JSON.parse(original)
 const sha = execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
   encoding: 'utf8',
 }).trim()
+const fullSha = execFileSync('git', ['rev-parse', 'HEAD'], {
+  encoding: 'utf8',
+}).trim()
 
 // INFO: a dirty tree would produce a tarball that no commit reproduces, which
 // is exactly the confusion this script exists to prevent.
@@ -41,6 +44,12 @@ writeFileSync(
   original.replace(`"version": "${version}"`, `"version": "${stamped}"`),
 )
 try {
+  // INFO: the short sha is already in the version, so this is belt and
+  // braces — but it is the FULL sha, and it is where a host looks (npm writes
+  // `gitHead` for published packages too). The release workflow sets the same
+  // field, so every tarball we hand out identifies its commit the same way,
+  // whether or not the version can carry it.
+  execFileSync('npm', ['pkg', 'set', `gitHead=${fullSha}`], { stdio: 'inherit' })
   execFileSync('npm', ['pack'], { stdio: 'inherit' })
 } finally {
   writeFileSync(PKG, original)

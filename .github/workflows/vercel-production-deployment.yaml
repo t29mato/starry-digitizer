@@ -134,10 +134,22 @@ jobs:
         run: yarn lib-build
       - name: Library bundle check
         run: yarn lib-check
+      # INFO: the commit is written into the package before packing, so every
+      # tarball we ever hand out says which commit built it. A dev hand-off
+      # carries it in the VERSION (scripts/pack-dev.mjs); a release cannot —
+      # the version has to stay the tag's, because that is what the install
+      # URL in a host's package.json names. `gitHead` is where it goes instead,
+      # and it is the only thing in a released tarball that distinguishes two
+      # builds of the same version. Hosts vendor these tarballs and record
+      # their integrity hash, so "same file name, different contents" is the
+      # failure they cannot see; this makes it recoverable after the fact.
       - name: Pack tarball
         run: |
+          npm pkg set gitHead="$GITHUB_SHA"
           npm pack
+          git checkout -- package.json
           ls -l starry-digitizer-*.tgz
+          echo "sha256: $(shasum -a 256 starry-digitizer-*.tgz)"
       - name: Attach tarball to the GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

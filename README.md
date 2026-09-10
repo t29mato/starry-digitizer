@@ -64,7 +64,24 @@ install it from a path (see the host's own docs for where to keep it):
 ```bash
 git clone https://github.com/t29mato/starry-digitizer && cd starry-digitizer
 yarn install
-npm pack            # `prepack` runs the library build → starry-digitizer-<version>.tgz
+yarn pack-dev       # → starry-digitizer-<version>-dev-<short sha>.tgz
+```
+
+**Use `pack-dev`, not a bare `npm pack`, for anything you hand to someone.**
+Hosts vendor these tarballs and record an integrity hash against the file name,
+so the failure that costs them a day is *same name, different contents* —
+there is nothing to see when it happens. `pack-dev` puts the commit in the
+version, so a different build is a different file name; it also refuses to run
+on a dirty tree, because a tarball no commit reproduces is the confusion it
+exists to prevent (pass `--allow-dirty` when you really mean it).
+
+**Every tarball also records its commit inside**, in `package.json`'s
+`gitHead` — `pack-dev` and the release workflow both write it. A release
+tarball's version has to stay the tag's (it is what the install URL names), so
+for those this is the only thing that tells two builds of one version apart:
+
+```bash
+tar -xzOf starry-digitizer-*.tgz package/package.json | grep gitHead
 ```
 
 ```bash

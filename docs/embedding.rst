@@ -68,17 +68,36 @@ UI フレームワーク(Vuetify 等)やアイコンフォントは **不要** �
 最小 UI(素の Vue + scoped CSS、インライン SVG アイコン)を持ちます。
 ホストが React や素の JavaScript でも、Vue ランタイム 1 つを足すだけで動きます。
 
-パッケージは npm レジストリには公開していません。リポジトリを clone して ``npm pack`` で
-tarball を作り、パス指定でインストールします(``prepack`` が必ずライブラリをビルドします)。
+パッケージは npm レジストリには公開していません。リポジトリを clone して tarball を作り、
+パス指定でインストールします(``prepack`` が必ずライブラリをビルドします)。
 
 .. code-block:: bash
 
    # ライブラリ側(1回)
    git clone https://github.com/t29mato/starry-digitizer && cd starry-digitizer
-   yarn install && npm pack
+   yarn install && yarn pack-dev   # → starry-digitizer-<version>-dev-<短縮 sha>.tgz
 
    # ホストアプリ側
-   npm install /path/to/starry-digitizer-<version>.tgz vue
+   npm install /path/to/starry-digitizer-<version>-dev-<短縮 sha>.tgz vue
+
+.. important::
+
+   **人に渡す tarball は、素の** ``npm pack`` **ではなく** ``yarn pack-dev`` **で
+   作ってください。** ホストは tarball を vendoring し、ファイル名に対して integrity
+   ハッシュを記録します。したがって最も高くつく失敗は「**同じファイル名で中身が
+   違う**」で、しかも起きたときに見て分かる手がかりがありません。``pack-dev`` は
+   バージョンにコミットを刻むので、ビルドが違えばファイル名が違います。作業ツリーが
+   dirty のときは実行を拒否します(どのコミットでも再現できない tarball を作らない
+   ため。意図的に作るなら ``--allow-dirty``)。
+
+   **どの tarball も、中にコミットを記録しています。** ``package.json`` の ``gitHead``
+   で、``pack-dev`` とリリース workflow の両方が書きます。リリース tarball の
+   バージョンはタグのものである必要がある(インストール URL がそれを指すため)ので、
+   リリースについてはこれが同一バージョンの 2 つのビルドを見分ける唯一の手段です。
+
+   .. code-block:: bash
+
+      tar -xzOf starry-digitizer-*.tgz package/package.json | grep gitHead
 
 tarball をホスト側リポジトリにコミットしておくと、``package-lock.json`` に integrity ハッシュが
 記録され、ネットワークのない Docker ビルドでも同じ成果物が再現します。
