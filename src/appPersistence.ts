@@ -5,7 +5,7 @@ import type { ProjectDTO } from '@/application/dto/projectDTO'
 // Digitizing one figure takes tens of minutes, and a stray reload used to
 // throw away the image, the axis calibration and every point. The library
 // deliberately does NOT persist anything by itself: where the work belongs is
-// the host's decision (Starrydata3 stores it on its own backend), and a
+// the host's decision (Starrydata2 v4 stores it on its own backend), and a
 // library that also wrote to localStorage would create a second source of
 // truth plus a restore race on mount. So the standalone app — which has no
 // backend — does it here, on top of the public API the library already

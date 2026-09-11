@@ -21,7 +21,7 @@ import type JSZip from 'jszip'
 // INFO: jszip is loaded on demand, not at module scope. It is ~100 kB min and
 // only the ZIP round trip needs it — a host that passes ProjectDTO + image
 // through the API (which is what `features.zipExportImport: false` means, and
-// what Starrydata3 does) must not pay for it. `import type` above keeps the
+// what Starrydata2 v4 does) must not pay for it. `import type` above keeps the
 // types without emitting a static import. The promise is cached so repeated
 // exports do not re-resolve the module.
 let jszipModule: Promise<typeof JSZip> | undefined

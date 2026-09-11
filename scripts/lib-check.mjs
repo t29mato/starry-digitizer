@@ -6,7 +6,7 @@
 // Four independent invariants, all of which have been broken by accident
 // before:
 //
-//   1. No external origin ends up in the bundle. Starrydata3 serves the
+//   1. No external origin ends up in the bundle. Starrydata2 v4 serves the
 //      digitizer under a CSP that blocks third-party origins, so a CDN URL
 //      baked in by Sentry, GTM or tesseract.js is a runtime failure there and
 //      not something a type check would catch (integration spec R8).

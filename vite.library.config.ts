@@ -6,13 +6,13 @@ import path, { resolve } from 'path'
 // INFO: Library build (`yarn lib-build`). Deliberately separate from
 // vite.config.js: the app build enables Sentry, vite-plugin-pwa and
 // import.meta.env-driven code, none of which may end up in a package that
-// Starrydata3 embeds (integration spec R8, acceptance criterion 3).
+// Starrydata2 v4 embeds (integration spec R8, acceptance criterion 3).
 //
 // INFO: ES + CJS only, no UMD. A UMD bundle must inline every dependency it
 // cannot resolve at runtime, which would (a) bundle Vue itself and risk a
 // second Vue runtime in the host, and (b) re-embed
 // tesseract.js's hard-coded CDN URLs — exactly what R8 forbids, since
-// Starrydata3 restricts external origins via CSP.
+// Starrydata2 v4 restricts external origins via CSP.
 export default defineConfig({
   plugins: [
     vue(),

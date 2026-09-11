@@ -98,10 +98,10 @@ jobs:
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-  # INFO: The library is NOT published to npm. Hosts (Starrydata3) install
+  # INFO: The library is NOT published to npm. Hosts (Starrydata2 v4) install
   # the tarball attached to the GitHub Release of the tag instead:
   #   "starry-digitizer": "https://github.com/t29mato/starry-digitizer/releases/download/v<ver>/starry-digitizer-<ver>.tgz"
-  # See docs/embedding.rst and the Starrydata3 integration guide.
+  # See docs/embedding.rst and the Starrydata2 integration guide.
   Release-Package-Tarball:
     runs-on: ubuntu-latest
     needs: [UnitTest, E2E-Test]

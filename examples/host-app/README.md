@@ -1,8 +1,8 @@
 # starry-digitizer host app example
 
-A minimal Vue 3 application that embeds `<StarryDigitizer>` the way Starrydata3
-does: the host fetches the figure image itself and passes a `Blob`, binds the
-work state with `v-model:project`, and calls the exposed methods through a
+A minimal Vue 3 application that embeds `<StarryDigitizer>` the way Starrydata2's
+new UI does: the host fetches the figure image itself and passes a `Blob`, binds
+the work state with `v-model:project`, and calls the exposed methods through a
 template ref.
 
 The library's only peer dependency is `vue`. There is no UI framework here: the

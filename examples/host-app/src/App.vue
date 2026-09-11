@@ -232,7 +232,7 @@ const secondImage = ref<Blob>()
 const project = ref<ProjectDTO>()
 const readonly = ref(false)
 const datasetNameCandidates = ref(['Sample A', 'Sample B'])
-// INFO: the host owns the image and the ZIP round trip in the Starrydata3
+// INFO: the host owns the image and the ZIP round trip in the Starrydata2 v4
 // integration, so those two features start off; the e2e specs flip them.
 const features = reactive({
   imageUpload: false,
@@ -534,7 +534,7 @@ async function loadBrokenImage() {
 /**
  * Reads a project ZIP without going through the library's ZIP UI: the host
  * unzips it itself and feeds the DTO + image Blob into loadProject(), which is
- * the same restore path the Starrydata3 API integration uses.
+ * the same restore path the Starrydata2 v4 API integration uses.
  */
 async function onZipSelected(event: Event) {
   const input = event.target as HTMLInputElement
