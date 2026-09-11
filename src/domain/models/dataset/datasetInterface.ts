@@ -15,6 +15,7 @@ export interface DatasetInterface {
   points: Point[]
   visiblePointIds: number[]
   manuallyAddedPointIds: number[]
+  externalId?: string
   pointsAreAdjusting: boolean
   tempPoints: Points
   activePointIds: number[]
@@ -59,4 +60,5 @@ export interface DatasetInterface {
   pointsSortedByIdAscending(): Points
   pointsSortedByIdDescending(): Points
   setAxisSetId(id: number): void
+  setExternalId(externalId: string | undefined): void
 }

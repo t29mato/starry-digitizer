@@ -1,14 +1,24 @@
 <template>
   <div
     id="canvasWrapper"
-    class="c__canvas-wrapper"
+    ref="canvasWrapper"
+    class="sd-panel c__canvas-wrapper"
+    data-cy="canvas-wrapper"
+    :tabindex="isAnyKeyboardGroupEnabled ? 0 : undefined"
     @click="click"
     @mousedown="mouseDown"
     @mouseup="mouseUp"
+    @mouseenter="mouseEnter"
+    @mouseleave="mouseLeave"
   >
-    <canvas id="imageCanvas"></canvas>
+    <!-- INFO: `sd-panel` is what makes this panel style itself, so a host
+         composing the panels needs no `.starry-digitizer` wrapper around
+         them; inside one it is a no-op. src/presentation/styles/base.scss. -->
+    <canvas id="imageCanvas" ref="imageCanvas" data-cy="image-canvas"></canvas>
     <canvas
       id="tempMaskCanvas"
+      ref="tempMaskCanvas"
+      data-cy="temp-mask-canvas"
       :style="{
         position: 'absolute',
         top: 0,
@@ -24,6 +34,8 @@
         opacity: 0.5,
       }"
       id="maskCanvas"
+      ref="maskCanvas"
+      data-cy="mask-canvas"
     ></canvas>
     <canvas
       :style="{
@@ -33,6 +45,8 @@
         opacity: 0.5,
       }"
       id="interpolationGuideCanvas"
+      ref="interpolationGuideCanvas"
+      data-cy="interpolation-guide-canvas"
     ></canvas>
     <canvas-axis-set-guide></canvas-axis-set-guide>
     <canvas-axis-set></canvas-axis-set>
@@ -43,31 +57,33 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import {
-  CanvasAxisSet,
-  CanvasPoints,
-  CanvasCursor,
-  CanvasAxisSetGuide,
-} from '.'
+// INFO: imported from the .vue files directly, not through './index'. The
+// barrel re-exports this component, so going through it makes index.ts and
+// CanvasMain.vue mutually dependent; with the library's three entry points
+// Rollup then splits them into different chunks and warns that the resulting
+// circular chunk dependency can break execution order.
+import CanvasAxisSet from './CanvasAxisSet.vue'
+import CanvasPoints from './CanvasPoints.vue'
+import CanvasCursor from './CanvasCursor.vue'
+import CanvasAxisSetGuide from './CanvasAxisSetGuide.vue'
 import { Vector } from '@/domain/models/axisSet/axisSetInterface'
 import { Coord, Point } from '@/@types/types'
 
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
 
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
-import { confirmer } from '@/instanceStore/applicationServiceInstances'
-import { extractor } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { historyManager } from '@/instanceStore/applicationServiceInstances'
+import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
+import { ProjectFileOperationResult } from '@/application/utils/projectFileOperations'
+import { addPoint } from '@/application/utils/pointOperations'
+import { addAxisCoord } from '@/application/utils/axisSetOperations'
 import {
   saveProjectAndDownload,
   triggerLoadProjectDialog,
-} from '@/application/utils/projectFileOperations'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+} from '@/presentation/utils/projectFileDialog'
 import { MANUAL_MODE } from '@/constants'
+import { DigitizerError, toErrorPayload } from '@/application/errors'
 
 export default defineComponent({
   components: {
@@ -76,55 +92,223 @@ export default defineComponent({
     CanvasCursor,
     CanvasAxisSetGuide,
   },
-  props: {
-    imagePath: String,
-  },
-  beforeUnmount() {
-    document.removeEventListener('keydown', this.keyDownHandler)
-    document.removeEventListener('mousemove', this.mouseMove)
-  },
-  data() {
+  emits: ['error'],
+  setup() {
+    const ctx = useDigitizerContext()
+    const options = useDigitizerOptions()
+    const { interpolator, confirmer, canvasHandler, historyManager } = ctx
+    const { axisSetRepository, datasetRepository } = ctx
     return {
+      ctx,
+      options,
       interpolator,
       confirmer,
-      extractor,
       canvasHandler,
       historyManager,
       axisSetRepository,
       datasetRepository,
-      // INFO: 直前のmousemoveでカーソルが画像内にいたかどうか。
-      // 画像から出た最初のイベントで端にクランプするために使う
-      cursorWasOnImage: false,
     }
   },
-  async mounted() {
-    document.addEventListener('keydown', this.keyDownHandler)
-    // INFO: 画像の端を越えた瞬間のイベントも拾ってMagnifierを端で
-    // 止められるよう、mousemoveはdocumentで拾う (#255)
-    document.addEventListener('mousemove', this.mouseMove)
-
-    this.interpolator.setGuideCanvas(new HTMLCanvas('interpolationGuideCanvas'))
-
-    if (!this.imagePath) {
-      return
+  data() {
+    return {
+      // INFO: keep the exact bound reference so beforeUnmount can remove the
+      // very listener that was added (a fresh .bind() would not match).
+      // Non-null also means "currently registered", which is what tells the
+      // attach/detach pair below apart from a second attach.
+      boundKeyDownHandler: null as ((e: KeyboardEvent) => void) | null,
+      boundHoverKeyDownHandler: null as ((e: KeyboardEvent) => void) | null,
+      boundMouseMoveHandler: null as ((e: MouseEvent) => void) | null,
+      // INFO: whether the pointer is inside this instance's wrapper, from the
+      // wrapper's own mouseenter/mouseleave (so it is true over the whole
+      // frame, not just over the image the way isCursorOnCanvas is). It gates
+      // the hover path of the keyboard shortcuts, see attachHoverShortcuts.
+      isPointerOverWrapper: false,
+      // INFO: whether the cursor was inside the image on the previous
+      // mousemove. Used to clamp the magnifier to the edge on the first event
+      // that leaves the image.
+      cursorWasOnImage: false,
+      // INFO: true while a drag that STARTED on this instance's wrapper is in
+      // progress. mousemove is a document listener (see mounted), so on a page
+      // with more than one <StarryDigitizer> every instance sees every move;
+      // this tells them apart.
+      isDraggingHere: false,
+      // INFO: watches the canvas frame so the interpolation guide canvas can
+      // follow the size the image canvas ends up with. The fit itself is NOT
+      // driven from here any more — CanvasHandler.attachCanvases() observes
+      // the same wrapper and re-runs a postponed fit, so a core-only host
+      // gets that behaviour too. This observer is created after the engine's
+      // (attachCanvases runs first in mounted()), and ResizeObserver callbacks
+      // fire in observer creation order, so the fit has already been applied
+      // by the time resizeCanvas() reads canvasHandler.scale here.
+      wrapperResizeObserver: undefined as ResizeObserver | undefined,
     }
-    try {
-      await this.canvasHandler.initializeImageElement(this.imagePath)
-      this.canvasHandler.drawFitSizeImage()
-      this.canvasHandler.setUploadImageUrl(this.imagePath)
-      this.extractor.setSwatches(this.canvasHandler.colorSwatches)
+  },
+  mounted() {
+    // INFO: attached through a watcher rather than once, so a host that flips
+    // a keyboard feature flag at runtime is obeyed immediately (`immediate`
+    // does the initial attach). While EVERY group is off NO listener exists —
+    // registering one and then ignoring every key would still let the
+    // digitizer swallow keys, which is exactly what a host with its own
+    // shortcuts asks us not to do. With some group on the listener has to
+    // exist, so the groups that are off are skipped inside the handlers
+    // instead — before preventDefault(), so a key of a disabled group is
+    // left exactly as it arrived and the host's own listener still gets it.
+    this.$watch(
+      () => this.isAnyKeyboardGroupEnabled,
+      (enabled: boolean) => {
+        if (enabled) {
+          this.attachKeyboardShortcuts()
+        } else {
+          this.detachKeyboardShortcuts()
+        }
+      },
+      { immediate: true },
+    )
+    // INFO: mousemove is listened for on document (not on the wrapper) so the
+    // event that crosses the image edge is still received and the magnifier
+    // can be stopped exactly at the edge (#255).
+    this.boundMouseMoveHandler = this.mouseMove.bind(this)
+    document.addEventListener('mousemove', this.boundMouseMoveHandler)
 
-      //TODO: interpolation canvasをinterpolator appに移譲したのでここで呼んでいるがcanvas初期化一連を行うapplicationにまとめたい
-      this.interpolator.resizeCanvas()
-    } finally {
-      //
+    // INFO: The image itself is loaded by StarryDigitizer.vue through
+    // digitizerOperations.applyImage; this component only owns the canvases.
+    // They are handed to the engine explicitly (rather than looked up by id)
+    // so that several <StarryDigitizer> instances can share a page.
+    this.canvasHandler.attachCanvases({
+      wrapper: this.$refs.canvasWrapper as HTMLDivElement,
+      imageCanvas: this.$refs.imageCanvas as HTMLCanvasElement,
+      maskCanvas: this.$refs.maskCanvas as HTMLCanvasElement,
+      tempMaskCanvas: this.$refs.tempMaskCanvas as HTMLCanvasElement,
+    })
+    this.interpolator.setGuideCanvas(
+      new HTMLCanvas(this.$refs.interpolationGuideCanvas as HTMLCanvasElement),
+    )
+
+    // INFO: the engine re-runs a postponed fit by itself (attachCanvases
+    // above). What it cannot do is resize the interpolation GUIDE canvas: the
+    // interpolator is not visible from canvasHandler, and the guide canvas is
+    // owned by this component. So the frame is still watched here, for that
+    // one thing. ResizeObserver is guarded because jsdom has none.
+    if (typeof ResizeObserver !== 'undefined' && this.$refs.canvasWrapper) {
+      this.wrapperResizeObserver = new ResizeObserver(() =>
+        this.interpolator.resizeCanvas(),
+      )
+      this.wrapperResizeObserver.observe(this.$refs.canvasWrapper as Element)
     }
+  },
+  beforeUnmount() {
+    this.detachKeyboardShortcuts()
+    if (this.boundMouseMoveHandler) {
+      document.removeEventListener('mousemove', this.boundMouseMoveHandler)
+      this.boundMouseMoveHandler = null
+    }
+    this.wrapperResizeObserver?.disconnect()
+    this.wrapperResizeObserver = undefined
+    // INFO: by element, not by key. If a second <CanvasMain> was mounted
+    // against this same context it has already taken these slots, and
+    // detaching by name would leave that live instance drawing nowhere.
+    this.canvasHandler.detachCanvases({
+      wrapper: this.$refs.canvasWrapper as HTMLDivElement,
+      imageCanvas: this.$refs.imageCanvas as HTMLCanvasElement,
+      maskCanvas: this.$refs.maskCanvas as HTMLCanvasElement,
+      tempMaskCanvas: this.$refs.tempMaskCanvas as HTMLCanvasElement,
+    })
+  },
+  computed: {
+    // INFO: "does this instance listen for keys at all". The frame only needs
+    // a listener — and a place in the tab order — while at least one group is
+    // on; which group answers a given key is decided per key, in the handlers.
+    // Note that the editing group alone is enough: its keys arrive through
+    // focus, so the frame stays focusable even when the host owns ⌘Z/⌘S/⌘O.
+    isAnyKeyboardGroupEnabled(): boolean {
+      const { features } = this.options
+      return (
+        features.keyboardHistory ||
+        features.keyboardFile ||
+        features.keyboardEditing
+      )
+    },
   },
   methods: {
+    // INFO: the element this component owns via a template ref — passed to
+    // getMouseCoordFromMouseEvent instead of an id lookup so that several
+    // digitizer instances can share a page. Undefined before mount / after
+    // unmount, in which case the util falls back to offsetX/Y.
+    imageCanvasElement(): HTMLCanvasElement | undefined {
+      return this.$refs.imageCanvas as HTMLCanvasElement | undefined
+    },
+    // INFO: keydown is bound to THIS instance's wrapper, not to document the
+    // way mousemove is. The library is embedded in host pages: a document
+    // listener made every Cmd+Z pressed anywhere on the host page undo a point
+    // here (the host's own undo lost its key), and on a page with several
+    // <StarryDigitizer>s it fired in all of them at once — mouse events tell
+    // the instances apart (isDraggingHere), keys had no equivalent.
+    // The wrapper carries tabindex, so clicking the canvas — the first thing
+    // anyone does with it — is what makes the keys arrive.
+    attachKeyboardShortcuts(): void {
+      const wrapper = this.$refs.canvasWrapper as HTMLDivElement | undefined
+      if (!wrapper || this.boundKeyDownHandler) {
+        return
+      }
+      this.boundKeyDownHandler = this.keyDownHandler.bind(this)
+      wrapper.addEventListener('keydown', this.boundKeyDownHandler)
+      if (this.isPointerOverWrapper) {
+        this.attachHoverShortcuts()
+      }
+    },
+    detachKeyboardShortcuts(): void {
+      const wrapper = this.$refs.canvasWrapper as HTMLDivElement | undefined
+      if (this.boundKeyDownHandler) {
+        wrapper?.removeEventListener('keydown', this.boundKeyDownHandler)
+        this.boundKeyDownHandler = null
+      }
+      this.detachHoverShortcuts()
+    },
+    // INFO: focus alone would be a regression for the standalone app, where
+    // '+' / '-' / '0' have always worked on a freshly opened page. So the
+    // shortcuts also work while the pointer is over this digitizer, which is
+    // the same "this instance, not the others" rule the mouse already follows.
+    // That needs a document listener (focus is elsewhere, so the keydown never
+    // reaches the wrapper), and it exists ONLY while the pointer is inside:
+    // move the mouse off the digitizer and the host page has its keys back.
+    attachHoverShortcuts(): void {
+      if (this.boundHoverKeyDownHandler) {
+        return
+      }
+      this.boundHoverKeyDownHandler = this.hoverKeyDownHandler.bind(this)
+      document.addEventListener('keydown', this.boundHoverKeyDownHandler)
+    },
+    detachHoverShortcuts(): void {
+      if (!this.boundHoverKeyDownHandler) {
+        return
+      }
+      document.removeEventListener('keydown', this.boundHoverKeyDownHandler)
+      this.boundHoverKeyDownHandler = null
+    },
+    hoverKeyDownHandler(e: KeyboardEvent): void {
+      const wrapper = this.$refs.canvasWrapper as HTMLDivElement | undefined
+      // INFO: a key pressed while the wrapper itself has focus already reached
+      // the wrapper listener and bubbles on to document. Skipping it here is
+      // what keeps a focused AND hovered digitizer from undoing twice.
+      if (wrapper && e.target instanceof Node && wrapper.contains(e.target)) {
+        return
+      }
+      this.keyDownHandler(e)
+    },
+    mouseEnter(): void {
+      this.isPointerOverWrapper = true
+      if (this.isAnyKeyboardGroupEnabled) {
+        this.attachHoverShortcuts()
+      }
+    },
+    mouseLeave(): void {
+      this.isPointerOverWrapper = false
+      this.detachHoverShortcuts()
+    },
     // REFACTOR: modeに応じてpointなりpickColorなりを呼び出す形に変更する
     point(e: MouseEvent): void {
-      // INFO: View All mode is read-only
-      if (this.datasetRepository.isViewAllMode) {
+      // INFO: readonly option and View All mode are both view-only
+      if (this.options.readonly || this.datasetRepository.isViewAllMode) {
         return
       }
       // IFNO: マスク描画モード中につき
@@ -136,7 +320,10 @@ export default defineComponent({
 
       // INFO: クリック座標を画像のオリジナル座標に変換
       // (クリック対象が既存プロット上かどうかに関わらず同じ計算式を使う)
-      const canvasCoord = getMouseCoordFromMouseEvent(e)
+      const canvasCoord = getMouseCoordFromMouseEvent(
+        e,
+        this.imageCanvasElement(),
+      )
       const xPx = canvasCoord.xPx / this.canvasHandler.scale
       const yPx = canvasCoord.yPx / this.canvasHandler.scale
 
@@ -153,12 +340,12 @@ export default defineComponent({
       // INFO: canvas-point element上の時は、point edit modeになるので
       switch (this.canvasHandler.manualMode) {
         case 0:
-          this.historyManager.capture()
-          this.datasetRepository.activeDataset.addPoint(xPx, yPx)
-          this.axisSetRepository.activeAxisSet.inactivateAxis()
-          this.datasetRepository.activeDataset.addManuallyAddedPointId(
-            this.datasetRepository.activeDataset.lastPointId,
-          )
+          // INFO: the state mutation is the operation's (capture, the point,
+          // inactivateAxis, the interpolation-anchor registration); the
+          // conditions above — readonly, view-all, mask drawing, the image
+          // bounds — stay here because they are this component's policy, and
+          // the preview refresh stays in click() for the same reason.
+          addPoint(this.ctx, { xPx, yPx })
           return
         case 1:
           // INFO: CanvasPoint Component -> Click method
@@ -173,15 +360,13 @@ export default defineComponent({
         return
       }
       if (this.axisSetRepository.activeAxisSet.nextAxis) {
-        this.historyManager.capture()
-        this.axisSetRepository.activeAxisSet.addAxisCoord({
-          xPx,
-          yPx,
-        })
+        // INFO: guarded by `nextAxis` right above, so the operation's
+        // AXIS_SET_ALREADY_CALIBRATED case is unreachable from here.
+        addAxisCoord(this.ctx, { xPx, yPx })
         this.datasetRepository.activeDataset.inactivatePoints()
         // INFO: 軸を全て設定し終えた後は自動でプロット追加モードにする
         if (!this.axisSetRepository.activeAxisSet.nextAxis) {
-          this.canvasHandler.manualMode = MANUAL_MODE.ADD
+          this.canvasHandler.setManualMode(MANUAL_MODE.ADD)
         }
         return
       }
@@ -196,21 +381,26 @@ export default defineComponent({
       }
     },
     mouseDrag(coord: Coord) {
+      // INFO: dragging draws masks / selection rectangles, so it is an edit.
+      if (this.options.readonly) return
       if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
       this.canvasHandler.mouseDrag(coord.xPx, coord.yPx)
     },
-    // INFO: documentにバインドされているため、canvasWrapperの外でも呼ばれる (#255)
+    // INFO: bound to document, so this also fires outside canvasWrapper (#255)
     mouseMove(e: MouseEvent) {
-      const wrapper = document.getElementById('canvasWrapper')
+      const wrapper = this.$refs.canvasWrapper as HTMLDivElement | undefined
       if (!wrapper) {
         return
       }
 
-      // INFO: getMouseCoordFromMouseEventはimageCanvasのbounding rect基準で
-      // 座標を求めるため、canvasWrapper外のイベントでも正しく計算できる
-      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
+      // INFO: getMouseCoordFromMouseEvent is relative to the image canvas'
+      // bounding rect, so it stays correct for events outside canvasWrapper.
+      const { xPx, yPx } = getMouseCoordFromMouseEvent(
+        e,
+        this.imageCanvasElement(),
+      )
       const cursorXPx = xPx / this.canvasHandler.scale
       const cursorYPx = yPx / this.canvasHandler.scale
       const isOnImage =
@@ -226,9 +416,18 @@ export default defineComponent({
         e.clientX <= wrapperRect.right &&
         e.clientY >= wrapperRect.top &&
         e.clientY <= wrapperRect.bottom
-      this.canvasHandler.isCursorOnCanvas = isInsideWrapper && isOnImage
+      this.canvasHandler.setIsCursorOnCanvas(isInsideWrapper && isOnImage)
 
+      // INFO: 左クリックされている状態
       const isClicking = e.buttons === 1
+
+      // INFO: the listener is on document (#255), so every instance on the
+      // page receives this event. Another instance's image can easily cover
+      // the same coordinates, so "is the cursor over MY wrapper" is the check
+      // that tells them apart — `isOnImage` alone is not enough.
+      if (!isInsideWrapper && !this.isDraggingHere && !this.cursorWasOnImage) {
+        return
+      }
 
       // INFO: 画像の外ではMagnifierを動かさない(気が散るため)。
       // 画像から出た最初のイベントだけは端にクランプした位置へ更新し、
@@ -262,14 +461,23 @@ export default defineComponent({
       }
     },
     mouseDown(e: MouseEvent) {
+      if (this.options.readonly) return
       if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
-      const { xPx, yPx } = getMouseCoordFromMouseEvent(e)
+      // INFO: bound on the wrapper, so it only fires for this instance.
+      this.isDraggingHere = true
+
+      const { xPx, yPx } = getMouseCoordFromMouseEvent(
+        e,
+        this.imageCanvasElement(),
+      )
 
       this.canvasHandler.mouseDown(xPx, yPx)
     },
     mouseUp() {
+      this.isDraggingHere = false
+      if (this.options.readonly) return
       if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
@@ -313,7 +521,13 @@ export default defineComponent({
         return
       }
 
+      // INFO: the remaining shortcuts all edit points/axes, so they share the
+      // zoom keys' flag (both only fire while this frame is focused/hovered).
+      if (!this.options.features.keyboardEditing) return
+
       if (this.datasetRepository.isViewAllMode) return
+
+      if (this.options.readonly) return
 
       if (!this.shouldProcessKeyEvent(e)) {
         return
@@ -333,6 +547,16 @@ export default defineComponent({
       return targetName === 'INPUT' || targetName === 'TEXTAREA'
     },
     handleHistoryShortcut(e: KeyboardEvent): boolean {
+      // INFO: returning before preventDefault() is the whole point of the
+      // flag: with it off, ⌘Z passes through this listener untouched and the
+      // host's own handler is the only thing that sees it.
+      if (!this.options.features.keyboardHistory) {
+        return false
+      }
+      // INFO: undo/redo replay edits, so they are disabled in readonly mode.
+      if (this.options.readonly) {
+        return false
+      }
       if (this.isTypingTarget(e)) {
         return false
       }
@@ -349,6 +573,15 @@ export default defineComponent({
       return true
     },
     handleFileShortcut(e: KeyboardEvent): boolean {
+      // INFO: ⌘S/⌘O are page-wide keys the host may want for its own save,
+      // so they have a flag of their own (see features.keyboardFile).
+      if (!this.options.features.keyboardFile) {
+        return false
+      }
+      // INFO: ZIP save/load is an optional feature of the embedded digitizer.
+      if (!this.options.features.zipExportImport) {
+        return false
+      }
       if (this.isTypingTarget(e)) {
         return false
       }
@@ -359,20 +592,49 @@ export default defineComponent({
       const key = e.key.toLowerCase()
       if (key === 's') {
         e.preventDefault()
-        saveProjectAndDownload()
+        this.runProjectFileOperation(saveProjectAndDownload(this.ctx))
         return true
       }
-      if (key === 'o') {
+      // INFO: loading a project overwrites the current state, so it is an
+      // edit and stays disabled in readonly mode (saving stays available).
+      if (key === 'o' && !this.options.readonly) {
         e.preventDefault()
-        triggerLoadProjectDialog()
+        this.runProjectFileOperation(triggerLoadProjectDialog(this.ctx))
         return true
       }
       return false
+    },
+    async runProjectFileOperation(
+      operation: Promise<ProjectFileOperationResult>,
+    ): Promise<void> {
+      const result = await operation
+      if (!result.success && result.errorMessage) {
+        // INFO: the panel emits the same DigitizerErrorPayload the root
+        // component does. A host composing panels directly (no
+        // <StarryDigitizer> above them) receives this event itself, and an
+        // `error` whose shape depended on which component happened to emit it
+        // would break its `payload.code` branch the moment the root is dropped.
+        this.$emit(
+          'error',
+          toErrorPayload(
+            DigitizerError.from(
+              result.error,
+              'PROJECT_INVALID',
+              result.errorMessage,
+            ),
+          ),
+        )
+      }
     },
     // INFO: No modifier key here (mirrors the 'a'/'e'/'d' mode-switch keys
     // below) since Cmd/Ctrl+Plus/Minus/0 are reserved by the browser itself
     // for page zoom and can't be overridden from a web page.
     handleZoomShortcut(e: KeyboardEvent): boolean {
+      // INFO: zoom belongs to the editing group — it is a control of this
+      // widget (no modifier, only while focused/hovered), not a page-wide key.
+      if (!this.options.features.keyboardEditing) {
+        return false
+      }
       if (this.isTypingTarget(e)) {
         return false
       }
@@ -442,7 +704,7 @@ export default defineComponent({
       }
 
       // Handle movement keys
-      this.handleMovementKeys(key, e.shiftKey)
+      this.handleMovementKeys(key, e)
     },
     handleSpecialKeys(key: string, e: KeyboardEvent): boolean {
       switch (key) {
@@ -486,10 +748,10 @@ export default defineComponent({
       }
       return false
     },
-    handleMovementKeys(key: string, shiftKeyPressed: boolean) {
+    handleMovementKeys(key: string, e: KeyboardEvent) {
       const vector: Vector = {
         direction: this.getDirectionFromKey(key),
-        distancePx: shiftKeyPressed ? 10 : 1,
+        distancePx: e.shiftKey ? 10 : 1,
       }
 
       // INFO: only capture history when something is actually about to move
@@ -501,7 +763,30 @@ export default defineComponent({
       )
       const hasActivePoints =
         this.datasetRepository.activeDataset.pointsAreActive
-      if (hasActiveAxis || hasActivePoints) {
+      // INFO: `e.repeat` is what makes "hold the arrow key down" ONE undo
+      // entry instead of one per OS key-repeat event. The browser sets it on
+      // every keydown the auto-repeat generated, so the first press of a burst
+      // (repeat === false) takes the snapshot and the repeats ride on it —
+      // which is exactly right for a capture-before-the-change stack: the
+      // state to return to is the one from before the first nudge. No keyup is
+      // involved, so a burst that ends by losing focus (Alt+Tab, an OS dialog)
+      // cannot leave anything pending, and the `history-change` notification
+      // reaches a host the moment the movement starts rather than when the key
+      // is released.
+      //
+      // Tapping the key three times is three presses with repeat === false,
+      // so it stays three entries — a time window could not tell that apart
+      // from a burst. Adding a second arrow key while the first is held is
+      // also repeat === false, i.e. a new entry: the direction changed, so
+      // "back to before it started going down" is the useful place to return
+      // to, and deciding when a two-key burst ENDS would need the keyup this
+      // design deliberately does without.
+      //
+      // DEGRADATION: a few environments (some Linux/X11 setups, old browsers)
+      // never set `repeat`. There, a held key falls back to one entry per
+      // keystroke — the behaviour before this change, and still one
+      // notification per undoable unit as far as the user is concerned.
+      if ((hasActiveAxis || hasActivePoints) && !e.repeat) {
         this.historyManager.capture()
       }
 
@@ -562,7 +847,27 @@ export default defineComponent({
     -webkit-user-drag: none;
     outline: solid 1px gray;
     overflow: auto;
-    height: 80vh;
+    // INFO: the height must stay definite — canvasHandler.drawFitSizeImage()
+    // reads offsetHeight to compute the fit scale, so a content-driven height
+    // would be circular. `flex: 1 1 auto` keeps that basis while letting the
+    // wrapper shrink or grow when the host gives .starry-digitizer a height
+    // (--sd-height), which is what makes a 100dvh embed work.
+    flex: 1 1 auto;
+    height: var(--sd-canvas-height, 80vh);
+    min-height: var(--sd-canvas-min-height, 240px);
+
+    // INFO: the frame is focusable (tabindex, see attachKeyboardShortcuts), so
+    // it can be reached with Tab and keys arrive without a mouse. The ring is
+    // :focus-visible only — clicking the canvas focuses it too, and painting a
+    // ring around the image on every click would be noise. When Tab is what
+    // got here the ring is the only sign that the keys now go to the
+    // digitizer, so it replaces the plain 1px border rather than adding to it.
+    &:focus {
+      outline: solid 1px gray;
+    }
+    &:focus-visible {
+      outline: solid 2px var(--sd-secondary, #1976d2);
+    }
   }
 }
 </style>

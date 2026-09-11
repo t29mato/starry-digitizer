@@ -6,9 +6,11 @@
 StarryDigitizerドキュメント
 ##########################################
 
-.. .. toctree::
-..    :maxdepth: 2
-..    :caption: Contents:
+.. toctree::
+   :maxdepth: 1
+   :caption: 開発者向け
+
+   embedding
 
 
 

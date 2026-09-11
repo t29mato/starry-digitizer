@@ -9,7 +9,6 @@ module.exports = {
     // "@vue/typescript",
     'prettier',
     'plugin:prettier/recommended',
-    'plugin:vuetify/base',
     'plugin:jest/recommended',
     'plugin:jest/style',
   ],
@@ -27,6 +26,11 @@ module.exports = {
     ],
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': ['error'],
+    // INFO: the base rule counts a TypeScript function overload signature as a
+    // redeclaration of the implementation. The @typescript-eslint version
+    // knows the difference; it still catches real redeclarations.
+    'no-redeclare': 'off',
+    '@typescript-eslint/no-redeclare': ['error'],
     complexity: ['error', { max: 20 }],
   },
   ignorePatterns: ['**/*.test.ts', '**/*.test.js'],

@@ -9,7 +9,9 @@
     <!-- Click area (larger for easier interaction) -->
     <div
       v-if="
-        axis.coordIsFilled && canvasHandler.manualMode === MANUAL_MODE.UNSET
+        !options.readonly &&
+        axis.coordIsFilled &&
+        canvasHandler.manualMode === MANUAL_MODE.UNSET
       "
       :style="{
         position: 'absolute',
@@ -75,13 +77,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
-import {
-  axisSetRepository,
-  datasetRepository,
-} from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
+import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { POINT_MODE, STYLE, MANUAL_MODE } from '@/constants'
+import { scaledMarkerSizePx } from '@/application/utils/markerSize'
 
 export default defineComponent({
   props: {
@@ -94,19 +94,38 @@ export default defineComponent({
       required: true,
     },
   },
+  setup() {
+    const { canvasHandler, axisSetRepository, datasetRepository } =
+      useDigitizerContext()
+    const options = useDigitizerOptions()
+    return { canvasHandler, axisSetRepository, datasetRepository, options }
+  },
   data() {
     return {
       fontSize: 14,
-      canvasHandler,
-      axisSetRepository,
-      datasetRepository,
-      axisSizePx: STYLE.AXIS_SIZE_PX,
-      clickAreaSizePx: STYLE.AXIS_SIZE_PX * 2, // Larger click area
+      baseAxisSizePx: STYLE.AXIS_SIZE_PX,
       isHovered: false,
       MANUAL_MODE,
     }
   },
   computed: {
+    // INFO: the cross scales with the canvas for the same reason the data
+    // points do — its position already does, so a fixed size makes it swamp
+    // the figure at low zoom. Fewer axis markers than points, so this was the
+    // milder half of the same bug. See scaledMarkerSizePx().
+    axisSizePx(): number {
+      return scaledMarkerSizePx(
+        this.baseAxisSizePx,
+        this.canvasHandler.scale,
+        STYLE.AXIS_MIN_SIZE_PX,
+        STYLE.AXIS_MAX_SIZE_PX,
+      )
+    },
+    // INFO: twice the cross, but never below the same floor the data points
+    // use — the marker a user drags must stay grabbable at any zoom.
+    clickAreaSizePx(): number {
+      return Math.max(this.axisSizePx * 2, STYLE.POINT_HIT_MIN_SIZE_PX)
+    },
     xPx(): number {
       // If axis is active or next and not yet confirmed, follow cursor
       if ((this.isActive || this.isNextAxis) && !this.axis.coordIsFilled) {
@@ -270,6 +289,11 @@ export default defineComponent({
   methods: {
     handleClick(e: MouseEvent) {
       e.stopPropagation()
+
+      // INFO: readonly mode is view-only, so entering axis edit mode is not allowed.
+      if (this.options.readonly) {
+        return
+      }
 
       // Deactivate all active points when entering axis edit mode
       this.datasetRepository.activeDataset.inactivatePoints()

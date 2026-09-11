@@ -1,13 +1,8 @@
 import { getMouseCoordFromMouseEvent } from './mouseEventUtilities'
 
 describe('getMouseCoordFromMouseEvent', () => {
-  afterEach(() => {
-    document.body.innerHTML = ''
-  })
-
-  const setupImageCanvas = (left: number, top: number) => {
+  const createImageCanvas = (left: number, top: number): HTMLCanvasElement => {
     const canvas = document.createElement('canvas')
-    canvas.id = 'imageCanvas'
     canvas.getBoundingClientRect = jest.fn(() => {
       return {
         left,
@@ -21,29 +16,29 @@ describe('getMouseCoordFromMouseEvent', () => {
         toJSON: () => ({}),
       }
     })
-    document.body.appendChild(canvas)
+    return canvas
   }
 
   it('画像キャンバス基準の座標を返す', () => {
-    setupImageCanvas(10, 20)
+    const imageCanvas = createImageCanvas(10, 20)
 
     const mockEvent = {
       clientX: 110,
       clientY: 220,
     } as MouseEvent
 
-    const coords = getMouseCoordFromMouseEvent(mockEvent)
+    const coords = getMouseCoordFromMouseEvent(mockEvent, imageCanvas)
 
     expect(coords).toEqual({ xPx: 100, yPx: 200 })
   })
 
   it('クリック対象要素(既存プロット上など)に依存せず同じ座標を返す', () => {
-    setupImageCanvas(10, 20)
+    const imageCanvas = createImageCanvas(10, 20)
 
     const onCanvasEvent = {
       clientX: 110,
       clientY: 220,
-      target: document.getElementById('imageCanvas'),
+      target: imageCanvas,
     } as unknown as MouseEvent
 
     const pointElement = document.createElement('div')
@@ -54,18 +49,18 @@ describe('getMouseCoordFromMouseEvent', () => {
       target: pointElement,
     } as unknown as MouseEvent
 
-    expect(getMouseCoordFromMouseEvent(onCanvasEvent)).toEqual(
-      getMouseCoordFromMouseEvent(onPointEvent),
+    expect(getMouseCoordFromMouseEvent(onCanvasEvent, imageCanvas)).toEqual(
+      getMouseCoordFromMouseEvent(onPointEvent, imageCanvas),
     )
   })
 
-  it('imageCanvasが存在しない場合はoffsetX/Yにフォールバックする', () => {
+  it('imageCanvasが無い場合はoffsetX/Yにフォールバックする', () => {
     const mockEvent = {
       offsetX: 100,
       offsetY: 200,
     } as MouseEvent
 
-    const coords = getMouseCoordFromMouseEvent(mockEvent)
+    const coords = getMouseCoordFromMouseEvent(mockEvent, undefined)
 
     expect(coords).toEqual({ xPx: 100, yPx: 200 })
   })

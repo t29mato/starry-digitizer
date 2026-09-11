@@ -1,37 +1,37 @@
-import AxisSetCalculator from '@/domain/services/axisSetCalculator'
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
-import {
-  axisSetRepository,
-  datasetRepository,
-} from '@/instanceStore/repositoryInatances'
-import { Point } from '@/@types/types'
+import { DigitizerContext } from '@/application/digitizerContext'
+import { datasetToValues } from '@/application/utils/datasetValues'
+import { DatasetInterface } from '@/domain/models/dataset/datasetInterface'
 
 export type TableRow = { X: string | null; Y: string | null }
 
 // INFO: Shared by DataTable.vue (the "Copy to Clipboard" button) and
 // App.vue (the File menu), mirroring the projectFileOperations.ts pattern —
 // same computation, two entry points.
-export function getActiveDatasetTableData(): TableRow[] {
-  const activeDataset = datasetRepository.activeDataset
-
-  if (activeDataset.points.length === 0) {
+export function getDatasetTableData(
+  ctx: DigitizerContext,
+  dataset: DatasetInterface,
+): TableRow[] {
+  if (dataset.points.length === 0) {
     return [{ X: null, Y: null }]
   }
-
-  const activeAxisSet = axisSetRepository.activeAxisSet
-  const calculator = new AxisSetCalculator(
-    activeAxisSet,
-    {
-      x: activeAxisSet.xIsLogScale,
-      y: activeAxisSet.yIsLogScale,
-    },
-    magnifier.effectiveDigits,
+  // INFO: uses the dataset's own axis set (not the active one) so that
+  // multi-axis-set projects export each dataset with the right calibration.
+  const axisSet = ctx.axisSetRepository.axisSets.find(
+    (a) => a.id === dataset.axisSetId,
   )
+  const values = datasetToValues(
+    dataset,
+    axisSet,
+    ctx.valueFormat.effectiveDigits,
+  )
+  return values.points.map(({ x, y }) => ({
+    X: Number.isNaN(x) ? 'NaN' : x.toExponential(),
+    Y: Number.isNaN(y) ? 'NaN' : y.toExponential(),
+  }))
+}
 
-  return activeDataset.points.map((point: Point) => {
-    const { xV, yV } = calculator.calculateXYValues(point.xPx, point.yPx)
-    return { X: xV, Y: yV }
-  })
+export function getActiveDatasetTableData(ctx: DigitizerContext): TableRow[] {
+  return getDatasetTableData(ctx, ctx.datasetRepository.activeDataset)
 }
 
 // INFO: Takes rows rather than reading the active dataset itself, because
@@ -59,9 +59,11 @@ export async function copyRowsToClipboard(rows: TableRow[]): Promise<{
   }
 }
 
-export async function copyActiveDatasetToClipboard(): Promise<{
+export async function copyActiveDatasetToClipboard(
+  ctx: DigitizerContext,
+): Promise<{
   success: boolean
   errorMessage?: string
 }> {
-  return copyRowsToClipboard(getActiveDatasetTableData())
+  return copyRowsToClipboard(getActiveDatasetTableData(ctx))
 }

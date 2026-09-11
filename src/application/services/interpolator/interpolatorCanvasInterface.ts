@@ -1,9 +1,9 @@
-import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
+import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 import { Coord } from '@/@types/types'
 
 // INFO: Interpolatorのcanvas描画・DOM操作をこのPort越しに抽象化する。
 // docs/design/interpolator-canvas-separation.md 参照。
-// 実装(InterpolatorCanvas)はpresentation層に置き、Interpolatorはこのinterfaceにのみ依存する。
+// 実装(InterpolatorCanvas)は application/canvas に置き、Interpolatorはこのinterfaceにのみ依存する。
 export interface InterpolatorCanvasInterface {
   setGuideCanvas(guideCanvas: HTMLCanvas): void
   setMagnifierCanvas(magnifierCanvas: HTMLCanvas): void

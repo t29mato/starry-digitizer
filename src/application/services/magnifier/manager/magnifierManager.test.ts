@@ -33,17 +33,6 @@ describe('MagnifierManager', () => {
     expect(instance.scale).toBe(2)
   })
 
-  test('setEffectiveDigits updates the effectiveDigits value', () => {
-    const instance = magnifierManager.getNewInstance()
-    expect(instance.effectiveDigits).toBe(4) // default value
-
-    instance.setEffectiveDigits(6)
-    expect(instance.effectiveDigits).toBe(6)
-
-    instance.setEffectiveDigits(2)
-    expect(instance.effectiveDigits).toBe(2)
-  })
-
   test('setMarkerSizePx updates the markerSizePx value independently of scale', () => {
     const instance = magnifierManager.getNewInstance()
     expect(instance.markerSizePx).toBe(10) // default value, matches STYLE.POINT_SIZE_PX

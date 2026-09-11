@@ -1,0 +1,32 @@
+/* INFO: standalone-app global reset (the embeddable component itself never
+   relies on globals; everything it needs is scoped under .starry-digitizer). */
+
+/* INFO: the library's typography tokens default to `inherit` so an embedded
+   digitizer picks up the host page's font instead of announcing itself with a
+   font of its own (src/presentation/styles/base.scss). This app *is* the host,
+   so it pins the tokens back to the historical Roboto / 14px / 1.4 — that is
+   what keeps the standalone look byte-identical. A plain `:root` (0,1,0) beats
+   the library's `:where(:root)` (0,0,0); it must stay a real `:root` rule and
+   not move into App.vue, whose <style> is scoped. Keep these in sync with the
+   html/body font declarations below, which cover the chrome outside the
+   wrapper. */
+:root {
+  --sd-font: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --sd-font-size: 14px;
+  --sd-line-height: 1.4;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.87);
+  background: #fff;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

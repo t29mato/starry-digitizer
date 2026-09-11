@@ -1,28 +1,40 @@
 <template>
-  <v-btn
+  <sd-button
+    class="c__settings-btn"
     size="small"
-    @click="toggleSettingsDialog"
-    :style="{
-      position: 'absolute',
-      top: '-4px',
-      right: '-4px',
-      'z-index': 100,
-    }"
-    icon
-    elevation="0"
-    ><v-icon size="small">mdi-cog</v-icon></v-btn
-  >
+    variant="text"
+    :icon="mdiCog"
+    title="Settings"
+    @click="toggleSettingsDialog()"
+  ></sd-button>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { mdiCog } from '@mdi/js'
+import { SdButton } from '@/presentation/ui'
+
 export default defineComponent({
-  computed: {},
+  components: { SdButton },
   props: {
     toggleSettingsDialog: {
       type: Function,
       required: true,
     },
   },
+  data() {
+    return { mdiCog }
+  },
 })
 </script>
+
+<style lang="scss" scoped>
+// INFO: pinned to the magnifier's top-right corner (was an inline :style
+// on the Vuetify button).
+.c__settings-btn {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  z-index: 100;
+}
+</style>

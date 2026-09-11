@@ -11,8 +11,7 @@
 import { defineComponent } from 'vue'
 import { CSSProperties } from 'vue'
 
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
-import { axisSetRepository } from '@/instanceStore/repositoryInatances'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { POINT_MODE } from '@/constants'
 
 const axisSetGuideCommonStyle: CSSProperties = {
@@ -23,18 +22,18 @@ const axisSetGuideCommonStyle: CSSProperties = {
 }
 
 export default defineComponent({
-  data() {
-    return {
-      canvasHandler,
-      axisSetRepository,
-    }
+  setup() {
+    const { canvasHandler, axisSetRepository } = useDigitizerContext()
+    return { canvasHandler, axisSetRepository }
   },
   methods: {
     //INFO: computedではリアクティブにならなかったのでmethodとしている
     getImageCanvasSize(): { w: number; h: number } {
-      const imageCanvas = document.getElementById('imageCanvas')
+      // INFO: read the canvas through canvasHandler instead of an id lookup so
+      // that a second <StarryDigitizer> on the page measures its own canvas.
+      if (!this.canvasHandler.hasCanvases) return { w: 0, h: 0 }
 
-      if (!imageCanvas) return { w: 0, h: 0 }
+      const imageCanvas = this.canvasHandler.imageCanvas.element
 
       return { w: imageCanvas.clientWidth, h: imageCanvas.clientHeight }
     },

@@ -96,6 +96,33 @@ describe('HistoryManager', () => {
     })
   })
 
+  test('externalId survives an undo/redo round trip', () => {
+    const { datasetRepository, historyManager } = setup()
+    // INFO: externalId is host-owned and opaque; losing it on undo would
+    // silently detach the dataset from the host's record.
+    datasetRepository.activeDataset.externalId = 'sample-42'
+
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+
+    historyManager.undo()
+    expect(datasetRepository.activeDataset.externalId).toBe('sample-42')
+
+    historyManager.redo()
+    expect(datasetRepository.activeDataset.externalId).toBe('sample-42')
+    expect(datasetRepository.activeDataset.points).toHaveLength(1)
+  })
+
+  test('leaves externalId undefined for datasets that never had one', () => {
+    const { datasetRepository, historyManager } = setup()
+
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    historyManager.undo()
+
+    expect(datasetRepository.activeDataset.externalId).toBeUndefined()
+  })
+
   test('clear() empties both stacks', () => {
     const { datasetRepository, historyManager } = setup()
 
@@ -126,5 +153,327 @@ describe('HistoryManager', () => {
     // way back to an empty dataset.
     expect(datasetRepository.activeDataset.points.length).toBeGreaterThan(0)
     expect(historyManager.canUndo).toBe(false)
+  })
+})
+
+// INFO: `capture()` is called from the dataset use cases AND from
+// CanvasMain.vue, so the notification has to come from the manager itself —
+// a host must not have to know which layer asked. These tests pin down what
+// is reported and, just as importantly, what is not.
+describe('HistoryManager notifications', () => {
+  test('capture notifies with the stack state it produced', () => {
+    const { historyManager } = setup()
+    const listener = jest.fn()
+    historyManager.subscribe(listener)
+
+    historyManager.capture()
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener).toHaveBeenCalledWith({
+      type: 'capture',
+      canUndo: true,
+      canRedo: false,
+    })
+  })
+
+  test('every capture is reported, not just the first', () => {
+    // INFO: the reason a listener exists at all — `canUndo` stays true across
+    // both captures, so a host watching state alone would see one event where
+    // the user made two undoable edits.
+    const { datasetRepository, historyManager } = setup()
+    const listener = jest.fn()
+    historyManager.subscribe(listener)
+
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(2, 2)
+
+    expect(listener).toHaveBeenCalledTimes(2)
+  })
+
+  test('undo notifies after the state has been restored', () => {
+    const { datasetRepository, historyManager } = setup()
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    const pointsWhenNotified: number[] = []
+    historyManager.subscribe(() => {
+      pointsWhenNotified.push(datasetRepository.activeDataset.points.length)
+    })
+
+    historyManager.undo()
+
+    expect(pointsWhenNotified).toStrictEqual([0])
+  })
+
+  test('undo and redo report their own type and the resulting flags', () => {
+    const { datasetRepository, historyManager } = setup()
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    const listener = jest.fn()
+    historyManager.subscribe(listener)
+
+    historyManager.undo()
+    expect(listener).toHaveBeenLastCalledWith({
+      type: 'undo',
+      canUndo: false,
+      canRedo: true,
+    })
+
+    historyManager.redo()
+    expect(listener).toHaveBeenLastCalledWith({
+      type: 'redo',
+      canUndo: true,
+      canRedo: false,
+    })
+  })
+
+  test('a no-op undo/redo notifies nothing', () => {
+    const { historyManager } = setup()
+    const listener = jest.fn()
+    historyManager.subscribe(listener)
+
+    historyManager.undo()
+    historyManager.redo()
+
+    expect(listener).not.toHaveBeenCalled()
+  })
+
+  test('clear notifies when it actually discarded history', () => {
+    const { datasetRepository, historyManager } = setup()
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    const listener = jest.fn()
+    historyManager.subscribe(listener)
+
+    historyManager.clear()
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener).toHaveBeenCalledWith({
+      type: 'clear',
+      canUndo: false,
+      canRedo: false,
+    })
+  })
+
+  test('clear on empty stacks notifies nothing', () => {
+    // INFO: loadProject()/reset() clear on every mount and every project load.
+    // Reporting those would have a host discarding its own history for nothing.
+    const { historyManager } = setup()
+    const listener = jest.fn()
+    historyManager.subscribe(listener)
+
+    historyManager.clear()
+
+    expect(listener).not.toHaveBeenCalled()
+  })
+
+  test('unsubscribe stops the notifications', () => {
+    const { historyManager } = setup()
+    const listener = jest.fn()
+    const unsubscribe = historyManager.subscribe(listener)
+
+    unsubscribe()
+    historyManager.capture()
+
+    expect(listener).not.toHaveBeenCalled()
+  })
+
+  test('unsubscribing twice does not drop another listener', () => {
+    const { historyManager } = setup()
+    const listener = jest.fn()
+    const other = jest.fn()
+    const unsubscribe = historyManager.subscribe(listener)
+    historyManager.subscribe(other)
+
+    unsubscribe()
+    unsubscribe()
+    historyManager.capture()
+
+    expect(other).toHaveBeenCalledTimes(1)
+  })
+
+  test('a listener that unsubscribes during delivery does not skip the next one', () => {
+    const { historyManager } = setup()
+    const second = jest.fn()
+    const unsubscribeFirst = historyManager.subscribe(() => unsubscribeFirst())
+    historyManager.subscribe(second)
+
+    historyManager.capture()
+
+    expect(second).toHaveBeenCalledTimes(1)
+  })
+
+  test('a throwing listener breaks neither the undo nor the other listeners', () => {
+    const { datasetRepository, historyManager } = setup()
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined)
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    const survivor = jest.fn()
+    historyManager.subscribe(() => {
+      throw new Error('host bookkeeping blew up')
+    })
+    historyManager.subscribe(survivor)
+
+    expect(() => historyManager.undo()).not.toThrow()
+
+    expect(datasetRepository.activeDataset.points).toHaveLength(0)
+    expect(survivor).toHaveBeenCalledTimes(1)
+    expect(consoleError).toHaveBeenCalled()
+    consoleError.mockRestore()
+  })
+
+  test('notifies nothing while nobody is subscribed', () => {
+    const { historyManager } = setup()
+
+    expect(() => {
+      historyManager.capture()
+      historyManager.undo()
+      historyManager.clear()
+    }).not.toThrow()
+  })
+})
+
+// INFO: `capture()` runs BEFORE the mutation, and restoring only the
+// coordinates used to land the user on the right points with NOTHING
+// selected: the next arrow key moved nothing, so "undo, then keep nudging"
+// — the whole reason undo exists during fine adjustment — did not work.
+// Selection travels with the snapshot for that reason, and these tests pin
+// down that it comes back on both undo and redo, and that a selection naming
+// something the restored layout does not contain is dropped rather than
+// handed to the domain.
+describe('HistoryManager selection', () => {
+  test('undo restores the selection, so the arrow keys keep working', () => {
+    const { datasetRepository, historyManager } = setup()
+    const dataset = datasetRepository.activeDataset
+    dataset.addPoint(10, 10)
+
+    historyManager.capture()
+    dataset.moveActivePoint({ direction: 'right', distancePx: 1 })
+    expect(datasetRepository.activeDataset.points[0].xPx).toBe(11)
+
+    historyManager.undo()
+
+    const restored = datasetRepository.activeDataset
+    expect(restored.activePointIds).toStrictEqual([1])
+    expect(restored.points[0].xPx).toBe(10)
+
+    // INFO: the actual complaint — the nudge AFTER the undo has to move
+    // something.
+    restored.moveActivePoint({ direction: 'right', distancePx: 1 })
+    expect(datasetRepository.activeDataset.points[0].xPx).toBe(11)
+  })
+
+  test('redo brings the selection back too', () => {
+    const { datasetRepository, historyManager } = setup()
+    const dataset = datasetRepository.activeDataset
+    dataset.addPoint(10, 10)
+
+    historyManager.capture()
+    dataset.moveActivePoint({ direction: 'right', distancePx: 1 })
+    historyManager.undo()
+    historyManager.redo()
+
+    const restored = datasetRepository.activeDataset
+    expect(restored.activePointIds).toStrictEqual([1])
+    expect(restored.points[0].xPx).toBe(11)
+  })
+
+  test('a multi-point selection survives undo whole', () => {
+    const { datasetRepository, historyManager } = setup()
+    const dataset = datasetRepository.activeDataset
+    dataset.addPoint(1, 1)
+    dataset.addPoint(2, 2)
+    dataset.activateAllPoints()
+
+    historyManager.capture()
+    dataset.inactivatePoints()
+    historyManager.undo()
+
+    expect(datasetRepository.activeDataset.activePointIds).toStrictEqual([1, 2])
+  })
+
+  test('an empty selection stays empty after undo', () => {
+    // INFO: the mirror of the fix — restoring the LAST selection instead of
+    // the captured one would light points up the user never selected.
+    const { datasetRepository, historyManager } = setup()
+
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    expect(datasetRepository.activeDataset.activePointIds).toStrictEqual([1])
+
+    historyManager.undo()
+
+    expect(datasetRepository.activeDataset.activePointIds).toStrictEqual([])
+  })
+
+  test('drops a selected id the restored layout has no point for', () => {
+    const { datasetRepository, historyManager } = setup()
+    const dataset = datasetRepository.activeDataset
+    dataset.addPoint(1, 1)
+    // INFO: a stale id — the point it named is already gone. Restoring it
+    // would leave `pointsAreActive` true with nothing to move, and a
+    // Backspace would report a deletion that deleted nothing.
+    dataset.addActivatedPoint(999)
+
+    historyManager.capture()
+    dataset.addPoint(2, 2)
+    historyManager.undo()
+
+    expect(datasetRepository.activeDataset.activePointIds).toStrictEqual([1])
+  })
+
+  test('undo survives a selection with no points at all behind it', () => {
+    const { datasetRepository, historyManager } = setup()
+    datasetRepository.activeDataset.addActivatedPoint(42)
+
+    historyManager.capture()
+    datasetRepository.activeDataset.addPoint(1, 1)
+
+    expect(() => historyManager.undo()).not.toThrow()
+    expect(datasetRepository.activeDataset.activePointIds).toStrictEqual([])
+  })
+
+  test('restores the selection of datasets other than the active one', () => {
+    const { datasetRepository, historyManager } = setup()
+    datasetRepository.activeDataset.addPoint(1, 1)
+    datasetRepository.createNewDataset()
+    datasetRepository.setActiveDataset(2)
+    datasetRepository.activeDataset.addPoint(2, 2)
+
+    historyManager.capture()
+    datasetRepository.datasets.forEach((dataset) => dataset.inactivatePoints())
+    historyManager.undo()
+
+    const [first, second] = datasetRepository.datasets
+    expect(first.activePointIds).toStrictEqual([1])
+    expect(second.activePointIds).toStrictEqual([1])
+  })
+
+  test('undo restores which axis was being nudged', () => {
+    const { axisSetRepository, historyManager } = setup()
+    axisSetRepository.activeAxisSet.activateAxisByName('x1')
+
+    historyManager.capture()
+    axisSetRepository.activeAxisSet.inactivateAxis()
+    historyManager.undo()
+
+    expect(axisSetRepository.activeAxisSet.activeAxisName).toBe('x1')
+  })
+
+  test('does not restore a selection on the virtual x2y2 axis', () => {
+    // INFO: x2y2 is not in AxisSetDTO — it is rebuilt at the (-999, -999)
+    // sentinel — so bringing its selection back would point the arrow keys at
+    // a coordinate that is not on the image and drag x2/y2 there with it.
+    const { axisSetRepository, historyManager } = setup()
+    axisSetRepository.activeAxisSet.activateAxisByName('x2y2')
+
+    historyManager.capture()
+    axisSetRepository.activeAxisSet.inactivateAxis()
+    historyManager.undo()
+
+    expect(axisSetRepository.activeAxisSet.activeAxisName).toBe('')
   })
 })

@@ -2,7 +2,13 @@
   <div>
     <!-- INFO: 端付近ではtranslate値が負になるため、`-${...}` 形式だと
          `--Npx` という不正なCSSになりMagnifierが固まる (#255) -->
+    <!-- INFO: v-if, not just an empty src: `src=""` makes the browser request
+         the document itself, fail, and draw its broken-image icon plus the alt
+         text inside the magnifier — the literal "this looks broken" the
+         placeholder exists to avoid. The canvases below stay mounted either
+         way, because canvasHandler/interpolator hold references to them. -->
     <img
+      v-if="canvasHandler.hasImage"
       :src="canvasHandler.uploadImageUrl"
       alt="the image you uploaded"
       :style="{
@@ -17,6 +23,8 @@
     />
     <canvas
       id="magnifierMaskCanvas"
+      ref="magnifierMaskCanvas"
+      data-cy="magnifier-mask-canvas"
       :style="{
         position: 'absolute',
         top: 0,
@@ -34,6 +42,8 @@
     ></canvas>
     <canvas
       id="magnifierInterpolationCanvas"
+      ref="magnifierInterpolationCanvas"
+      data-cy="magnifier-interpolation-canvas"
       :style="{
         position: 'absolute',
         top: 0,
@@ -55,23 +65,32 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { HTMLCanvas } from '@/presentation/dom/HTMLCanvas'
-import { magnifier } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
+import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 
 export default defineComponent({
-  data() {
-    return {
-      interpolator,
-      magnifier,
-      canvasHandler,
-    }
+  setup() {
+    const { interpolator, magnifier, canvasHandler } = useDigitizerContext()
+    return { interpolator, magnifier, canvasHandler }
   },
   mounted() {
+    // INFO: this component owns the magnifier canvases, so it is the one that
+    // hands them to the engine (no id lookup: several digitizer instances can
+    // share a page).
+    this.canvasHandler.attachCanvases({
+      magnifierMaskCanvas: this.$refs.magnifierMaskCanvas as HTMLCanvasElement,
+    })
     this.interpolator.setMagnifierCanvas(
-      new HTMLCanvas('magnifierInterpolationCanvas'),
+      new HTMLCanvas(
+        this.$refs.magnifierInterpolationCanvas as HTMLCanvasElement,
+      ),
     )
+  },
+  beforeUnmount() {
+    // INFO: by element, not by key — see the same call in CanvasMain.vue.
+    this.canvasHandler.detachCanvases({
+      magnifierMaskCanvas: this.$refs.magnifierMaskCanvas as HTMLCanvasElement,
+    })
   },
   computed: {
     halfSize(): number {

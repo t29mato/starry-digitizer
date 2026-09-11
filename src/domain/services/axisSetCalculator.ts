@@ -18,6 +18,7 @@ export default class AxisSetCalculator {
       this.effectiveDigits = effectiveDigits
     }
   }
+
   // INFO: 軸が未配置の場合、coordはinitialCoord {-999, -999} (truthy) のため、
   // 存在チェックに加えて座標が非負(=実際に配置済み)であることを判定する
   get #allAxisCoordsAreFilled(): boolean {

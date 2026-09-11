@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StarryDigitizer vanilla host</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 6px 10px;
+        border-bottom: 1px solid #ddd;
+      }
+      #output {
+        max-height: 160px;
+        overflow: auto;
+        margin: 0;
+        padding: 6px 10px;
+        font-size: 12px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        border-top: 1px solid #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <button id="load-sample" data-cy="load-sample">Load sample</button>
+      <button id="get-values" data-cy="get-values">Get values</button>
+      <button id="get-project" data-cy="get-project">Get project</button>
+      <button id="toggle-readonly" data-cy="toggle-readonly">
+        Toggle readonly
+      </button>
+      <button id="unmount" data-cy="unmount">Unmount</button>
+      <span id="status" data-cy="status"></span>
+    </div>
+
+    <!-- The arbitrary DOM element the digitizer is mounted into. -->
+    <div id="digitizer" data-cy="digitizer"></div>
+
+    <pre id="output" data-cy="output"></pre>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

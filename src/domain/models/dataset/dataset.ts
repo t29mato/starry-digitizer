@@ -12,6 +12,8 @@ export class Dataset implements DatasetInterface {
   visiblePointIds: number[] = []
   manuallyAddedPointIds: number[] = []
   axisSetId: number = 1
+  // INFO: host-owned opaque id (see DatasetDTO.externalId); never interpreted here
+  externalId?: string
 
   pointsAreAdjusting = false
   constructor(name: string, points: Point[], id: number, color?: string) {
@@ -273,5 +275,13 @@ export class Dataset implements DatasetInterface {
 
   setAxisSetId(id: number): void {
     this.axisSetId = id
+  }
+
+  // INFO: a setter rather than leaving hosts to assign the public field, so
+  // that unlinking (undefined) and relinking go through one place and the
+  // application layer can wrap it in a use case — see
+  // datasetOperations.setDatasetExternalId().
+  setExternalId(externalId: string | undefined): void {
+    this.externalId = externalId
   }
 }

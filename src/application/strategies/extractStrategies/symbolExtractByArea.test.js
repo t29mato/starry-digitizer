@@ -2,7 +2,7 @@
 /* eslint-disable jest/valid-title */
 import SymbolExtractByArea from './symbolExtractByArea'
 
-const extractor = SymbolExtractByArea.instance
+const extractor = new SymbolExtractByArea()
 extractor.minDiameterPx = 0
 extractor.maxDiameterPx = 1000
 

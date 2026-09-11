@@ -1,0 +1,21 @@
+{
+  "name": "starry-digitizer-vanilla-host",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "verify:core": "node scripts/verify-core-bundle.mjs"
+  },
+  "dependencies": {
+    "starry-digitizer": "file:../..",
+    "vue": "^3.3.4",
+    "@vue/reactivity": "^3.3.4"
+  },
+  "devDependencies": {
+    "typescript": "~5.2.2",
+    "vite": "^4.4.5"
+  }
+}

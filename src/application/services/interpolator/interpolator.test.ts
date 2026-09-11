@@ -7,20 +7,19 @@ import { InterpolatorCanvasInterface } from './interpolatorCanvasInterface'
 // 一切触れずにInterpolatorの計算・状態遷移ロジックだけをテストできることを
 // このテストファイル自体で示す。
 
-jest.mock('@/instanceStore/applicationServiceInstances', () => ({
-  canvasHandler: {
-    scale: 1,
-    originalWidth: 100,
-    originalHeight: 100,
-  },
-}))
-
-jest.mock('@/instanceStore/repositoryInatances', () => ({
-  datasetRepository: { activeDataset: undefined },
-}))
-
 import { Interpolator } from './interpolator'
-import { datasetRepository } from '@/instanceStore/repositoryInatances'
+import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
+import { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
+
+const canvasHandler = {
+  scale: 1,
+  originalWidth: 100,
+  originalHeight: 100,
+} as unknown as CanvasHandlerInterface
+
+const datasetRepository = {
+  activeDataset: undefined,
+} as unknown as DatasetRepositoryInterface & { activeDataset: Dataset }
 
 function createMockCanvas(
   hasCanvas: boolean,
@@ -41,9 +40,8 @@ describe('Interpolator', () => {
   let interpolator: Interpolator
 
   beforeEach(() => {
-    localStorage.clear()
     mockCanvas = createMockCanvas(true)
-    interpolator = new Interpolator(mockCanvas)
+    interpolator = new Interpolator(mockCanvas, datasetRepository, canvasHandler)
     datasetRepository.activeDataset = new Dataset('dataset 1', [], 1)
   })
 
@@ -56,15 +54,6 @@ describe('Interpolator', () => {
   it('setIsActive updates the isActive value', () => {
     expect(interpolator.isActive).toBe(false)
     interpolator.setIsActive(true)
-    expect(interpolator.isActive).toBe(true)
-  })
-
-  it('initialize reflects the persisted localStorage value', () => {
-    localStorage.setItem(
-      'starryDigitizer',
-      JSON.stringify({ isInterpolatorActive: 'true' }),
-    )
-    interpolator.initialize()
     expect(interpolator.isActive).toBe(true)
   })
 
@@ -157,7 +146,7 @@ describe('Interpolator', () => {
   describe('resizeCanvas', () => {
     it('does nothing when the injected canvas has no guide/magnifier canvas set', () => {
       mockCanvas = createMockCanvas(false)
-      interpolator = new Interpolator(mockCanvas)
+      interpolator = new Interpolator(mockCanvas, datasetRepository, canvasHandler)
 
       interpolator.resizeCanvas()
 

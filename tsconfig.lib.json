@@ -1,0 +1,43 @@
+{
+  // INFO: Declaration-only config used by vite-plugin-dts during `lib-build`.
+  // The root tsconfig.json is a "bundler mode" config with `noEmit: true`
+  // and a stale `declarationDir: dist/types`, both of which conflict with
+  // emitting .d.ts files into library-build/dist. Kept as a separate file so
+  // editor/`vue-tsc` behaviour for the app is unchanged.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationDir": "library-build/dist",
+    "sourceMap": false,
+    // INFO: unused-symbol diagnostics are a lint concern (`yarn lint`), not a
+    // reason to fail the type-definition build.
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
+  "exclude": [
+    "node_modules",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    // INFO: standalone-app-only entry points. They pull in Sentry and
+    // import.meta.env, neither of which belongs in the published types.
+    "src/main.ts",
+    "src/App.vue",
+    "src/appContext.ts",
+    // INFO: the standalone app's IndexedDB auto-save. Nothing in the library
+    // reaches it, and the published package must not offer it as API — where
+    // work is persisted is the embedding host's decision.
+    "src/appPersistence.ts",
+    "src/appPersistence.test.ts",
+    // INFO: leftover Vue 2 ambient shims. copyDtsFiles would publish them
+    // verbatim and they no longer type-check against Vue 3.
+    "src/shims-tsx.d.ts",
+    "src/shims-vue.d.ts",
+    "src/vite-env.d.ts",
+    "tests",
+    "cypress"
+  ]
+}

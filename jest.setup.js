@@ -5,7 +5,15 @@
 // Try to import canvas package, but provide fallback if it fails
 let canvasModule
 try {
-  canvasModule = require('canvas')
+  // INFO: only honour a `canvas` package installed in THIS project. Node's
+  // resolution walks up parent directories, so a git worktree under
+  // .claude/worktrees/ would otherwise pick up the parent checkout's copy and
+  // its contexts would fail the `instanceof CanvasRenderingContext2D` checks
+  // that the mock below is designed to satisfy.
+  const resolved = require.resolve('canvas')
+  if (resolved.startsWith(require('path').join(__dirname, 'node_modules'))) {
+    canvasModule = require('canvas')
+  }
 } catch (error) {
   console.warn('Canvas package not available, using basic mocks')
 }
