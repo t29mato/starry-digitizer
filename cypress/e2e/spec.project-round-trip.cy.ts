@@ -81,6 +81,13 @@ describe('File menu: project ZIP round trip', () => {
 
         clickMenuItem('File', 'Load Project')
         selectProjectFile({ contents, fileName: 'project.zip' })
+        // INFO: wait for the load to finish BEFORE resetting the zoom. The ZIP
+        // load is async (unzip, image decode) and re-fits at its very end, in
+        // the same tick as restoreProject() — so the restored points showing
+        // up means the fit has landed. Resetting earlier is a no-op (the canvas
+        // is still 1180 wide from visitApp), and the late fit then shrinks
+        // everything to ~55%: this is what made the spec fail in CI.
+        canvasPoints().should('have.length', 2)
         // INFO: loading a project re-fits the image to the current frame — the
         // zoom is NOT part of what a project saves (canvasHandlerDTO.scale is
         // write-only), so pin it back to 100% before comparing on-canvas
@@ -96,10 +103,13 @@ describe('File menu: project ZIP round trip', () => {
         pointCount(1).should('have.text', '2')
         pointCount(2).should('have.text', '0')
         // Points: same count and same on-canvas position as before saving
-        canvasPoints().should('have.length', 2)
-        canvasPoints().each(($point, index) => {
-          const style = ($point[0] as HTMLElement).style
-          expect(`${style.left}/${style.top}`).to.equal(positions[index])
+        // INFO: .should(cb) rather than .each + expect, so the comparison
+        // retries while the markers re-render at the reset zoom.
+        canvasPoints().should(($points) => {
+          const restored = $points
+            .toArray()
+            .map(({ style }) => `${style.left}/${style.top}`)
+          expect(restored).to.deep.equal(positions)
         })
         // Data table values (rows keep the order the points were added in)
         assertTableRow(0, '5', '50')
