@@ -195,7 +195,7 @@ export default defineComponent({
     handleOnClickAddDatasetButton() {
       if (!this.shouldContinueSwitchDataset()) return
 
-      this.historyManager.capture()
+      this.historyManager.capture('dataset.add')
       this.datasetRepository.createNewDataset()
 
       this.datasetRepository.lastDataset.setAxisSetId(
@@ -222,7 +222,7 @@ export default defineComponent({
       ) && this.removeDataset(targetDataset.id)
     },
     removeDataset(datasetId: number) {
-      this.historyManager.capture()
+      this.historyManager.capture('dataset.remove')
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.removeDataset(datasetId)
     },
@@ -242,7 +242,7 @@ export default defineComponent({
       ) && this.removeAllDatasets()
     },
     removeAllDatasets() {
-      this.historyManager.capture()
+      this.historyManager.capture('dataset.remove-all')
       this.interpolator.isActive && this.interpolator.clearPreview()
       this.datasetRepository.removeAllDatasets()
     },
@@ -286,7 +286,7 @@ export default defineComponent({
         (d) => d.id === datasetId,
       )
       if (!dataset) return
-      this.historyManager.capture()
+      this.historyManager.capture('dataset.clear-points')
       dataset.clearPoints()
       this.interpolator.clearPreview()
     },

@@ -30,7 +30,10 @@ import { defineComponent } from 'vue'
 import { Point } from '@/@types/types'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import {
+  canvasHandler,
+  historyManager,
+} from '@/instanceStore/applicationServiceInstances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { MANUAL_MODE, STYLE } from '@/constants'
 
@@ -39,6 +42,7 @@ export default defineComponent({
     return {
       interpolator,
       canvasHandler,
+      historyManager,
       datasetRepository,
       pointOpacity: STYLE.POINT_OPACITY,
       tempPointOpacity: STYLE.TEMP_POINT_OPACITY,
@@ -159,6 +163,7 @@ export default defineComponent({
           )
           return
         case MANUAL_MODE.DELETE:
+          this.historyManager.capture('point.delete')
           this.datasetRepository.activeDataset.clearPoint(this.point.id)
 
           return

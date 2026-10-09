@@ -2,6 +2,7 @@
   <v-container fluid class="pa-1">
     <div class="c__wrapper">
       <div class="c__left-sidebar">
+        <review-session-panel></review-session-panel>
         <image-settings></image-settings>
         <axis-set-manager></axis-set-manager>
         <axis-set-settings></axis-set-settings>
@@ -42,10 +43,12 @@ import { AxisSetManager } from './AxisSetManager'
 import { version } from '../../../package.json'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'
 import DataTable from '@/presentation/components/Export/DataTable.vue'
+import ReviewSessionPanel from '@/presentation/components/Review/ReviewSessionPanel.vue'
 
 export default defineComponent({
   components: {
     DataTable,
+    ReviewSessionPanel,
     MagnifierMain,
     CanvasHeader,
     CanvasMain,

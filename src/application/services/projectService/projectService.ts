@@ -8,21 +8,25 @@ import { CanvasHandlerInterface } from '@/application/services/canvasHandler/can
 import { Axis } from '@/domain/models/axis/axis'
 import { AxisSet } from '@/domain/models/axisSet/axisSet'
 import { Dataset } from '@/domain/models/dataset/dataset'
+import { ReviewSession } from '@/application/services/reviewSession/reviewSession'
 import JSZip from 'jszip'
 
 export class ProjectService implements ProjectServiceInterface {
   private axisSetRepository: AxisSetRepositoryInterface
   private datasetRepository: DatasetRepositoryInterface
   private canvasHandler: CanvasHandlerInterface
+  private reviewSession?: ReviewSession
 
   constructor(
     axisSetRepository: AxisSetRepositoryInterface,
     datasetRepository: DatasetRepositoryInterface,
     canvasHandler: CanvasHandlerInterface,
+    reviewSession?: ReviewSession,
   ) {
     this.axisSetRepository = axisSetRepository
     this.datasetRepository = datasetRepository
     this.canvasHandler = canvasHandler
+    this.reviewSession = reviewSession
   }
 
   async exportProject(): Promise<Blob> {
@@ -89,6 +93,12 @@ export class ProjectService implements ProjectServiceInterface {
         scale: this.canvasHandler.scale,
         manualMode: this.canvasHandler.manualMode,
       },
+    }
+    // INFO: only while reviewing an auto-extraction import, so the edit log
+    // keeps counting from the imported state across save/reload
+    const reviewSessionDTO = this.reviewSession?.toDTO()
+    if (reviewSessionDTO) {
+      projectData.reviewSession = reviewSessionDTO
     }
 
     // Create ZIP file
@@ -243,6 +253,9 @@ export class ProjectService implements ProjectServiceInterface {
     // Restore canvas handler state
     this.canvasHandler.scale = projectData.canvasHandler.scale
     this.canvasHandler.manualMode = projectData.canvasHandler.manualMode
+
+    // INFO: a project saved outside a review ends any review in progress
+    this.reviewSession?.restore(projectData.reviewSession)
 
     return imageData
   }

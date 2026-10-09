@@ -153,7 +153,7 @@ export default defineComponent({
       // INFO: canvas-point element上の時は、point edit modeになるので
       switch (this.canvasHandler.manualMode) {
         case 0:
-          this.historyManager.capture()
+          this.historyManager.capture('point.add')
           this.datasetRepository.activeDataset.addPoint(xPx, yPx)
           this.axisSetRepository.activeAxisSet.inactivateAxis()
           this.datasetRepository.activeDataset.addManuallyAddedPointId(
@@ -173,7 +173,7 @@ export default defineComponent({
         return
       }
       if (this.axisSetRepository.activeAxisSet.nextAxis) {
-        this.historyManager.capture()
+        this.historyManager.capture('axis.set')
         this.axisSetRepository.activeAxisSet.addAxisCoord({
           xPx,
           yPx,
@@ -470,7 +470,7 @@ export default defineComponent({
         this.datasetRepository.activeDataset.hasActive() &&
         (key === 'Backspace' || key === 'Delete')
       ) {
-        this.historyManager.capture()
+        this.historyManager.capture('point.delete')
         this.datasetRepository.activeDataset.clearActivePoints()
 
         if (this.interpolator.isActive) {
@@ -502,7 +502,7 @@ export default defineComponent({
       const hasActivePoints =
         this.datasetRepository.activeDataset.pointsAreActive
       if (hasActiveAxis || hasActivePoints) {
-        this.historyManager.capture()
+        this.historyManager.capture(hasActiveAxis ? 'axis.move' : 'point.move')
       }
 
       this.moveActiveAxis(vector)

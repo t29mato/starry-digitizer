@@ -109,6 +109,7 @@ import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { historyManager } from '@/instanceStore/applicationServiceInstances'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -128,6 +129,7 @@ export default defineComponent({
       confirmer,
       extractor,
       canvasHandler,
+      historyManager,
       axisSetRepository,
       datasetRepository,
       isExtracting: false,
@@ -170,6 +172,7 @@ export default defineComponent({
       this.isExtracting = true
       this.axisSetRepository.activeAxisSet.inactivateAxis()
       try {
+        this.historyManager.capture('extract.auto')
         this.datasetRepository.setPoints(
           this.extractor.execute(this.canvasHandler),
         )
@@ -193,6 +196,7 @@ export default defineComponent({
         )
         return
       }
+      this.historyManager.capture('interpolation.confirm')
       const activeDataset = this.datasetRepository.activeDataset
 
       activeDataset.tempPoints.forEach((tempPoint) => {

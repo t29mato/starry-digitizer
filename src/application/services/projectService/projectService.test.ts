@@ -6,6 +6,7 @@ import { CanvasHandler } from '@/application/services/canvasHandler/canvasHandle
 import { Axis } from '@/domain/models/axis/axis'
 import { AxisSet } from '@/domain/models/axisSet/axisSet'
 import { Dataset } from '@/domain/models/dataset/dataset'
+import { ReviewSession } from '@/application/services/reviewSession/reviewSession'
 import JSZip from 'jszip'
 
 describe('ProjectService', () => {
@@ -347,6 +348,70 @@ describe('ProjectService', () => {
       expect(datasetRepository.datasets).toHaveLength(1)
       expect(axisSetRepository.axisSets[0].name).toBe('Single AxisSet')
       expect(datasetRepository.datasets[0].name).toBe('Single Dataset')
+    })
+  })
+
+  describe('auto-extraction review session', () => {
+    const startedSession = () => {
+      const session = new ReviewSession()
+      session.start(
+        {
+          axes: {
+            calibrated: false,
+            x1: { xPx: -999, yPx: -999, value: 0 },
+            x2: { xPx: -999, yPx: -999, value: 1 },
+            y1: { xPx: -999, yPx: -999, value: 0 },
+            y2: { xPx: -999, yPx: -999, value: 1 },
+            xIsLogScale: false,
+            yIsLogScale: false,
+          },
+          series: [],
+        },
+        { extractor: 'llm' },
+        null,
+        [],
+      )
+      session.record('point.add')
+      return session
+    }
+
+    it('saves and restores the review session with the project', async () => {
+      const session = startedSession()
+      const service = new ProjectService(
+        axisSetRepository,
+        datasetRepository,
+        canvasHandler,
+        session,
+      )
+      const zipBlob = await service.exportProject()
+
+      const restored = new ReviewSession()
+      const loader = new ProjectService(
+        new AxisSetRepository(),
+        new DatasetRepository(),
+        new CanvasHandler(),
+        restored,
+      )
+      await loader.loadProject(new File([zipBlob], 'review.zip'))
+
+      expect(restored.data).toEqual(session.data)
+    })
+
+    it('omits the field outside a review, and loading such a project ends a review', async () => {
+      const zipBlob = await projectService.exportProject()
+      const zip = await JSZip.loadAsync(zipBlob)
+      const projectData = JSON.parse(await zip.file('project.json')!.async('text'))
+      expect(projectData.reviewSession).toBeUndefined()
+
+      const session = startedSession()
+      const loader = new ProjectService(
+        new AxisSetRepository(),
+        new DatasetRepository(),
+        new CanvasHandler(),
+        session,
+      )
+      await loader.loadProject(new File([zipBlob], 'plain.zip'))
+      expect(session.isActive).toBe(false)
     })
   })
 })

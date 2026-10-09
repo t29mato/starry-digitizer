@@ -60,7 +60,7 @@
       </v-menu>
     </v-app-bar>
     <v-main v-if="!deviceIsSmartphone">
-      <starry-digitizer :initialGraphImagePath="'/sample_graph_curve.png'" />
+      <starry-digitizer :initialGraphImagePath="initialGraphImagePath" />
     </v-main>
     <v-footer :color="isProd ? 'primary' : 'orange'">
       <v-row justify="center" no-gutters>
@@ -72,6 +72,9 @@
     </v-footer>
     <v-snackbar v-model="showError" color="error" timeout="4000">
       {{ errorMessage }}
+    </v-snackbar>
+    <v-snackbar v-model="showInfo" timeout="6000">
+      {{ infoMessage }}
     </v-snackbar>
     <keyboard-shortcuts-dialog v-model="showKeyboardShortcuts" />
     <pwa-update-prompt />
@@ -99,6 +102,15 @@ import {
 } from '@/application/utils/projectFileOperations'
 import { copyActiveDatasetToClipboard } from '@/application/utils/dataExport'
 import { toggleInterpolation } from '@/application/utils/interpolationToggle'
+import {
+  AutoExtractionOperationResult,
+  downloadEditLog,
+  hasAutoExtractionUrlParam,
+  installAutoExtractionMessageBridge,
+  loadAutoExtractionFromUrlParam,
+  triggerImportAutoExtractionDialog,
+} from '@/application/utils/autoExtractionOperations'
+import { reviewSession } from '@/instanceStore/applicationServiceInstances'
 
 import { version } from '../package.json'
 
@@ -139,7 +151,29 @@ export default defineComponent({
     showError: false,
     errorMessage: '',
     showKeyboardShortcuts: false,
+    showInfo: false,
+    infoMessage: '',
+    reviewSession,
+    // INFO: with ?extraction=, the document brings its own image, so don't
+    // load the sample image only to replace it
+    initialGraphImagePath: hasAutoExtractionUrlParam()
+      ? ''
+      : '/sample_graph_curve.png',
+    removeMessageBridge: null as null | (() => void),
   }),
+  async mounted() {
+    this.removeMessageBridge = installAutoExtractionMessageBridge(
+      window,
+      this.handleAutoExtractionResult,
+    )
+    const result = await loadAutoExtractionFromUrlParam()
+    if (result) {
+      this.handleAutoExtractionResult(result)
+    }
+  },
+  beforeUnmount() {
+    this.removeMessageBridge?.()
+  },
   computed: {
     deviceIsSmartphone() {
       const ua = navigator.userAgent.toLowerCase()
@@ -169,6 +203,16 @@ export default defineComponent({
             {
               text: 'Copy Data to Clipboard',
               action: this.handleCopyData,
+            },
+            { text: 'divider', divider: true },
+            {
+              text: 'Import Auto-Extraction (JSON)…',
+              action: this.handleImportAutoExtraction,
+            },
+            {
+              text: 'Export Edit Log (JSON)',
+              disabled: !this.reviewSession.isActive,
+              action: () => downloadEditLog(),
             },
           ],
         },
@@ -281,6 +325,21 @@ export default defineComponent({
     },
     handleToggleInterpolation() {
       toggleInterpolation(!this.interpolator.isActive)
+    },
+    async handleImportAutoExtraction() {
+      this.handleAutoExtractionResult(await triggerImportAutoExtractionDialog())
+    },
+    handleAutoExtractionResult(result: AutoExtractionOperationResult) {
+      if (!result.success) {
+        result.errorMessage && this.showErrorSnackbar(result.errorMessage)
+        return
+      }
+      if (!result.result) return
+      const { series, points, warnings } = result.result
+      this.infoMessage =
+        `Imported ${series} series / ${points} points.` +
+        (warnings.length ? ` Warnings: ${warnings.join('; ')}` : '')
+      this.showInfo = true
     },
     showErrorSnackbar(message?: string) {
       this.errorMessage = message ?? 'An error occurred'

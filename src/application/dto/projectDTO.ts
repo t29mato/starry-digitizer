@@ -1,6 +1,7 @@
 import { AxisSetDTO } from './axisSetDTO'
 import { DatasetDTO } from './datasetDTO'
 import { CanvasHandlerDTO } from './canvasHandlerDTO'
+import { ReviewSessionDTO } from '@/application/services/reviewSession/reviewSession'
 
 /**
  * DTO (Data Transfer Object) for Project
@@ -15,4 +16,6 @@ export interface ProjectDTO {
   datasets: DatasetDTO[]
   activeDatasetId: number
   canvasHandler: CanvasHandlerDTO
+  // INFO: present only when saved during an auto-extraction review
+  reviewSession?: ReviewSessionDTO
 }
