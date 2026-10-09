@@ -1,4 +1,4 @@
-import { Point } from '@/@types/types'
+import { MarkerStyle, Point } from '@/@types/types'
 
 /**
  * DTO (Data Transfer Object) for Dataset
@@ -12,4 +12,7 @@ export interface DatasetDTO {
   points: Point[]
   visiblePointIds: number[]
   manuallyAddedPointIds: number[]
+  // INFO: optional so projects saved before these existed still load
+  marker?: MarkerStyle
+  scoreRemovedPoints?: Point[]
 }

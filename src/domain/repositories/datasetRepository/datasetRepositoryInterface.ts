@@ -26,6 +26,9 @@ export interface DatasetRepositoryInterface {
     topLeftCoord: Coord,
     bottomRightCoord: Coord,
   ): void
+  movePoints(fromId: number, pointIds: number[], toId: number): number[]
+  mergeDatasets(sourceId: number, targetId: number): void
+  splitPointsToNewDataset(fromId: number, pointIds: number[]): number
   toggleShowAllDatasets(): void
   getDatasetColor(datasetId: number): string
 }

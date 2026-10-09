@@ -30,7 +30,12 @@ import { defineComponent } from 'vue'
 import { Point } from '@/@types/types'
 
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
-import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import {
+  canvasHandler,
+  confidenceReview,
+  historyManager,
+} from '@/instanceStore/applicationServiceInstances'
+import { isLowConfidence } from '@/application/utils/confidenceReview'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { MANUAL_MODE, STYLE } from '@/constants'
 
@@ -39,6 +44,8 @@ export default defineComponent({
     return {
       interpolator,
       canvasHandler,
+      confidenceReview,
+      historyManager,
       datasetRepository,
       pointOpacity: STYLE.POINT_OPACITY,
       tempPointOpacity: STYLE.TEMP_POINT_OPACITY,
@@ -70,6 +77,15 @@ export default defineComponent({
 
       if (this.isManuallyAdded && this.interpolator.isActive) {
         return '#6a5acd'
+      }
+
+      // INFO: score below the confidence-review threshold (docs/design/
+      // auto-extraction-review-design.md, "2.")
+      if (
+        !this.isTemporary &&
+        isLowConfidence(this.point.score, this.confidenceReview.threshold)
+      ) {
+        return STYLE.LOW_CONFIDENCE_POINT_COLOR
       }
 
       // Use dataset color if provided (for show all datasets mode)
@@ -159,6 +175,7 @@ export default defineComponent({
           )
           return
         case MANUAL_MODE.DELETE:
+          this.historyManager.capture('point.delete')
           this.datasetRepository.activeDataset.clearPoint(this.point.id)
 
           return

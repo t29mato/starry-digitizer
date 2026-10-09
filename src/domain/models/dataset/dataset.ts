@@ -1,6 +1,8 @@
-import { Coord, Point } from '@/@types/types'
+import { Coord, MarkerStyle, Point } from '@/@types/types'
 import { Vector } from '../axisSet/axisSetInterface'
 import { DatasetInterface } from './datasetInterface'
+import { findDuplicateClusters } from '@/domain/services/duplicatePointFinder'
+import { isPointInPolygon } from '@/domain/services/polygon'
 
 export class Dataset implements DatasetInterface {
   name: string
@@ -12,6 +14,11 @@ export class Dataset implements DatasetInterface {
   visiblePointIds: number[] = []
   manuallyAddedPointIds: number[] = []
   axisSetId: number = 1
+  marker?: MarkerStyle
+  // INFO: points taken out by removePointsBelowScore(), kept so that
+  // restoreScoreRemovedPoints() can put them back (docs/design/
+  // auto-extraction-review-design.md, "まとめて消す・戻す")
+  scoreRemovedPoints: Point[] = []
 
   pointsAreAdjusting = false
   constructor(name: string, points: Point[], id: number, color?: string) {
@@ -22,9 +29,10 @@ export class Dataset implements DatasetInterface {
   }
 
   scaledPoints(scale: number): Point[] {
+    // INFO: spread so score/origin reach the renderer (low-confidence color)
     return this.points.map((point) => {
       return {
-        id: point.id,
+        ...point,
         xPx: point.xPx * scale,
         yPx: point.yPx * scale,
       }
@@ -57,11 +65,12 @@ export class Dataset implements DatasetInterface {
   }
 
   get nextPointId(): number {
-    if (this.points.length === 0) {
+    // INFO: score-removed points still own their ids — they come back
+    const ids = [...this.points, ...this.scoreRemovedPoints].map((p) => p.id)
+    if (ids.length === 0) {
       return 1
     }
-    const biggestId = Math.max(...this.points.map((point) => point.id))
-    return biggestId + 1
+    return Math.max(...ids) + 1
   }
 
   get lastPointId(): number {
@@ -201,16 +210,90 @@ export class Dataset implements DatasetInterface {
     )
   }
 
-  activatePointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord) {
-    this.inactivatePoints()
-
-    const pointsToActivate = this.pointsInRectangleArea(
-      topLeftCoord,
-      bottomRightCoord,
+  activatePointsInRectangleArea(
+    topLeftCoord: Coord,
+    bottomRightCoord: Coord,
+    additive = false,
+  ) {
+    activatePoints(
+      this,
+      this.pointsInRectangleArea(topLeftCoord, bottomRightCoord),
+      additive,
     )
-    pointsToActivate.forEach((point: Point) => {
-      this.addActivatedPoint(point.id)
+  }
+
+  activatePointsInPolygon(polygon: Coord[], additive = false) {
+    activatePoints(
+      this,
+      this.points.filter((point) => isPointInPolygon(point, polygon)),
+      additive,
+    )
+  }
+
+  // INFO: Moves points in from another dataset. Ids are only unique within
+  // a dataset, so they are renumbered; origin/score travel with the point,
+  // which is what lets the edit log see a move between series. Returns the
+  // new ids.
+  appendPoints(points: Point[]): number[] {
+    const newIds: number[] = []
+    points.forEach((point) => {
+      const id = this.nextPointId
+      this.points.push({ ...point, id })
+      this.addVisiblePointId(id)
+      newIds.push(id)
     })
+    return newIds
+  }
+
+  // INFO: Removes and returns the given points (for appendPoints elsewhere)
+  takePoints(ids: number[]): Point[] {
+    const taken = this.points.filter((point) => ids.includes(point.id))
+    this.points = this.points.filter((point) => !ids.includes(point.id))
+    this.activePointIds = this.activePointIds.filter((id) => !ids.includes(id))
+    this.visiblePointIds = this.visiblePointIds.filter(
+      (id) => !ids.includes(id),
+    )
+    this.manuallyAddedPointIds = this.manuallyAddedPointIds.filter(
+      (id) => !ids.includes(id),
+    )
+    return taken
+  }
+
+  // INFO: Collapses each group of points within maxDistancePx of a
+  // representative into the representative, moved to the group's centroid
+  // (see duplicatePointFinder.ts). Returns how many points were removed.
+  mergeDuplicatePoints(maxDistancePx: number): number {
+    const clusters = findDuplicateClusters(this.points, maxDistancePx)
+    const removedIds: number[] = []
+    clusters.forEach(({ representative, members }) => {
+      const n = members.length
+      representative.xPx = members.reduce((sum, p) => sum + p.xPx, 0) / n
+      representative.yPx = members.reduce((sum, p) => sum + p.yPx, 0) / n
+      members
+        .filter((p) => p.id !== representative.id)
+        .forEach((p) => removedIds.push(p.id))
+    })
+    this.takePoints(removedIds)
+    return removedIds.length
+  }
+
+  // INFO: Points without a score are never touched. Returns how many moved.
+  removePointsBelowScore(threshold: number): number {
+    const ids = this.points
+      .filter((p) => p.score !== undefined && p.score < threshold)
+      .map((p) => p.id)
+    this.scoreRemovedPoints.push(...this.takePoints(ids))
+    return ids.length
+  }
+
+  restoreScoreRemovedPoints(): number {
+    const restored = this.scoreRemovedPoints
+    this.scoreRemovedPoints = []
+    restored.forEach((point) => {
+      this.points.push(point)
+      this.addVisiblePointId(point.id)
+    })
+    return restored.length
   }
 
   moveTempPointToPoint(tempPointId: number): void {
@@ -274,4 +357,21 @@ export class Dataset implements DatasetInterface {
   setAxisSetId(id: number): void {
     this.axisSetId = id
   }
+}
+
+// INFO: module-level rather than a private method so Dataset stays
+// structurally identical to DatasetInterface
+function activatePoints(
+  dataset: Dataset,
+  points: Point[],
+  additive: boolean,
+): void {
+  if (!additive) {
+    dataset.inactivatePoints()
+  }
+  points.forEach((point: Point) => {
+    if (!dataset.activePointIds.includes(point.id)) {
+      dataset.addActivatedPoint(point.id)
+    }
+  })
 }

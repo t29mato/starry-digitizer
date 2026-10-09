@@ -13,6 +13,8 @@ import { DatasetInterface } from '@/domain/models/dataset/datasetInterface'
 // session doesn't grow the snapshot stack without limit.
 const MAX_HISTORY_SIZE = 50
 
+export type HistoryListener = (action: string) => void
+
 // INFO: Only axisSets/datasets are captured; canvas zoom/mode and the
 // uploaded image are intentionally out of scope (see docs/design/
 // ux-ideas-implementation-design.md for rationale).
@@ -30,6 +32,7 @@ interface HistorySnapshot {
 export class HistoryManager implements HistoryManagerInterface {
   private undoStack: HistorySnapshot[] = []
   private redoStack: HistorySnapshot[] = []
+  private listeners: HistoryListener[] = []
 
   constructor(
     private axisSetRepository: AxisSetRepositoryInterface,
@@ -44,12 +47,13 @@ export class HistoryManager implements HistoryManagerInterface {
     return this.redoStack.length > 0
   }
 
-  capture(): void {
+  capture(action = 'edit'): void {
     this.undoStack.push(this.buildSnapshot())
     if (this.undoStack.length > MAX_HISTORY_SIZE) {
       this.undoStack.shift()
     }
     this.redoStack = []
+    this.notify(action)
   }
 
   undo(): void {
@@ -59,6 +63,7 @@ export class HistoryManager implements HistoryManagerInterface {
     const previous = this.undoStack.pop() as HistorySnapshot
     this.redoStack.push(this.buildSnapshot())
     this.restore(previous)
+    this.notify('undo')
   }
 
   redo(): void {
@@ -68,6 +73,22 @@ export class HistoryManager implements HistoryManagerInterface {
     const next = this.redoStack.pop() as HistorySnapshot
     this.undoStack.push(this.buildSnapshot())
     this.restore(next)
+    this.notify('redo')
+  }
+
+  // INFO: capture() already sits right before every undoable edit, so it is
+  // the one place the auto-extraction review's operation log hooks into
+  // (docs/design/auto-extraction-review-design.md) instead of every
+  // component logging on its own.
+  subscribe(listener: HistoryListener): () => void {
+    this.listeners.push(listener)
+    return () => {
+      this.listeners = this.listeners.filter((l) => l !== listener)
+    }
+  }
+
+  private notify(action: string): void {
+    this.listeners.forEach((listener) => listener(action))
   }
 
   clear(): void {
@@ -135,6 +156,8 @@ function toAxisSetDTO(axisSet: AxisSetInterface): AxisSetDTO {
     considerGraphTilt: axisSet.considerGraphTilt,
     pointMode: axisSet.pointMode,
     isVisible: axisSet.isVisible,
+    plotArea: axisSet.plotArea,
+    legendArea: axisSet.legendArea,
   }
 }
 
@@ -155,6 +178,8 @@ function fromAxisSetDTO(dto: AxisSetDTO): AxisSet {
   axisSet.considerGraphTilt = dto.considerGraphTilt
   axisSet.pointMode = dto.pointMode
   axisSet.isVisible = dto.isVisible
+  axisSet.plotArea = dto.plotArea ?? null
+  axisSet.legendArea = dto.legendArea ?? null
   return axisSet
 }
 
@@ -166,6 +191,8 @@ function toDatasetDTO(dataset: DatasetInterface): DatasetDTO {
     points: dataset.points,
     visiblePointIds: dataset.visiblePointIds,
     manuallyAddedPointIds: dataset.manuallyAddedPointIds,
+    marker: dataset.marker,
+    scoreRemovedPoints: dataset.scoreRemovedPoints,
   }
 }
 
@@ -174,5 +201,7 @@ function fromDatasetDTO(dto: DatasetDTO): Dataset {
   dataset.axisSetId = dto.axisSetId
   dataset.visiblePointIds = dto.visiblePointIds
   dataset.manuallyAddedPointIds = dto.manuallyAddedPointIds
+  dataset.marker = dto.marker
+  dataset.scoreRemovedPoints = dto.scoreRemovedPoints ?? []
   return dataset
 }
