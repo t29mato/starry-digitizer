@@ -27,6 +27,10 @@ import {
 } from '@/application/services/reviewSession/reviewSession'
 import { Dataset } from '@/domain/models/dataset/dataset'
 import { AutoExtractionDocumentDTO } from '@/application/dto/autoExtractionDTO'
+import {
+  buildReviewDiffOverlay,
+  ReviewDiffOverlay,
+} from '@/application/utils/reviewDiffOverlay'
 
 // INFO: Every entry point of the auto-extraction review — File menu, URL
 // parameter, postMessage, library API — goes through here, mirroring
@@ -184,6 +188,17 @@ export function buildEditLog(): EditLog | null {
     new Date(),
     DEFAULT_MOVE_TOLERANCE_PX,
     confidenceReview.threshold,
+  )
+}
+
+// INFO: what CanvasReviewDiff.vue draws (docs/design/
+// auto-extraction-review-design.md, "6.")
+export function currentReviewOverlay(): ReviewDiffOverlay | null {
+  if (!reviewSession.data) return null
+  return buildReviewDiffOverlay(
+    reviewSession.data.initialState,
+    captureReviewState(axisSets.axisSets, datasets.datasets),
+    DEFAULT_MOVE_TOLERANCE_PX,
   )
 }
 

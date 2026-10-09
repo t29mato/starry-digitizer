@@ -65,6 +65,7 @@ export default defineComponent({
             action: 'Next / previous low-confidence point',
             shortcut: 'N / ⇧N',
           },
+          { action: 'Show imported state (while held)', shortcut: 'I' },
           { action: 'Move active point/axis (1px)', shortcut: '↑ ↓ ← →' },
           {
             action: 'Move active point/axis (10px)',

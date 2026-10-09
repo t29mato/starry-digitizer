@@ -37,7 +37,8 @@
     <canvas-annotations></canvas-annotations>
     <canvas-axis-set-guide></canvas-axis-set-guide>
     <canvas-axis-set></canvas-axis-set>
-    <canvas-points></canvas-points>
+    <canvas-points v-if="!reviewView.showInitial"></canvas-points>
+    <canvas-review-diff></canvas-review-diff>
     <canvas-cursor></canvas-cursor>
   </div>
 </template>
@@ -54,6 +55,7 @@ import { Vector } from '@/domain/models/axisSet/axisSetInterface'
 import { Coord, Point } from '@/@types/types'
 
 import CanvasAnnotations from './CanvasAnnotations.vue'
+import CanvasReviewDiff from './CanvasReviewDiff.vue'
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
 
@@ -63,6 +65,7 @@ import { confirmer } from '@/instanceStore/applicationServiceInstances'
 import { extractor } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
 import { historyManager } from '@/instanceStore/applicationServiceInstances'
+import { reviewView } from '@/instanceStore/applicationServiceInstances'
 import {
   saveProjectAndDownload,
   triggerLoadProjectDialog,
@@ -75,6 +78,7 @@ import { goToLowConfidencePoint } from '@/application/utils/confidenceReviewOper
 export default defineComponent({
   components: {
     CanvasAnnotations,
+    CanvasReviewDiff,
     CanvasAxisSet,
     CanvasPoints,
     CanvasCursor,
@@ -94,6 +98,7 @@ export default defineComponent({
       extractor,
       canvasHandler,
       historyManager,
+      reviewView,
       axisSetRepository,
       datasetRepository,
       // INFO: 直前のmousemoveでカーソルが画像内にいたかどうか。

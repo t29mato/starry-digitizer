@@ -53,6 +53,8 @@ import { Coord } from '@/@types/types'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import { magnifier } from '@/instanceStore/applicationServiceInstances'
 import { canvasHandler } from '@/instanceStore/applicationServiceInstances'
+import { confidenceReview } from '@/instanceStore/applicationServiceInstances'
+import { isLowConfidence } from '@/application/utils/confidenceReview'
 import { STYLE } from '@/constants'
 
 export default defineComponent({
@@ -61,6 +63,7 @@ export default defineComponent({
       interpolator,
       magnifier,
       canvasHandler,
+      confidenceReview,
       pointSizePx: STYLE.POINT_SIZE_PX,
       pointOpacity: STYLE.POINT_OPACITY,
       tempPointOpacity: STYLE.TEMP_POINT_OPACITY,
@@ -90,6 +93,14 @@ export default defineComponent({
 
       if (this.isManuallyAdded && this.interpolator.isActive) {
         return '#6a5acd'
+      }
+
+      // INFO: same rule as CanvasPoint.vue (confidence review)
+      if (
+        !this.isTemporary &&
+        isLowConfidence(this.point.score, this.confidenceReview.threshold)
+      ) {
+        return STYLE.LOW_CONFIDENCE_POINT_COLOR
       }
 
       if (this.datasetColor) {
@@ -144,7 +155,8 @@ export default defineComponent({
   },
   props: {
     point: {
-      type: Object as () => Coord,
+      // INFO: a Point (with optional score) or a temp point's coordinate
+      type: Object as () => Coord & { score?: number },
       required: true,
     },
     magnifierSize: {

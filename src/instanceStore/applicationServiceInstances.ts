@@ -8,6 +8,7 @@ import { ProjectService } from '@/application/services/projectService/projectSer
 import { HistoryManager } from '@/application/services/historyManager/historyManager'
 import { ReviewSession } from '@/application/services/reviewSession/reviewSession'
 import { ConfidenceReview } from '@/application/services/confidenceReview/confidenceReview'
+import { ReviewView } from '@/application/services/reviewView/reviewView'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -30,6 +31,7 @@ export const reviewSession = reactive(new ReviewSession()) as ReviewSession
 export const confidenceReview = reactive(
   new ConfidenceReview(),
 ) as ConfidenceReview
+export const reviewView = reactive(new ReviewView()) as ReviewView
 
 // ProjectService: Directly instantiated to ensure same canvasHandler instance
 export const projectService = new ProjectService(

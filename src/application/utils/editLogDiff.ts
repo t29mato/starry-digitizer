@@ -1,4 +1,4 @@
-import { Point } from '@/@types/types'
+import { Point, PointOrigin } from '@/@types/types'
 
 // INFO: Correction cost = the difference between the state right after an
 // auto-extraction import and the current state (docs/design/
@@ -76,6 +76,14 @@ export type EditLogDetails = {
     by_threshold: boolean
   }[]
   added: { dataset: string; px: [number, number] }[]
+  // INFO: surviving points outside their series' primary destination;
+  // `px` is the current position
+  reassigned: {
+    series: number
+    index: number
+    dataset: string
+    px: [number, number]
+  }[]
   series_mapping: {
     series: number
     label: string
@@ -118,16 +126,17 @@ export function diffReviewState(
     moved: [],
     deleted: [],
     added: [],
+    reassigned: [],
     series_mapping: [],
   }
   let kept = 0
-  let reassigned = 0
   let split = 0
   let removed = 0
   let renamed = 0
 
   initial.series.forEach((series, seriesIndex) => {
     const destinationCounts = new Map<number, number>()
+    const survivors: { dataset: number; point: Point }[] = []
     series.points.forEach((initialPoint) => {
       const origin = initialPoint.origin
       if (!origin) return
@@ -143,6 +152,7 @@ export function diffReviewState(
         })
         return
       }
+      survivors.push(found)
       destinationCounts.set(
         found.dataset,
         (destinationCounts.get(found.dataset) ?? 0) + 1,
@@ -182,7 +192,16 @@ export function diffReviewState(
       return
     }
     split += destinations.length - 1
-    reassigned += destinations.slice(1).reduce((sum, d) => sum + d.points, 0)
+    survivors
+      .filter((s) => s.dataset !== destinations[0].dataset)
+      .forEach(({ dataset, point }) => {
+        details.reassigned.push({
+          series: seriesIndex,
+          index: (point.origin as PointOrigin).index,
+          dataset: current.series[dataset].label,
+          px: [point.xPx, point.yPx],
+        })
+      })
     if (current.series[destinations[0].dataset].label !== series.label) {
       renamed++
     }
@@ -220,7 +239,7 @@ export function diffReviewState(
         deleted_by_threshold: details.deleted.filter((d) => d.by_threshold)
           .length,
         added: details.added.length,
-        reassigned,
+        reassigned: details.reassigned.length,
       },
       series: {
         initial: initial.series.length,

@@ -132,6 +132,9 @@ describe('diffReviewState', () => {
       final: 3,
     })
     expect(summary.points.reassigned).toBe(1)
+    expect(details.reassigned).toEqual([
+      { series: 0, index: 1, dataset: 'A2', px: [20, 20] },
+    ])
     expect(summary.points.deleted).toBe(2)
     expect(details.series_mapping[1].destinations).toEqual([])
   })

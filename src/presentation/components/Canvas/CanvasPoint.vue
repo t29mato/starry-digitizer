@@ -80,13 +80,12 @@ export default defineComponent({
       }
 
       // INFO: score below the confidence-review threshold (docs/design/
-      // auto-extraction-review-design.md, "2."). Deep pink clashes with
-      // neither the selection red nor any View All dataset color.
+      // auto-extraction-review-design.md, "2.")
       if (
         !this.isTemporary &&
         isLowConfidence(this.point.score, this.confidenceReview.threshold)
       ) {
-        return '#ff1493'
+        return STYLE.LOW_CONFIDENCE_POINT_COLOR
       }
 
       // Use dataset color if provided (for show all datasets mode)
