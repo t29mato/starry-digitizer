@@ -55,7 +55,10 @@ describe('parseAutoExtraction', () => {
       pointsPx: [[150, 350]],
       pointsValue: [[2.5, 3.16]],
       scores: [0.9],
+      marker: null,
     })
+    expect(parsed.plotArea).toBeNull()
+    expect(parsed.legendArea).toBeNull()
     expect(parsed.source).toEqual({ extractor: 'markernet-v2', run: 'r1' })
   })
 
@@ -180,6 +183,53 @@ describe('parseAutoExtraction', () => {
       'image.url must be a string',
       'image.width must be a positive number',
       'series must be an array',
+    ])
+  })
+
+  test('plot/legend areas and markers', () => {
+    const parsed = parseAutoExtraction({
+      version: 1,
+      plot_area: { x: 10, y: 20, width: 300, height: 200 },
+      legend_area: null,
+      series: [
+        {
+          points_px: [],
+          marker: { shape: 'triangle-up', fill: 'open', size_px: 12 },
+        },
+        { points_px: [], marker: { shape: null } },
+      ],
+    })
+    expect(parsed.plotArea).toEqual({
+      xPx: 10,
+      yPx: 20,
+      widthPx: 300,
+      heightPx: 200,
+    })
+    expect(parsed.series[0].marker).toEqual({
+      shape: 'triangle-up',
+      fill: 'open',
+      sizePx: 12,
+    })
+    expect(parsed.series[1].marker).toEqual({})
+  })
+
+  test('rejects bad areas and markers', () => {
+    const problems = problemsOf({
+      version: 1,
+      plot_area: { x: 0, y: 0, width: 0, height: 1 },
+      legend_area: 'x',
+      series: [
+        { points_px: [], marker: { shape: 'blob', fill: 'gradient', size_px: -1 } },
+        { points_px: [], marker: 3 },
+      ],
+    })
+    expect(problems).toEqual([
+      expect.stringContaining('series[0].marker.shape must be one of circle'),
+      expect.stringContaining('series[0].marker.fill must be one of filled'),
+      'series[0].marker.size_px must be a positive number',
+      'series[1].marker must be an object or null',
+      'plot_area must be {"x", "y", "width" > 0, "height" > 0} (pixels) or null',
+      'legend_area must be {"x", "y", "width" > 0, "height" > 0} (pixels) or null',
     ])
   })
 })

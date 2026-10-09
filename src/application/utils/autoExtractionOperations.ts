@@ -1,6 +1,7 @@
 import { reactive } from 'vue'
 import {
   canvasHandler as rawCanvasHandler,
+  confidenceReview,
   extractor,
   historyManager,
   interpolator,
@@ -20,10 +21,12 @@ import {
   captureReviewState,
 } from '@/application/utils/autoExtractionImport'
 import {
+  DEFAULT_MOVE_TOLERANCE_PX,
   EditLog,
   ReviewCalibration,
 } from '@/application/services/reviewSession/reviewSession'
 import { Dataset } from '@/domain/models/dataset/dataset'
+import { AutoExtractionDocumentDTO } from '@/application/dto/autoExtractionDTO'
 
 // INFO: Every entry point of the auto-extraction review — File menu, URL
 // parameter, postMessage, library API — goes through here, mirroring
@@ -178,6 +181,9 @@ export function buildEditLog(): EditLog | null {
       currentImageSize(),
       reviewSession.data.source,
     ),
+    new Date(),
+    DEFAULT_MOVE_TOLERANCE_PX,
+    confidenceReview.threshold,
   )
 }
 
@@ -191,24 +197,47 @@ export function currentReviewDiff() {
 export function downloadEditLog(filename?: string): boolean {
   const editLog = buildEditLog()
   if (!editLog) return false
-  const blob = new Blob([JSON.stringify(editLog, null, 2)], {
+  downloadJson(editLog, filename ?? `edit-log-${timestamp()}.json`)
+  return true
+}
+
+// INFO: The current state in the import format, with or without a review
+// (docs/design/auto-extraction-review-design.md, "5."): pixel + value
+// coordinates, axis ticks, plot/legend areas and markers — usable as
+// detector training labels. Same content as an edit log's `final`.
+export function buildDataDocument(): AutoExtractionDocumentDTO {
+  return buildFinalDocument(
+    axisSets.axisSets,
+    datasets.datasets,
+    currentImageSize(),
+    reviewSession.data?.source ?? null,
+  )
+}
+
+export function downloadDataJson(filename?: string): void {
+  downloadJson(buildDataDocument(), filename ?? `data-${timestamp()}.json`)
+}
+
+function timestamp(): string {
+  return new Date()
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, '')
+    .replace('T', '-')
+}
+
+function downloadJson(data: unknown, filename: string): void {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: 'application/json',
   })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download =
-    filename ??
-    `edit-log-${new Date()
-      .toISOString()
-      .replace(/[-:]/g, '')
-      .replace(/\.\d{3}Z$/, '')
-      .replace('T', '-')}.json`
+  link.download = filename
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
-  return true
 }
 
 export type AutoExtractionOperationResult = {

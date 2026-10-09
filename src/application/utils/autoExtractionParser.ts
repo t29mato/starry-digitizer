@@ -1,8 +1,11 @@
 import {
   AUTO_EXTRACTION_FORMAT,
   AUTO_EXTRACTION_VERSION,
+  MARKER_FILLS,
+  MARKER_SHAPES,
   XY,
 } from '@/application/dto/autoExtractionDTO'
+import { MarkerStyle, Rect } from '@/@types/types'
 import { AxisScale, AxisTick } from '@/domain/services/axisTickFitter'
 
 // INFO: Validates and normalizes an auto-extraction document (any JSON
@@ -17,12 +20,15 @@ export type ParsedSeries = {
   pointsPx: XY[] | null
   pointsValue: XY[] | null
   scores: number[] | null
+  marker: MarkerStyle | null
 }
 
 export type ParsedAutoExtraction = {
   image: { url: string | null; width: number | null; height: number | null }
   axes: { x: ParsedAxis; y: ParsedAxis } | null
   series: ParsedSeries[]
+  plotArea: Rect | null
+  legendArea: Rect | null
   source: Record<string, unknown> | null
 }
 
@@ -66,6 +72,8 @@ export function parseAutoExtraction(json: unknown): ParsedAutoExtraction {
   const image = parseImage(json.image, problems)
   const axes = parseAxes(json.axes, problems)
   const series = parseSeriesList(json.series, axes !== null, problems)
+  const plotArea = parseRect(json.plot_area, 'plot_area', problems)
+  const legendArea = parseRect(json.legend_area, 'legend_area', problems)
 
   let source: Record<string, unknown> | null = null
   if (json.source !== undefined && json.source !== null) {
@@ -79,7 +87,70 @@ export function parseAutoExtraction(json: unknown): ParsedAutoExtraction {
   if (problems.length > 0) {
     throw new AutoExtractionFormatError(problems)
   }
-  return { image, axes, series, source }
+  return { image, axes, series, plotArea, legendArea, source }
+}
+
+function parseRect(value: unknown, path: string, problems: string[]) {
+  if (value === undefined || value === null) {
+    return null
+  }
+  if (
+    !isObject(value) ||
+    !isFiniteNumber(value.x) ||
+    !isFiniteNumber(value.y) ||
+    !isFiniteNumber(value.width) ||
+    !isFiniteNumber(value.height) ||
+    value.width <= 0 ||
+    value.height <= 0
+  ) {
+    problems.push(
+      `${path} must be {"x", "y", "width" > 0, "height" > 0} (pixels) or null`,
+    )
+    return null
+  }
+  return {
+    xPx: value.x,
+    yPx: value.y,
+    widthPx: value.width,
+    heightPx: value.height,
+  }
+}
+
+function parseMarker(
+  value: unknown,
+  path: string,
+  problems: string[],
+): MarkerStyle | null {
+  if (value === undefined || value === null) {
+    return null
+  }
+  if (!isObject(value)) {
+    problems.push(`${path} must be an object or null`)
+    return null
+  }
+  const marker: MarkerStyle = {}
+  if (value.shape !== undefined && value.shape !== null) {
+    if (MARKER_SHAPES.includes(value.shape as never)) {
+      marker.shape = value.shape as MarkerStyle['shape']
+    } else {
+      problems.push(`${path}.shape must be one of ${MARKER_SHAPES.join(', ')}`)
+    }
+  }
+  if (value.fill !== undefined && value.fill !== null) {
+    if (MARKER_FILLS.includes(value.fill as never)) {
+      marker.fill = value.fill as MarkerStyle['fill']
+    } else {
+      problems.push(`${path}.fill must be one of ${MARKER_FILLS.join(', ')}`)
+    }
+  }
+  if (value.size_px !== undefined && value.size_px !== null) {
+    if (isFiniteNumber(value.size_px) && value.size_px > 0) {
+      marker.sizePx = value.size_px
+    } else {
+      problems.push(`${path}.size_px must be a positive number`)
+    }
+  }
+  return marker
 }
 
 function parseImage(
@@ -242,6 +313,8 @@ function parseSeries(
     }
   }
 
+  const marker = parseMarker(value.marker, `${path}.marker`, problems)
+
   if (problems.length > before) {
     return null
   }
@@ -266,7 +339,7 @@ function parseSeries(
     return null
   }
 
-  return { label, pointsPx, pointsValue, scores }
+  return { label, pointsPx, pointsValue, scores, marker }
 }
 
 function parseXYList(

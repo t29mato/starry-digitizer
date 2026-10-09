@@ -1,5 +1,5 @@
 import { AxisDTO } from './axisDTO'
-import { PointMode } from '@/@types/types'
+import { PointMode, Rect } from '@/@types/types'
 
 /**
  * DTO (Data Transfer Object) for AxisSet
@@ -18,4 +18,7 @@ export interface AxisSetDTO {
   considerGraphTilt: boolean
   pointMode: PointMode
   isVisible: boolean
+  // INFO: optional so projects saved before these existed still load
+  plotArea?: Rect | null
+  legendArea?: Rect | null
 }

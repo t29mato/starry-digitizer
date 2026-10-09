@@ -156,6 +156,8 @@ function toAxisSetDTO(axisSet: AxisSetInterface): AxisSetDTO {
     considerGraphTilt: axisSet.considerGraphTilt,
     pointMode: axisSet.pointMode,
     isVisible: axisSet.isVisible,
+    plotArea: axisSet.plotArea,
+    legendArea: axisSet.legendArea,
   }
 }
 
@@ -176,6 +178,8 @@ function fromAxisSetDTO(dto: AxisSetDTO): AxisSet {
   axisSet.considerGraphTilt = dto.considerGraphTilt
   axisSet.pointMode = dto.pointMode
   axisSet.isVisible = dto.isVisible
+  axisSet.plotArea = dto.plotArea ?? null
+  axisSet.legendArea = dto.legendArea ?? null
   return axisSet
 }
 
@@ -187,6 +191,8 @@ function toDatasetDTO(dataset: DatasetInterface): DatasetDTO {
     points: dataset.points,
     visiblePointIds: dataset.visiblePointIds,
     manuallyAddedPointIds: dataset.manuallyAddedPointIds,
+    marker: dataset.marker,
+    scoreRemovedPoints: dataset.scoreRemovedPoints,
   }
 }
 
@@ -195,5 +201,7 @@ function fromDatasetDTO(dto: DatasetDTO): Dataset {
   dataset.axisSetId = dto.axisSetId
   dataset.visiblePointIds = dto.visiblePointIds
   dataset.manuallyAddedPointIds = dto.manuallyAddedPointIds
+  dataset.marker = dto.marker
+  dataset.scoreRemovedPoints = dto.scoreRemovedPoints ?? []
   return dataset
 }

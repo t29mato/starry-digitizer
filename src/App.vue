@@ -104,6 +104,7 @@ import { copyActiveDatasetToClipboard } from '@/application/utils/dataExport'
 import { toggleInterpolation } from '@/application/utils/interpolationToggle'
 import {
   AutoExtractionOperationResult,
+  downloadDataJson,
   downloadEditLog,
   hasAutoExtractionUrlParam,
   installAutoExtractionMessageBridge,
@@ -208,6 +209,10 @@ export default defineComponent({
             {
               text: 'Import Auto-Extraction (JSON)…',
               action: this.handleImportAutoExtraction,
+            },
+            {
+              text: 'Export Data (JSON)',
+              action: () => downloadDataJson(),
             },
             {
               text: 'Export Edit Log (JSON)',

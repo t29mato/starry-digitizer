@@ -9,6 +9,8 @@ export {
   loadAutoExtraction,
   buildEditLog,
   downloadEditLog,
+  buildDataDocument,
+  downloadDataJson,
   installAutoExtractionMessageBridge,
   MESSAGE_TYPE,
 } from '../src/application/utils/autoExtractionOperations'

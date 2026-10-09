@@ -4,6 +4,9 @@
 画素座標つき書き出し、差分表示)で、優先は 1 → 4 → 3 → 2 → 5 → 6。**本設計で実装するのは 1(自動抽出結果の取り込み)と
 4(編集ログ)**。2/3/5/6 は本設計のデータ構造の上に後から載せられるよう、拡張点だけ決めておく(末尾「後続機能への拡張点」)。
 
+**追記(第 2 段階)**: 続けて 3 → 2 → 5 を実装する。設計は末尾の「3. 系列の編集」「2. 信頼度のレビュー」「5. 図の情報の書き出し」。
+6(差分の重ね表示)は引き続き未実装。
+
 ## 既存機能との重なり(調査結果)
 
 | 既存機能 | 場所 | 重なり | 方針 |
@@ -209,18 +212,153 @@ classDiagram
 - プロジェクト保存: `ProjectDTO.reviewSession?`(初期状態・source・取り込み時刻・イベント)。読み込み時にあれば復元、無ければレビュー終了。
 - 新しい画像を開いたとき(`ImageSettings`)はレビューを終了する(履歴を消すのと同じ理由)。
 
-## 後続機能への拡張点(今回は実装しない)
+## 後続機能への拡張点
 
-- **2. 信頼度の表示**: `Point.score` を取り込み時に入れてあるので、`CanvasPoint` の色をスコアで変える・低スコア順に巡回する UI を足すだけ。
-  しきい値でまとめて消す操作は `capture('point.delete-below-score')` を通せば、編集ログは差分で自動的に数える。
-- **3. 系列の統合・分割・重複点の統合**: 点を別の `Dataset` へ移すとき `origin` / `score` ごと移せば、編集ログの split/merged/reassigned
-  がそのまま正しく出る。重複点の統合は「1 点を残して他を削除」と数えられる(必要ならイベント名で区別)。
-- **5. 画素座標と図の情報の書き出し**: 編集ログの `final` が画素座標・値・軸目盛を既に含む。描画領域・凡例の矩形、マーカーの形は
-  取り込み形式 v1 に任意フィールドとして足す(未知フィールドは無視する約束なので v1 のまま拡張できる)。
-- **6. 差分の重ね表示**: `ReviewSession` が初期状態を持っているので、それを半透明で描く層を足せばよい。
+- **6. 差分の重ね表示**(未実装): `ReviewSession` が初期状態を持っているので、それを半透明で描く層を足せばよい。
 
 ## 対象外
 
 - 取り込み時の `points_value` と `points_px` の照合
 - 軸が画像の縦横に平行でない場合の目盛の 2 次元指定(v1 は 1 次元の `px` のみ)
 - 複数の軸セット(取り込みは軸セット 1 つ)
+
+---
+
+# 第 2 段階: 系列の編集・信頼度のレビュー・図の情報の書き出し
+
+第 1 段階(取り込み・編集ログ)の上に載せる。共通の約束:
+
+- どの操作も直前に `historyManager.capture('<操作名>')` を呼ぶ。undo でき、編集ログの `events` にも出る。
+- 点を別の系列へ移すときは `origin` と `score` ごと移す。これだけで編集ログの split / merged / reassigned が差分から正しく出る
+  (編集ログの計算は変えない)。
+- 操作はレビュー中でなくても使える(手で取った点の整理にも役立つ)。
+
+## 3. 系列の編集
+
+依頼: LLM の「1 本の系列を数本に切る」と、検出器の「同じマーカーで重複点を出す」「別系列が混ざる」を直接直す。
+
+### 既存との関係
+
+- 点の選択は既にある: EDIT モード(`e`)でのドラッグ矩形選択(`activatePointsInRectangleArea`)と、Ctrl/⌘+クリックの追加・解除。
+  **選択の仕組みはそのまま使い**、足すのは次の 2 つだけ:
+  - **投げ縄選択**: 斜めに走る系列が交差していると矩形では分けられないため。右サイドバーで「Box / Lasso」を切り替える。
+    投げ縄の軌跡は矩形と同じ `tempMaskCanvas` に描き、離したときに多角形の内側の点を選ぶ(偶奇判定)。
+  - **追加選択**: Ctrl/⌘ を押しながらドラッグを終えると、今の選択に足す(矩形・投げ縄の両方)。
+- 系列(`Dataset`)の追加・削除・名前変更は `DatasetManager` に既にある。統合・移動・分割は無いので足す。
+
+### 操作(ドメイン)
+
+| 操作 | 置き場所 | 内容 | 操作名 |
+|---|---|---|---|
+| 系列の統合 | `DatasetRepository.mergeDatasets(sourceId, targetId)` | source の全点を target の末尾へ移し、source を消す | `series.merge` |
+| 選択点を別系列へ移す | `DatasetRepository.movePoints(fromId, pointIds, toId)` | | `points.move-to-series` |
+| 選択点を新しい系列に分ける | `DatasetRepository.splitPointsToNewDataset(fromId, pointIds)` | 新系列名は `<元の名前> (split)`、軸セットは元と同じ | `points.split-to-new-series` |
+| 近接重複点の統合 | `Dataset.mergeDuplicatePoints(maxDistancePx)` | 下記 | `points.merge-duplicates` |
+
+点を移すと移し先で id を振り直す(id は系列内でしか一意でないため)。`origin` / `score` は保つ。移した点は移し先で表示・選択状態にする。
+
+### 近接重複点の統合
+
+- 対象は今の系列(Active dataset)だけ。「同じ系列で数 px 以内」(依頼どおり)。既定 3px、パネルで変えられる。
+- **単連結(つながったものを全部まとめる)にはしない**。線グラフや密な系列では点が数 px 間隔で並ぶので、鎖のように系列全体が
+  1 点に潰れてしまう。代わりに貪欲法: score の高い順(score が無ければ id 順)に「代表点」を選び、まだどこにも属していない点のうち
+  代表点から `maxDistancePx` 以内のものをその代表点の組に入れる。
+- 組ごとに代表点を 1 つ残し、**位置は組の重心**に動かす(大きい模様付きマーカーでの重複は、どれもマーカー中心からずれているため)。
+  代表点の `origin` / `score` を残すので、編集ログでは「代表点の移動 1 + 他の点の削除」と数えられる。
+- 純粋関数 `findDuplicateClusters(points, maxDistancePx)` を `src/domain/services/duplicatePointFinder.ts` に置いて Jest で検証する。
+
+### 画面
+
+右サイドバーに「Series Editing」パネル(`SeriesEditingPanel.vue`)を足す。View All モード中は無効(既存どおり編集不可のため)。
+
+- 選択数の表示、`Move to ▾`(他の系列の一覧)、`New series`
+- 選択方法 `Box / Lasso`
+- `Merge "<今の系列>" into ▾`
+- 重複点: 距離(px)と `Merge duplicates` ボタン。統合した点の数を表示する
+
+## 2. 信頼度のレビュー
+
+依頼: score の低い点を色で目立たせる / 「次の怪しい点へ」で順に見る / しきい値のスライダーで低スコア点をまとめて消す・戻す。
+
+### しきい値と表示
+
+- 状態は `ConfidenceReview`(`src/application/services/confidenceReview/`、reactive なシングルトン)に置く: しきい値(既定 0.5)と、
+  巡回中の点。表示上の状態なので undo・プロジェクト保存の対象にはしない。
+- `score < しきい値` の点を「怪しい点」として **濃いピンク**で描く(赤は選択中、青は通常、紫は補間のアンカー、View All の系列色と
+  ぶつからない色)。score を持たない点(人が足した点など)は対象外。
+- `Dataset.scaledPoints()` が `score` を落としていたので、`{ ...point, xPx, yPx }` に直して描画側へ渡す。
+
+### 順に見る
+
+- 怪しい点を **score の低い順**(同点は系列順・id 順)に並べ、`Next` / `Prev`(キーボード `n` / `Shift+n`)で巡回する。
+  全系列が対象で、移るときにその系列を Active にし、その点を選択し、拡大鏡のカーソルをその点に置き、キャンバスをその点までスクロールする。
+  選択されるので、そのまま `Delete` で消す・矢印キーで動かす、が既存の操作でできる。
+- 並べ替えは純粋関数 `listLowConfidencePoints(datasets, threshold)`(`src/application/utils/confidenceReview.ts`)。
+
+### まとめて消す・戻す
+
+- 「消す」は本当に系列から取り除く(書き出し・CSV・自動検出・補間など既存の全経路が何もしなくても正しくなる)。ただし捨てずに
+  `Dataset.scoreRemovedPoints` に退避し、「戻す」で元の系列に戻す。
+  - `Remove below threshold (N)`: 全系列で `score < しきい値` の点を退避する(`points.remove-below-score`)
+  - `Restore removed (M)`: 退避した点を全部戻す(`points.restore-score-removed`)。しきい値を上げすぎた後の取り消しにも使える
+- 退避先は `DatasetDTO.scoreRemovedPoints?` として undo のスナップショットとプロジェクト保存に含める。
+  `nextPointId` は退避中の点の id も数える(戻したとき id がぶつからないように)。
+- 編集ログ: 退避中の点は「削除」に数える(最終結果に入らないため)。区別できるよう `summary.points.deleted_by_threshold` と
+  `details.deleted[].by_threshold` を足し、書き出し時点のしきい値を `score_threshold` に出す(いずれも追加のみ。v1 のまま)。
+
+### 画面
+
+右サイドバーに「Confidence Review」パネル(`ConfidenceReviewPanel.vue`)。score を持つ点が 1 つも無いときは出さない。
+しきい値のスライダー、怪しい点の数、`Prev` / `Next`、`Remove below threshold`、`Restore removed`。
+
+## 5. 図の情報の書き出し
+
+依頼: JSON の書き出しで、各点の画素座標・軸の目盛(画素 + 値)・描画領域の矩形・凡例の矩形(任意で人が囲う)・系列ごとの
+マーカーの形・塗り・大きさ(任意)を出す。人が直した結果をそのまま検出器の学習データにする。
+
+### 置き場所
+
+- **描画領域・凡例の矩形は `AxisSet` に持たせる**(`plotArea?`、`legendArea?`、元画像の画素の `{xPx, yPx, widthPx, heightPx}`)。
+  1 枚の図に複数のパネルがあれば、軸セットごとに描画領域と凡例があるので。`AxisSetDTO` にも足し、undo とプロジェクト保存に乗せる
+  (DTO 変換は `ProjectService` と `HistoryManager` に重複してあるので両方直す)。
+- **マーカーは `Dataset.marker?`**: `{ shape, fill, sizePx }`。
+  - `shape`: `circle` `square` `diamond` `triangle-up` `triangle-down` `triangle-left` `triangle-right` `pentagon` `hexagon` `star`
+    `cross`(×) `plus`(+) `other`
+  - `fill`: `filled` `open` `half` `other`
+  - `sizePx`: マーカーの外接幅(元画像の画素)
+  - どれも任意。決めた項目だけ出す。
+
+### 囲う操作
+
+- 「Figure Annotations」パネル(`FigureAnnotationPanel.vue`、右サイドバー)の `Draw plot area` / `Draw legend area` を押すと、
+  次のドラッグ 1 回がその矩形になる(`canvasHandler.annotationTarget`)。ドラッグ中の仮表示は矩形選択と同じ `tempMaskCanvas`。
+  確定した矩形は点線の枠(`CanvasAnnotations.vue`)で常に表示し、パネルで消せる。
+  ドラッグ直後に発火する click で点が追加されないよう、確定後の最初の click は捨てる。
+- マーカーは同じパネルで、今の系列について形・塗り・大きさを選ぶ。
+
+### 形式
+
+取り込み形式に任意フィールドを足す(**v1 のまま**。v1 は未知フィールドを無視する約束なので、新しい文書を古い starry-digitizer に
+渡しても読めるし、古い文書はそのまま有効)。版は上げない。
+
+```jsonc
+{
+  "plot_area":   { "x": 150, "y": 120, "width": 900, "height": 730 } | null,   // 元画像の画素、左上の角が原点
+  "legend_area": { "x": 700, "y": 140, "width": 200, "height": 120 } | null,
+  "series": [{ "...": "...", "marker": { "shape": "circle", "fill": "open", "size_px": 12 } | null }]
+}
+```
+
+- 取り込み時に読み、`AxisSet` / `Dataset` に入れる(検出器が出した矩形・マーカーを人が直す、もできる)。
+- **書き出し**: File → `Export Data (JSON)` を足す。中身は編集ログの `final` と同じ `buildFinalDocument()` で、レビュー中でなくても
+  使える(手で取った図も学習データにできる)。`final` にも同じ項目が入る。
+
+---
+
+## 既知の課題(別課題、今回は直さない)
+
+- **プロジェクト読み込み後、拡大鏡の画像が更新されない可能性がある(未確認)**。`projectFileOperations.ts` の `loadProjectFromFile()` が、
+  シングルトンの `canvasHandler` / リポジトリを reactive proxy を通さずに書き換えている(`setUploadImageUrl()` など)ため、
+  `MagnifierImage.vue` などが再描画されないはず。本機能の取り込み(`autoExtractionOperations.ts`)で同じ症状が出て、`reactive()` の
+  proxy 経由で書き換えるように直した(第 1 段階)。プロジェクト読み込み側は未修正・未再現なので、まず再現を確かめること。
+

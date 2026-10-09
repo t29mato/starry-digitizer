@@ -32,8 +32,10 @@ import { Point } from '@/@types/types'
 import { interpolator } from '@/instanceStore/applicationServiceInstances'
 import {
   canvasHandler,
+  confidenceReview,
   historyManager,
 } from '@/instanceStore/applicationServiceInstances'
+import { isLowConfidence } from '@/application/utils/confidenceReview'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { MANUAL_MODE, STYLE } from '@/constants'
 
@@ -42,6 +44,7 @@ export default defineComponent({
     return {
       interpolator,
       canvasHandler,
+      confidenceReview,
       historyManager,
       datasetRepository,
       pointOpacity: STYLE.POINT_OPACITY,
@@ -74,6 +77,16 @@ export default defineComponent({
 
       if (this.isManuallyAdded && this.interpolator.isActive) {
         return '#6a5acd'
+      }
+
+      // INFO: score below the confidence-review threshold (docs/design/
+      // auto-extraction-review-design.md, "2."). Deep pink clashes with
+      // neither the selection red nor any View All dataset color.
+      if (
+        !this.isTemporary &&
+        isLowConfidence(this.point.score, this.confidenceReview.threshold)
+      ) {
+        return '#ff1493'
       }
 
       // Use dataset color if provided (for show all datasets mode)

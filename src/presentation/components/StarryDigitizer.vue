@@ -24,6 +24,9 @@
         <extractor-settings
           :initialExtractorStrategy="initialExtractorStrategy"
         ></extractor-settings>
+        <confidence-review-panel></confidence-review-panel>
+        <series-editing-panel></series-editing-panel>
+        <figure-annotation-panel></figure-annotation-panel>
         <p class="text-caption text-right">
           <!-- INFO: vバージョン#actionsのビルド番号 -->
           {{ appVerAndBuildInfo }}
@@ -44,11 +47,17 @@ import { version } from '../../../package.json'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'
 import DataTable from '@/presentation/components/Export/DataTable.vue'
 import ReviewSessionPanel from '@/presentation/components/Review/ReviewSessionPanel.vue'
+import SeriesEditingPanel from '@/presentation/components/Review/SeriesEditingPanel.vue'
+import ConfidenceReviewPanel from '@/presentation/components/Review/ConfidenceReviewPanel.vue'
+import FigureAnnotationPanel from '@/presentation/components/Review/FigureAnnotationPanel.vue'
 
 export default defineComponent({
   components: {
     DataTable,
     ReviewSessionPanel,
+    SeriesEditingPanel,
+    ConfidenceReviewPanel,
+    FigureAnnotationPanel,
     MagnifierMain,
     CanvasHeader,
     CanvasMain,

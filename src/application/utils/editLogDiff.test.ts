@@ -37,6 +37,7 @@ describe('diffReviewState', () => {
       kept: 4,
       moved: 0,
       deleted: 0,
+      deleted_by_threshold: 0,
       added: 0,
       reassigned: 0,
     })
@@ -87,7 +88,7 @@ describe('diffReviewState', () => {
       { series: 1, index: 0, dx: 3, dy: 4, distance: 5 },
     ])
     expect(details.deleted).toEqual([
-      { series: 0, index: 1, px: [20, 20], score: 0.8 },
+      { series: 0, index: 1, px: [20, 20], score: 0.8, by_threshold: false },
     ])
     expect(details.added).toEqual([{ dataset: 'A', px: [50, 50] }])
   })
@@ -184,5 +185,22 @@ describe('diffReviewState', () => {
       reference_points_changed: 0,
       scale_changed: 0,
     })
+  })
+
+  test('points removed with the confidence threshold are flagged', () => {
+    const current: ReviewState = {
+      axes: axes(),
+      series: [
+        {
+          label: 'A',
+          points: [p(0, 0, 10, 10, 0.9)],
+          scoreRemovedPoints: [p(0, 1, 20, 20, 0.8)],
+        },
+        { label: 'B', points: [p(1, 0, 30, 30)] },
+      ],
+    }
+    const { summary, details } = diffReviewState(initial, current, 0.5)
+    expect(summary.points).toMatchObject({ deleted: 2, deleted_by_threshold: 1 })
+    expect(details.deleted.map((d) => d.by_threshold)).toEqual([true, false])
   })
 })

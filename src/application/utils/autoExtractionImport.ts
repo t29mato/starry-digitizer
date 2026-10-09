@@ -1,8 +1,10 @@
-import { Point } from '@/@types/types'
+import { MarkerStyle, Point, Rect } from '@/@types/types'
 import {
   AUTO_EXTRACTION_FORMAT,
   AUTO_EXTRACTION_VERSION,
   AutoExtractionDocumentDTO,
+  AutoExtractionMarkerDTO,
+  AutoExtractionRectDTO,
   XY,
 } from '@/application/dto/autoExtractionDTO'
 import { ReviewCalibration } from '@/application/services/reviewSession/reviewSession'
@@ -79,6 +81,9 @@ export function buildImportPlan(
     })
   }
 
+  axisSet.plotArea = parsed.plotArea
+  axisSet.legendArea = parsed.legendArea
+
   const calculator = new AxisSetCalculator(axisSet, {
     x: axisSet.xIsLogScale,
     y: axisSet.yIsLogScale,
@@ -120,6 +125,9 @@ export function buildImportPlan(
     })
     const dataset = new Dataset(series.label, points, seriesIndex + 1)
     dataset.axisSetId = axisSet.id
+    if (series.marker) {
+      dataset.marker = series.marker
+    }
     dataset.visiblePointIds = points.map((p) => p.id)
     return dataset
   })
@@ -230,6 +238,7 @@ export function captureReviewState(
     series: datasets.map((dataset) => ({
       label: dataset.name,
       points: dataset.points.map((p) => ({ ...p })),
+      scoreRemovedPoints: dataset.scoreRemovedPoints.map((p) => ({ ...p })),
     })),
   }
 }
@@ -299,8 +308,29 @@ export function buildFinalDocument(
           origins: points.map((p): XY | null =>
             p.origin ? [p.origin.series, p.origin.index] : null,
           ),
+          marker: toMarkerDTO(dataset.marker),
         }
       }),
+    plot_area: toRectDTO(axisSet.plotArea),
+    legend_area: toRectDTO(axisSet.legendArea),
     source: { tool: 'starry-digitizer', based_on: source },
   }
+}
+
+function toRectDTO(rect: Rect | null): AutoExtractionRectDTO | null {
+  return rect
+    ? { x: rect.xPx, y: rect.yPx, width: rect.widthPx, height: rect.heightPx }
+    : null
+}
+
+// INFO: only the fields that were set; null when nothing is known
+function toMarkerDTO(
+  marker: MarkerStyle | undefined,
+): AutoExtractionMarkerDTO | null {
+  if (!marker) return null
+  const dto: AutoExtractionMarkerDTO = {}
+  if (marker.shape) dto.shape = marker.shape
+  if (marker.fill) dto.fill = marker.fill
+  if (marker.sizePx) dto.size_px = marker.sizePx
+  return Object.keys(dto).length > 0 ? dto : null
 }

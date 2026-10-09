@@ -1,4 +1,5 @@
 import {
+  buildDataDocument,
   buildEditLog,
   currentReviewDiff,
   hasAutoExtractionUrlParam,
@@ -103,6 +104,15 @@ describe('autoExtractionOperations (no image element loaded)', () => {
       undo: 2,
       redo: 0,
     })
+  })
+
+  test('buildDataDocument works with or without a review', async () => {
+    await loadAutoExtraction(doc)
+    reviewSession.clear()
+    const data = buildDataDocument()
+    expect(data.source).toEqual({ tool: 'starry-digitizer', based_on: null })
+    expect(data.series.map((s) => s.label)).toEqual(['A', 'B'])
+    expect(data.series[1].points_value?.[0][0]).toBeCloseTo(5)
   })
 
   test('a document without series still leaves one dataset to work in', async () => {

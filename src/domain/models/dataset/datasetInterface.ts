@@ -1,4 +1,4 @@
-import { Coord, Point } from '@/@types/types'
+import { Coord, MarkerStyle, Point } from '@/@types/types'
 import { Vector } from '../axisSet/axisSetInterface'
 
 export type Points = Point[]
@@ -12,6 +12,8 @@ export interface DatasetInterface {
   name: string
   color?: string
   axisSetId: number
+  marker?: MarkerStyle
+  scoreRemovedPoints: Point[]
   points: Point[]
   visiblePointIds: number[]
   manuallyAddedPointIds: number[]
@@ -51,7 +53,14 @@ export interface DatasetInterface {
   activatePointsInRectangleArea(
     topLeftCoord: Coord,
     bottomRightCoord: Coord,
+    additive?: boolean,
   ): void
+  activatePointsInPolygon(polygon: Coord[], additive?: boolean): void
+  appendPoints(points: Point[]): number[]
+  takePoints(ids: number[]): Point[]
+  mergeDuplicatePoints(maxDistancePx: number): number
+  removePointsBelowScore(threshold: number): number
+  restoreScoreRemovedPoints(): number
   pointsInRectangleArea(topLeftCoord: Coord, bottomRightCoord: Coord): Points
   pointsSortedByXDescending(): Points
   pointsSortedByYAscending(): Points

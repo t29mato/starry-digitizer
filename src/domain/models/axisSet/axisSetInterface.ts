@@ -1,5 +1,5 @@
 import { AxisInterface } from '../axis/axisInterface'
-import { Coord, PointMode } from '@/@types/types'
+import { Coord, PointMode, Rect } from '@/@types/types'
 
 // TODO: VectorはDatasetInterfaceでも利用しており共通Typeの場所を用意するべきか検討する
 export type Vector = {
@@ -26,6 +26,8 @@ export interface AxisSetInterface {
   considerGraphTilt: boolean
   isAdjusting: boolean
   isVisible: boolean
+  plotArea: Rect | null
+  legendArea: Rect | null
 
   get hasAtLeastOneAxis(): boolean
   get hasXAxis(): boolean

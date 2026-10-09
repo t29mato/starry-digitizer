@@ -61,6 +61,10 @@ export default defineComponent({
           { action: 'Activate all points', shortcut: '⌘A' },
           { action: 'Deactivate points', shortcut: 'Esc' },
           { action: 'Delete active points', shortcut: 'Delete / Backspace' },
+          {
+            action: 'Next / previous low-confidence point',
+            shortcut: 'N / ⇧N',
+          },
           { action: 'Move active point/axis (1px)', shortcut: '↑ ↓ ← →' },
           {
             action: 'Move active point/axis (10px)',

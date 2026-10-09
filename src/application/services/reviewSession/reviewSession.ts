@@ -42,6 +42,8 @@ export type EditLog = {
   exported_at: string
   elapsed_ms: number
   move_tolerance_px: number
+  // INFO: the confidence-review threshold at export time (null if unknown)
+  score_threshold: number | null
   summary: EditLogSummary & {
     events: { total: number; undo: number; redo: number }
   }
@@ -115,6 +117,7 @@ export class ReviewSession {
     final: AutoExtractionDocumentDTO,
     now: Date = new Date(),
     moveTolerancePx = DEFAULT_MOVE_TOLERANCE_PX,
+    scoreThreshold: number | null = null,
   ): EditLog | null {
     if (!this.data) return null
     const { summary, details } = diffReviewState(
@@ -131,6 +134,7 @@ export class ReviewSession {
       exported_at: now.toISOString(),
       elapsed_ms: now.getTime() - Date.parse(this.data.importedAt),
       move_tolerance_px: moveTolerancePx,
+      score_threshold: scoreThreshold,
       summary: {
         ...summary,
         events: {

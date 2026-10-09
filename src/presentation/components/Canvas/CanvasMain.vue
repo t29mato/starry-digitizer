@@ -34,6 +34,7 @@
       }"
       id="interpolationGuideCanvas"
     ></canvas>
+    <canvas-annotations></canvas-annotations>
     <canvas-axis-set-guide></canvas-axis-set-guide>
     <canvas-axis-set></canvas-axis-set>
     <canvas-points></canvas-points>
@@ -52,6 +53,7 @@ import {
 import { Vector } from '@/domain/models/axisSet/axisSetInterface'
 import { Coord, Point } from '@/@types/types'
 
+import CanvasAnnotations from './CanvasAnnotations.vue'
 import { getMouseCoordFromMouseEvent } from '@/presentation/utils/mouseEventUtilities'
 import { getRectCoordsFromDragCoords } from '@/presentation/utils/dragRectangleCalculator'
 
@@ -68,9 +70,11 @@ import {
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 import { MANUAL_MODE } from '@/constants'
+import { goToLowConfidencePoint } from '@/application/utils/confidenceReviewOperations'
 
 export default defineComponent({
   components: {
+    CanvasAnnotations,
     CanvasAxisSet,
     CanvasPoints,
     CanvasCursor,
@@ -95,6 +99,9 @@ export default defineComponent({
       // INFO: 直前のmousemoveでカーソルが画像内にいたかどうか。
       // 画像から出た最初のイベントで端にクランプするために使う
       cursorWasOnImage: false,
+      // INFO: the click that follows the drag drawing a figure annotation
+      // must not also add a point / axis
+      suppressNextClick: false,
     }
   },
   async mounted() {
@@ -188,6 +195,10 @@ export default defineComponent({
     },
     click(e: MouseEvent): void {
       if (this.confirmer.isActive) return
+      if (this.suppressNextClick) {
+        this.suppressNextClick = false
+        return
+      }
 
       this.point(e)
 
@@ -269,25 +280,63 @@ export default defineComponent({
 
       this.canvasHandler.mouseDown(xPx, yPx)
     },
-    mouseUp() {
+    mouseUp(e: MouseEvent) {
       if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
+      const rect = this.canvasHandler.rectangle
+      const scale = this.canvasHandler.scale
+      const { topLeftCoord, bottomRightCoord } = getRectCoordsFromDragCoords(
+        { xPx: rect.startX / scale, yPx: rect.startY / scale },
+        { xPx: rect.endX / scale, yPx: rect.endY / scale },
+      )
+
+      const annotationTarget = this.canvasHandler.annotationTarget
+      if (annotationTarget) {
+        this.canvasHandler.clearTempMask()
+        this.canvasHandler.setAnnotationTarget(null)
+        this.suppressNextClick = true
+        const widthPx = bottomRightCoord.xPx - topLeftCoord.xPx
+        const heightPx = bottomRightCoord.yPx - topLeftCoord.yPx
+        // INFO: a plain click (no drag) cancels instead of making a 0x0 box
+        if (widthPx < 1 || heightPx < 1) return
+        this.historyManager.capture(
+          annotationTarget === 'plotArea'
+            ? 'annotation.plot-area'
+            : 'annotation.legend-area',
+        )
+        this.axisSetRepository.activeAxisSet[annotationTarget] = {
+          xPx: topLeftCoord.xPx,
+          yPx: topLeftCoord.yPx,
+          widthPx,
+          heightPx,
+        }
+        return
+      }
+
       this.canvasHandler.mouseUp()
 
-      // INFO: EDITモードの場合にpointの複数選択を行う
-      if (this.canvasHandler.manualMode === 1) {
-        const rect = this.canvasHandler.rectangle
-        const scale = this.canvasHandler.scale
+      // INFO: EDITモードの場合にpointの複数選択を行う。
+      // Ctrl/⌘を押していれば今の選択に足す
+      if (this.canvasHandler.manualMode === MANUAL_MODE.EDIT) {
+        const additive = e.ctrlKey || e.metaKey
+        const dataset = this.datasetRepository.activeDataset
 
-        const { topLeftCoord, bottomRightCoord } = getRectCoordsFromDragCoords(
-          { xPx: rect.startX / scale, yPx: rect.startY / scale },
-          { xPx: rect.endX / scale, yPx: rect.endY / scale },
-        )
+        if (this.canvasHandler.selectionShape === 'lasso') {
+          dataset.activatePointsInPolygon(
+            this.canvasHandler.lassoPath.map((c) => ({
+              xPx: c.xPx / scale,
+              yPx: c.yPx / scale,
+            })),
+            additive,
+          )
+          return
+        }
 
-        this.datasetRepository.activeDataset.activatePointsInRectangleArea(
+        dataset.activatePointsInRectangleArea(
           topLeftCoord,
           bottomRightCoord,
+          additive,
         )
 
         return
@@ -424,6 +473,8 @@ export default defineComponent({
         'a',
         'e',
         'd',
+        'n',
+        'N',
       ]
 
       return whiteList.includes(e.key)
@@ -461,6 +512,10 @@ export default defineComponent({
           return true
         case 'd':
           this.canvasHandler.setManualMode(2)
+          return true
+        case 'n':
+        case 'N':
+          goToLowConfidencePoint(e.shiftKey ? -1 : 1)
           return true
       }
       return false

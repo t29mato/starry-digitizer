@@ -197,3 +197,57 @@ describe('captureReviewState', () => {
     expect(captured.series[0].points[0].xPx).toBe(1)
   })
 })
+
+describe('figure annotations (plot/legend area, markers)', () => {
+  test('are imported into the axis set / datasets and exported back', () => {
+    const imported = plan({
+      plot_area: { x: 10, y: 20, width: 300, height: 200 },
+      legend_area: { x: 200, y: 30, width: 50, height: 40 },
+      series: [
+        { points_px: [[1, 1]], marker: { shape: 'square', size_px: 8 } },
+        { points_px: [[2, 2]] },
+      ],
+    })
+    expect(imported.axisSet.plotArea).toEqual({
+      xPx: 10,
+      yPx: 20,
+      widthPx: 300,
+      heightPx: 200,
+    })
+    expect(imported.datasets[0].marker).toEqual({ shape: 'square', sizePx: 8 })
+    expect(imported.datasets[1].marker).toBeUndefined()
+
+    imported.datasets[1].marker = { fill: 'open' }
+    const final = buildFinalDocument(
+      [imported.axisSet],
+      imported.datasets,
+      null,
+      null,
+    )
+    expect(final.plot_area).toEqual({ x: 10, y: 20, width: 300, height: 200 })
+    expect(final.legend_area).toEqual({ x: 200, y: 30, width: 50, height: 40 })
+    expect(final.series.map((s) => s.marker)).toEqual([
+      { shape: 'square', size_px: 8 },
+      { fill: 'open' },
+    ])
+
+    const reparsed = parseAutoExtraction(JSON.parse(JSON.stringify(final)))
+    expect(reparsed.legendArea).toEqual(imported.axisSet.legendArea)
+    expect(reparsed.series[0].marker).toEqual({ shape: 'square', sizePx: 8 })
+  })
+
+  test('nothing set: nulls', () => {
+    const imported = plan({ series: [{ points_px: [[1, 1]] }] })
+    imported.datasets[0].marker = {}
+    const final = buildFinalDocument(
+      [imported.axisSet],
+      imported.datasets,
+      null,
+      null,
+    )
+    expect(final.plot_area).toBeNull()
+    expect(final.legend_area).toBeNull()
+    expect(final.series[0].marker).toBeNull()
+  })
+})
+

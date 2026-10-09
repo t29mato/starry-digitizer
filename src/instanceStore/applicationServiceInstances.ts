@@ -7,6 +7,7 @@ import { MagnifierManager } from '@/application/services/magnifier/manager/magni
 import { ProjectService } from '@/application/services/projectService/projectService'
 import { HistoryManager } from '@/application/services/historyManager/historyManager'
 import { ReviewSession } from '@/application/services/reviewSession/reviewSession'
+import { ConfidenceReview } from '@/application/services/confidenceReview/confidenceReview'
 import { axisSetRepository } from '@/instanceStore/repositoryInatances'
 import { datasetRepository } from '@/instanceStore/repositoryInatances'
 
@@ -23,6 +24,12 @@ export const magnifier = new MagnifierManager().getInstance()
 // ReviewSessionPanel.vue must still re-render. See docs/design/
 // auto-extraction-review-design.md.
 export const reviewSession = reactive(new ReviewSession()) as ReviewSession
+
+// ConfidenceReview: reactive for the same reason (the `n` shortcut in
+// CanvasMain and the panel both drive it).
+export const confidenceReview = reactive(
+  new ConfidenceReview(),
+) as ConfidenceReview
 
 // ProjectService: Directly instantiated to ensure same canvasHandler instance
 export const projectService = new ProjectService(

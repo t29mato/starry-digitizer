@@ -19,7 +19,13 @@ export type ReviewAxesState = {
   yIsLogScale: boolean
 }
 
-export type ReviewSeriesState = { label: string; points: Point[] }
+export type ReviewSeriesState = {
+  label: string
+  points: Point[]
+  // INFO: points taken out with the confidence threshold (still deleted
+  // as far as the result goes, but reported separately)
+  scoreRemovedPoints?: Point[]
+}
 
 export type ReviewState = {
   series: ReviewSeriesState[]
@@ -33,6 +39,7 @@ export type EditLogSummary = {
     kept: number
     moved: number
     deleted: number
+    deleted_by_threshold: number
     added: number
     reassigned: number
   }
@@ -66,6 +73,7 @@ export type EditLogDetails = {
     index: number
     px: [number, number]
     score: number | null
+    by_threshold: boolean
   }[]
   added: { dataset: string; px: [number, number] }[]
   series_mapping: {
@@ -87,7 +95,15 @@ export function diffReviewState(
   // INFO: where each imported point ended up: dataset position in
   // current.series + the point itself
   const finalByOrigin = new Map<string, { dataset: number; point: Point }>()
+  const removedByThreshold = new Set<string>()
   current.series.forEach((dataset, datasetIndex) => {
+    dataset.scoreRemovedPoints?.forEach((point) => {
+      if (point.origin) {
+        removedByThreshold.add(
+          originKey(point.origin.series, point.origin.index),
+        )
+      }
+    })
     dataset.points.forEach((point) => {
       if (point.origin) {
         finalByOrigin.set(originKey(point.origin.series, point.origin.index), {
@@ -115,13 +131,15 @@ export function diffReviewState(
     series.points.forEach((initialPoint) => {
       const origin = initialPoint.origin
       if (!origin) return
-      const found = finalByOrigin.get(originKey(origin.series, origin.index))
+      const key = originKey(origin.series, origin.index)
+      const found = finalByOrigin.get(key)
       if (!found) {
         details.deleted.push({
           series: origin.series,
           index: origin.index,
           px: [initialPoint.xPx, initialPoint.yPx],
           score: initialPoint.score ?? null,
+          by_threshold: removedByThreshold.has(key),
         })
         return
       }
@@ -199,6 +217,8 @@ export function diffReviewState(
         kept,
         moved: details.moved.length,
         deleted: details.deleted.length,
+        deleted_by_threshold: details.deleted.filter((d) => d.by_threshold)
+          .length,
         added: details.added.length,
         reassigned,
       },

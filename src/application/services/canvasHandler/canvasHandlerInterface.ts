@@ -1,4 +1,9 @@
-import { ManualMode, MaskMode } from '@/@types/types'
+import {
+  AnnotationTarget,
+  ManualMode,
+  MaskMode,
+  SelectionShape,
+} from '@/@types/types'
 import { Coord } from '@/@types/types'
 
 export interface CanvasHandlerInterface {
@@ -20,6 +25,9 @@ export interface CanvasHandlerInterface {
   uploadImageUrl: string
   penToolSizePx: number
   eraserSizePx: number
+  selectionShape: SelectionShape
+  lassoPath: Coord[]
+  annotationTarget: AnnotationTarget | null
   get originalSizeMaskCanvasColors(): Uint8ClampedArray
   get originalImageCanvasColors(): Uint8ClampedArray
   get colorSwatches(): string[]
@@ -29,7 +37,11 @@ export interface CanvasHandlerInterface {
   initializeImageElement(imagePath: string): void
   getDivElementById(id: string): HTMLDivElement
   mouseDown(xPx: number, yPx: number): void
-  mouseDragInManualMode(): void
+  mouseDragInManualMode(xPx?: number, yPx?: number): void
+  drawLassoPath(): void
+  setSelectionShape(shape: SelectionShape): void
+  setAnnotationTarget(target: AnnotationTarget | null): void
+  scrollToCoord(coord: Coord): void
   mouseDragInMaskMode(xPx: number, yPx: number): void
   mouseDrag(xPx: number, yPx: number): void
   mouseUp(): void
