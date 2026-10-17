@@ -817,6 +817,7 @@ async function commit() {
 | `confirmImageReplace` | `boolean` | `true` | Ask before replacing an image that already has axes/points. |
 | `confirm` | `ConfirmDialog` | `DEFAULT_CONFIRM` (`window.confirm`) | Dialog used for every "are you sure?" the digitizer asks. See [Confirmation dialogs](#confirmation-dialogs-confirm). |
 | `updateDebounceMs` | `number` | `300` | Debounce for `update:project` / `change`. |
+| `autoService` | `HttpAutoServiceConfig \| AutoService` | — | Where the server-side automatic features (axis **Auto-place**, **Server Extraction**) live. Omitted = they do not exist. Even when given, each feature is shown only if the service's capabilities answer lists it. See [Server-side automatic features](#server-side-automatic-features-autoservice). |
 | `effectiveDigits` | `number` | `4` | Significant digits the extracted values are rounded to (1–10). Overrides the in-app "Effective digits" field, so pass it when you hide the data table (`features.dataTable: false`) or want to own the precision. |
 
 `image` and `project` are watched: assigning new values re-initializes the component,
@@ -836,6 +837,7 @@ is watched too and applies immediately, so a host can drive it from its own cont
 | `extractionPanel` | `true` | Manual / automatic extraction. |
 | `magnifier` | `true` | The magnifier. |
 | `dataTable` | `true` | The table of extracted values. |
+| `reviewTools` | `true` | The "Series Editing" (move / split / merge series, merge duplicate points, box or lasso selection) and "Figure Annotations" (plot / legend rectangle, marker style) panels. The auto-extraction review and confidence review panels show themselves only when there is something to review. |
 | `keyboardShortcuts` | `true` | The default the three `keyboard*` groups below fall back to; it owns no key of its own. `false` alone still means what it always meant — the canvas listens for nothing, registers no listener, and drops out of the tab order. See [Keyboard shortcuts](#keyboard-shortcuts). |
 | `keyboardHistory` | `keyboardShortcuts` | `⌘Z` / `⇧⌘Z` (undo / redo). Turn it off in a host that owns `⌘Z`: the digitizer then neither acts on the key nor calls `preventDefault()` on it, so the host's own listener is the only one that sees it. |
 | `keyboardFile` | `keyboardShortcuts` | `⌘S` / `⌘O` (save / load project ZIP). Same nature as `keyboardHistory` — page-wide keys a host may want for its own save. `features.zipExportImport` still has to be on for either key to do anything. |
@@ -997,7 +999,9 @@ undo/redo state changed.
 
 Error codes (`DigitizerErrorCode`): `IMAGE_LOAD_FAILED`, `INVALID_IMAGE_TYPE`,
 `DTO_VERSION_UNSUPPORTED`, `PROJECT_INVALID`, `ZIP_INVALID`, `EXPORT_FAILED`,
-`AXIS_SET_ALREADY_CALIBRATED`. The same list is exported as a value,
+`AXIS_SET_ALREADY_CALIBRATED`, `AUTO_EXTRACTION_INVALID`, `AUTO_SERVICE_FAILED`
+(only for an explicit Auto-place / Extract press — the capabilities check never
+reports). The same list is exported as a value,
 `DIGITIZER_ERROR_CODES` — read it instead of copying the union, so a code added
 here shows up on your side too. `isDigitizerErrorLike(e)` is the shape check
 that goes with it: `e instanceof DigitizerError` is unreliable when the page
@@ -1286,6 +1290,11 @@ state, where there is nothing to lose.
 | Flip the X or Y axis to/from log scale | 1 each |
 | "Consider graph tilt" | 1 |
 | Switch the calibration mode (2 Points / 4 Points) | 1 |
+| Apply an axis **Auto-place** proposal | 1 — both axes under the one entry; asking for the proposal changes nothing |
+| **Server Extraction** ("Extract") | 1 — however many draft datasets it creates |
+| Confidence review: remove points below the threshold / restore them | 1 each |
+| Series editing: move the selection to a series, split it into a new series, merge a series into another, merge duplicate points | 1 each |
+| Draw or clear a plot / legend area, change a dataset's marker style | 1 each |
 
 **Not captured, on purpose:**
 
@@ -1339,6 +1348,41 @@ expected to store the DTO verbatim without interpreting it, so:
 ```ts
 import { migrateProject, PROJECT_DTO_VERSION, createEmptyProject } from 'starry-digitizer'
 ```
+
+### Server-side automatic features (`autoService`)
+
+Two features run on a server rather than in the browser: **Auto-place** (the
+server reads the tick labels and proposes a calibration; the user applies it
+or discards it) and **Server Extraction** (MarkerNet finds markers, LineFormer
+finds lines; each series becomes a draft dataset). The API is the one of the
+[wpd-auto](https://github.com/starrydata/wpd-auto) backend. Design notes, the
+pixel convention and what a host has to provide:
+[`docs/design/auto-service.md`](docs/design/auto-service.md).
+
+```vue
+<!-- a same-origin relay on the host's backend (recommended for https pages) -->
+<StarryDigitizer :auto-service="{ baseUrl: '/api/v4/digitizer-auto' }" />
+```
+
+- The address comes from the host; nothing is hard-coded in the library.
+  Requests are `POST {baseUrl}/calibrate`, `POST {baseUrl}/extract?method=…`
+  and `GET {capabilitiesUrl}` (default `{baseUrl}/capabilities`, answering
+  `{ "features": ["auto_axis", "markernet", "lineformer"] }`).
+- **The server decides what is shown.** A feature appears only when the
+  capabilities answer lists it. No service, unreachable, 401 / 403 / 404 /
+  5xx, a timeout (3 s) or an answer of the wrong shape all mean the same
+  thing: nothing is shown and no error is raised. An https page never calls an
+  http service (mixed content); the features are hidden instead.
+- A host that already knows the answer passes `features: [...]` and no
+  capabilities request is made. A host that relays through its own job queue
+  implements `AutoService` (`capabilities()`, `calibrate(image)`,
+  `extract(image, request)` resolving with the backend's JSON bodies as they
+  are) and passes that object instead of a config.
+- The backend returns pixels only; values always come from the digitizer's
+  calibration, so correcting an axis later corrects every extracted value.
+- Composing the panels yourself: call `configureAutoService(ctx, config)` from
+  `starry-digitizer/core` and place `<AutoPlacePanel>` /
+  `<ServerExtractionPanel>` from `starry-digitizer/vue`.
 
 ### Heavy assets (`assetBaseUrl`)
 

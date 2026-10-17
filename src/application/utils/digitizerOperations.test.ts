@@ -15,6 +15,8 @@ import { Dataset } from '@/domain/models/dataset/dataset'
 import { createEmptyProject } from '@/application/dto/projectDTO'
 import { DigitizerError } from '@/application/errors'
 import { MANUAL_MODE, MASK_MODE, POINT_MODE } from '@/constants'
+import { ReviewSession } from '@/application/services/reviewSession/reviewSession'
+import { AutoFeatures } from '@/application/services/autoService/autoFeatures'
 
 const DATA_URL = 'data:image/png;base64,iVBORw0KGgo='
 
@@ -73,6 +75,8 @@ const buildContext = () => {
     valueFormat: { effectiveDigits: 4 },
     projectService,
     historyManager,
+    reviewSession: new ReviewSession(),
+    autoFeatures: new AutoFeatures(),
   }
 
   return { ctx: ctx as unknown as DigitizerContext, ...ctx }
@@ -174,6 +178,45 @@ describe('replaceImage', () => {
     )
     expect(c.historyManager.clear).toHaveBeenCalled()
     expect(c.historyManager.canUndo).toBe(false)
+  })
+
+  it('ends an auto-extraction review and drops an Auto-place proposal', async () => {
+    c.reviewSession.start(
+      { axes: null as never, series: [] },
+      null,
+      null,
+      [],
+    )
+    c.autoFeatures.setProposal(
+      {
+        status: 'failed',
+        failureReason: null,
+        frame: null,
+        ySide: 'left',
+        x: {
+          ok: false,
+          scale: null,
+          ticks: [],
+          confidence: null,
+          residualPx: null,
+          failureReason: null,
+        },
+        y: {
+          ok: false,
+          scale: null,
+          ticks: [],
+          confidence: null,
+          residualPx: null,
+          failureReason: null,
+        },
+      },
+      1,
+    )
+
+    await replaceImage(c.ctx, DATA_URL)
+
+    expect(c.reviewSession.isActive).toBe(false)
+    expect(c.autoFeatures.proposal).toBeNull()
   })
 
   it('clears the coordinates of every axis set, not just the active one', async () => {

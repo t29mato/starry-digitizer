@@ -16,6 +16,7 @@ import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetReposit
 import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 import { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
 import { DigitizerError } from '@/application/errors'
+import type { ReviewSession } from '@/application/services/reviewSession/reviewSession'
 import type JSZip from 'jszip'
 
 // INFO: jszip is loaded on demand, not at module scope. It is ~100 kB min and
@@ -43,6 +44,9 @@ export class ProjectService implements ProjectServiceInterface {
   private axisSetRepository: AxisSetRepositoryInterface
   private datasetRepository: DatasetRepositoryInterface
   private canvasHandler: CanvasHandlerInterface
+  // INFO: optional so the service still works on its own (tests, a host that
+  // builds one by hand); the DigitizerContext always passes its session.
+  private reviewSession?: ReviewSession
 
   // INFO: the same repositories again, but as the reactive() proxies the
   // DigitizerContext hands out. `revision` is a computed, and a computed only
@@ -72,10 +76,12 @@ export class ProjectService implements ProjectServiceInterface {
     axisSetRepository: AxisSetRepositoryInterface,
     datasetRepository: DatasetRepositoryInterface,
     canvasHandler: CanvasHandlerInterface,
+    reviewSession?: ReviewSession,
   ) {
     this.axisSetRepository = axisSetRepository
     this.datasetRepository = datasetRepository
     this.canvasHandler = canvasHandler
+    this.reviewSession = reviewSession
 
     this.observedAxisSetRepository = reactive(
       axisSetRepository,
@@ -138,6 +144,9 @@ export class ProjectService implements ProjectServiceInterface {
         axisSet.pointMode,
         axisSet.isVisible,
       )
+      ;[axisSet.plotArea, axisSet.legendArea].forEach((rect) => {
+        touch(rect?.xPx, rect?.yPx, rect?.widthPx, rect?.heightPx)
+      })
       // INFO: x2y2 is deliberately absent — it is derived at runtime and not
       // part of AxisSetDTO (see fromAxisSetDTO).
       ;[axisSet.x1, axisSet.x2, axisSet.y1, axisSet.y2].forEach((axis) => {
@@ -148,7 +157,11 @@ export class ProjectService implements ProjectServiceInterface {
     touch(datasetRepository.activeDatasetId)
     datasetRepository.datasets.forEach((dataset) => {
       touch(dataset.id, dataset.name, dataset.axisSetId, dataset.externalId)
+      touch(dataset.marker?.shape, dataset.marker?.fill, dataset.marker?.sizePx)
       dataset.points.forEach((point) => {
+        touch(point.id, point.xPx, point.yPx)
+      })
+      dataset.scoreRemovedPoints.forEach((point) => {
         touch(point.id, point.xPx, point.yPx)
       })
       // INFO: forEach(touch) reads every element AND the array itself, which
@@ -161,7 +174,7 @@ export class ProjectService implements ProjectServiceInterface {
   }
 
   toProjectDTO(): ProjectDTO {
-    return {
+    const dto: ProjectDTO = {
       version: PROJECT_DTO_VERSION,
       timestamp: new Date().toISOString(),
       axisSets: this.axisSetRepository.axisSets.map(toAxisSetDTO),
@@ -175,6 +188,13 @@ export class ProjectService implements ProjectServiceInterface {
         manualMode: this.canvasHandler.manualMode,
       },
     }
+    // INFO: only while reviewing an auto-extraction import, so the edit log
+    // keeps counting from the imported state across save → reopen
+    const reviewSessionDTO = this.reviewSession?.toDTO()
+    if (reviewSessionDTO) {
+      dto.reviewSession = reviewSessionDTO
+    }
+    return dto
   }
 
   restoreProject(project: ProjectDTO): void {
@@ -236,6 +256,9 @@ export class ProjectService implements ProjectServiceInterface {
     if (dto.canvasHandler) {
       this.canvasHandler.setManualMode(dto.canvasHandler.manualMode)
     }
+
+    // INFO: a project saved outside a review ends any review in progress
+    this.reviewSession?.restore(dto.reviewSession)
   }
 
   async exportProject(): Promise<Blob> {

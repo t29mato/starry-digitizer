@@ -1,4 +1,4 @@
-import { Point } from '@/@types/types'
+import { MarkerStyle, Point } from '@/@types/types'
 
 /**
  * DTO (Data Transfer Object) for Dataset
@@ -19,4 +19,10 @@ export interface DatasetDTO {
    * interprets it.
    */
   externalId?: string
+  // INFO: optional, and written only when set, so projects saved before
+  // these existed still load and projects that never use them keep their
+  // shape. `scoreRemovedPoints` holds the points the confidence review took
+  // out below the threshold, so "Restore removed" can bring them back.
+  marker?: MarkerStyle
+  scoreRemovedPoints?: Point[]
 }

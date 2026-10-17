@@ -2,6 +2,7 @@ import { Dataset } from '@/domain/models/dataset/dataset'
 import { DatasetInterface } from '../../models/dataset/datasetInterface'
 import { DatasetRepositoryInterface } from './datasetRepositoryInterface'
 import { Coord } from '@/@types/types'
+import { DATASET_COLORS } from '@/constants'
 
 export class DatasetRepository implements DatasetRepositoryInterface {
   datasets: DatasetInterface[]
@@ -126,6 +127,50 @@ export class DatasetRepository implements DatasetRepositoryInterface {
     )
   }
 
+  private findDataset(id: number): DatasetInterface {
+    const dataset = this.datasets.find((d) => d.id === id)
+    if (!dataset) {
+      throw new Error(`dataset ${id} doesn't exist.`)
+    }
+    return dataset
+  }
+
+  // INFO: series editing (docs/design/auto-extraction-review-design.md, "3.")
+  movePoints(fromId: number, pointIds: number[], toId: number): number[] {
+    if (fromId === toId) return []
+    const from = this.findDataset(fromId)
+    const to = this.findDataset(toId)
+    return to.appendPoints(from.takePoints(pointIds))
+  }
+
+  mergeDatasets(sourceId: number, targetId: number): void {
+    if (sourceId === targetId) return
+    const source = this.findDataset(sourceId)
+    const target = this.findDataset(targetId)
+    target.appendPoints(source.takePoints(source.points.map((p) => p.id)))
+    // INFO: score-removed points belong to the merged series too
+    target.scoreRemovedPoints.push(
+      ...source.scoreRemovedPoints.map((p, i) => ({
+        ...p,
+        id: target.nextPointId + i,
+      })),
+    )
+    this.datasets = this.datasets.filter((d) => d.id !== sourceId)
+    if (this.activeDatasetId === sourceId) {
+      this.setActiveDataset(targetId)
+    }
+  }
+
+  splitPointsToNewDataset(fromId: number, pointIds: number[]): number {
+    const from = this.findDataset(fromId)
+    const id = this.nextDatasetId
+    const dataset = new Dataset(`${from.name} (split)`, [], id)
+    dataset.axisSetId = from.axisSetId
+    this.addDataset(dataset)
+    this.movePoints(fromId, pointIds, id)
+    return id
+  }
+
   toggleShowAllDatasets() {
     this.showAllDatasets = !this.showAllDatasets
   }
@@ -136,17 +181,7 @@ export class DatasetRepository implements DatasetRepositoryInterface {
       return dataset.color
     }
 
-    const colors = [
-      '#2196F3', // Blue
-      '#FF9800', // Orange
-      '#4CAF50', // Green
-      '#F44336', // Red
-      '#9C27B0', // Purple
-      '#00BCD4', // Cyan
-      '#FFEB3B', // Yellow
-      '#795548', // Brown
-    ]
     const index = this.datasets.findIndex((d) => d.id === datasetId)
-    return colors[index % colors.length]
+    return DATASET_COLORS[index % DATASET_COLORS.length]
   }
 }

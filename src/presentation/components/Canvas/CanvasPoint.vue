@@ -57,13 +57,22 @@ import { deletePoint } from '@/application/utils/pointOperations'
 import { MANUAL_MODE, STYLE } from '@/constants'
 import { scaledMarkerSizePx } from '@/application/utils/markerSize'
 import { nearestPointId } from '@/application/utils/pointPicking'
+import { isLowConfidence } from '@/application/utils/confidenceReview'
 
 export default defineComponent({
   setup() {
     const ctx = useDigitizerContext()
     const { interpolator, canvasHandler, datasetRepository } = ctx
+    const { confidenceReview } = ctx
     const options = useDigitizerOptions()
-    return { ctx, interpolator, canvasHandler, datasetRepository, options }
+    return {
+      ctx,
+      interpolator,
+      canvasHandler,
+      datasetRepository,
+      confidenceReview,
+      options,
+    }
   },
   data() {
     return {
@@ -97,6 +106,15 @@ export default defineComponent({
 
       if (this.isManuallyAdded && this.interpolator.isActive) {
         return '#6a5acd'
+      }
+
+      // INFO: score below the confidence-review threshold (docs/design/
+      // auto-extraction-review-design.md, "2.")
+      if (
+        !this.isTemporary &&
+        isLowConfidence(this.point.score, this.confidenceReview.threshold)
+      ) {
+        return STYLE.LOW_CONFIDENCE_POINT_COLOR
       }
 
       // Use dataset color if provided (for show all datasets mode)

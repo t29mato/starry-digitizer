@@ -52,7 +52,7 @@ export function activateAxisSet(ctx: DigitizerContext, id: number): void {
 
   if (!axisSetRepository.axisSets.some((axisSet) => axisSet.id === id)) return
 
-  historyManager.capture()
+  historyManager.capture('axis.activate-axis-set')
   applyActiveAxisSet(ctx, id)
 }
 
@@ -72,7 +72,7 @@ function applyActiveAxisSet(ctx: DigitizerContext, id: number): void {
 export function addAxisSet(ctx: DigitizerContext): void {
   const { axisSetRepository, historyManager } = ctx
 
-  historyManager.capture()
+  historyManager.capture('axis.add-axis-set')
   axisSetRepository.createNewAxisSet()
   applyActiveAxisSet(ctx, axisSetRepository.lastAxisSetId)
 }
@@ -105,7 +105,7 @@ export function removeAxisSet(
   )
     return
 
-  historyManager.capture()
+  historyManager.capture('axis.remove-axis-set')
 
   axisSetRepository.removeAxisSet(id)
 
@@ -130,7 +130,7 @@ export function clearAxisSetCoords(ctx: DigitizerContext): void {
   const activeAxisSet = axisSetRepository.activeAxisSet
   if (!activeAxisSet.hasAtLeastOneAxis) return
 
-  historyManager.capture()
+  historyManager.capture('axis.clear-axis-set-coords')
   activeAxisSet.clearAxisCoords()
 }
 
@@ -167,7 +167,7 @@ export function addAxisCoord(ctx: DigitizerContext, coord: Coord): void {
     )
   }
 
-  historyManager.capture()
+  historyManager.capture('axis.add-axis-coord')
   activeAxisSet.addAxisCoord(coord)
 }
 
@@ -203,7 +203,7 @@ export function setAxisValues(
 
   if (entries.length === 0) return
 
-  historyManager.capture()
+  historyManager.capture('axis.set-axis-values')
 
   entries.forEach(([axisName, value]) => {
     switch (axisName) {
@@ -241,7 +241,7 @@ export function setLogScale(
     axis === 'x' ? activeAxisSet.xIsLogScale : activeAxisSet.yIsLogScale
   if (current === value) return
 
-  historyManager.capture()
+  historyManager.capture('axis.set-log-scale')
   if (axis === 'x') {
     activeAxisSet.setXIsLogScale(value)
     return
@@ -262,7 +262,7 @@ export function setConsiderGraphTilt(
   const activeAxisSet = axisSetRepository.activeAxisSet
   if (activeAxisSet.considerGraphTilt === value) return
 
-  historyManager.capture()
+  historyManager.capture('axis.set-consider-graph-tilt')
   activeAxisSet.considerGraphTilt = value
 }
 
@@ -284,6 +284,6 @@ export function setPointMode(ctx: DigitizerContext, mode: PointMode): void {
       : POINT_MODE.TWO_POINTS
   if (activeAxisSet.pointMode === normalized) return
 
-  historyManager.capture()
+  historyManager.capture('axis.set-point-mode')
   activeAxisSet.pointMode = normalized
 }

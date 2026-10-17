@@ -89,13 +89,13 @@ export class HistoryManager implements HistoryManagerInterface {
     return this.redoStack.length > 0
   }
 
-  capture(): void {
+  capture(action = 'edit'): void {
     this.undoStack.push(this.buildSnapshot())
     if (this.undoStack.length > MAX_HISTORY_SIZE) {
       this.undoStack.shift()
     }
     this.redoStack = []
-    this.notify('capture')
+    this.notify('capture', action)
   }
 
   undo(): void {
@@ -152,7 +152,7 @@ export class HistoryManager implements HistoryManagerInterface {
   // WHICH call moved the stacks, so a host driving a shared undo stack can
   // ignore the 'undo'/'redo' it caused itself instead of treating it as a new
   // user action — that is the loop this design has to avoid.
-  private notify(type: HistoryChangeType): void {
+  private notify(type: HistoryChangeType, action?: string): void {
     if (this.listeners.length === 0) {
       return
     }
@@ -160,6 +160,9 @@ export class HistoryManager implements HistoryManagerInterface {
       type,
       canUndo: this.canUndo,
       canRedo: this.canRedo,
+    }
+    if (action !== undefined) {
+      change.action = action
     }
     // INFO: iterate a copy — a listener may unsubscribe itself (or another)
     // while we are delivering.

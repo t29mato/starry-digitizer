@@ -25,6 +25,7 @@ import { Dataset } from '@/domain/models/dataset/dataset'
 import { PROJECT_DTO_VERSION, ProjectDTO } from '@/application/dto/projectDTO'
 import { DigitizerError } from '@/application/errors'
 import { MANUAL_MODE, POINT_MODE } from '@/constants'
+import { ReviewSession } from '@/application/services/reviewSession/reviewSession'
 import JSZip from 'jszip'
 
 const TRANSPARENT_PNG =
@@ -691,5 +692,86 @@ describe('ProjectService.revision', () => {
     expect(revisions.length).toBeGreaterThan(afterSubscribing)
     expect(revisions).toStrictEqual([...revisions].sort((a, b) => a - b))
     expect(revisions[revisions.length - 1]).toBe(ctx.projectService.revision)
+  })
+})
+
+describe('ProjectService and the auto-extraction review', () => {
+  const startedSession = () => {
+    const session = new ReviewSession()
+    session.start(
+      {
+        axes: {
+          calibrated: false,
+          x1: { xPx: -999, yPx: -999, value: 0 },
+          x2: { xPx: -999, yPx: -999, value: 1 },
+          y1: { xPx: -999, yPx: -999, value: 0 },
+          y2: { xPx: -999, yPx: -999, value: 1 },
+          xIsLogScale: false,
+          yIsLogScale: false,
+        },
+        series: [],
+      },
+      { extractor: 'llm' },
+      null,
+      [],
+    )
+    session.record('point.add')
+    return session
+  }
+
+  const buildService = (session?: ReviewSession) =>
+    new ProjectService(
+      new AxisSetRepository(),
+      new DatasetRepository(),
+      new CanvasHandler(),
+      session,
+    )
+
+  it('writes the review session into the DTO and restores it', () => {
+    const session = startedSession()
+    const dto = buildService(session).toProjectDTO()
+    expect(dto.reviewSession).toEqual(session.data)
+
+    const restored = new ReviewSession()
+    buildService(restored).restoreProject(dto)
+    expect(restored.data).toEqual(session.data)
+  })
+
+  it('omits the field outside a review, and restoring such a DTO ends a review', () => {
+    const dto = buildService(new ReviewSession()).toProjectDTO()
+    expect('reviewSession' in dto).toBe(false)
+
+    const session = startedSession()
+    buildService(session).restoreProject(dto)
+    expect(session.isActive).toBe(false)
+  })
+
+  it('round-trips scores, origins, markers, removed points and annotations', () => {
+    const service = buildService()
+    const dto = buildProjectDTO() as ProjectDTO
+    dto.axisSets[0].plotArea = { xPx: 1, yPx: 2, widthPx: 30, heightPx: 40 }
+    dto.datasets[0].points[0] = {
+      id: 1,
+      xPx: 50,
+      yPx: 50,
+      origin: { series: 0, index: 3 },
+      score: 0.4,
+    }
+    dto.datasets[0].marker = { shape: 'circle', fill: 'open' }
+    dto.datasets[0].scoreRemovedPoints = [{ id: 9, xPx: 5, yPx: 5, score: 0.1 }]
+
+    service.restoreProject(dto)
+    const written = service.toProjectDTO()
+
+    expect(written.axisSets[0].plotArea).toEqual(dto.axisSets[0].plotArea)
+    expect('legendArea' in written.axisSets[0]).toBe(false)
+    expect(written.datasets[0].points[0]).toEqual(dto.datasets[0].points[0])
+    expect(written.datasets[0].marker).toEqual({ shape: 'circle', fill: 'open' })
+    expect(written.datasets[0].scoreRemovedPoints).toEqual(
+      dto.datasets[0].scoreRemovedPoints,
+    )
+    // INFO: a dataset that never used these keeps the shape hosts persist
+    expect('marker' in written.datasets[1]).toBe(false)
+    expect('scoreRemovedPoints' in written.datasets[1]).toBe(false)
   })
 })

@@ -49,7 +49,7 @@ import { Coord } from '@/@types/types'
 export function addPoint(ctx: DigitizerContext, coord: Coord): number {
   const { axisSetRepository, datasetRepository, historyManager } = ctx
 
-  historyManager.capture()
+  historyManager.capture('point.add')
 
   const activeDataset = datasetRepository.activeDataset
   activeDataset.addPoint(coord.xPx, coord.yPx)
@@ -82,7 +82,7 @@ export function extractPoints(ctx: DigitizerContext): void {
   // INFO: the canvas handler is passed here as a PixelSource
   const coords = extractor.execute(canvasHandler)
 
-  historyManager.capture()
+  historyManager.capture('extract.auto')
 
   axisSetRepository.activeAxisSet.inactivateAxis()
   datasetRepository.setPoints(coords)
@@ -105,7 +105,7 @@ export function confirmInterpolation(ctx: DigitizerContext): boolean {
     return false
   }
 
-  historyManager.capture()
+  historyManager.capture('interpolation.confirm')
 
   activeDataset.tempPoints.forEach((tempPoint) => {
     activeDataset.moveTempPointToPoint(tempPoint.id)
@@ -138,7 +138,7 @@ export function deletePoint(ctx: DigitizerContext, pointId: number): void {
     return
   }
 
-  historyManager.capture()
+  historyManager.capture('point.delete')
   activeDataset.clearPoint(pointId)
 
   // INFO: deleting an anchor point changes the curve, so the preview has to be

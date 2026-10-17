@@ -7,7 +7,13 @@ import { extractColorSwatches } from '@/application/utils/colorPaletteUtils'
 
 import { HTMLCanvas } from '@/application/canvas/HTMLCanvas'
 import { MANUAL_MODE, MASK_MODE } from '@/constants'
-import { Coord, ManualMode, MaskMode } from '@/@types/types'
+import {
+  AnnotationTarget,
+  Coord,
+  ManualMode,
+  MaskMode,
+  SelectionShape,
+} from '@/@types/types'
 import { PixelSource } from '@/application/ports/pixelSource'
 
 // INFO: the smallest zoom scaleDown() will go to. Below it the image is too
@@ -116,6 +122,13 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   // component that remounts (a host toggling its canvas column with `v-if`)
   // gets the user's mask back instead of a blank one. See takeMaskSnapshot().
   private detachedMaskSnapshot?: HTMLCanvasElement
+  // INFO: how an EDIT-mode drag selects points (docs/design/
+  // auto-extraction-review-design.md, "3."); lassoPath is in scaled px
+  selectionShape: SelectionShape = 'box'
+  lassoPath: Coord[] = []
+  // INFO: when set, the next drag draws this figure annotation rectangle
+  // instead of doing what the current mode would do ("5.")
+  annotationTarget: AnnotationTarget | null = null
 
   constructor() {
     this.imageElement = new Image()
@@ -388,13 +401,63 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
   mouseDown(xPx: number, yPx: number) {
     this.rectangle.startX = xPx
     this.rectangle.startY = yPx
+    // INFO: a fresh drag must not reuse the previous one's end point
+    this.rectangle.endX = xPx
+    this.rectangle.endY = yPx
+    this.lassoPath = [{ xPx, yPx }]
   }
 
-  mouseDragInManualMode() {
-    if (this.manualMode === MANUAL_MODE.EDIT) {
-      //INFO: only in EDIT mode
-      this.drawDraggedArea()
+  mouseDragInManualMode(xPx?: number, yPx?: number) {
+    if (this.manualMode !== MANUAL_MODE.EDIT) {
+      return
     }
+    //INFO: only in EDIT mode
+    if (
+      this.selectionShape === 'lasso' &&
+      xPx !== undefined &&
+      yPx !== undefined
+    ) {
+      this.lassoPath.push({ xPx, yPx })
+      this.drawLassoPath()
+      return
+    }
+    this.drawDraggedArea()
+  }
+
+  drawLassoPath() {
+    const ctx = this.tempMaskCanvas.context
+    ctx.clearRect(
+      0,
+      0,
+      this.maskCanvas.element.width,
+      this.maskCanvas.element.height,
+    )
+    if (this.lassoPath.length < 2) return
+    ctx.strokeStyle = '#000000ff' // INFO: black, same as the box
+    ctx.beginPath()
+    ctx.moveTo(this.lassoPath[0].xPx, this.lassoPath[0].yPx)
+    this.lassoPath.slice(1).forEach((c) => ctx.lineTo(c.xPx, c.yPx))
+    ctx.closePath()
+    ctx.stroke()
+  }
+
+  setSelectionShape(shape: SelectionShape) {
+    this.selectionShape = shape
+  }
+
+  setAnnotationTarget(target: AnnotationTarget | null) {
+    this.annotationTarget = target
+  }
+
+  // INFO: scrolls the canvas wrapper so that `coord` (original-image px)
+  // sits in the middle, e.g. when stepping through low-confidence points
+  scrollToCoord(coord: Coord) {
+    // INFO: the attached wrapper, never a lookup by id — two digitizers on one
+    // page would otherwise scroll each other's canvas
+    const wrapper = this.attachedWrapper
+    if (!wrapper) return
+    wrapper.scrollLeft = coord.xPx * this.scale - wrapper.clientWidth / 2
+    wrapper.scrollTop = coord.yPx * this.scale - wrapper.clientHeight / 2
   }
 
   mouseDragInMaskMode(xPx: number, yPx: number) {
@@ -417,9 +480,14 @@ export class CanvasHandler implements CanvasHandlerInterface, PixelSource {
     this.rectangle.endX = xPx
     this.rectangle.endY = yPx
 
+    if (this.annotationTarget) {
+      this.drawDraggedArea()
+      return
+    }
+
     //INFO: 現在のモードがmanual modeかmask modeかで処理を分岐
     if (this.manualMode !== MANUAL_MODE.UNSET) {
-      this.mouseDragInManualMode()
+      this.mouseDragInManualMode(xPx, yPx)
       return
     }
 

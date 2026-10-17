@@ -9,6 +9,10 @@ import { ValueFormatManager } from '@/application/services/valueFormat/manager/v
 import { InterpolatorManager } from '@/application/services/interpolator/manager/interpolatorManager'
 import { ProjectService } from '@/application/services/projectService/projectService'
 import { HistoryManager } from '@/application/services/historyManager/historyManager'
+import { ReviewSession } from '@/application/services/reviewSession/reviewSession'
+import { ConfidenceReview } from '@/application/services/confidenceReview/confidenceReview'
+import { ReviewView } from '@/application/services/reviewView/reviewView'
+import { AutoFeatures } from '@/application/services/autoService/autoFeatures'
 import type { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
 import type { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 import type { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
@@ -48,6 +52,17 @@ export interface DigitizerContext {
   valueFormat: ValueFormatInterface
   projectService: ProjectServiceInterface
   historyManager: HistoryManagerInterface
+  // INFO: the auto-extraction review (docs/design/
+  // auto-extraction-review-design.md). `reviewSession` is project state (the
+  // imported state the edit log diffs against, saved with the project);
+  // `confidenceReview` and `reviewView` are view state only.
+  reviewSession: ReviewSession
+  confidenceReview: ConfidenceReview
+  reviewView: ReviewView
+  // INFO: the server-side automatic features (Auto-place, Server Extraction)
+  // and which of them the backend allows. Inert until a host configures a
+  // service — see docs/design/auto-service.md.
+  autoFeatures: AutoFeatures
 }
 
 export function createDigitizerContext(): DigitizerContext {
@@ -58,6 +73,21 @@ export function createDigitizerContext(): DigitizerContext {
     datasetRepository,
     canvasHandler,
   ).getNewInstance()
+  const reviewSession = new ReviewSession()
+  const historyManager = new HistoryManager(
+    axisSetRepository,
+    datasetRepository,
+  )
+  // INFO: capture() already sits right before every undoable edit, so it is
+  // the one place the review's operation log hooks into instead of every
+  // panel logging on its own. Recording only pushes to the session's own
+  // array, so it does not re-enter the history manager.
+  historyManager.subscribe((change) => {
+    if (change.type === 'clear') return
+    reviewSession.record(
+      change.type === 'capture' ? change.action ?? 'edit' : change.type,
+    )
+  })
 
   // INFO: reactive() so that Options API components can expose the members
   // from setup() and keep the same reactivity they had when the singletons
@@ -86,7 +116,12 @@ export function createDigitizerContext(): DigitizerContext {
       axisSetRepository,
       datasetRepository,
       canvasHandler,
+      reviewSession,
     ),
-    historyManager: new HistoryManager(axisSetRepository, datasetRepository),
+    historyManager,
+    reviewSession,
+    confidenceReview: new ConfidenceReview(),
+    reviewView: new ReviewView(),
+    autoFeatures: new AutoFeatures(),
   }) as DigitizerContext
 }

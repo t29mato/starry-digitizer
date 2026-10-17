@@ -3,7 +3,7 @@ import { Coord } from '@/@types/types'
 import { AxisSetInterface, Vector } from './axisSetInterface'
 import { AxisInterface } from '@/domain/models/axis/axisInterface'
 import { POINT_MODE } from '@/constants'
-import { PointMode } from '@/@types/types'
+import { PointMode, Rect } from '@/@types/types'
 
 export class AxisSet implements AxisSetInterface {
   id: number
@@ -20,6 +20,10 @@ export class AxisSet implements AxisSetInterface {
   considerGraphTilt = false
   isAdjusting = false
   isVisible = true
+  // INFO: figure annotations for detector training data (docs/design/
+  // auto-extraction-review-design.md, "5."); null = not drawn
+  plotArea: Rect | null = null
+  legendArea: Rect | null = null
 
   constructor(
     x1: AxisInterface,

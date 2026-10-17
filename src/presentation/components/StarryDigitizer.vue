@@ -3,6 +3,8 @@
     <div class="c__wrapper">
       <div ref="leftSidebar" class="c__left-sidebar">
         <slot name="aside-top" :width="leftSidebarWidth"></slot>
+        <!-- INFO: shows itself only during an auto-extraction review -->
+        <review-session-panel></review-session-panel>
         <image-settings
           v-if="options.features.imageUpload"
           @image-replaced="onImageReplaced"
@@ -12,6 +14,11 @@
         <axis-set-settings
           v-if="options.features.axisPanel"
         ></axis-set-settings>
+        <!-- INFO: shows itself only when the auto service allows it -->
+        <auto-place-panel
+          v-if="options.features.axisPanel"
+          @error="onError"
+        ></auto-place-panel>
         <dataset-manager v-if="options.features.datasetPanel"></dataset-manager>
         <data-table v-if="options.features.dataTable" />
         <slot name="aside-bottom" :width="leftSidebarWidth"></slot>
@@ -27,6 +34,19 @@
         <extractor-settings
           v-if="options.features.extractionPanel"
         ></extractor-settings>
+        <!-- INFO: shows itself only when the auto service allows it -->
+        <server-extraction-panel
+          v-if="options.features.extractionPanel"
+          @error="onError"
+        ></server-extraction-panel>
+        <!-- INFO: shows itself only when some point carries a score -->
+        <confidence-review-panel></confidence-review-panel>
+        <series-editing-panel
+          v-if="options.features.reviewTools"
+        ></series-editing-panel>
+        <figure-annotation-panel
+          v-if="options.features.reviewTools"
+        ></figure-annotation-panel>
         <slot name="right-sidebar-footer" :width="rightSidebarWidth"></slot>
       </div>
     </div>
@@ -46,6 +66,18 @@ import { DatasetManager } from './DatasetManager'
 import { AxisSetManager } from './AxisSetManager'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'
 import DataTable from '@/presentation/components/Export/DataTable.vue'
+import ReviewSessionPanel from '@/presentation/components/Review/ReviewSessionPanel.vue'
+import SeriesEditingPanel from '@/presentation/components/Review/SeriesEditingPanel.vue'
+import ConfidenceReviewPanel from '@/presentation/components/Review/ConfidenceReviewPanel.vue'
+import FigureAnnotationPanel from '@/presentation/components/Review/FigureAnnotationPanel.vue'
+import {
+  AutoPlacePanel,
+  ServerExtractionPanel,
+} from '@/presentation/components/Auto'
+import {
+  configureAutoService,
+  type AutoServiceOption,
+} from '@/application/utils/autoFeatureOperations'
 import {
   createDigitizerContext,
   type DigitizerContext,
@@ -122,6 +154,16 @@ export interface StarryDigitizerProps {
    * or wants to own the precision itself.
    */
   effectiveDigits?: number
+  /**
+   * Where the server-side automatic features (axis Auto-place, Server
+   * Extraction) live: either `{ baseUrl, ... }` for the built-in HTTP client
+   * or an object implementing `AutoService` (e.g. one that relays through the
+   * host's own job queue). Omitted = the features do not exist. Even when
+   * given, a feature is shown only if the service's capabilities answer lists
+   * it; an unreachable service, an HTTP error or a timeout hides everything
+   * without an error. See docs/design/auto-service.md.
+   */
+  autoService?: AutoServiceOption
 }
 
 const props = withDefaults(defineProps<StarryDigitizerProps>(), {
@@ -136,6 +178,7 @@ const props = withDefaults(defineProps<StarryDigitizerProps>(), {
   confirm: undefined,
   updateDebounceMs: 300,
   effectiveDigits: undefined,
+  autoService: undefined,
 })
 
 const emit = defineEmits<{
@@ -410,6 +453,36 @@ defineExpose({
   canRedo,
   context: ctx,
 })
+
+// ---------------------------------------------------------------------------
+// Auto service
+// ---------------------------------------------------------------------------
+// INFO: compared by what it points at, not by identity. A host writing
+// `:auto-service="{ baseUrl: '/relay' }"` in its template hands over a new
+// object on every render, and asking for the capabilities again each time
+// would be a request per keystroke. A service object (AutoService) is
+// compared by identity — it has no address to compare.
+function autoServiceKey(option: AutoServiceOption | undefined): unknown {
+  if (!option || !('baseUrl' in option)) return option
+  return JSON.stringify([
+    option.baseUrl,
+    option.capabilitiesUrl,
+    option.features,
+    option.credentials,
+  ])
+}
+
+watch(
+  () => autoServiceKey(props.autoService),
+  (key, previousKey) => {
+    // INFO: no prop now and none before = leave the context alone, so the
+    // standalone app (which configures its shared context itself) and a
+    // host driving ctx.autoFeatures directly are not reset on mount
+    if (key === undefined && previousKey === undefined) return
+    configureAutoService(ctx, props.autoService)
+  },
+  { immediate: true },
+)
 
 onBeforeUnmount(() => {
   unsubscribeHistory()

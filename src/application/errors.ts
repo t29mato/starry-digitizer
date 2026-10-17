@@ -19,6 +19,15 @@ export const DIGITIZER_ERROR_CODES = [
   // already complete (no `nextAxis` left to fill). A host driving calibration
   // programmatically branches on this instead of parsing the message.
   'AXIS_SET_ALREADY_CALIBRATED',
+  // INFO: an auto-extraction document (starry-digitizer/auto-extraction v1)
+  // that cannot be imported — wrong version, mismatched array lengths, values
+  // without axes. See docs/design/auto-extraction-review-design.md.
+  'AUTO_EXTRACTION_INVALID',
+  // INFO: the auto service (Auto-place / Server Extraction) was asked for an
+  // answer and did not give a usable one: unreachable, an HTTP error, a
+  // timeout, or a body that is not the documented shape. Only raised for an
+  // explicit user action — the capability check never reports, it hides.
+  'AUTO_SERVICE_FAILED',
 ] as const
 
 export type DigitizerErrorCode = (typeof DIGITIZER_ERROR_CODES)[number]

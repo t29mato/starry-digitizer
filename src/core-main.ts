@@ -129,6 +129,113 @@ export { loadImageAsDataUrl } from './application/utils/imageLoader'
 export type { ImageSource } from './application/utils/imageLoader'
 
 // ---------------------------------------------------------------------------
+// Server-side automatic features (Auto-place, Server Extraction)
+// ---------------------------------------------------------------------------
+// INFO: docs/design/auto-service.md. `configureAutoService(ctx, …)` is what
+// the `autoService` prop of <StarryDigitizer> calls; a host composing the
+// panels calls it itself. `createHttpAutoService` is the built-in transport;
+// a host that relays through its own backend implements `AutoService`
+// instead and passes that.
+export {
+  configureAutoService,
+  refreshAutoFeatures,
+} from './application/utils/autoFeatureOperations'
+export type { AutoServiceOption } from './application/utils/autoFeatureOperations'
+export {
+  createHttpAutoService,
+  isBlockedAsMixedContent,
+} from './application/services/autoService/httpAutoService'
+export type { HttpAutoServiceConfig } from './application/services/autoService/httpAutoService'
+export {
+  AUTO_FEATURES,
+  EXTRACTION_METHODS,
+} from './application/services/autoService/autoService'
+export type {
+  AutoService,
+  AutoFeature,
+  ExtractionMethod,
+  ExtractionRequest,
+} from './application/services/autoService/autoService'
+export {
+  requestAutoCalibration,
+  applyAutoCalibration,
+  discardAutoCalibration,
+} from './application/utils/autoCalibrationOperations'
+export {
+  requestServerExtraction,
+  applyServerExtraction,
+  runServerExtraction,
+} from './application/utils/serverExtractionOperations'
+export type {
+  ServerExtractionOptions,
+  ServerExtractionOutcome,
+} from './application/utils/serverExtractionOperations'
+export {
+  parseCalibrationResponse,
+  parseExtractionResponse,
+  BACKEND_PIXEL_OFFSET,
+} from './application/services/autoService/autoServiceWire'
+export type {
+  AutoCalibrationProposal,
+  AutoAxisProposal,
+  ServerExtractionResult,
+  ServerExtractionSeries,
+} from './application/services/autoService/autoServiceWire'
+export type { AutoFeatures } from './application/services/autoService/autoFeatures'
+
+// ---------------------------------------------------------------------------
+// Auto-extraction review (import, edit log, confidence review, series editing)
+// ---------------------------------------------------------------------------
+// INFO: docs/design/auto-extraction-review-design.md. Every function takes
+// the context it acts on, like the other use cases.
+export {
+  loadAutoExtraction,
+  loadAutoExtractionFromUrl,
+  buildEditLog,
+  buildDataDocument,
+  currentReviewDiff,
+  endReview,
+} from './application/utils/autoExtractionOperations'
+export type {
+  AutoExtractionLoadOptions,
+  AutoExtractionLoadResult,
+} from './application/utils/autoExtractionOperations'
+export {
+  installAutoExtractionMessageBridge,
+  loadAutoExtractionFromUrlParam,
+  loadAutoExtractionFile,
+  MESSAGE_TYPE,
+} from './application/utils/autoExtractionBridge'
+export { parseAutoExtraction } from './application/utils/autoExtractionParser'
+export type { AutoExtractionDocumentDTO as AutoExtractionDocument } from './application/dto/autoExtractionDTO'
+export type {
+  EditLog,
+  ReviewSessionDTO,
+} from './application/services/reviewSession/reviewSession'
+export {
+  currentLowConfidencePoints,
+  goToLowConfidencePoint,
+  removePointsBelowThreshold,
+  restoreScoreRemovedPoints,
+} from './application/utils/confidenceReviewOperations'
+export {
+  moveSelectedPointsTo,
+  splitSelectedPoints,
+  mergeActiveDatasetInto,
+  mergeDuplicatePoints,
+  setAnnotationArea,
+  setDatasetMarker,
+} from './application/utils/reviewEditOperations'
+export type {
+  Point,
+  PointOrigin,
+  Rect,
+  MarkerStyle,
+  MarkerShape,
+  MarkerFill,
+} from './@types/types'
+
+// ---------------------------------------------------------------------------
 // Project data
 // ---------------------------------------------------------------------------
 export type {
