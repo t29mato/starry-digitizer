@@ -100,7 +100,11 @@ backend の座標の約束はコードの式から読み取ったもので、bac
 ### 接続先の渡し方
 
 v4 の SPA は `<StarryDigitizer>` に `autoService` を渡す。starryai は http で NIMS 内からしか届かないので、
-https の v4 から直接は呼べない。v4 の設計メモの推奨（(b) v4 backend が中継、未決定）に乗る場合:
+https の v4 から直接は呼べない。
+
+**決定（2026-10-17、ボード D7）: v4 backend が中継する。** v4 の API に NIMS 内限定の中継口を作り、そこから
+http の starryai を呼ぶ。starry-digitizer にはその中継口（同一オリジンの https）を `baseUrl` として渡し、
+capabilities も中継口経由（既定の `{baseUrl}/capabilities`）で取る。starry-digitizer 側の追加の変更は要らない:
 
 ```ts
 // (b) 同期に見える中継（v4 backend が starryai に転送して本文を返す）
@@ -126,7 +130,8 @@ const service: AutoService = {
 
 ### `/capabilities` の置き場
 
-- v4 の設計メモどおり `GET /api/v4/capabilities` を v4 backend に置き、接続元が NIMS 内なら
+- D7 の決定により、中継口の `{baseUrl}/capabilities` に置くのが既定（`capabilitiesUrl` を省略できる）。
+  v4 の設計メモの `GET /api/v4/capabilities` に置く場合は `capabilitiesUrl` で渡す。接続元が NIMS 内なら
   `{"features": ["auto_axis", "markernet", "lineformer"]}`、それ以外は `{"features": []}`（常に 200）。
 - starry-digitizer にはその URL を `capabilitiesUrl` で渡すか、v4 の SPA が自分で問い合わせて
   `features: [...]` で渡す（どちらでもよい。後者なら starry-digitizer は capabilities を取りに行かない）。
