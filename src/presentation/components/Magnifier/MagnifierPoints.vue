@@ -52,11 +52,13 @@ import { Coord } from '@/@types/types'
 
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { STYLE } from '@/constants'
+import { isLowConfidence } from '@/application/utils/confidenceReview'
 
 export default defineComponent({
   setup() {
-    const { interpolator, magnifier, canvasHandler } = useDigitizerContext()
-    return { interpolator, magnifier, canvasHandler }
+    const ctx = useDigitizerContext()
+    const { interpolator, magnifier, canvasHandler, confidenceReview } = ctx
+    return { interpolator, magnifier, canvasHandler, confidenceReview }
   },
   data() {
     return {
@@ -89,6 +91,14 @@ export default defineComponent({
 
       if (this.isManuallyAdded && this.interpolator.isActive) {
         return '#6a5acd'
+      }
+
+      // INFO: same rule as CanvasPoint.vue (confidence review)
+      if (
+        !this.isTemporary &&
+        isLowConfidence(this.point.score, this.confidenceReview.threshold)
+      ) {
+        return STYLE.LOW_CONFIDENCE_POINT_COLOR
       }
 
       if (this.datasetColor) {
@@ -143,7 +153,8 @@ export default defineComponent({
   },
   props: {
     point: {
-      type: Object as () => Coord,
+      // INFO: a Point (with optional score) or a temp point's coordinate
+      type: Object as () => Coord & { score?: number },
       required: true,
     },
     magnifierSize: {

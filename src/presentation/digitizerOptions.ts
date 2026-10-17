@@ -34,6 +34,16 @@ export interface StarryDigitizerFeatures {
   /** Show the table of extracted values. */
   dataTable: boolean
   /**
+   * Show the series-editing and figure-annotation panels (move / split /
+   * merge series, merge duplicates, draw the plot and legend areas, marker
+   * style). Even when on, <StarryDigitizer> shows them only once there is
+   * automatically extracted data to correct (a review, or scored points).
+   * The auto-extraction review panel and the confidence review panel are not
+   * covered: they appear only when there is a review or a scored point to
+   * show, whatever this says.
+   */
+  reviewTools: boolean
+  /**
    * All keyboard shortcuts at once — the default the three groups below fall
    * back to, and nothing else. It handles no key of its own.
    *
@@ -149,6 +159,7 @@ export const DEFAULT_FEATURES: StarryDigitizerFeatures = {
   extractionPanel: true,
   magnifier: true,
   dataTable: true,
+  reviewTools: true,
   keyboardShortcuts: true,
   keyboardHistory: true,
   keyboardFile: true,
@@ -208,7 +219,7 @@ function resolveFeatures(
  * control in its default position, to compare against), but do not build an
  * options object by spreading this: `features` is nested, so
  * `{ ...DEFAULT_OPTIONS, features: { magnifier: false } }` replaces the whole
- * feature set and silently drops the other twelve flags. Pass the partial
+ * feature set and silently drops the other thirteen flags. Pass the partial
  * straight to provideDigitizerOptions() — or, if you need a complete object
  * in hand, build it with createDigitizerOptions().
  */
@@ -224,7 +235,7 @@ export const DEFAULT_OPTIONS: DigitizerOptions = {
 /**
  * Partial options, with `features` partial too: the nested object is merged
  * against DEFAULT_FEATURES rather than replacing it, so a host can turn one
- * feature off without having to restate the other twelve.
+ * feature off without having to restate the other thirteen.
  *
  * This is what provideDigitizerOptions() takes, so a host never has to name
  * an option it does not care about.
@@ -379,7 +390,7 @@ function resolveDigitizerOptions(
 
   // INFO: `features` is nested, so it needs a facade of its own — otherwise a
   // host that turns one flag off would hand the panels an object missing the
-  // other twelve. Built once, so `options.features` keeps a stable identity.
+  // other thirteen. Built once, so `options.features` keeps a stable identity.
   const features = facade<StarryDigitizerFeatures>(FEATURE_KEYS, (key) =>
     resolveFeature(read().features, key),
   )

@@ -65,6 +65,10 @@ function clearData(ctx: DigitizerContext): void {
   // image (see docs/design/ux-ideas-implementation-design.md) — snapshots
   // from the previous image no longer make sense once the image changed.
   ctx.historyManager.clear()
+  // INFO: an auto-extraction review and an Auto-place proposal are both about
+  // the previous image
+  ctx.reviewSession.clear()
+  ctx.autoFeatures.clearProposal()
 }
 
 /**

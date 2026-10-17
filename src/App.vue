@@ -59,6 +59,9 @@
     <sd-snackbar v-model="showError" color="error" :timeout="4000">
       <span data-cy="error-snackbar">{{ errorMessage }}</span>
     </sd-snackbar>
+    <sd-snackbar v-model="showInfo" :timeout="6000">
+      <span data-cy="info-snackbar">{{ infoMessage }}</span>
+    </sd-snackbar>
     <keyboard-shortcuts-dialog v-model="showKeyboardShortcuts" />
     <pwa-update-prompt />
   </div>
@@ -85,6 +88,19 @@ import {
   dataUrlToBlob,
   type ImageSource,
 } from '@/application/utils/imageLoader'
+import {
+  buildDataDocument,
+  buildEditLog,
+} from '@/application/utils/autoExtractionOperations'
+import {
+  hasAutoExtractionUrlParam,
+  installAutoExtractionMessageBridge,
+  loadAutoExtractionFile,
+  loadAutoExtractionFromUrlParam,
+  type AutoExtractionOperationResult,
+} from '@/application/utils/autoExtractionBridge'
+import { downloadJson, timestamp } from '@/presentation/utils/jsonDownload'
+import { configureAutoService } from '@/application/utils/autoFeatureOperations'
 
 import { version } from '../package.json'
 
@@ -137,6 +153,10 @@ export default defineComponent({
     showError: false,
     errorMessage: '',
     showKeyboardShortcuts: false,
+    showInfo: false,
+    infoMessage: '',
+    reviewSession: appContext.reviewSession,
+    removeMessageBridge: null as null | (() => void),
     // INFO: left undefined until mounted() has looked for auto-saved work, so
     // a restored image is not preceded by a pointless fetch/decode of the
     // sample figure (and its flash on screen).
@@ -183,6 +203,22 @@ export default defineComponent({
             {
               text: 'Copy Data to Clipboard',
               action: this.handleCopyData,
+            },
+            { text: 'divider', divider: true },
+            // INFO: the auto-extraction review (docs/design/
+            // auto-extraction-review-design.md)
+            {
+              text: 'Import Auto-Extraction (JSON)…',
+              action: this.handleImportAutoExtraction,
+            },
+            {
+              text: 'Export Data (JSON)',
+              action: this.handleExportDataJson,
+            },
+            {
+              text: 'Export Edit Log (JSON)',
+              disabled: !this.reviewSession.isActive,
+              action: this.handleExportEditLog,
             },
             { text: 'divider', divider: true },
             // INFO: the counterpart of the silent restore — the work comes
@@ -265,7 +301,10 @@ export default defineComponent({
     },
   },
   async mounted() {
-    await this.restoreAutoSavedWork()
+    // INFO: with ?extraction=, the document replaces whatever is restored,
+    // so the sample figure is not loaded only to be thrown away
+    const extractionRequested = hasAutoExtractionUrlParam()
+    await this.restoreAutoSavedWork(extractionRequested)
     // INFO: every image path (upload, drag&drop, paste, ZIP import, restore)
     // ends in canvasHandler.setUploadImageUrl(), so watching that one value
     // covers all of them — and it changes only when the image really changes,
@@ -282,6 +321,29 @@ export default defineComponent({
       () => this.interpolator.isActive,
       () => this.persistSettings(),
     )
+    // INFO: after the watchers above, so an imported document (and its
+    // image) is auto-saved like any other edit
+    this.removeMessageBridge = installAutoExtractionMessageBridge(
+      this.appContext,
+      window,
+      this.handleAutoExtractionResult,
+    )
+    if (extractionRequested) {
+      const result = await loadAutoExtractionFromUrlParam(this.appContext)
+      if (result) this.handleAutoExtractionResult(result)
+    }
+    // INFO: the standalone app talks to an auto service only when its build
+    // names one (e.g. a NIMS-internal deployment). The public build sets
+    // nothing, so the features stay absent there — and even with a URL they
+    // are shown only if the service's capabilities answer allows them.
+    const autoServiceUrl = import.meta.env.VITE_AUTO_SERVICE_URL
+    if (autoServiceUrl) {
+      configureAutoService(this.appContext, { baseUrl: autoServiceUrl })
+    }
+  },
+  beforeUnmount() {
+    this.removeMessageBridge?.()
+    this.removeMessageBridge = null
   },
   methods: {
     importPoints(points: any) {
@@ -294,7 +356,7 @@ export default defineComponent({
     // expects to find, so asking "restore?" only adds a click to the common
     // case. loadProject() is the library's one restore path (it migrates the
     // DTO and clears the undo history), so the app goes through it too.
-    async restoreAutoSavedWork() {
+    async restoreAutoSavedWork(skipDefaultImage = false) {
       const saved = await persistence.load()
       if (saved?.project) {
         // INFO: an older session that only ever used the sample figure has no
@@ -303,7 +365,7 @@ export default defineComponent({
           saved.project,
           saved.image ?? DEFAULT_IMAGE,
         )
-      } else {
+      } else if (!skipDefaultImage) {
         // INFO: assigning the prop lets the component load the default image
         // through its own `image` watcher.
         this.imageSource = DEFAULT_IMAGE
@@ -419,6 +481,47 @@ export default defineComponent({
     },
     handleToggleInterpolation() {
       toggleInterpolation(this.appContext, !this.interpolator.isActive)
+    },
+    handleImportAutoExtraction() {
+      // INFO: same hidden-file-input approach as triggerLoadProjectDialog()
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.json,application/json'
+      input.style.display = 'none'
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0]
+        document.body.removeChild(input)
+        if (!file) return
+        this.handleAutoExtractionResult(
+          await loadAutoExtractionFile(this.appContext, file),
+        )
+      })
+      input.addEventListener('cancel', () => document.body.removeChild(input))
+      document.body.appendChild(input)
+      input.click()
+    },
+    handleExportDataJson() {
+      downloadJson(
+        buildDataDocument(this.appContext),
+        `data-${timestamp()}.json`,
+      )
+    },
+    handleExportEditLog() {
+      const editLog = buildEditLog(this.appContext)
+      if (!editLog) return
+      downloadJson(editLog, `edit-log-${timestamp()}.json`)
+    },
+    handleAutoExtractionResult(result: AutoExtractionOperationResult) {
+      if (!result.success) {
+        if (result.errorMessage) this.showErrorSnackbar(result.errorMessage)
+        return
+      }
+      if (!result.result) return
+      const { series, points, warnings } = result.result
+      this.infoMessage =
+        `Imported ${series} series / ${points} points.` +
+        (warnings.length ? ` Warnings: ${warnings.join('; ')}` : '')
+      this.showInfo = true
     },
     showErrorSnackbar(message?: string) {
       this.errorMessage = message ?? 'An error occurred'

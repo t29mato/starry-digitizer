@@ -93,6 +93,7 @@ describe('history notifications through the context', () => {
     expect(listener).toHaveBeenCalledTimes(1)
     expect(listener).toHaveBeenCalledWith({
       type: 'capture',
+      action: 'dataset.add',
       canUndo: true,
       canRedo: false,
     })

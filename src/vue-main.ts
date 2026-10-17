@@ -37,6 +37,17 @@ export {
 } from './presentation/components/Settings'
 export { default as DataTable } from './presentation/components/Export/DataTable.vue'
 export { default as ConfirmerBar } from './presentation/components/Generals/ConfirmerBar.vue'
+// INFO: the server-side automatic features (they render nothing unless the
+// context's auto service allows them — see configureAutoService in core) and
+// the auto-extraction review panels.
+export {
+  AutoPlacePanel,
+  ServerExtractionPanel,
+} from './presentation/components/Auto'
+export { default as ReviewSessionPanel } from './presentation/components/Review/ReviewSessionPanel.vue'
+export { default as ConfidenceReviewPanel } from './presentation/components/Review/ConfidenceReviewPanel.vue'
+export { default as SeriesEditingPanel } from './presentation/components/Review/SeriesEditingPanel.vue'
+export { default as FigureAnnotationPanel } from './presentation/components/Review/FigureAnnotationPanel.vue'
 
 // ---------------------------------------------------------------------------
 // provide/inject wiring

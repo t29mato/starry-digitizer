@@ -41,7 +41,7 @@ export function toggleInterpolation(
     !isActive &&
     datasetRepository.activeDataset.manuallyAddedPointIds.length > 0
   if (willRematerializePoints) {
-    historyManager.capture()
+    historyManager.capture('interpolation.off')
   }
 
   interpolator.setIsActive(isActive)

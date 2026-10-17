@@ -48,9 +48,12 @@
       ref="interpolationGuideCanvas"
       data-cy="interpolation-guide-canvas"
     ></canvas>
+    <canvas-annotations></canvas-annotations>
     <canvas-axis-set-guide></canvas-axis-set-guide>
     <canvas-axis-set></canvas-axis-set>
-    <canvas-points></canvas-points>
+    <canvas-auto-axis-proposal></canvas-auto-axis-proposal>
+    <canvas-points v-if="!reviewView.showInitial"></canvas-points>
+    <canvas-review-diff></canvas-review-diff>
     <canvas-cursor></canvas-cursor>
   </div>
 </template>
@@ -66,6 +69,9 @@ import CanvasAxisSet from './CanvasAxisSet.vue'
 import CanvasPoints from './CanvasPoints.vue'
 import CanvasCursor from './CanvasCursor.vue'
 import CanvasAxisSetGuide from './CanvasAxisSetGuide.vue'
+import CanvasAnnotations from './CanvasAnnotations.vue'
+import CanvasReviewDiff from './CanvasReviewDiff.vue'
+import CanvasAutoAxisProposal from './CanvasAutoAxisProposal.vue'
 import { Vector } from '@/domain/models/axisSet/axisSetInterface'
 import { Coord, Point } from '@/@types/types'
 
@@ -78,6 +84,8 @@ import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { ProjectFileOperationResult } from '@/application/utils/projectFileOperations'
 import { addPoint } from '@/application/utils/pointOperations'
 import { addAxisCoord } from '@/application/utils/axisSetOperations'
+import { setAnnotationArea } from '@/application/utils/reviewEditOperations'
+import { goToLowConfidencePoint } from '@/application/utils/confidenceReviewOperations'
 import {
   saveProjectAndDownload,
   triggerLoadProjectDialog,
@@ -91,13 +99,16 @@ export default defineComponent({
     CanvasPoints,
     CanvasCursor,
     CanvasAxisSetGuide,
+    CanvasAnnotations,
+    CanvasReviewDiff,
+    CanvasAutoAxisProposal,
   },
   emits: ['error'],
   setup() {
     const ctx = useDigitizerContext()
     const options = useDigitizerOptions()
     const { interpolator, confirmer, canvasHandler, historyManager } = ctx
-    const { axisSetRepository, datasetRepository } = ctx
+    const { axisSetRepository, datasetRepository, reviewView } = ctx
     return {
       ctx,
       options,
@@ -107,6 +118,7 @@ export default defineComponent({
       historyManager,
       axisSetRepository,
       datasetRepository,
+      reviewView,
     }
   },
   data() {
@@ -127,6 +139,9 @@ export default defineComponent({
       // mousemove. Used to clamp the magnifier to the edge on the first event
       // that leaves the image.
       cursorWasOnImage: false,
+      // INFO: the click that follows the drag drawing a figure annotation
+      // must not also add a point / axis
+      suppressNextClick: false,
       // INFO: true while a drag that STARTED on this instance's wrapper is in
       // progress. mousemove is a document listener (see mounted), so on a page
       // with more than one <StarryDigitizer> every instance sees every move;
@@ -373,6 +388,10 @@ export default defineComponent({
     },
     click(e: MouseEvent): void {
       if (this.confirmer.isActive) return
+      if (this.suppressNextClick) {
+        this.suppressNextClick = false
+        return
+      }
 
       this.point(e)
 
@@ -475,27 +494,62 @@ export default defineComponent({
 
       this.canvasHandler.mouseDown(xPx, yPx)
     },
-    mouseUp() {
+    mouseUp(e: MouseEvent) {
       this.isDraggingHere = false
       if (this.options.readonly) return
       if (this.datasetRepository.isViewAllMode) return
       if (this.confirmer.isActive) return
 
+      const rect = this.canvasHandler.rectangle
+      const scale = this.canvasHandler.scale
+      const { topLeftCoord, bottomRightCoord } = getRectCoordsFromDragCoords(
+        { xPx: rect.startX / scale, yPx: rect.startY / scale },
+        { xPx: rect.endX / scale, yPx: rect.endY / scale },
+      )
+
+      // INFO: a drag started from "Draw plot area / legend" in the figure
+      // annotation panel draws that rectangle instead of what the mode does
+      const annotationTarget = this.canvasHandler.annotationTarget
+      if (annotationTarget) {
+        this.canvasHandler.clearTempMask()
+        this.canvasHandler.setAnnotationTarget(null)
+        this.suppressNextClick = true
+        const widthPx = bottomRightCoord.xPx - topLeftCoord.xPx
+        const heightPx = bottomRightCoord.yPx - topLeftCoord.yPx
+        // INFO: a plain click (no drag) cancels instead of making a 0x0 box
+        if (widthPx < 1 || heightPx < 1) return
+        setAnnotationArea(this.ctx, annotationTarget, {
+          xPx: topLeftCoord.xPx,
+          yPx: topLeftCoord.yPx,
+          widthPx,
+          heightPx,
+        })
+        return
+      }
+
       this.canvasHandler.mouseUp()
 
-      // INFO: EDITモードの場合にpointの複数選択を行う
-      if (this.canvasHandler.manualMode === 1) {
-        const rect = this.canvasHandler.rectangle
-        const scale = this.canvasHandler.scale
+      // INFO: EDITモードの場合にpointの複数選択を行う。
+      // Ctrl/⌘を押していれば今の選択に足す
+      if (this.canvasHandler.manualMode === MANUAL_MODE.EDIT) {
+        const additive = e.ctrlKey || e.metaKey
+        const dataset = this.datasetRepository.activeDataset
 
-        const { topLeftCoord, bottomRightCoord } = getRectCoordsFromDragCoords(
-          { xPx: rect.startX / scale, yPx: rect.startY / scale },
-          { xPx: rect.endX / scale, yPx: rect.endY / scale },
-        )
+        if (this.canvasHandler.selectionShape === 'lasso') {
+          dataset.activatePointsInPolygon(
+            this.canvasHandler.lassoPath.map((c) => ({
+              xPx: c.xPx / scale,
+              yPx: c.yPx / scale,
+            })),
+            additive,
+          )
+          return
+        }
 
-        this.datasetRepository.activeDataset.activatePointsInRectangleArea(
+        dataset.activatePointsInRectangleArea(
           topLeftCoord,
           bottomRightCoord,
+          additive,
         )
 
         return
@@ -686,6 +740,8 @@ export default defineComponent({
         'a',
         'e',
         'd',
+        'n',
+        'N',
       ]
 
       return whiteList.includes(e.key)
@@ -724,6 +780,11 @@ export default defineComponent({
         case 'd':
           this.canvasHandler.setManualMode(2)
           return true
+        case 'n':
+        case 'N':
+          // INFO: step through low-confidence points (confidence review)
+          goToLowConfidencePoint(this.ctx, e.shiftKey ? -1 : 1)
+          return true
       }
       return false
     },
@@ -732,7 +793,7 @@ export default defineComponent({
         this.datasetRepository.activeDataset.hasActive() &&
         (key === 'Backspace' || key === 'Delete')
       ) {
-        this.historyManager.capture()
+        this.historyManager.capture('point.delete')
         this.datasetRepository.activeDataset.clearActivePoints()
 
         if (this.interpolator.isActive) {
@@ -787,7 +848,7 @@ export default defineComponent({
       // keystroke — the behaviour before this change, and still one
       // notification per undoable unit as far as the user is concerned.
       if ((hasActiveAxis || hasActivePoints) && !e.repeat) {
-        this.historyManager.capture()
+        this.historyManager.capture(hasActiveAxis ? 'axis.move' : 'point.move')
       }
 
       this.moveActiveAxis(vector)

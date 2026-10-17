@@ -154,6 +154,45 @@ describe('HistoryManager', () => {
     expect(datasetRepository.activeDataset.points.length).toBeGreaterThan(0)
     expect(historyManager.canUndo).toBe(false)
   })
+
+  test('subscribers hear captures (with their action), undo and redo', () => {
+    const { historyManager } = setup()
+    const actions: string[] = []
+    const unsubscribe = historyManager.subscribe((c) => actions.push(c.action ?? c.type))
+
+    historyManager.capture('point.add')
+    historyManager.capture()
+    historyManager.undo()
+    historyManager.redo()
+    unsubscribe()
+    historyManager.undo()
+    // INFO: nothing to undo/redo -> nothing reported
+    const { historyManager: empty } = setup()
+    empty.subscribe((c) => actions.push(c.action ?? c.type))
+    empty.undo()
+    empty.redo()
+
+    expect(actions).toEqual(['point.add', 'edit', 'undo', 'redo'])
+  })
+
+  test('imported point origin/score survive undo snapshots', () => {
+    const { datasetRepository, historyManager } = setup()
+    datasetRepository.activeDataset.points.push({
+      id: 1,
+      xPx: 1,
+      yPx: 1,
+      origin: { series: 2, index: 3 },
+      score: 0.4,
+    })
+    historyManager.capture()
+    datasetRepository.activeDataset.clearPoint(1)
+    historyManager.undo()
+
+    expect(datasetRepository.activeDataset.points[0]).toMatchObject({
+      origin: { series: 2, index: 3 },
+      score: 0.4,
+    })
+  })
 })
 
 // INFO: `capture()` is called from the dataset use cases AND from
@@ -171,6 +210,7 @@ describe('HistoryManager notifications', () => {
     expect(listener).toHaveBeenCalledTimes(1)
     expect(listener).toHaveBeenCalledWith({
       type: 'capture',
+      action: 'edit',
       canUndo: true,
       canRedo: false,
     })

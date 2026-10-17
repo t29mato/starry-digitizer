@@ -19,6 +19,13 @@ export type HistoryChangeType = 'capture' | 'undo' | 'redo' | 'clear'
 export interface HistoryChange {
   /** which call moved the stacks */
   type: HistoryChangeType
+  /**
+   * For `capture` only: the name the caller gave the edit (e.g. 'point.add'),
+   * or 'edit' when it gave none. Absent for undo / redo / clear. The
+   * auto-extraction review's operation log is built from these
+   * (docs/design/auto-extraction-review-design.md).
+   */
+  action?: string
   /** stack state AFTER the change (same value as `canUndo`) */
   canUndo: boolean
   /** stack state AFTER the change (same value as `canRedo`) */
@@ -37,8 +44,10 @@ export interface HistoryManagerInterface {
    * Push the current axisSets/datasets state onto the undo stack and clear
    * the redo stack. Call this right BEFORE a mutation you want to be able
    * to undo (i.e. it captures the state to return to, not the result).
+   * `action` names the edit (e.g. 'point.add') for subscribers such as the
+   * auto-extraction review's operation log.
    */
-  capture(): void
+  capture(action?: string): void
 
   /** Restore the most recently captured snapshot, if any. */
   undo(): void

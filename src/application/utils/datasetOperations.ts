@@ -106,7 +106,7 @@ export interface DatasetInit {
 export function addDataset(ctx: DigitizerContext, init?: DatasetInit): number {
   const { axisSetRepository, datasetRepository, historyManager } = ctx
 
-  historyManager.capture()
+  historyManager.capture('dataset.add')
   datasetRepository.createNewDataset()
   const dataset = datasetRepository.lastDataset
   dataset.setAxisSetId(axisSetRepository.activeAxisSetId)
@@ -149,7 +149,7 @@ export function linkDataset(
     init.externalId !== undefined && init.externalId !== dataset.externalId
   if (!renames && !relinks) return
 
-  historyManager.capture()
+  historyManager.capture('dataset.link')
   if (renames) {
     datasetRepository.editDatasetName(id, init.name as string)
   }
@@ -191,7 +191,7 @@ export function renameDataset(
   if (!dataset) return
   if (dataset.name === name) return
 
-  historyManager.capture()
+  historyManager.capture('dataset.rename')
   datasetRepository.editDatasetName(id, name)
 }
 
@@ -220,7 +220,7 @@ export function setDatasetExternalId(
   if (!dataset) return
   if (dataset.externalId === externalId) return
 
-  historyManager.capture()
+  historyManager.capture('dataset.set-external-id')
   dataset.setExternalId(externalId)
 }
 
@@ -237,7 +237,7 @@ export function removeDataset(ctx: DigitizerContext, id: number): void {
 
   if (!datasetRepository.datasets.some((dataset) => dataset.id === id)) return
 
-  historyManager.capture()
+  historyManager.capture('dataset.remove')
 
   const activeDatasetIdBefore = datasetRepository.activeDatasetId
 
@@ -267,7 +267,7 @@ export function removeDataset(ctx: DigitizerContext, id: number): void {
 export function removeAllDatasets(ctx: DigitizerContext): void {
   const { interpolator, datasetRepository, historyManager } = ctx
 
-  historyManager.capture()
+  historyManager.capture('dataset.remove-all')
 
   if (interpolator.isActive) {
     interpolator.clearPreview()
@@ -292,7 +292,7 @@ export function clearDatasetPoints(ctx: DigitizerContext, id: number): void {
   const dataset = datasetRepository.datasets.find((d) => d.id === id)
   if (!dataset) return
 
-  historyManager.capture()
+  historyManager.capture('dataset.clear-points')
   dataset.clearPoints()
 
   // INFO: compare against `activeDataset.id` rather than `activeDatasetId`, so

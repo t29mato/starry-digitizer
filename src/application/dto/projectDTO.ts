@@ -3,6 +3,8 @@ import { DatasetDTO } from './datasetDTO'
 import { CanvasHandlerDTO } from './canvasHandlerDTO'
 import { DigitizerError } from '@/application/errors'
 import { MANUAL_MODE, POINT_MODE } from '@/constants'
+import type { ReviewSessionDTO } from '@/application/services/reviewSession/reviewSession'
+import type { Rect } from '@/@types/types'
 
 /**
  * Schema version written into `ProjectDTO.version`.
@@ -39,6 +41,12 @@ export interface ProjectDTO {
    * restored over the freshly computed fit factor (see migrateCanvasHandler).
    */
   canvasHandler?: CanvasHandlerDTO
+  /**
+   * Present only when the project was saved during an auto-extraction review
+   * (docs/design/auto-extraction-review-design.md), so the edit log keeps
+   * counting after save → reopen. Optional and additive: no version bump.
+   */
+  reviewSession?: ReviewSessionDTO
 }
 
 function parseMajor(version: unknown): number | null {
@@ -119,6 +127,11 @@ export function migrateProject(input: unknown): ProjectDTO {
     migrated.canvasHandler = canvasHandler
   }
 
+  const reviewSession = migrateReviewSession(input.reviewSession)
+  if (reviewSession) {
+    migrated.reviewSession = reviewSession
+  }
+
   return migrated
 }
 
@@ -136,7 +149,7 @@ function migrateAxisSet(raw: unknown, index: number): AxisSetDTO {
     }
   }
   const dto = raw as unknown as AxisSetDTO
-  return {
+  const migrated: AxisSetDTO = {
     id: dto.id,
     name: dto.name ?? `XY Axes ${dto.id}`,
     x1: dto.x1,
@@ -149,6 +162,25 @@ function migrateAxisSet(raw: unknown, index: number): AxisSetDTO {
     pointMode: dto.pointMode ?? POINT_MODE.TWO_POINTS,
     isVisible: dto.isVisible ?? true,
   }
+  // INFO: optional figure annotations — kept only when they are a usable
+  // rectangle, dropped (not rejected) otherwise, since a bad annotation must
+  // not make the whole project unreadable.
+  if (isRect(raw.plotArea)) {
+    migrated.plotArea = { ...raw.plotArea }
+  }
+  if (isRect(raw.legendArea)) {
+    migrated.legendArea = { ...raw.legendArea }
+  }
+  return migrated
+}
+
+function isRect(value: unknown): value is Rect {
+  return (
+    isRecord(value) &&
+    ['xPx', 'yPx', 'widthPx', 'heightPx'].every(
+      (key) => typeof value[key] === 'number' && Number.isFinite(value[key]),
+    )
+  )
 }
 
 function migrateDataset(raw: unknown, index: number): DatasetDTO {
@@ -167,7 +199,29 @@ function migrateDataset(raw: unknown, index: number): DatasetDTO {
   if (typeof dto.externalId === 'string') {
     migrated.externalId = dto.externalId
   }
+  if (isRecord(raw.marker)) {
+    migrated.marker = { ...(raw.marker as DatasetDTO['marker']) }
+  }
+  if (Array.isArray(raw.scoreRemovedPoints)) {
+    migrated.scoreRemovedPoints = raw.scoreRemovedPoints as DatasetDTO['points']
+  }
   return migrated
+}
+
+/**
+ * Keep a saved review session when it has the parts the review needs; an
+ * unusable one ends the review instead of failing the load.
+ */
+function migrateReviewSession(raw: unknown): ReviewSessionDTO | undefined {
+  if (
+    !isRecord(raw) ||
+    !isRecord(raw.initialState) ||
+    typeof raw.importedAt !== 'string' ||
+    !Array.isArray(raw.events)
+  ) {
+    return undefined
+  }
+  return raw as unknown as ReviewSessionDTO
 }
 
 /**
