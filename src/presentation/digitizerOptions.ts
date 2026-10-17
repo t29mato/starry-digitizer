@@ -36,9 +36,11 @@ export interface StarryDigitizerFeatures {
   /**
    * Show the series-editing and figure-annotation panels (move / split /
    * merge series, merge duplicates, draw the plot and legend areas, marker
-   * style). The auto-extraction review panel and the confidence review panel
-   * are not covered: they appear only when there is a review or a scored
-   * point to show, whatever this says.
+   * style). Even when on, <StarryDigitizer> shows them only once there is
+   * automatically extracted data to correct (a review, or scored points).
+   * The auto-extraction review panel and the confidence review panel are not
+   * covered: they appear only when there is a review or a scored point to
+   * show, whatever this says.
    */
   reviewTools: boolean
   /**

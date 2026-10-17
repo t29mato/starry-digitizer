@@ -42,10 +42,10 @@
         <!-- INFO: shows itself only when some point carries a score -->
         <confidence-review-panel></confidence-review-panel>
         <series-editing-panel
-          v-if="options.features.reviewTools"
+          v-if="showReviewTools"
         ></series-editing-panel>
         <figure-annotation-panel
-          v-if="options.features.reviewTools"
+          v-if="showReviewTools"
         ></figure-annotation-panel>
         <slot name="right-sidebar-footer" :width="rightSidebarWidth"></slot>
       </div>
@@ -225,6 +225,26 @@ function redo(): void {
 
 const canUndo = computed(() => ctx.historyManager.canUndo)
 const canRedo = computed(() => ctx.historyManager.canRedo)
+
+// INFO: the series-editing and figure-annotation panels are for correcting
+// automatically extracted data, so they appear once there is some — an
+// import under review, or points that came with a score (Server Extraction,
+// a detector) — and stay out of the way of plain manual digitising. The
+// layout a host gets without any automatic data is therefore unchanged.
+const hasAutomaticData = computed(
+  () =>
+    ctx.reviewSession.isActive ||
+    ctx.datasetRepository.datasets.some(
+      (dataset) =>
+        dataset.scoreRemovedPoints.length > 0 ||
+        dataset.points.some(
+          (point) => point.score !== undefined || point.origin !== undefined,
+        ),
+    ),
+)
+const showReviewTools = computed(
+  () => options.value.features.reviewTools && hasAutomaticData.value,
+)
 
 const options = computed<DigitizerOptions>(() =>
   createDigitizerOptions({
