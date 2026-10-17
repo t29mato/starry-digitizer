@@ -41,9 +41,7 @@
         ></server-extraction-panel>
         <!-- INFO: shows itself only when some point carries a score -->
         <confidence-review-panel></confidence-review-panel>
-        <series-editing-panel
-          v-if="showReviewTools"
-        ></series-editing-panel>
+        <series-editing-panel v-if="showReviewTools"></series-editing-panel>
         <figure-annotation-panel
           v-if="showReviewTools"
         ></figure-annotation-panel>
