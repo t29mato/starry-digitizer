@@ -56,9 +56,14 @@ describe('series editing and figure annotations', () => {
       'A (split)',
     )
 
+    // INFO: merge the split-off series into B; A keeps its two near points
+    ctx.datasetRepository.setActiveDataset(id as number)
     mergeActiveDatasetInto(ctx, 2)
     expect(ctx.datasetRepository.activeDatasetId).toBe(2)
-    expect(ctx.datasetRepository.datasets).toHaveLength(2)
+    expect(ctx.datasetRepository.datasets.map((d) => d.name)).toEqual([
+      'A',
+      'B',
+    ])
 
     ctx.datasetRepository.setActiveDataset(1)
     expect(mergeDuplicatePoints(ctx, 3)).toBe(1)

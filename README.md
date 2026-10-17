@@ -986,6 +986,7 @@ type HistoryChangeType = 'capture' | 'undo' | 'redo' | 'clear'
 
 interface HistoryChange {
   type: HistoryChangeType
+  action?: string    // 'capture' only: what was done ('point.add', 'extract.server', …; 'edit' when unnamed)
   canUndo: boolean   // stack state AFTER the change
   canRedo: boolean   // stack state AFTER the change
 }

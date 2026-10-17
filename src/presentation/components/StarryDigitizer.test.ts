@@ -37,7 +37,7 @@ describe('<StarryDigitizer> undo history', () => {
     const events = wrapper.emitted('history-change')
     expect(events).toHaveLength(1)
     expect(events?.[0]).toStrictEqual([
-      { type: 'capture', canUndo: true, canRedo: false },
+      { type: 'capture', action: 'edit', canUndo: true, canRedo: false },
     ])
   })
 

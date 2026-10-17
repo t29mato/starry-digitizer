@@ -210,6 +210,7 @@ describe('HistoryManager notifications', () => {
     expect(listener).toHaveBeenCalledTimes(1)
     expect(listener).toHaveBeenCalledWith({
       type: 'capture',
+      action: 'edit',
       canUndo: true,
       canRedo: false,
     })

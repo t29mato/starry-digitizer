@@ -66,7 +66,7 @@ describe('axis Auto-place', () => {
 
     expect(service.calibrate).toHaveBeenCalledWith(expect.any(Blob))
     expect(proposal.status).toBe('ok')
-    expect(ctx.autoFeatures.proposal).toBe(proposal)
+    expect(ctx.autoFeatures.proposal).toEqual(proposal)
     expect(ctx.autoFeatures.proposalAxisSetId).toBe(
       ctx.axisSetRepository.activeAxisSetId,
     )
