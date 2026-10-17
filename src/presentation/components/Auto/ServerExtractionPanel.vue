@@ -22,7 +22,7 @@
       class="mb-2"
       data-cy="server-extraction-method"
       prefix="Method:"
-      :model-value="selectedMethod"
+      :model-value="selectedMethod ?? ''"
       :items="methodItems"
       :disabled="isExtracting"
       @update:model-value="setMethod"

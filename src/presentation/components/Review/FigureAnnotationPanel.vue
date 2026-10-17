@@ -9,9 +9,7 @@
     >
       <sd-button
         size="small"
-        :color="
-          canvasHandler.annotationTarget === area.target ? 'primary' : ''
-        "
+        :color="canvasHandler.annotationTarget === area.target ? 'primary' : ''"
         :disabled="!canEdit"
         @click="toggleDrawing(area.target)"
         >{{ drawLabel(area) }}</sd-button

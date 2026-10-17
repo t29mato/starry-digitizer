@@ -31,14 +31,16 @@ export interface HttpAutoServiceConfig {
   /** Extra request headers (e.g. a CSRF token for a same-origin relay). */
   headers?: Record<string, string> | (() => Record<string, string>)
   /** fetch `credentials`. Default 'same-origin'. */
-  credentials?: RequestCredentials
+  credentials?: 'include' | 'omit' | 'same-origin'
   /** Give up on the capabilities question after this long. Default 3000 ms. */
   capabilitiesTimeoutMs?: number
   /** Give up on calibrate / extract after this long. Default 120000 ms. */
   requestTimeoutMs?: number
-  /** For tests and unusual hosts. Default `globalThis.fetch`. */
+  /** For tests and unusual hosts. Default: the global `fetch`. */
   fetch?: typeof fetch
 }
+
+type FetchInit = NonNullable<Parameters<typeof fetch>[1]>
 
 export const DEFAULT_CAPABILITIES_TIMEOUT_MS = 3000
 // INFO: the wpd-auto page waits up to 120 s too (backend README, OCR
@@ -70,7 +72,7 @@ export function createHttpAutoService(
   // INFO: looked up at call time, so a test double installed on globalThis
   // after this service was created is still the one used
   const doFetch: typeof fetch =
-    config.fetch ?? ((input, init) => globalThis.fetch(input, init))
+    config.fetch ?? ((input, init) => fetch(input, init))
   const requestTimeoutMs = config.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS
   const capabilitiesTimeoutMs =
     config.capabilitiesTimeoutMs ?? DEFAULT_CAPABILITIES_TIMEOUT_MS
@@ -82,7 +84,7 @@ export function createHttpAutoService(
 
   async function request(
     url: string,
-    init: RequestInit,
+    init: FetchInit,
     timeoutMs: number,
   ): Promise<Response> {
     const controller =

@@ -105,11 +105,7 @@ export function toDatasetDTO(dataset: DatasetInterface): DatasetDTO {
 }
 
 export function fromDatasetDTO(dto: DatasetDTO): Dataset {
-  const dataset = new Dataset(
-    dto.name,
-    dto.points.map(copyPoint),
-    dto.id,
-  )
+  const dataset = new Dataset(dto.name, dto.points.map(copyPoint), dto.id)
   dataset.axisSetId = dto.axisSetId
   dataset.visiblePointIds = [...dto.visiblePointIds]
   dataset.manuallyAddedPointIds = [...dto.manuallyAddedPointIds]

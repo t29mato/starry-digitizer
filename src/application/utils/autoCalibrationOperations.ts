@@ -38,10 +38,7 @@ export async function requestAutoCalibration(
   const service = requireAutoFeature(ctx, 'auto_axis')
   const body = await service.calibrate(currentImageBlob(ctx))
   const proposal = parseCalibrationResponse(body)
-  ctx.autoFeatures.setProposal(
-    proposal,
-    ctx.axisSetRepository.activeAxisSetId,
-  )
+  ctx.autoFeatures.setProposal(proposal, ctx.axisSetRepository.activeAxisSetId)
   return proposal
 }
 

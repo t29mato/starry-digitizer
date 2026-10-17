@@ -70,10 +70,7 @@
           :disabled="!canEdit"
           @update:model-value="onDistanceInput"
         ></sd-text-field>
-        <sd-button
-          size="small"
-          :disabled="!canEdit"
-          @click="mergeDuplicates"
+        <sd-button size="small" :disabled="!canEdit" @click="mergeDuplicates"
           >Merge duplicates</sd-button
         >
       </div>

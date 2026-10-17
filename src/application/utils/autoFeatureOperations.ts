@@ -136,7 +136,10 @@ export function currentImageBlob(ctx: DigitizerContext): Blob {
 export function dataUrlToBlob(dataUrl: string): Blob {
   const comma = dataUrl.indexOf(',')
   if (!dataUrl.startsWith('data:') || comma === -1) {
-    throw new DigitizerError('AUTO_SERVICE_FAILED', 'The image is not a data URL')
+    throw new DigitizerError(
+      'AUTO_SERVICE_FAILED',
+      'The image is not a data URL',
+    )
   }
   const header = dataUrl.slice(5, comma)
   const data = dataUrl.slice(comma + 1)

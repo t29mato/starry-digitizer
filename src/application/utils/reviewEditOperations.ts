@@ -77,9 +77,7 @@ export function mergeDuplicatePoints(
 ): number {
   if (!(maxDistancePx >= 0)) return 0
   beforeEdit(ctx, 'points.merge-duplicates')
-  return ctx.datasetRepository.activeDataset.mergeDuplicatePoints(
-    maxDistancePx,
-  )
+  return ctx.datasetRepository.activeDataset.mergeDuplicatePoints(maxDistancePx)
 }
 
 /**
