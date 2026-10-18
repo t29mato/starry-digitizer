@@ -11,6 +11,7 @@ A web-based plot digitizer tool for extracting data points from graph images. De
 - **Manual Point Extraction**: Click on data points to extract coordinates
 - **Auto Point Detection**: Automatically detect data points by color
 - **Multiple Datasets**: Manage multiple datasets with different colors
+- **Resample**: Thin a dataset to N points, keep every k-th, simplify (Douglas–Peucker), smooth, or take values at given x — computed on the calibrated axes (log axes in log), previewed before Apply, one undo step
 - **Magnifier**: Zoom in for precise point placement
 - **Data Export**: Export extracted data as CSV or JSON
 - **Project Save/Load**: Save and restore your work
@@ -475,6 +476,31 @@ addPoint(ctx, { xPx: 600, yPx: 500 }) // original-image pixels
   two" is yours, the same way the confirmation dialogs are.
 - `deletePoint()` ignores an id that is not in the active dataset, and refreshes
   the interpolation preview when interpolation is on.
+
+##### Resampling a dataset
+
+```ts
+import { previewResample, applyResample } from 'starry-digitizer/core'
+
+previewResample(ctx, { mode: 'thin', count: 20 }) // { before, after, values, notes, error? } — reads only
+applyResample(ctx, { mode: 'atX', xSpec: 'list', xList: '300, 400, 500' })
+```
+
+- Works on the **active dataset**, in its axis set's calibrated space: x and y
+  as values on a linear axis, `log10` on a log axis. "N evenly spaced x" is
+  evenly spaced in log on a log X axis, and linear interpolation between two
+  points of a power law on log-log axes stays on it. An uncalibrated axis set is
+  refused (`error`).
+- Modes: `thin` (`count`, by arc length, ends kept), `every` (`k`), `simplify`
+  (`tolerancePx`, Douglas–Peucker; the distance is in screen pixels, so it means
+  the same on linear and log axes), `atX` (`xSpec: 'count'` with optional
+  `xFrom`/`xTo` in data units, or `'list'` with `xList`; no extrapolation — x
+  outside the data is skipped with a note), `smooth` (moving average only).
+  `smoothWindow` (odd, points) smooths first in any mode; `sortByX` sorts first
+  in the geometry modes.
+- `applyResample()` replaces the points as **one undo step**, recorded as
+  `points.resample`, and returns `null` (capturing nothing) when the preview has
+  an error. Kept points keep their `origin`/`score`; interpolated points are new.
 
 ##### Driving the calibration
 

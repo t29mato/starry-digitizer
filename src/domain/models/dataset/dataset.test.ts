@@ -1,6 +1,27 @@
 import { expect } from '@jest/globals'
 import { Dataset } from './dataset'
 
+test('replacePoints renumbers from the next free id and drops selection/anchors', () => {
+  const dataset = new Dataset('d', [], 1)
+  dataset.addPoint(1, 1)
+  dataset.addPoint(2, 2)
+  dataset.addManuallyAddedPointId(1)
+  dataset.addTempPoint(5, 5)
+  const ids = dataset.replacePoints([
+    { xPx: 10, yPx: 10, score: 0.3 },
+    { xPx: 20, yPx: 20 },
+  ])
+  expect(ids).toEqual([3, 4])
+  expect(dataset.points).toEqual([
+    { xPx: 10, yPx: 10, score: 0.3, id: 3 },
+    { xPx: 20, yPx: 20, id: 4 },
+  ])
+  expect(dataset.visiblePointIds).toEqual([3, 4])
+  expect(dataset.activePointIds).toEqual([])
+  expect(dataset.manuallyAddedPointIds).toEqual([])
+  expect(dataset.tempPoints).toEqual([])
+})
+
 test('sort in ascending order on X axis', () => {
   const dataset = new Dataset('dataset 1', [], 1)
   dataset.addPoint(1, 1)
