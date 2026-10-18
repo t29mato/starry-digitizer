@@ -181,3 +181,44 @@ describe('<StarryDigitizer> change notifications', () => {
     expect(wrapper.emitted('update:project')).toHaveLength(1)
   })
 })
+
+// INFO: the research-record hook (docs/design/auto-service.md §9) is off
+// unless the host passes a listener, and a shared context must not keep the
+// host's listener after the component is gone.
+describe('<StarryDigitizer> research events', () => {
+  it('is off without the prop', () => {
+    const context = createDigitizerContext()
+    mount(StarryDigitizer, { props: { context } })
+
+    expect(context.researchEvents.isEnabled).toBe(false)
+  })
+
+  it('passes edits to onResearchEvent and lets go on unmount', async () => {
+    const context = createDigitizerContext()
+    const listener = jest.fn()
+    const wrapper = mount(StarryDigitizer, {
+      props: { context, onResearchEvent: listener },
+    })
+
+    context.historyManager.capture('point.add')
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'edit', action: 'point.add', seq: 1 }),
+    )
+
+    await wrapper.setProps({ onResearchEvent: undefined })
+    context.historyManager.capture('point.add')
+    expect(listener).toHaveBeenCalledTimes(1)
+
+    await wrapper.setProps({ onResearchEvent: listener })
+    wrapper.unmount()
+    expect(context.researchEvents.isEnabled).toBe(false)
+  })
+
+  it('a listener set on a shared context by the host is left alone', () => {
+    const context = createDigitizerContext()
+    context.researchEvents.setListener(jest.fn())
+    mount(StarryDigitizer, { props: { context } })
+
+    expect(context.researchEvents.isEnabled).toBe(true)
+  })
+})
