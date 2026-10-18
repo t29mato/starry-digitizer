@@ -13,6 +13,10 @@
               id="x1-value"
               data-cy="x1-value"
               prefix="x1:"
+              :aria-invalid="expressionErrors.x1 ? 'true' : undefined"
+              :class="{
+                'c__AxisSetRepository-settings__invalid': expressionErrors.x1,
+              }"
               :disabled="options.readonly"
               type="text"
               @click="selectAll"
@@ -26,6 +30,10 @@
               id="x2-value"
               data-cy="x2-value"
               prefix="x2:"
+              :aria-invalid="expressionErrors.x2 ? 'true' : undefined"
+              :class="{
+                'c__AxisSetRepository-settings__invalid': expressionErrors.x2,
+              }"
               :disabled="options.readonly"
               type="text"
               @click="selectAll"
@@ -53,6 +61,10 @@
               id="y1-value"
               data-cy="y1-value"
               prefix="y1:"
+              :aria-invalid="expressionErrors.y1 ? 'true' : undefined"
+              :class="{
+                'c__AxisSetRepository-settings__invalid': expressionErrors.y1,
+              }"
               :disabled="options.readonly"
               type="text"
               @click="selectAll"
@@ -66,6 +78,10 @@
               id="y2-value"
               data-cy="y2-value"
               prefix="y2:"
+              :aria-invalid="expressionErrors.y2 ? 'true' : undefined"
+              :class="{
+                'c__AxisSetRepository-settings__invalid': expressionErrors.y2,
+              }"
               :disabled="options.readonly"
               type="text"
               @click="selectAll"
@@ -85,7 +101,17 @@
         </tr>
       </tbody>
     </table>
-    <p class="text-red mb-2">{{ errorMessage }}</p>
+    <!-- INFO: the fields take expressions (10^-3, 2×10⁵, 1/300, pi…), see
+         calibrationExpression.ts. What a non-plain entry evaluates to is
+         shown so the person can check it; an invalid one is named here. -->
+    <p
+      v-if="expressionNotes"
+      class="c__AxisSetRepository-settings__note mb-1"
+      data-cy="axis-value-notes"
+    >
+      {{ expressionNotes }}
+    </p>
+    <p class="text-red mb-2" data-cy="axis-value-error">{{ errorMessage }}</p>
     <div class="mb-2">
       <h5 class="c__AxisSetRepository-settings__point-mode__label">
         Calibration mode:
@@ -210,6 +236,11 @@ import {
   setLogScale,
   setPointMode as setPointModeOperation,
 } from '@/application/utils/axisSetOperations'
+import {
+  evaluateCalibrationExpression,
+  isPlainNumber,
+  parseCalibrationValue,
+} from '@/application/utils/calibrationExpression'
 import { mdiInformationOutline } from '@mdi/js'
 import {
   SdButton,
@@ -228,6 +259,9 @@ import type { SdRadioOption } from '@/presentation/ui'
 // Vue 3.5's useId() would do this, but the supported peer range starts at 3.3.
 let calibrationModeGroupSeq = 0
 
+const AXIS_VALUE_NAMES = ['x1', 'x2', 'y1', 'y2'] as const
+type AxisValueName = (typeof AXIS_VALUE_NAMES)[number]
+
 export default defineComponent({
   components: {
     SdButton,
@@ -243,7 +277,38 @@ export default defineComponent({
     return { ctx, axisSetRepository, datasetRepository, canvasHandler, options }
   },
   computed: {
+    expressionErrors(): Record<AxisValueName, string> {
+      const errors = { x1: '', x2: '', y1: '', y2: '' }
+      for (const name of AXIS_VALUE_NAMES) {
+        const text = this.displayVal[name]
+        // INFO: an empty field is "not entered yet", not a mistake.
+        if (text.trim() === '') continue
+        const result = evaluateCalibrationExpression(text)
+        if (!result.ok) errors[name] = result.error
+      }
+      return errors
+    },
+    expressionNotes(): string {
+      return AXIS_VALUE_NAMES.filter((name) => {
+        const text = this.displayVal[name]
+        return (
+          text.trim() !== '' &&
+          !isPlainNumber(text) &&
+          !this.expressionErrors[name]
+        )
+      })
+        .map(
+          (name) => `${name} = ${parseCalibrationValue(this.displayVal[name])}`,
+        )
+        .join(', ')
+    },
     errorMessage(): string {
+      const invalid = AXIS_VALUE_NAMES.find(
+        (name) => this.expressionErrors[name],
+      )
+      if (invalid) {
+        return `${invalid}: ${this.expressionErrors[invalid]}`
+      }
       if (this.axisSetRepository.activeAxisSet.xIsLogScale) {
         if (this.x1Axis.value === 0 || this.x2Axis.value === 0) {
           return 'x1 or x2 should not be 0'
@@ -320,10 +385,10 @@ export default defineComponent({
         y1: '',
         y2: '',
       },
-      axesToDisplayValAsExponential: [] as {
-        axisSetId: number
-        axisName: 'x1' | 'x2' | 'y1' | 'y2'
-      }[],
+      // INFO: the text typed into a field when it was an expression rather
+      // than a plain number, per axis set, so switching axis sets and back
+      // shows `10^-3` again instead of `0.001`. Keyed `${axisSetId}:${name}`.
+      typedExpressions: {} as Record<string, string>,
       ocrIsRunning: false,
       ocrErrorMessage: '',
       // INFO: OCR accuracy check (real-chart-bench, 41 verified figures,
@@ -359,60 +424,63 @@ export default defineComponent({
     selectAll(event: Event) {
       ;(event.target as HTMLInputElement).select()
     },
-    parseExponentialValue(value: string): string {
-      // Handle '^' notation as actual exponentiation (e.g., 2^3 = 8)
-      if (value.includes('^')) {
-        const parts = value.split('^')
-        if (parts.length === 2) {
-          const base = parseFloat(parts[0])
-          const exponent = parseFloat(parts[1])
-          if (!isNaN(base) && !isNaN(exponent)) {
-            return String(Math.pow(base, exponent))
-          }
-        }
-      }
-      return value
+    typedExpressionKey(axisSetId: number, axisName: AxisValueName): string {
+      return `${axisSetId}:${axisName}`
     },
-    isExponentialFormat(value: string): boolean {
-      return (
-        (value.includes('e+') || value.includes('^')) &&
-        typeof parseFloat(this.parseExponentialValue(value)) === 'number'
+    applyDisplayValue(axisName: AxisValueName, text: string): void {
+      const key = this.typedExpressionKey(
+        this.axisSetRepository.activeAxisSetId,
+        axisName,
+      )
+      if (text.trim() !== '' && !isPlainNumber(text)) {
+        this.typedExpressions[key] = text
+      } else {
+        delete this.typedExpressions[key]
+      }
+      // INFO: an invalid expression sets NaN (as an empty field always has),
+      // so no point is computed from a value the field does not show. The
+      // error itself is shown by `errorMessage`.
+      const value = parseCalibrationValue(text)
+      const axisSet = this.axisSetRepository.activeAxisSet
+      if (axisName === 'x1') axisSet.setX1Value(value)
+      else if (axisName === 'x2') axisSet.setX2Value(value)
+      else if (axisName === 'y1') axisSet.setY1Value(value)
+      else axisSet.setY2Value(value)
+    },
+    displayTextFor(
+      axisSetId: number,
+      axisName: AxisValueName,
+      value: number,
+    ): string {
+      const typed =
+        this.typedExpressions[this.typedExpressionKey(axisSetId, axisName)]
+      return typed !== undefined && parseCalibrationValue(typed) === value
+        ? typed
+        : String(value)
+    },
+    showAxisValue(axisName: AxisValueName, value: number): void {
+      // INFO: the value changed from outside the field (undo, OCR, a host
+      // call, switching axis sets). Keep what the person typed when it
+      // still means this value — otherwise typing `1/3` would be replaced
+      // by `0.3333333333333333` on the spot and `1/30` could never be typed.
+      // On an axis-set switch this watcher can run before the one on
+      // `activeAxisSet`, so it looks up that set's typed expression itself.
+      if (isNaN(value)) return
+      if (parseCalibrationValue(this.displayVal[axisName]) === value) return
+      this.displayVal[axisName] = this.displayTextFor(
+        this.axisSetRepository.activeAxisSetId,
+        axisName,
+        value,
       )
     },
-    updateAxesToDisplayValAsExponential(
-      axisName: 'x1' | 'x2' | 'y1' | 'y2',
-      value: string,
-    ): void {
-      if (this.isExponentialFormat(value)) {
-        this.axesToDisplayValAsExponential.push({
-          axisSetId: this.axisSetRepository.activeAxisSetId,
-          axisName,
-        })
-      } else {
-        this.axesToDisplayValAsExponential =
-          this.axesToDisplayValAsExponential.filter(
-            (axis) =>
-              !(
-                axis.axisSetId === this.axisSetRepository.activeAxisSetId &&
-                axis.axisName === axisName
-              ),
-          )
-      }
-    },
     setAxisSetValuesToDisplayValues(axisSet: AxisSetInterface): void {
-      const axisNames = ['x1', 'x2', 'y1', 'y2'] as const
-
-      axisNames.forEach((axisName) => {
-        const displayKey = axisName as keyof typeof this.displayVal
-        const axisValue = axisSet[axisName].value
-
-        // Exponential表示の条件に基づき、表示値を設定
-        this.displayVal[displayKey] = this.axesToDisplayValAsExponential.find(
-          (axis) => axis.axisSetId === axisSet.id && axis.axisName === axisName,
+      for (const axisName of AXIS_VALUE_NAMES) {
+        this.displayVal[axisName] = this.displayTextFor(
+          axisSet.id,
+          axisName,
+          axisSet[axisName].value,
         )
-          ? axisValue.toPrecision(1)
-          : String(axisValue)
-      })
+      }
     },
     exitViewAllModeIfNeeded() {
       if (this.datasetRepository.isViewAllMode) {
@@ -487,28 +555,16 @@ export default defineComponent({
   },
   watch: {
     'displayVal.x1'(value: string) {
-      this.updateAxesToDisplayValAsExponential('x1', value)
-      this.axisSetRepository.activeAxisSet.setX1Value(
-        parseFloat(this.parseExponentialValue(value)),
-      )
+      this.applyDisplayValue('x1', value)
     },
     'displayVal.x2'(value: string) {
-      this.updateAxesToDisplayValAsExponential('x2', value)
-      this.axisSetRepository.activeAxisSet.setX2Value(
-        parseFloat(this.parseExponentialValue(value)),
-      )
+      this.applyDisplayValue('x2', value)
     },
     'displayVal.y1'(value: string) {
-      this.updateAxesToDisplayValAsExponential('y1', value)
-      this.axisSetRepository.activeAxisSet.setY1Value(
-        parseFloat(this.parseExponentialValue(value)),
-      )
+      this.applyDisplayValue('y1', value)
     },
     'displayVal.y2'(value: string) {
-      this.updateAxesToDisplayValAsExponential('y2', value)
-      this.axisSetRepository.activeAxisSet.setY2Value(
-        parseFloat(this.parseExponentialValue(value)),
-      )
+      this.applyDisplayValue('y2', value)
     },
     'axisSetRepository.activeAxisSet'(axisSet: AxisSetInterface) {
       this.setAxisSetValuesToDisplayValues(axisSet)
@@ -520,24 +576,16 @@ export default defineComponent({
     },
     // Watch for individual axis value changes to update displayVal
     'axisSetRepository.activeAxisSet.x1.value'(newValue: number) {
-      if (!isNaN(newValue)) {
-        this.displayVal.x1 = String(newValue)
-      }
+      this.showAxisValue('x1', newValue)
     },
     'axisSetRepository.activeAxisSet.x2.value'(newValue: number) {
-      if (!isNaN(newValue)) {
-        this.displayVal.x2 = String(newValue)
-      }
+      this.showAxisValue('x2', newValue)
     },
     'axisSetRepository.activeAxisSet.y1.value'(newValue: number) {
-      if (!isNaN(newValue)) {
-        this.displayVal.y1 = String(newValue)
-      }
+      this.showAxisValue('y1', newValue)
     },
     'axisSetRepository.activeAxisSet.y2.value'(newValue: number) {
-      if (!isNaN(newValue)) {
-        this.displayVal.y2 = String(newValue)
-      }
+      this.showAxisValue('y2', newValue)
     },
   },
 })
@@ -553,6 +601,11 @@ export default defineComponent({
         padding: 2px 0;
         vertical-align: middle;
       }
+      // INFO: the class lands on SdTextField's <input> (attrs pass through),
+      // which carries no scope id of this component, hence :deep.
+      :deep(.c__AxisSetRepository-settings__invalid) {
+        outline: 1px solid var(--sd-error, #e53935);
+      }
     }
 
     &__hint {
@@ -561,6 +614,12 @@ export default defineComponent({
       font-size: 0.75em;
       font-weight: 500;
       white-space: nowrap;
+    }
+
+    &__note {
+      font-size: 0.75em;
+      color: var(--sd-text-medium, rgba(0, 0, 0, 0.6));
+      overflow-wrap: anywhere;
     }
 
     &__ocr-warning {
