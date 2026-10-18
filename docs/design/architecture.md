@@ -1,7 +1,7 @@
 # StarryDigitizer アーキテクチャ解説
 
 作成日: 2026-09-04
-対象: `worktree-starrydata3-integration` ブランチ時点の `src/`
+対象: `worktree-starrydata3-integration` ブランチ(2026-10-18 に `v4` へ改名)時点の `src/`
 読者: 本リポジトリに新しく入る開発者、および組み込み側(Starrydata2 の新 UI)の開発者
 
 > **組み込み側の呼称について。** 2026-09-11 に「Starrydata3」という呼び方は廃止され、
