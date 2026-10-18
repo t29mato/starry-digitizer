@@ -1,6 +1,6 @@
 # 実装設計: 自動抽出結果のレビュー(取り込み形式・編集ログ)
 
-> **2026-10 の移植について**: この文書は develop 系(シングルトン構成)で書いた。starrydata3-integration 系へ移植した版では、
+> **2026-10 の移植について**: この文書は develop 系(シングルトン構成)で書いた。starrydata3-integration 系(2026-10-18 に `v4` ブランチへ改名)へ移植した版では、
 > `applicationServiceInstances.ts` のシングルトンは無く、`ReviewSession` / `ConfidenceReview` / `ReviewView` は
 > `DigitizerContext` のメンバー(`ctx.reviewSession` など)、操作はすべて `ctx` を第 1 引数に取る
 > (`loadAutoExtraction(ctx, doc)`、`buildEditLog(ctx)` …)。ライブラリの入口は `library-build/entry.ts` ではなく

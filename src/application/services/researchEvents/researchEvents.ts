@@ -38,7 +38,8 @@ export interface ResearchEditEvent extends ResearchEventBase {
   /**
    * the action name given to capture(): 'point.add', 'point.move',
    * 'point.delete', 'axis.auto-place', 'extract.server', 'extract.auto',
-   * 'points.remove-below-score', … ('edit' when the caller named none)
+   * 'points.remove-below-score', 'points.resample', 'points.trace', …
+   * ('edit' when the caller named none)
    */
   action: string
 }

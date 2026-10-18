@@ -9,7 +9,7 @@
 
 // INFO: theme token defaults live on `:root`, not on `.starry-digitizer`.
 // A host that lays out the individual panels itself (`starry-digitizer/vue`)
-// ends up with more than one region to wrap — Starrydata3 puts its own
+// ends up with more than one region to wrap — Starrydata2 v4 puts its own
 // property/unit selectors *inside* the axis panel — and requiring a
 // `.starry-digitizer` wrapper around each of them would define the same 15
 // tokens over and over in unrelated subtrees. Declaring the defaults once at
@@ -21,7 +21,7 @@
 // specificity 0, so *anything* a host writes wins:
 //   - `:root { --sd-primary: … }`               (0,1,0) — page-wide theme
 //   - `.starry-digitizer { --sd-primary: … }`   (0,1,0) — documented recipe
-//   - `.v-application .starry-digitizer { … }`  (0,2,0) — Starrydata3 today
+//   - `.v-application .starry-digitizer { … }`  (0,2,0) — Starrydata2 v4 today
 // Per-wrapper themes keep working too: a declaration on a wrapper element
 // beats what that element inherits from the root, so two wrappers can carry
 // two different palettes. Do NOT add `.starry-digitizer` to this selector
