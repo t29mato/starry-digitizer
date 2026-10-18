@@ -16,6 +16,7 @@ import { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetReposit
 import { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 import { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
 import { DigitizerError } from '@/application/errors'
+import { MANUAL_MODE } from '@/constants'
 import type { ReviewSession } from '@/application/services/reviewSession/reviewSession'
 import type JSZip from 'jszip'
 
@@ -185,7 +186,13 @@ export class ProjectService implements ProjectServiceInterface {
       activeDatasetId: this.datasetRepository.activeDatasetId,
       canvasHandler: {
         scale: this.canvasHandler.scale,
-        manualMode: this.canvasHandler.manualMode,
+        // INFO: Trace is a tool, not a way of plotting a file should reopen
+        // in, and a reader that predates it would not know the value; it is
+        // saved as Add, the mode it adds points like.
+        manualMode:
+          this.canvasHandler.manualMode === MANUAL_MODE.TRACE
+            ? MANUAL_MODE.ADD
+            : this.canvasHandler.manualMode,
       },
     }
     // INFO: only while reviewing an auto-extraction import, so the edit log

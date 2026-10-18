@@ -13,6 +13,7 @@ import { ReviewSession } from '@/application/services/reviewSession/reviewSessio
 import { ConfidenceReview } from '@/application/services/confidenceReview/confidenceReview'
 import { ReviewView } from '@/application/services/reviewView/reviewView'
 import { AutoFeatures } from '@/application/services/autoService/autoFeatures'
+import { CurveTraceSettings } from '@/application/services/curveTrace/curveTraceSettings'
 import type { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
 import type { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 import type { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
@@ -63,6 +64,9 @@ export interface DigitizerContext {
   // and which of them the backend allows. Inert until a host configures a
   // service — see docs/design/auto-service.md.
   autoFeatures: AutoFeatures
+  // INFO: the Trace Curve tool's settings and last outcome (view state; see
+  // application/utils/curveTraceOperations.ts)
+  curveTrace: CurveTraceSettings
 }
 
 export function createDigitizerContext(): DigitizerContext {
@@ -123,5 +127,6 @@ export function createDigitizerContext(): DigitizerContext {
     confidenceReview: new ConfidenceReview(),
     reviewView: new ReviewView(),
     autoFeatures: new AutoFeatures(),
+    curveTrace: new CurveTraceSettings(),
   }) as DigitizerContext
 }

@@ -184,6 +184,29 @@ export type {
 export type { AutoFeatures } from './application/services/autoService/autoFeatures'
 
 // ---------------------------------------------------------------------------
+// Trace Curve (click a curve, follow it both ways in its colour)
+// ---------------------------------------------------------------------------
+// INFO: uses the extractor's colour distance and the drawn mask; one click is
+// one undo step recorded as `points.trace`. `traceCurve` is the pure
+// pixels-in / points-out part, for a host with its own pixel source.
+export {
+  traceCurveAt,
+  TRACE_ACTION,
+} from './application/utils/curveTraceOperations'
+export { traceCurve, TRACE_LIMITS } from './application/utils/curveTrace'
+export type {
+  TraceImage,
+  TraceOptions,
+  TraceResult,
+  TraceSampling,
+  TraceStop,
+} from './application/utils/curveTrace'
+export type {
+  CurveTraceOutcome,
+  CurveTraceSettings,
+} from './application/services/curveTrace/curveTraceSettings'
+
+// ---------------------------------------------------------------------------
 // Auto-extraction review (import, edit log, confidence review, series editing)
 // ---------------------------------------------------------------------------
 // INFO: docs/design/auto-extraction-review-design.md. Every function takes

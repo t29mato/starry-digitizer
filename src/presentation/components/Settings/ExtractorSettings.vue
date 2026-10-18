@@ -30,6 +30,12 @@
         {{ mode.label }}
       </sd-button>
     </div>
+    <curve-trace-settings
+      v-if="
+        !datasetRepository.isViewAllMode &&
+        canvasHandler.manualMode === traceMode
+      "
+    ></curve-trace-settings>
     <div class="d-flex align-center">
       <h5>Interpolation</h5>
       <sd-checkbox
@@ -108,6 +114,7 @@ import SymbolExtractSettings from './SymbolExtractSettings.vue'
 import LineExtractSettings from './LineExtractSettings.vue'
 import MaskSettings from './MaskSettings.vue'
 import ColorSettings from './ColorSettings.vue'
+import CurveTraceSettings from './CurveTraceSettings.vue'
 // import { ExtractStrategy } from '@/application/strategies/extractor'
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
@@ -130,6 +137,7 @@ export default defineComponent({
     LineExtractSettings,
     MaskSettings,
     ColorSettings,
+    CurveTraceSettings,
     SdButton,
     SdCheckbox,
     SdSelect,
@@ -158,6 +166,7 @@ export default defineComponent({
   data() {
     return {
       isExtracting: false,
+      traceMode: MANUAL_MODE.TRACE as ManualMode,
       manualModes: [
         { label: 'Add (A)', value: MANUAL_MODE.ADD, dataCy: 'manual-add' },
         { label: 'Edit (E)', value: MANUAL_MODE.EDIT, dataCy: 'manual-edit' },
@@ -165,6 +174,11 @@ export default defineComponent({
           label: 'Delete (D)',
           value: MANUAL_MODE.DELETE,
           dataCy: 'manual-delete',
+        },
+        {
+          label: 'Trace (T)',
+          value: MANUAL_MODE.TRACE,
+          dataCy: 'manual-trace',
         },
       ] as { label: string; value: ManualMode; dataCy: string }[],
     }

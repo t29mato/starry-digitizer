@@ -91,6 +91,15 @@ describe('CanvasMain keyboard shortcuts', () => {
     expect(mounted.ctx.canvasHandler.manualMode).toBe(MANUAL_MODE.EDIT)
   })
 
+  it('switches to Trace Curve with t', () => {
+    const mounted = mountCanvas()
+    wrapper = mounted.wrapper
+
+    press(frameOf(mounted.wrapper), 't')
+
+    expect(mounted.ctx.canvasHandler.manualMode).toBe(MANUAL_MODE.TRACE)
+  })
+
   it('ignores keys pressed elsewhere on the page', () => {
     const mounted = mountCanvas()
     wrapper = mounted.wrapper
