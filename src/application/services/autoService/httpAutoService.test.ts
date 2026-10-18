@@ -1,4 +1,7 @@
-import { createHttpAutoService, isBlockedAsMixedContent } from './httpAutoService'
+import {
+  createHttpAutoService,
+  isBlockedAsMixedContent,
+} from './httpAutoService'
 import { DigitizerError } from '@/application/errors'
 
 type FetchCall = [string, RequestInit]
@@ -86,7 +89,9 @@ describe('createHttpAutoService', () => {
     await expect(failure).rejects.toBeInstanceOf(DigitizerError)
     await expect(failure).rejects.toMatchObject({
       code: 'AUTO_SERVICE_FAILED',
-      message: expect.stringContaining('method_unavailable: service_unavailable'),
+      message: expect.stringContaining(
+        'method_unavailable: service_unavailable',
+      ),
     })
   })
 
@@ -116,12 +121,63 @@ describe('createHttpAutoService', () => {
       jest.useRealTimers()
     }
   })
+
+  test("the caller's signal aborts the fetch", async () => {
+    const fetch = jest.fn(
+      (_url: string, init: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () =>
+            reject(new Error('aborted')),
+          )
+        }),
+    )
+    const service = createHttpAutoService({
+      baseUrl: '/x',
+      fetch: fetch as unknown as typeof globalThis.fetch,
+    })
+    const controller = new AbortController()
+    const failure = service.extract(
+      new Blob(['x']),
+      { method: 'markernet' },
+      { signal: controller.signal },
+    )
+    controller.abort()
+    await expect(failure).rejects.toMatchObject({
+      code: 'AUTO_SERVICE_FAILED',
+      message: expect.stringContaining('cancelled'),
+    })
+  })
+
+  test('legend / series_threshold / loops go into the extract query as given', async () => {
+    const fetch = jest.fn(async () => jsonResponse(200, { series: [] }))
+    const service = createHttpAutoService({
+      baseUrl: '/x',
+      fetch: fetch as unknown as typeof globalThis.fetch,
+    })
+    await service.extract(new Blob(['x']), {
+      method: 'markernet',
+      params: { threshold: 0.4, series_threshold: 0.8, legend: 0 },
+    })
+    await service.extract(new Blob(['x']), {
+      method: 'lineformer',
+      params: { threshold: 0.3, interval: 10, loops: 1 },
+    })
+    expect((fetch.mock.calls[0] as unknown as FetchCall)[0]).toBe(
+      '/x/extract?method=markernet&threshold=0.4&series_threshold=0.8&legend=0',
+    )
+    expect((fetch.mock.calls[1] as unknown as FetchCall)[0]).toBe(
+      '/x/extract?method=lineformer&threshold=0.3&interval=10&loops=1',
+    )
+  })
 })
 
 describe('isBlockedAsMixedContent', () => {
   test('only an http target from an https page is blocked', () => {
     expect(
-      isBlockedAsMixedContent('http://starryai.example/x', 'https://v4.example/'),
+      isBlockedAsMixedContent(
+        'http://starryai.example/x',
+        'https://v4.example/',
+      ),
     ).toBe(true)
     expect(isBlockedAsMixedContent('/relay', 'https://v4.example/')).toBe(false)
     expect(

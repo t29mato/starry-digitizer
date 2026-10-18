@@ -7,11 +7,12 @@ import {
   toBackendPx,
 } from '@/application/services/autoService/autoServiceWire'
 import {
-  currentImageBlob,
+  bindToCurrentImage,
   requireAutoFeature,
 } from '@/application/utils/autoFeatureOperations'
 import { activateDataset } from '@/application/utils/datasetOperations'
 import { Dataset } from '@/domain/models/dataset/dataset'
+import { DatasetInterface } from '@/domain/models/dataset/datasetInterface'
 import { Point, Rect } from '@/@types/types'
 
 // INFO: Server Extraction (Starrydata2 v4 board P2): the backend finds the
@@ -25,6 +26,11 @@ import { Point, Rect } from '@/@types/types'
 //
 // Undo: one Extract is ONE step ('extract.server'), however many datasets it
 // creates (board P3). Undo removes the whole draft at once.
+//
+// Re-extracting (another threshold, say) REPLACES the drafts the same method
+// made on the same axis set — but only those nobody has touched since. A
+// draft someone edited (moved, added or deleted a point, renamed it, took
+// low-score points out) is kept, and the new draft gets a name of its own.
 
 export interface ServerExtractionOptions {
   method: ExtractionMethod
@@ -36,12 +42,20 @@ export interface ServerExtractionOptions {
    * image. null = the whole image.
    */
   area?: Rect | null
+  /**
+   * Cancels the request. An answer that arrives after it was aborted — or
+   * after the image changed — is dropped, never applied (the promise rejects;
+   * see isImageChangedError()).
+   */
+  signal?: AbortSignal
 }
 
 export interface ServerExtractionOutcome {
   result: ServerExtractionResult
   /** ids of the datasets the series went into, in series order */
   datasetIds: number[]
+  /** how many untouched drafts of an earlier Extract were replaced */
+  replacedDraftCount: number
 }
 
 /**
@@ -59,7 +73,9 @@ export async function requestServerExtraction(
     options.area === undefined
       ? ctx.axisSetRepository.activeAxisSet.plotArea
       : options.area
-  const body = await service.extract(currentImageBlob(ctx), {
+  const { signal } = options
+  const { image, settle } = bindToCurrentImage(ctx, signal)
+  const request = {
     method: options.method,
     params: options.params,
     area: area
@@ -70,15 +86,28 @@ export async function requestServerExtraction(
           y1: toBackendPx(area.yPx + area.heightPx),
         }
       : undefined,
-  })
+  }
+  let body: unknown
+  try {
+    body = await (signal
+      ? service.extract(image, request, { signal })
+      : service.extract(image, request))
+  } catch (error) {
+    // INFO: a fetch cut off by our own abort is a cancel, not a failure
+    settle()
+    throw error
+  }
+  settle()
   return parseExtractionResponse(body)
 }
 
 /**
  * Turn the series of an extraction into datasets on the active axis set,
- * as one undo step. The active dataset is reused when it is still empty, so
- * extracting into a fresh project does not leave an empty "dataset 1" behind.
- * Each point keeps the method's score for it (MarkerNet), which is what the
+ * as one undo step. The untouched drafts an earlier Extract with the same
+ * method made on this axis set are reused (in order; the ones left over are
+ * removed), else the active dataset when it is still empty, so extracting
+ * into a fresh project does not leave an empty "dataset 1" behind. Each
+ * point keeps the method's score for it (MarkerNet), which is what the
  * confidence review (Review Points) steps through.
  *
  * @returns the dataset ids, in series order. Nothing is captured when the
@@ -89,7 +118,17 @@ export function applyServerExtraction(
   result: ServerExtractionResult,
   method: ExtractionMethod,
 ): number[] {
-  if (result.series.length === 0) return []
+  return applyDrafts(ctx, result, method).datasetIds
+}
+
+function applyDrafts(
+  ctx: DigitizerContext,
+  result: ServerExtractionResult,
+  method: ExtractionMethod,
+): { datasetIds: number[]; replacedDraftCount: number } {
+  if (result.series.length === 0) {
+    return { datasetIds: [], replacedDraftCount: 0 }
+  }
   const { axisSetRepository, datasetRepository } = ctx
   const { historyManager, interpolator } = ctx
 
@@ -98,12 +137,26 @@ export function applyServerExtraction(
   axisSetRepository.activeAxisSet.inactivateAxis()
 
   const axisSetId = axisSetRepository.activeAxisSetId
-  const reusable =
+  const drafts = datasetRepository.datasets.filter(
+    (dataset) =>
+      dataset.axisSetId === axisSetId && isUntouchedDraft(ctx, dataset, method),
+  )
+  const emptyActive =
     datasetRepository.isViewAllMode ||
     datasetRepository.activeDataset.points.length > 0 ||
     datasetRepository.activeDataset.scoreRemovedPoints.length > 0
       ? null
       : datasetRepository.activeDataset
+  const reusable: DatasetInterface[] =
+    drafts.length > 0 ? drafts : emptyActive ? [emptyActive] : []
+
+  // INFO: the names of the datasets that stay; a kept (edited) draft keeps
+  // its name and the new one is numbered after it
+  const taken = new Set(
+    datasetRepository.datasets
+      .filter((dataset) => !reusable.includes(dataset))
+      .map((dataset) => dataset.name),
+  )
 
   const ids = result.series.map((series, index) => {
     const points: Point[] = series.points.map((p, i) => {
@@ -111,15 +164,18 @@ export function applyServerExtraction(
       if (p.score !== undefined) point.score = p.score
       return point
     })
-    const name = draftName(series, index, method)
-    if (index === 0 && reusable) {
-      reusable.name = name
-      reusable.points = points
-      reusable.visiblePointIds = points.map((p) => p.id)
-      reusable.manuallyAddedPointIds = []
-      reusable.inactivatePoints()
-      reusable.setAxisSetId(axisSetId)
-      return reusable.id
+    const name = uniqueName(draftName(series, index, method), taken)
+    taken.add(name)
+    const target = reusable[index]
+    if (target) {
+      target.name = name
+      target.points = points
+      target.visiblePointIds = points.map((p) => p.id)
+      target.manuallyAddedPointIds = []
+      target.scoreRemovedPoints = []
+      target.inactivatePoints()
+      target.setAxisSetId(axisSetId)
+      return target.id
     }
     const dataset = new Dataset(name, points, datasetRepository.nextDatasetId)
     dataset.setAxisSetId(axisSetId)
@@ -127,9 +183,82 @@ export function applyServerExtraction(
     datasetRepository.addDataset(dataset)
     return dataset.id
   })
+  // INFO: fewer series than last time: the surplus untouched drafts go too
+  // (at least one draft was reused above, so the list never becomes empty)
+  const surplus = drafts.slice(result.series.length)
+  surplus.forEach((dataset) => datasetRepository.removeDataset(dataset.id))
 
   activateDataset(ctx, ids[0])
-  return ids
+  ids.forEach((id) => {
+    const dataset = datasetRepository.datasets.find((d) => d.id === id)
+    if (dataset) rememberDraft(ctx, dataset, method)
+  })
+  return { datasetIds: ids, replacedDraftCount: drafts.length }
+}
+
+// INFO: "untouched" is decided by CONTENT, like editLogDiff.ts decides the
+// correction cost: a draft is untouched when it is exactly what an Extract
+// left behind. Comparing states instead of counting operations makes undo /
+// redo come out right without any bookkeeping — undoing the second Extract
+// brings back the first one's drafts, and those are recognised again,
+// because every state an Extract produced is remembered (per context,
+// view state only: not saved, not in the undo history). A project reloaded
+// from a file has no memory, so its drafts count as edited and are kept —
+// the safe side.
+const MAX_REMEMBERED_DRAFTS = 500
+const draftMemory = new WeakMap<
+  DigitizerContext,
+  Map<string, ExtractionMethod>
+>()
+
+function draftFingerprint(dataset: DatasetInterface): string {
+  return JSON.stringify([
+    dataset.id,
+    dataset.name,
+    dataset.axisSetId,
+    dataset.points.map((p) => [p.id, p.xPx, p.yPx, p.score ?? null]),
+    dataset.visiblePointIds,
+    dataset.manuallyAddedPointIds,
+    dataset.scoreRemovedPoints.length,
+  ])
+}
+
+function rememberDraft(
+  ctx: DigitizerContext,
+  dataset: DatasetInterface,
+  method: ExtractionMethod,
+): void {
+  let memory = draftMemory.get(ctx)
+  if (!memory) {
+    memory = new Map()
+    draftMemory.set(ctx, memory)
+  }
+  const fingerprint = draftFingerprint(dataset)
+  memory.delete(fingerprint)
+  memory.set(fingerprint, method)
+  if (memory.size > MAX_REMEMBERED_DRAFTS) {
+    const oldest = memory.keys().next().value
+    if (oldest !== undefined) memory.delete(oldest)
+  }
+}
+
+/**
+ * True when `dataset` is exactly what an Extract with `method` left behind:
+ * nobody moved, added, deleted or renamed anything in it since.
+ */
+export function isUntouchedDraft(
+  ctx: DigitizerContext,
+  dataset: DatasetInterface,
+  method: ExtractionMethod,
+): boolean {
+  return draftMemory.get(ctx)?.get(draftFingerprint(dataset)) === method
+}
+
+function uniqueName(name: string, taken: Set<string>): string {
+  if (!taken.has(name)) return name
+  let n = 2
+  while (taken.has(`${name} ${n}`)) n++
+  return `${name} ${n}`
 }
 
 // INFO: the legend text when the backend matched one (that is the name a
@@ -150,8 +279,5 @@ export async function runServerExtraction(
   options: ServerExtractionOptions,
 ): Promise<ServerExtractionOutcome> {
   const result = await requestServerExtraction(ctx, options)
-  return {
-    result,
-    datasetIds: applyServerExtraction(ctx, result, options.method),
-  }
+  return { result, ...applyDrafts(ctx, result, options.method) }
 }

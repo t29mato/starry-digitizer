@@ -5,7 +5,7 @@ import {
   parseCalibrationResponse,
 } from '@/application/services/autoService/autoServiceWire'
 import {
-  currentImageBlob,
+  bindToCurrentImage,
   requireAutoFeature,
 } from '@/application/utils/autoFeatureOperations'
 import { fitAxisTicks } from '@/domain/services/axisTickFitter'
@@ -29,14 +29,28 @@ import { POINT_MODE } from '@/constants'
  * Ask the service to calibrate the loaded image and keep the answer as the
  * pending proposal for the active axis set.
  *
+ * `signal` cancels the request; an answer that comes after it was aborted,
+ * or after the image changed, is dropped (isImageChangedError()).
+ *
  * @throws DigitizerError('AUTO_SERVICE_FAILED') when the feature is not
  * available, no image is loaded, or the service fails.
  */
 export async function requestAutoCalibration(
   ctx: DigitizerContext,
+  signal?: AbortSignal,
 ): Promise<AutoCalibrationProposal> {
   const service = requireAutoFeature(ctx, 'auto_axis')
-  const body = await service.calibrate(currentImageBlob(ctx))
+  const { image, settle } = bindToCurrentImage(ctx, signal)
+  let body: unknown
+  try {
+    body = await (signal
+      ? service.calibrate(image, { signal })
+      : service.calibrate(image))
+  } catch (error) {
+    settle()
+    throw error
+  }
+  settle()
   const proposal = parseCalibrationResponse(body)
   ctx.autoFeatures.setProposal(proposal, ctx.axisSetRepository.activeAxisSetId)
   return proposal
