@@ -10,6 +10,7 @@ A web-based plot digitizer tool for extracting data points from graph images. De
 - **Axis Calibration**: Define X and Y axes with linear or logarithmic scales
 - **Manual Point Extraction**: Click on data points to extract coordinates
 - **Auto Point Detection**: Automatically detect data points by color
+- **Trace Curve**: Click a curve and it is followed both ways in its colour (within the mask, with the same colour distance as Auto Point Detection); one undo step
 - **Multiple Datasets**: Manage multiple datasets with different colors
 - **Resample**: Thin a dataset to N points, keep every k-th, simplify (Douglas–Peucker), smooth, or take values at given x — computed on the calibrated axes (log axes in log), previewed before Apply, one undo step
 - **Magnifier**: Zoom in for precise point placement
@@ -477,6 +478,33 @@ addPoint(ctx, { xPx: 600, yPx: 500 }) // original-image pixels
 - `deletePoint()` ignores an id that is not in the active dataset, and refreshes
   the interpolation preview when interpolation is on.
 
+##### Tracing a curve from one click
+
+```ts
+import { traceCurveAt, MANUAL_MODE } from 'starry-digitizer/core'
+
+ctx.canvasHandler.setManualMode(MANUAL_MODE.TRACE) // the "Trace (T)" mode
+const outcome = traceCurveAt(ctx, { xPx: 412, yPx: 230 }) // original-image pixels
+// { added, stops: ['end', 'junction'], colorHex, lengthPx, error? }
+```
+
+- Follows the curve under the click both ways and adds its points to the
+  **active dataset** as **one undo step**, recorded as `points.trace`. A click
+  that finds nothing adds and captures nothing and says why in `error`.
+- The colour is the one under the click (or, with
+  `ctx.curveTrace.setColorSource('picker')`, the Color Settings colour). What
+  counts as the same colour is the extractor's `colorDistancePct`, and a drawn
+  mask bounds the trace — the same rules as Automatic Extraction.
+- `ctx.curveTrace` holds the settings: `maxGapPx` (gaps jumped, e.g. dashes),
+  `spacingPx` and `sampling` (`'path'`: a point every N px along the curve;
+  `'x'`: at every multiple of N px in x).
+- Each end reports why it stopped: `end` (nothing ahead within the gap), `edge`,
+  `mask`, `loop` (closed curve), `junction` (a sharp turn where something of the
+  same colour joins — an axis, usually; tracing stops there rather than follow
+  it), `limit`.
+- `traceCurve(image, click, options)` is the pure part (RGBA in, points out) for
+  a host with its own pixels. Trace Curve is not the Interpolator: it reads the
+  image, while interpolation draws a spline between points you placed.
 ##### Resampling a dataset
 
 ```ts
@@ -1120,7 +1148,7 @@ reach *one* digitizer:
 | `⌘Z` / `Ctrl+Z`, `⇧⌘Z` / `Ctrl+Shift+Z` | Undo / redo | `features.keyboardHistory`; not in `readonly` |
 | `⌘S`, `⌘O` (`Ctrl` too) | Save / load project ZIP | `features.keyboardFile` and `features.zipExportImport`; `⌘O` also needs not-`readonly` |
 | `+` / `=`, `-`, `0`, `f` | Zoom in, zoom out, original size, fit | `features.keyboardEditing` (no modifier — `⌘+`/`⌘-` are the browser's own page zoom and cannot be overridden) |
-| `a`, `e`, `d` | Manual mode: add / edit / delete | `features.keyboardEditing`; not in `readonly`, not in View All |
+| `a`, `e`, `d`, `t` | Manual mode: add / edit / delete / trace curve | `features.keyboardEditing`; not in `readonly`, not in View All |
 | `⌘A` / `Ctrl+A` | Select every point of the active dataset | `features.keyboardEditing`; not in `readonly`, not in View All |
 | `Escape` | Deselect points | `features.keyboardEditing`; not in `readonly`, not in View All |
 | `Backspace` / `Delete` | Delete the selected points | `features.keyboardEditing`; not in `readonly`, not in View All |
