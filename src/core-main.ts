@@ -184,6 +184,24 @@ export type {
 export type { AutoFeatures } from './application/services/autoService/autoFeatures'
 
 // ---------------------------------------------------------------------------
+// Resample (thin / simplify / smooth / re-sample the active dataset)
+// ---------------------------------------------------------------------------
+// INFO: computed in the axis set's calibrated space (log10 on a log axis);
+// Apply is one undo step recorded as `points.resample`.
+export {
+  previewResample,
+  applyResample,
+  RESAMPLE_ACTION,
+} from './application/utils/resampleOperations'
+export type { ResamplePreview } from './application/utils/resampleOperations'
+export type {
+  ResampleMode,
+  ResampleOptions,
+} from './application/utils/resample'
+export { calibratedSpaceOf } from './application/utils/calibratedSpace'
+export type { CalibratedSpace } from './application/utils/calibratedSpace'
+
+// ---------------------------------------------------------------------------
 // Auto-extraction review (import, edit log, confidence review, series editing)
 // ---------------------------------------------------------------------------
 // INFO: docs/design/auto-extraction-review-design.md. Every function takes

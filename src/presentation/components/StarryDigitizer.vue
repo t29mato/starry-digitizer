@@ -20,6 +20,7 @@
           @error="onError"
         ></auto-place-panel>
         <dataset-manager v-if="options.features.datasetPanel"></dataset-manager>
+        <resample-panel v-if="options.features.datasetPanel"></resample-panel>
         <data-table v-if="options.features.dataTable" />
         <slot name="aside-bottom" :width="leftSidebarWidth"></slot>
       </div>
@@ -60,7 +61,7 @@ import '@/presentation/styles/base.scss'
 import { MagnifierMain } from '@/presentation/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
 import { AxisSetSettings, ExtractorSettings, ImageSettings } from './Settings'
-import { DatasetManager } from './DatasetManager'
+import { DatasetManager, ResamplePanel } from './DatasetManager'
 import { AxisSetManager } from './AxisSetManager'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'
 import DataTable from '@/presentation/components/Export/DataTable.vue'

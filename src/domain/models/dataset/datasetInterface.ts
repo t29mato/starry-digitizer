@@ -58,6 +58,7 @@ export interface DatasetInterface {
   ): void
   activatePointsInPolygon(polygon: Coord[], additive?: boolean): void
   appendPoints(points: Point[]): number[]
+  replacePoints(points: Omit<Point, 'id'>[]): number[]
   takePoints(ids: number[]): Point[]
   mergeDuplicatePoints(maxDistancePx: number): number
   removePointsBelowScore(threshold: number): number
