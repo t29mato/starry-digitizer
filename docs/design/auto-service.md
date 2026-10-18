@@ -78,6 +78,20 @@ interface AutoService {
   LineFormer にはスコアが無いので、レビューの対象にならない。
 - 方法ごとの引数: MarkerNet は `threshold`（既定 0.4）、LineFormer は `threshold`（0.3）と `interval`（px、10）。
   backend の既定と同じ値を UI の初期値にしている。
+  さらに MarkerNet の `series_threshold`（系列に分ける距離、0.05–5、既定 0.5）と `legend`（凡例から系列名、既定 1）、
+  LineFormer の `loops`（線を曲線に沿って追い、ヒステリシスの両枝を取る、既定 0）を画面に出す。この 3 つは
+  **backend の既定と違うときだけ**送る（触らなければ以前と同じ要求になる）。意味と型は backend（MIT）の
+  `extract/markernet.py`・`extract/lineformer.py` の `Param` から。
+- **再抽出は下書きを置き換える。** 同じ方法・同じ軸セットで作られ、作られてから誰も触っていない下書きは、
+  次の Extract で中身が入れ替わる（順に再利用し、系列が減ったら余りは消す）。点を動かした・足した・消した、
+  名前を変えた、低スコアをまとめて外した下書きは残し、新しい下書きは `… (markernet) 2` のように番号を付ける。
+  「触っていない」は操作の数ではなく**中身の比較**で決める（Extract が作った状態を覚えておき、今と同じか）。
+  だから Undo / Redo で戻った下書きも、また置き換えの対象になる。覚えはコンテキストごとの表示状態で、
+  保存しない。ファイルから開いた下書きは「触った」扱いで残る（安全側）。置き換えも含めて Extract 1 回 = 1 手順。
+- **画像が替わったら応答を捨てる。** Extract / Auto-place の実行中に画像が差し替わると、パネルが
+  `AbortController` で要求を中断し（`calibrate(image, { signal })` / `extract(image, req, { signal })`）、
+  遅れて来た応答は新しい画像に適用しない（中断を無視するホストの実装でも、操作の側で画像を比べて捨てる）。
+  エラーイベントは出さず、パネルに「Cancelled: the image changed.」とだけ出す。
 - ライセンスの表示: LineFormer を選ぶと backend README が求める一文、MarkerNet を選ぶと重みが非商用である旨を出す。
 
 ## 5. Undo/Redo（P3）

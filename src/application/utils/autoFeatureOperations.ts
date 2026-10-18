@@ -154,3 +154,48 @@ export function dataUrlToBlob(dataUrl: string): Blob {
   }
   return new Blob([bytes], { type: mime })
 }
+
+// INFO: an Auto-place / Extract answer belongs to the image it was asked
+// for. When the image changes while the request is in flight (a new upload,
+// a project import), the answer must not be applied to the new image: the
+// panel aborts its signal, the service may cancel the request, and even a
+// service that ignores the signal has its late answer dropped by settle().
+const IMAGE_CHANGED = 'image_changed'
+
+/**
+ * The image a request is for, and the check to run when its answer is in.
+ * `settle()` throws (DigitizerError AUTO_SERVICE_FAILED, see
+ * isImageChangedError) when `signal` was aborted or the loaded image is no
+ * longer the one the request was made for.
+ */
+export function bindToCurrentImage(
+  ctx: DigitizerContext,
+  signal?: AbortSignal,
+): { image: Blob; settle(): void } {
+  const url = ctx.canvasHandler.uploadImageUrl
+  const image = currentImageBlob(ctx)
+  const settle = () => {
+    if (signal?.aborted || ctx.canvasHandler.uploadImageUrl !== url) {
+      throw new DigitizerError(
+        'AUTO_SERVICE_FAILED',
+        'The image changed while the auto service was working; its answer was discarded',
+        { reason: IMAGE_CHANGED },
+      )
+    }
+  }
+  settle()
+  return { image, settle }
+}
+
+/** True for the error settle() throws: a cancel, not a service failure. */
+export function isImageChangedError(error: unknown): boolean {
+  const cause =
+    typeof error === 'object' && error !== null
+      ? (error as { cause?: unknown }).cause
+      : undefined
+  return (
+    typeof cause === 'object' &&
+    cause !== null &&
+    (cause as { reason?: unknown }).reason === IMAGE_CHANGED
+  )
+}
