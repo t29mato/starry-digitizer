@@ -83,6 +83,7 @@ import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { ProjectFileOperationResult } from '@/application/utils/projectFileOperations'
 import { addPoint } from '@/application/utils/pointOperations'
+import { traceCurveAt } from '@/application/utils/curveTraceOperations'
 import { addAxisCoord } from '@/application/utils/axisSetOperations'
 import { setAnnotationArea } from '@/application/utils/reviewEditOperations'
 import { goToLowConfidencePoint } from '@/application/utils/confidenceReviewOperations'
@@ -367,6 +368,12 @@ export default defineComponent({
           return
         case 2:
           // INFO: CanvasPoint Component -> Click method
+          return
+        case MANUAL_MODE.TRACE:
+          // INFO: one click = one trace = one undo step; nothing is added
+          // when nothing is found (the status line in Manual Extraction
+          // says why).
+          traceCurveAt(this.ctx, { xPx, yPx })
           return
         default:
           break
@@ -740,6 +747,7 @@ export default defineComponent({
         'a',
         'e',
         'd',
+        't',
         'n',
         'N',
       ]
@@ -779,6 +787,9 @@ export default defineComponent({
           return true
         case 'd':
           this.canvasHandler.setManualMode(2)
+          return true
+        case 't':
+          this.canvasHandler.setManualMode(MANUAL_MODE.TRACE)
           return true
         case 'n':
         case 'N':

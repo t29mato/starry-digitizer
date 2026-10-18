@@ -1,4 +1,4 @@
-import { reactive } from '@vue/reactivity'
+import { markRaw, reactive } from '@vue/reactivity'
 import { AxisSetRepositoryManager } from '@/domain/repositories/axisSetRepository/manager/axisSetRepositoryManager'
 import { DatasetRepositoryManager } from '@/domain/repositories/datasetRepository/manager/datasetRepositoryManager'
 import { CanvasHandlerManager } from '@/application/services/canvasHandler/manager/canvasHandlerManager'
@@ -13,6 +13,11 @@ import { ReviewSession } from '@/application/services/reviewSession/reviewSessio
 import { ConfidenceReview } from '@/application/services/confidenceReview/confidenceReview'
 import { ReviewView } from '@/application/services/reviewView/reviewView'
 import { AutoFeatures } from '@/application/services/autoService/autoFeatures'
+import { CurveTraceSettings } from '@/application/services/curveTrace/curveTraceSettings'
+import {
+  ResearchEvents,
+  type ResearchEventsInterface,
+} from '@/application/services/researchEvents/researchEvents'
 import type { AxisSetRepositoryInterface } from '@/domain/repositories/axisSetRepository/axisSetRepositoryInterface'
 import type { DatasetRepositoryInterface } from '@/domain/repositories/datasetRepository/datasetRepositoryInterface'
 import type { CanvasHandlerInterface } from '@/application/services/canvasHandler/canvasHandlerInterface'
@@ -63,6 +68,12 @@ export interface DigitizerContext {
   // and which of them the backend allows. Inert until a host configures a
   // service — see docs/design/auto-service.md.
   autoFeatures: AutoFeatures
+  // INFO: the Trace Curve tool's settings and last outcome (view state; see
+  // application/utils/curveTraceOperations.ts)
+  curveTrace: CurveTraceSettings
+  // INFO: the research-record hook (docs/design/auto-service.md §9). Inert
+  // until a host sets a listener; the digitizer never sends events anywhere.
+  researchEvents: ResearchEventsInterface
 }
 
 export function createDigitizerContext(): DigitizerContext {
@@ -74,6 +85,9 @@ export function createDigitizerContext(): DigitizerContext {
     canvasHandler,
   ).getNewInstance()
   const reviewSession = new ReviewSession()
+  const researchEvents = new ResearchEvents(
+    () => reviewSession.data?.importedAt ?? null,
+  )
   const historyManager = new HistoryManager(
     axisSetRepository,
     datasetRepository,
@@ -86,6 +100,14 @@ export function createDigitizerContext(): DigitizerContext {
     if (change.type === 'clear') return
     reviewSession.record(
       change.type === 'capture' ? change.action ?? 'edit' : change.type,
+    )
+    // INFO: the same stream, handed to the host's research listener (if
+    // any) — the review log above only records inside a review, this one
+    // records every edit
+    researchEvents.emit(
+      change.type === 'capture'
+        ? { type: 'edit', action: change.action ?? 'edit' }
+        : { type: change.type },
     )
   })
 
@@ -123,5 +145,9 @@ export function createDigitizerContext(): DigitizerContext {
     confidenceReview: new ConfidenceReview(),
     reviewView: new ReviewView(),
     autoFeatures: new AutoFeatures(),
+    curveTrace: new CurveTraceSettings(),
+    // INFO: markRaw — it holds a host callback and a counter, nothing a view
+    // renders, so there is nothing for reactivity to track
+    researchEvents: markRaw(researchEvents),
   }) as DigitizerContext
 }

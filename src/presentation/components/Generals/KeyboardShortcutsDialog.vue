@@ -93,6 +93,7 @@ export default defineComponent({
           { action: 'Add', shortcut: 'A' },
           { action: 'Edit', shortcut: 'E' },
           { action: 'Delete', shortcut: 'D' },
+          { action: 'Trace curve', shortcut: 'T' },
         ],
       },
     ],

@@ -54,6 +54,8 @@ export const MANUAL_MODE = {
   ADD: 0,
   EDIT: 1,
   DELETE: 2,
+  // INFO: Trace Curve — a click follows the curve under it (curveTraceOperations.ts)
+  TRACE: 3,
 } as const
 
 export const MASK_MODE = {

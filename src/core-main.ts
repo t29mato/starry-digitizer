@@ -185,6 +185,31 @@ export type {
   ServerExtractionOptions,
   ServerExtractionOutcome,
 } from './application/utils/serverExtractionOperations'
+
+// ---------------------------------------------------------------------------
+// Research record (host hook)
+// ---------------------------------------------------------------------------
+// INFO: docs/design/auto-service.md §9. Off unless a host sets a listener —
+// the `onResearchEvent` prop of <StarryDigitizer> calls this. The digitizer
+// never sends the events anywhere itself.
+export { configureResearchEvents } from './application/utils/researchEventOperations'
+export {
+  RESEARCH_EVENT_FORMAT,
+  RESEARCH_EVENT_VERSION,
+} from './application/services/researchEvents/researchEvents'
+export type {
+  ResearchEvent,
+  ResearchEventBase,
+  ResearchEventType,
+  ResearchEventListener,
+  ResearchEditEvent,
+  ResearchUndoEvent,
+  ResearchRedoEvent,
+  ResearchReviewStartEvent,
+  ResearchReviewStepEvent,
+  ResearchReviewExportEvent,
+  ResearchReviewEndEvent,
+} from './application/services/researchEvents/researchEvents'
 export {
   parseCalibrationResponse,
   parseExtractionResponse,
@@ -197,6 +222,47 @@ export type {
   ServerExtractionSeries,
 } from './application/services/autoService/autoServiceWire'
 export type { AutoFeatures } from './application/services/autoService/autoFeatures'
+
+// ---------------------------------------------------------------------------
+// Trace Curve (click a curve, follow it both ways in its colour)
+// ---------------------------------------------------------------------------
+// INFO: uses the extractor's colour distance and the drawn mask; one click is
+// one undo step recorded as `points.trace`. `traceCurve` is the pure
+// pixels-in / points-out part, for a host with its own pixel source.
+export {
+  traceCurveAt,
+  TRACE_ACTION,
+} from './application/utils/curveTraceOperations'
+export { traceCurve, TRACE_LIMITS } from './application/utils/curveTrace'
+export type {
+  TraceImage,
+  TraceOptions,
+  TraceResult,
+  TraceSampling,
+  TraceStop,
+} from './application/utils/curveTrace'
+export type {
+  CurveTraceOutcome,
+  CurveTraceSettings,
+} from './application/services/curveTrace/curveTraceSettings'
+
+// ---------------------------------------------------------------------------
+// Resample (thin / simplify / smooth / re-sample the active dataset)
+// ---------------------------------------------------------------------------
+// INFO: computed in the axis set's calibrated space (log10 on a log axis);
+// Apply is one undo step recorded as `points.resample`.
+export {
+  previewResample,
+  applyResample,
+  RESAMPLE_ACTION,
+} from './application/utils/resampleOperations'
+export type { ResamplePreview } from './application/utils/resampleOperations'
+export type {
+  ResampleMode,
+  ResampleOptions,
+} from './application/utils/resample'
+export { calibratedSpaceOf } from './application/utils/calibratedSpace'
+export type { CalibratedSpace } from './application/utils/calibratedSpace'
 
 // ---------------------------------------------------------------------------
 // Auto-extraction review (import, edit log, confidence review, series editing)

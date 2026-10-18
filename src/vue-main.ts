@@ -27,7 +27,10 @@ export {
 } from './presentation/components/Canvas'
 export { MagnifierMain } from './presentation/components/Magnifier'
 export { AxisSetManager } from './presentation/components/AxisSetManager'
-export { DatasetManager } from './presentation/components/DatasetManager'
+export {
+  DatasetManager,
+  ResamplePanel,
+} from './presentation/components/DatasetManager'
 export {
   AxisSetSettings,
   ExtractorSettings,
