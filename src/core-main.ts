@@ -170,6 +170,31 @@ export type {
   ServerExtractionOptions,
   ServerExtractionOutcome,
 } from './application/utils/serverExtractionOperations'
+
+// ---------------------------------------------------------------------------
+// Research record (host hook)
+// ---------------------------------------------------------------------------
+// INFO: docs/design/auto-service.md §9. Off unless a host sets a listener —
+// the `onResearchEvent` prop of <StarryDigitizer> calls this. The digitizer
+// never sends the events anywhere itself.
+export { configureResearchEvents } from './application/utils/researchEventOperations'
+export {
+  RESEARCH_EVENT_FORMAT,
+  RESEARCH_EVENT_VERSION,
+} from './application/services/researchEvents/researchEvents'
+export type {
+  ResearchEvent,
+  ResearchEventBase,
+  ResearchEventType,
+  ResearchEventListener,
+  ResearchEditEvent,
+  ResearchUndoEvent,
+  ResearchRedoEvent,
+  ResearchReviewStartEvent,
+  ResearchReviewStepEvent,
+  ResearchReviewExportEvent,
+  ResearchReviewEndEvent,
+} from './application/services/researchEvents/researchEvents'
 export {
   parseCalibrationResponse,
   parseExtractionResponse,

@@ -141,10 +141,69 @@ const service: AutoService = {
 
 ## 8. 揃っていないもの（wpd-auto と比べて）
 
-- 研究用の記録（作業のサーバー保存、`/api/v1/collect/…`）: 未実装（ボード P4、既定オフのフックとして後で出す）。
-  starry-digitizer は自分ではどこにも送らない。
+- 研究用の記録（作業のサーバー保存、`/api/v1/collect/…`）: starry-digitizer は保存も送信もしない。
+  代わりに**既定オフのフック**として編集のイベントをホストに渡す（§9、ボード P4）。保存するかはホストが決める。
 - 利用者の名前の選択・サーバー上の過去の作業の一覧: 対象外（v4 は自前のログインとプロジェクトを持つ）。
 - サポート時間（`auto.available` / `next_change`）の案内: 未実装。時間外の失敗は backend のエラー文をそのまま出す。
 - `GET /extract/methods` による方法ごとの稼働状況（LineFormer が止まっている等）: 使っていない。
   出し分けは capabilities だけで、止まっているときは Extract の失敗として知らせる。
 - 拡大の記録（`upscale`）・エンジンの版の表示: 出していない。
+
+## 9. 研究用の記録: ホストへのフック（P4）
+
+wpd-auto の「作業をサーバーに保存する」（`/api/v1/collect/…`）に当たるもの。ただし **starry-digitizer は
+どこにも送らない**。ホストがコールバックを渡したときだけ、編集のイベントをそのコールバックに渡す。
+渡さなければイベントは作られもしない（既定オフ）。保存するか、どこに置くか、利用者の同意をどう取るかはホストが決める。
+
+### 渡し方
+
+```ts
+// <StarryDigitizer> の prop（`@research-event="…"` とも書ける）
+<StarryDigitizer :on-research-event="(e) => queue.push(e)" />
+
+// パネルを自分で並べるホスト（core）
+import { configureResearchEvents } from 'starry-digitizer/core'
+configureResearchEvents(ctx, (e) => queue.push(e))   // null で止める
+```
+
+- コールバックは操作の直後に**同期で**呼ばれる。中で digitizer の状態を変えないこと（記録して戻る。送信はホスト側の
+  非同期処理で）。コールバックが例外を投げても `console.error` に出すだけで、編集は止めない。
+- 渡されるのは凍結した複製（`Object.freeze`）。後から中身が変わることはない。
+- `<StarryDigitizer>` は、prop を渡していたときだけ、アンマウント時にコールバックを外す。prop を渡さなければ
+  共有の context（`context` prop）にホストが自分で付けたコールバックには触らない（`autoService` と同じ約束）。
+
+### イベントの形（`ResearchEvent`、`src/application/services/researchEvents/researchEvents.ts`）
+
+全イベント共通:
+
+| フィールド | 型 | 意味 |
+|---|---|---|
+| `format` | `'starry-digitizer/research-event'` | |
+| `version` | `1` | 形を変えたら上げる |
+| `seq` | number | 1, 2, 3, …（digitizer のインスタンスごと） |
+| `at` | string | ISO 8601（UTC） |
+| `review_t_ms` | number \| null | 自動抽出のレビュー開始（取り込み）からの ms。編集ログの `events[].t_ms` と同じ時計。レビュー外は null |
+| `type` | 下表 | |
+
+| `type` | 追加のフィールド | いつ |
+|---|---|---|
+| `edit` | `action: string` | 取り消せる編集 1 回（`HistoryManager.capture(action)` 1 回）。`point.add` / `point.move` / `point.delete` / `axis.move` / `axis.auto-place`（Apply）/ `extract.server` / `extract.auto` / `points.remove-below-score` / `points.restore-score-removed` / `dataset.*` など。名前が無ければ `edit` |
+| `undo` / `redo` | なし | Undo / Redo |
+| `review.start` | `series`, `points`, `warnings`（すべて個数） | 自動抽出の結果を取り込んでレビューを始めた |
+| `review.step` | `direction: 1 \| -1`, `found: boolean`, `score: number \| null`, `threshold: number` | Review Points で次 / 前の低信頼度の点へ移った（`N` / `Shift+N`） |
+| `review.export` | `elapsed_ms`, `summary`（編集ログの `summary` そのまま） | 編集ログを作った（書き出した） |
+| `review.end` | なし | レビューを終えた |
+
+`edit` の流れは自動抽出の編集ログ（`events`）と同じ `HistoryManager` の通知から作っている。違いは、編集ログは
+レビュー中だけ記録するのに対し、こちらはレビューの外の手作業の編集も流すこと。
+
+### 載せないもの
+
+**画像（データ・URL）、点や軸の座標と値、データセット名・系列名（利用者が打った試料名でありうる）、取り込んだ
+文書の `source`、利用者やホストの識別子は載せない。** 載るのは操作の名前・個数・スコア・時刻だけ。
+`review.export` も `summary`（個数）だけで、座標を含む `details` と `final` は載せない。
+
+- 新しいイベントで何かを足すときは `researchEvents.ts` の型を変えることになる。その変更のレビューで線を守る。
+- テスト（`researchEventOperations.test.ts`）で、試料名・`source`・データ URL・座標を含む文書を取り込んで
+  編集しても、それらがイベントに一つも出ないことを確かめている。
+- 時刻と操作の並びそのものは利用者の作業の記録である。保存するなら、利用者への説明と同意はホスト側の責任。

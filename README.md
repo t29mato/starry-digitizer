@@ -818,6 +818,7 @@ async function commit() {
 | `confirm` | `ConfirmDialog` | `DEFAULT_CONFIRM` (`window.confirm`) | Dialog used for every "are you sure?" the digitizer asks. See [Confirmation dialogs](#confirmation-dialogs-confirm). |
 | `updateDebounceMs` | `number` | `300` | Debounce for `update:project` / `change`. |
 | `autoService` | `HttpAutoServiceConfig \| AutoService` | — | Where the server-side automatic features (axis **Auto-place**, **Server Extraction**) live. Omitted = they do not exist. Even when given, each feature is shown only if the service's capabilities answer lists it. See [Server-side automatic features](#server-side-automatic-features-autoservice). |
+| `onResearchEvent` | `(event: ResearchEvent) => void` | — | Research-record hook: receives each editing event (edits by name, undo/redo, auto-extraction import, Review Points steps, edit-log export, end of review). Omitted = off. Also usable as `@research-event`. See [Research record hook](#research-record-hook-onresearchevent). |
 | `effectiveDigits` | `number` | `4` | Significant digits the extracted values are rounded to (1–10). Overrides the in-app "Effective digits" field, so pass it when you hide the data table (`features.dataTable: false`) or want to own the precision. |
 
 `image` and `project` are watched: assigning new values re-initializes the component,
@@ -1384,6 +1385,26 @@ pixel convention and what a host has to provide:
 - Composing the panels yourself: call `configureAutoService(ctx, config)` from
   `starry-digitizer/core` and place `<AutoPlacePanel>` /
   `<ServerExtractionPanel>` from `starry-digitizer/vue`.
+
+### Research record hook (`onResearchEvent`)
+
+The digitizer never sends a research record anywhere. A host that wants one
+passes a callback, and only then is each editing event built and handed to it:
+
+```vue
+<StarryDigitizer @research-event="(e) => queue.push(e)" />
+```
+
+- Off by default; `configureResearchEvents(ctx, listener)` (core) does the same
+  for hosts composing the panels, `null` turns it off.
+- Events carry operation names, counts, scores and times only — **no image
+  data, coordinates, values, dataset names or the imported `source`**. Types:
+  `ResearchEvent` (`edit` with `action`, `undo`, `redo`, `review.start`,
+  `review.step`, `review.export`, `review.end`).
+- Called synchronously after the operation with a frozen copy; do not change
+  digitizer state from it. Storing the events, and the users' consent to that,
+  is the host's responsibility. Details:
+  [`docs/design/auto-service.md` §9](docs/design/auto-service.md).
 
 ### Heavy assets (`assetBaseUrl`)
 

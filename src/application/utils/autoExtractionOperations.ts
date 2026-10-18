@@ -102,9 +102,17 @@ export async function loadAutoExtraction(
     plan.warnings,
   )
 
+  const points = countPoints(parsed)
+  ctx.researchEvents.emit({
+    type: 'review.start',
+    series: plan.datasets.length,
+    points,
+    warnings: plan.warnings.length,
+  })
+
   return {
     series: plan.datasets.length,
-    points: countPoints(parsed),
+    points,
     calibration: plan.calibration,
     warnings: plan.warnings,
   }
@@ -180,7 +188,7 @@ export function buildEditLog(ctx: DigitizerContext): EditLog | null {
   const { axisSetRepository, confidenceReview, datasetRepository } = ctx
   const data = ctx.reviewSession.data
   if (!data) return null
-  return ctx.reviewSession.buildEditLog(
+  const editLog = ctx.reviewSession.buildEditLog(
     captureReviewState(axisSetRepository.axisSets, datasetRepository.datasets),
     buildFinalDocument(
       axisSetRepository.axisSets,
@@ -192,6 +200,16 @@ export function buildEditLog(ctx: DigitizerContext): EditLog | null {
     DEFAULT_MOVE_TOLERANCE_PX,
     confidenceReview.threshold,
   )
+  // INFO: counts only — `details` (coordinates), `final` and `source` stay
+  // out of the research event (docs/design/auto-service.md §9)
+  if (editLog) {
+    ctx.researchEvents.emit({
+      type: 'review.export',
+      elapsed_ms: editLog.elapsed_ms,
+      summary: editLog.summary,
+    })
+  }
+  return editLog
 }
 
 // INFO: what CanvasReviewDiff.vue draws (docs/design/
@@ -226,6 +244,10 @@ export function currentReviewDiff(ctx: DigitizerContext): EditLogDiff | null {
  * The points themselves stay as they are.
  */
 export function endReview(ctx: DigitizerContext): void {
+  // INFO: emitted before clear() so review_t_ms still has its clock
+  if (ctx.reviewSession.isActive) {
+    ctx.researchEvents.emit({ type: 'review.end' })
+  }
   ctx.reviewSession.clear()
   ctx.reviewView.setShowChanges(false)
   ctx.reviewView.setShowInitial(false)
