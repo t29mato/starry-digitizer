@@ -160,10 +160,25 @@ export {
   requestAutoCalibration,
   applyAutoCalibration,
   discardAutoCalibration,
+  describeAxisFailure,
 } from './application/utils/autoCalibrationOperations'
+export {
+  runAutoDigitize,
+  autoDigitizeAxesProblem,
+  AUTO_DIGITIZE_ACTION,
+  MIN_AUTO_DIGITIZE_AXIS_CONFIDENCE,
+} from './application/utils/autoDigitizeOperations'
+export type {
+  AutoDigitizeOptions,
+  AutoDigitizeOutcome,
+  AutoDigitizeExtraction,
+  AutoDigitizeStatus,
+  AutoDigitizeStep,
+} from './application/utils/autoDigitizeOperations'
 export {
   requestServerExtraction,
   applyServerExtraction,
+  applyServerExtractionDrafts,
   runServerExtraction,
 } from './application/utils/serverExtractionOperations'
 export type {

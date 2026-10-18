@@ -1436,8 +1436,14 @@ pixel convention and what a host has to provide:
   are) and passes that object instead of a config.
 - The backend returns pixels only; values always come from the digitizer's
   calibration, so correcting an axis later corrects every extracted value.
+- **Auto digitize** runs Auto-place → apply → Server Extraction in one go,
+  with the method the user picks (Lines = LineFormer, Markers = MarkerNet; no
+  fallback between them). It is shown only when Auto-place and at least one
+  method are allowed. The whole run is one undo step (`auto.digitize`); a run
+  that fails part-way keeps what it finished and says where it stopped.
+  `runAutoDigitize(ctx, { method })` is the same thing without the panel.
 - Composing the panels yourself: call `configureAutoService(ctx, config)` from
-  `starry-digitizer/core` and place `<AutoPlacePanel>` /
+  `starry-digitizer/core` and place `<AutoDigitizePanel>` / `<AutoPlacePanel>` /
   `<ServerExtractionPanel>` from `starry-digitizer/vue`.
 
 ### Research record hook (`onResearchEvent`)

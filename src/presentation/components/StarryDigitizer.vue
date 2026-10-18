@@ -14,6 +14,13 @@
         <axis-set-settings
           v-if="options.features.axisPanel"
         ></axis-set-settings>
+        <!-- INFO: shows itself only when the auto service allows Auto-place
+             AND an extraction method; it does the work of both panels, so
+             it needs both of them switched on -->
+        <auto-digitize-panel
+          v-if="options.features.axisPanel && options.features.extractionPanel"
+          @error="onError"
+        ></auto-digitize-panel>
         <!-- INFO: shows itself only when the auto service allows it -->
         <auto-place-panel
           v-if="options.features.axisPanel"
@@ -70,6 +77,7 @@ import SeriesEditingPanel from '@/presentation/components/Review/SeriesEditingPa
 import ConfidenceReviewPanel from '@/presentation/components/Review/ConfidenceReviewPanel.vue'
 import FigureAnnotationPanel from '@/presentation/components/Review/FigureAnnotationPanel.vue'
 import {
+  AutoDigitizePanel,
   AutoPlacePanel,
   ServerExtractionPanel,
 } from '@/presentation/components/Auto'

@@ -69,6 +69,7 @@ import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { SdButton } from '@/presentation/ui'
 import {
   applyAutoCalibration,
+  describeAxisFailure,
   discardAutoCalibration,
   requestAutoCalibration,
 } from '@/application/utils/autoCalibrationOperations'
@@ -84,14 +85,6 @@ import { isImageChangedError } from '@/application/utils/autoFeatureOperations'
 // INFO: below this the backend's own README counts a noticeable share of
 // misread axes (its confidence is an heuristic, not a probability)
 const LOW_CONFIDENCE = 0.5
-
-const FAILURE_TEXT: Record<string, string> = {
-  no_axis_frame: 'no axis frame found',
-  axes_not_calibrated: 'axes could not be calibrated',
-  no_labels_read: 'no tick labels could be read',
-  too_few_labels: 'too few tick labels read',
-  no_consistent_fit: 'tick labels do not fit a scale',
-}
 
 type AxisSummary = {
   name: AutoAxisName
@@ -164,7 +157,6 @@ export default defineComponent({
       if (!proposal) return []
       return (['x', 'y'] as const).map((name) => {
         const axis = proposal[name]
-        const reason = axis.failureReason ?? 'unknown'
         return {
           name,
           ok: axis.ok,
@@ -172,7 +164,7 @@ export default defineComponent({
           ticksText: formatTicks(axis),
           lowConfidence:
             axis.confidence !== null && axis.confidence < LOW_CONFIDENCE,
-          reason: FAILURE_TEXT[reason] ?? reason,
+          reason: describeAxisFailure(axis.failureReason),
         }
       })
     },
