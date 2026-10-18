@@ -79,6 +79,7 @@ import {
 } from '@/application/services/autoService/autoServiceWire'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { DigitizerError, toErrorPayload } from '@/application/errors'
+import { isImageChangedError } from '@/application/utils/autoFeatureOperations'
 
 // INFO: below this the backend's own README counts a noticeable share of
 // misread axes (its confidence is an heuristic, not a probability)
@@ -121,7 +122,15 @@ export default defineComponent({
     const ctx = useDigitizerContext()
     const options = useDigitizerOptions()
     const { autoFeatures, axisSetRepository, canvasHandler } = ctx
-    return { ctx, options, autoFeatures, axisSetRepository, canvasHandler }
+    return {
+      ctx,
+      options,
+      autoFeatures,
+      axisSetRepository,
+      canvasHandler,
+      // INFO: the running request's; not reactive state, only aborted
+      controller: null as AbortController | null,
+    }
   },
   data() {
     return {
@@ -171,20 +180,38 @@ export default defineComponent({
       return this.axisSummaries.filter((axis) => axis.ok).length
     },
   },
+  created() {
+    // INFO: a proposal is for the image it was asked for; a new image cancels
+    // the running request (requestAutoCalibration also drops a late answer)
+    this.$watch(
+      () => this.canvasHandler.uploadImageUrl,
+      () => this.controller?.abort(),
+    )
+  },
+  beforeUnmount() {
+    this.controller?.abort()
+  },
   methods: {
     async request() {
+      const controller = new AbortController()
+      this.controller = controller
       this.isRequesting = true
       this.errorMessage = ''
       this.appliedNote = ''
       try {
-        await requestAutoCalibration(this.ctx)
+        await requestAutoCalibration(this.ctx, controller.signal)
       } catch (e) {
+        if (isImageChangedError(e)) {
+          this.appliedNote = 'Cancelled: the image changed.'
+          return
+        }
         const payload = toErrorPayload(
           DigitizerError.from(e, 'AUTO_SERVICE_FAILED'),
         )
         this.errorMessage = payload.message
         this.$emit('error', payload)
       } finally {
+        if (this.controller === controller) this.controller = null
         this.isRequesting = false
       }
     },

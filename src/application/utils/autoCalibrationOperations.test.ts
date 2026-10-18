@@ -3,7 +3,10 @@ import {
   discardAutoCalibration,
   requestAutoCalibration,
 } from './autoCalibrationOperations'
-import { configureAutoService } from './autoFeatureOperations'
+import {
+  configureAutoService,
+  isImageChangedError,
+} from './autoFeatureOperations'
 import {
   createDigitizerContext,
   DigitizerContext,
@@ -108,7 +111,10 @@ describe('axis Auto-place', () => {
 
   test('a partial proposal applies only the usable axis', async () => {
     const partial = JSON.parse(JSON.stringify(body))
-    partial.frames[0].axes.y = { status: 'failed', failure_reason: 'no_labels_read' }
+    partial.frames[0].axes.y = {
+      status: 'failed',
+      failure_reason: 'no_labels_read',
+    }
     const { ctx } = await setup(partial)
     await requestAutoCalibration(ctx)
     expect(applyAutoCalibration(ctx)).toEqual(['x'])
@@ -137,5 +143,32 @@ describe('axis Auto-place', () => {
     await expect(requestAutoCalibration(ctx)).rejects.toMatchObject({
       code: 'AUTO_SERVICE_FAILED',
     })
+  })
+})
+
+describe('Auto-place: the image changes while it runs', () => {
+  test('a late proposal is dropped, and the signal reaches the service', async () => {
+    const ctx = createDigitizerContext()
+    let resolve: (value: unknown) => void = () => undefined
+    let seen: AbortSignal | undefined
+    const service: AutoService = {
+      capabilities: async () => ['auto_axis'],
+      calibrate: jest.fn((_image, options?: { signal?: AbortSignal }) => {
+        seen = options?.signal
+        return new Promise((r) => (resolve = r))
+      }),
+      extract: jest.fn(),
+    }
+    await configureAutoService(ctx, service)
+    ctx.canvasHandler.setUploadImageUrl(PNG)
+
+    const controller = new AbortController()
+    const running = requestAutoCalibration(ctx, controller.signal)
+    expect(seen).toBe(controller.signal)
+    ctx.canvasHandler.setUploadImageUrl('data:image/png;base64,b3RoZXI=')
+    resolve(body)
+
+    expect(isImageChangedError(await running.catch((e) => e))).toBe(true)
+    expect(ctx.autoFeatures.proposal).toBeNull()
   })
 })

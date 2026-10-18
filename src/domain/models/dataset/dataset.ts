@@ -247,6 +247,22 @@ export class Dataset implements DatasetInterface {
     return newIds
   }
 
+  // INFO: Replaces every point at once (Resample). `origin`/`score` travel
+  // with each point; ids are renumbered from the next free id, so none of the
+  // new ids can be mistaken for a point that was there before. Selection,
+  // interpolation anchors and the interpolation preview belong to the old
+  // points and are dropped. Returns the new ids.
+  replacePoints(points: Omit<Point, 'id'>[]): number[] {
+    let id = this.nextPointId
+    const next = points.map((point) => ({ ...point, id: id++ }))
+    this.points = next
+    this.visiblePointIds = next.map((point) => point.id)
+    this.activePointIds = []
+    this.manuallyAddedPointIds = []
+    this.tempPoints = []
+    return this.visiblePointIds.slice()
+  }
+
   // INFO: Removes and returns the given points (for appendPoints elsewhere)
   takePoints(ids: number[]): Point[] {
     const taken = this.points.filter((point) => ids.includes(point.id))

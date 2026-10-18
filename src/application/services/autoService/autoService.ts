@@ -38,6 +38,16 @@ export interface ExtractionRequest {
   params?: Record<string, number>
 }
 
+/**
+ * Per-call options of calibrate / extract. A service that cannot cancel may
+ * ignore `signal`: the digitizer drops an answer that arrives after it was
+ * aborted (or after the image changed) either way.
+ */
+export interface AutoRequestOptions {
+  /** aborted when the answer is no longer wanted (e.g. the image changed) */
+  signal?: AbortSignal
+}
+
 export interface AutoService {
   /**
    * The features this user may see. Resolve `[]` (or reject) for "none":
@@ -46,7 +56,11 @@ export interface AutoService {
    */
   capabilities(): Promise<readonly string[]>
   /** POST the image to the calibration endpoint; resolve with its JSON body. */
-  calibrate(image: Blob): Promise<unknown>
+  calibrate(image: Blob, options?: AutoRequestOptions): Promise<unknown>
   /** POST the image to the extraction endpoint; resolve with its JSON body. */
-  extract(image: Blob, request: ExtractionRequest): Promise<unknown>
+  extract(
+    image: Blob,
+    request: ExtractionRequest,
+    options?: AutoRequestOptions,
+  ): Promise<unknown>
 }

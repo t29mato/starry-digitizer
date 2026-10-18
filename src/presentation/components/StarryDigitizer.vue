@@ -20,6 +20,7 @@
           @error="onError"
         ></auto-place-panel>
         <dataset-manager v-if="options.features.datasetPanel"></dataset-manager>
+        <resample-panel v-if="options.features.datasetPanel"></resample-panel>
         <data-table v-if="options.features.dataTable" />
         <slot name="aside-bottom" :width="leftSidebarWidth"></slot>
       </div>
@@ -60,7 +61,7 @@ import '@/presentation/styles/base.scss'
 import { MagnifierMain } from '@/presentation/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
 import { AxisSetSettings, ExtractorSettings, ImageSettings } from './Settings'
-import { DatasetManager } from './DatasetManager'
+import { DatasetManager, ResamplePanel } from './DatasetManager'
 import { AxisSetManager } from './AxisSetManager'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'
 import DataTable from '@/presentation/components/Export/DataTable.vue'
@@ -76,6 +77,8 @@ import {
   configureAutoService,
   type AutoServiceOption,
 } from '@/application/utils/autoFeatureOperations'
+import { configureResearchEvents } from '@/application/utils/researchEventOperations'
+import type { ResearchEventListener } from '@/application/services/researchEvents/researchEvents'
 import {
   createDigitizerContext,
   type DigitizerContext,
@@ -162,6 +165,16 @@ export interface StarryDigitizerProps {
    * without an error. See docs/design/auto-service.md.
    */
   autoService?: AutoServiceOption
+  /**
+   * Research record hook: called with each editing event (undoable edits by
+   * name, undo / redo, auto-extraction import, Review Points steps, edit-log
+   * export, end of review). Omitted = off, and nothing is recorded. The
+   * digitizer never sends these anywhere itself; storing them is the host's
+   * decision. Events carry operation names, counts, scores and times only —
+   * no image data, coordinates, values or names. Also reachable as
+   * `@research-event`. See docs/design/auto-service.md §9.
+   */
+  onResearchEvent?: ResearchEventListener
 }
 
 const props = withDefaults(defineProps<StarryDigitizerProps>(), {
@@ -177,6 +190,7 @@ const props = withDefaults(defineProps<StarryDigitizerProps>(), {
   updateDebounceMs: 300,
   effectiveDigits: undefined,
   autoService: undefined,
+  onResearchEvent: undefined,
 })
 
 const emit = defineEmits<{
@@ -502,8 +516,26 @@ watch(
   { immediate: true },
 )
 
+// ---------------------------------------------------------------------------
+// Research record hook
+// ---------------------------------------------------------------------------
+// INFO: same rule as autoService — no prop now and none before leaves the
+// context alone, so a host (or the standalone app) that set a listener on a
+// shared context itself is not reset on mount.
+watch(
+  () => props.onResearchEvent,
+  (listener, previous) => {
+    if (listener === undefined && previous === undefined) return
+    configureResearchEvents(ctx, listener)
+  },
+  { immediate: true },
+)
+
 onBeforeUnmount(() => {
   unsubscribeHistory()
+  // INFO: a shared context outlives this component; do not leave our
+  // host's callback on it
+  if (props.onResearchEvent) configureResearchEvents(ctx, null)
   sidebarObserver?.disconnect()
   sidebarObserver = undefined
   if (debounceTimer !== undefined) clearTimeout(debounceTimer)

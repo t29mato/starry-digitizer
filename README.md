@@ -12,6 +12,7 @@ A web-based plot digitizer tool for extracting data points from graph images. De
 - **Auto Point Detection**: Automatically detect data points by color
 - **Trace Curve**: Click a curve and it is followed both ways in its colour (within the mask, with the same colour distance as Auto Point Detection); one undo step
 - **Multiple Datasets**: Manage multiple datasets with different colors
+- **Resample**: Thin a dataset to N points, keep every k-th, simplify (Douglas–Peucker), smooth, or take values at given x — computed on the calibrated axes (log axes in log), previewed before Apply, one undo step
 - **Magnifier**: Zoom in for precise point placement
 - **Data Export**: Export extracted data as CSV or JSON
 - **Project Save/Load**: Save and restore your work
@@ -504,6 +505,30 @@ const outcome = traceCurveAt(ctx, { xPx: 412, yPx: 230 }) // original-image pixe
 - `traceCurve(image, click, options)` is the pure part (RGBA in, points out) for
   a host with its own pixels. Trace Curve is not the Interpolator: it reads the
   image, while interpolation draws a spline between points you placed.
+##### Resampling a dataset
+
+```ts
+import { previewResample, applyResample } from 'starry-digitizer/core'
+
+previewResample(ctx, { mode: 'thin', count: 20 }) // { before, after, values, notes, error? } — reads only
+applyResample(ctx, { mode: 'atX', xSpec: 'list', xList: '300, 400, 500' })
+```
+
+- Works on the **active dataset**, in its axis set's calibrated space: x and y
+  as values on a linear axis, `log10` on a log axis. "N evenly spaced x" is
+  evenly spaced in log on a log X axis, and linear interpolation between two
+  points of a power law on log-log axes stays on it. An uncalibrated axis set is
+  refused (`error`).
+- Modes: `thin` (`count`, by arc length, ends kept), `every` (`k`), `simplify`
+  (`tolerancePx`, Douglas–Peucker; the distance is in screen pixels, so it means
+  the same on linear and log axes), `atX` (`xSpec: 'count'` with optional
+  `xFrom`/`xTo` in data units, or `'list'` with `xList`; no extrapolation — x
+  outside the data is skipped with a note), `smooth` (moving average only).
+  `smoothWindow` (odd, points) smooths first in any mode; `sortByX` sorts first
+  in the geometry modes.
+- `applyResample()` replaces the points as **one undo step**, recorded as
+  `points.resample`, and returns `null` (capturing nothing) when the preview has
+  an error. Kept points keep their `origin`/`score`; interpolated points are new.
 
 ##### Driving the calibration
 
@@ -847,6 +872,7 @@ async function commit() {
 | `confirm` | `ConfirmDialog` | `DEFAULT_CONFIRM` (`window.confirm`) | Dialog used for every "are you sure?" the digitizer asks. See [Confirmation dialogs](#confirmation-dialogs-confirm). |
 | `updateDebounceMs` | `number` | `300` | Debounce for `update:project` / `change`. |
 | `autoService` | `HttpAutoServiceConfig \| AutoService` | — | Where the server-side automatic features (axis **Auto-place**, **Server Extraction**) live. Omitted = they do not exist. Even when given, each feature is shown only if the service's capabilities answer lists it. See [Server-side automatic features](#server-side-automatic-features-autoservice). |
+| `onResearchEvent` | `(event: ResearchEvent) => void` | — | Research-record hook: receives each editing event (edits by name, undo/redo, auto-extraction import, Review Points steps, edit-log export, end of review). Omitted = off. Also usable as `@research-event`. See [Research record hook](#research-record-hook-onresearchevent). |
 | `effectiveDigits` | `number` | `4` | Significant digits the extracted values are rounded to (1–10). Overrides the in-app "Effective digits" field, so pass it when you hide the data table (`features.dataTable: false`) or want to own the precision. |
 
 `image` and `project` are watched: assigning new values re-initializes the component,
@@ -1413,6 +1439,26 @@ pixel convention and what a host has to provide:
 - Composing the panels yourself: call `configureAutoService(ctx, config)` from
   `starry-digitizer/core` and place `<AutoPlacePanel>` /
   `<ServerExtractionPanel>` from `starry-digitizer/vue`.
+
+### Research record hook (`onResearchEvent`)
+
+The digitizer never sends a research record anywhere. A host that wants one
+passes a callback, and only then is each editing event built and handed to it:
+
+```vue
+<StarryDigitizer @research-event="(e) => queue.push(e)" />
+```
+
+- Off by default; `configureResearchEvents(ctx, listener)` (core) does the same
+  for hosts composing the panels, `null` turns it off.
+- Events carry operation names, counts, scores and times only — **no image
+  data, coordinates, values, dataset names or the imported `source`**. Types:
+  `ResearchEvent` (`edit` with `action`, `undo`, `redo`, `review.start`,
+  `review.step`, `review.export`, `review.end`).
+- Called synchronously after the operation with a frozen copy; do not change
+  digitizer state from it. Storing the events, and the users' consent to that,
+  is the host's responsibility. Details:
+  [`docs/design/auto-service.md` §9](docs/design/auto-service.md).
 
 ### Heavy assets (`assetBaseUrl`)
 

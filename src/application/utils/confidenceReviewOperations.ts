@@ -37,6 +37,13 @@ export function goToLowConfidencePoint(
     direction,
   )
   confidenceReview.setCurrent(target)
+  ctx.researchEvents.emit({
+    type: 'review.step',
+    direction,
+    found: target !== null,
+    score: target?.score ?? null,
+    threshold: confidenceReview.threshold,
+  })
   if (!target) return null
 
   if (datasetRepository.activeDatasetId !== target.datasetId) {

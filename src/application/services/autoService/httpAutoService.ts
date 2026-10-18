@@ -1,5 +1,9 @@
 import { DigitizerError } from '@/application/errors'
-import { AutoService, ExtractionRequest } from './autoService'
+import {
+  AutoRequestOptions,
+  AutoService,
+  ExtractionRequest,
+} from './autoService'
 
 // INFO: The default AutoService: plain HTTP to a wpd-auto compatible API.
 // Everything about WHERE it talks to comes from the host — nothing is
@@ -86,10 +90,16 @@ export function createHttpAutoService(
     url: string,
     init: FetchInit,
     timeoutMs: number,
+    cancel?: AbortSignal,
   ): Promise<Response> {
     const controller =
       typeof AbortController === 'undefined' ? undefined : new AbortController()
     const timer = setTimeout(() => controller?.abort(), timeoutMs)
+    // INFO: the caller's signal (the image changed, the panel went away)
+    // aborts the same fetch as the timeout
+    const onCancel = () => controller?.abort()
+    if (cancel?.aborted) onCancel()
+    else cancel?.addEventListener('abort', onCancel)
     try {
       return await doFetch(url, {
         credentials: config.credentials ?? 'same-origin',
@@ -99,17 +109,24 @@ export function createHttpAutoService(
     } catch (error) {
       throw new DigitizerError(
         'AUTO_SERVICE_FAILED',
-        controller?.signal.aborted
+        cancel?.aborted
+          ? 'The request to the auto service was cancelled'
+          : controller?.signal.aborted
           ? `The auto service did not answer within ${timeoutMs / 1000} s`
           : 'The auto service could not be reached',
         error,
       )
     } finally {
       clearTimeout(timer)
+      cancel?.removeEventListener('abort', onCancel)
     }
   }
 
-  async function postImage(url: string, image: Blob): Promise<unknown> {
+  async function postImage(
+    url: string,
+    image: Blob,
+    options: AutoRequestOptions = {},
+  ): Promise<unknown> {
     if (isBlockedAsMixedContent(url)) {
       throw new DigitizerError(
         'AUTO_SERVICE_FAILED',
@@ -130,6 +147,7 @@ export function createHttpAutoService(
         body: image,
       },
       requestTimeoutMs,
+      options.signal,
     )
     return readJson(response)
   }
@@ -158,11 +176,11 @@ export function createHttpAutoService(
         : []
     },
 
-    calibrate(image) {
-      return postImage(`${baseUrl}/calibrate`, image)
+    calibrate(image, options) {
+      return postImage(`${baseUrl}/calibrate`, image, options)
     },
 
-    extract(image, extraction: ExtractionRequest) {
+    extract(image, extraction: ExtractionRequest, options) {
       const query = new URLSearchParams({ method: extraction.method })
       if (extraction.area) {
         const { x0, y0, x1, y1 } = extraction.area
@@ -171,7 +189,7 @@ export function createHttpAutoService(
       Object.entries(extraction.params ?? {}).forEach(([key, value]) => {
         query.set(key, formatNumber(value))
       })
-      return postImage(`${baseUrl}/extract?${query.toString()}`, image)
+      return postImage(`${baseUrl}/extract?${query.toString()}`, image, options)
     },
   }
 }
