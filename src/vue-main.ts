@@ -41,6 +41,7 @@ export { default as ConfirmerBar } from './presentation/components/Generals/Conf
 // context's auto service allows them — see configureAutoService in core) and
 // the auto-extraction review panels.
 export {
+  AutoDigitizePanel,
   AutoPlacePanel,
   ServerExtractionPanel,
 } from './presentation/components/Auto'

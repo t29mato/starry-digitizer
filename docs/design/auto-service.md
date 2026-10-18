@@ -94,6 +94,29 @@ interface AutoService {
   エラーイベントは出さず、パネルに「Cancelled: the image changed.」とだけ出す。
 - ライセンスの表示: LineFormer を選ぶと backend README が求める一文、MarkerNet を選ぶと重みが非商用である旨を出す。
 
+## 4b. Auto digitize（ボタン 1 つで軸と下書きまで）
+
+`autoDigitizeOperations.ts` の `runAutoDigitize()` と `AutoDigitizePanel.vue`。
+上の 2 つ（Auto-place・Server Extraction）を続けて呼ぶだけで、サービスには自分では話さない。
+仕様の出どころは wpd-auto PR #10 / #34 の本文（挙動だけ。コードは見ていない）。
+
+- 出し分け: Auto-place（`auto_axis`）と抽出方法の少なくとも 1 つが許可されているときだけ出す。
+  `features.axisPanel` と `features.extractionPanel` の両方が有効なときだけ置く。
+- 方法は人が選ぶ: **Lines**（LineFormer）/ **Markers**（MarkerNet）。許可された方法だけを並べ、既定は Lines。
+  選んだ方法だけを走らせ、失敗・0 件でももう一方には切り替えない。
+- 手順:
+  1. Auto-place を呼ぶ。x・y の両方が使えて、信頼度がどちらも 0.5 以上（null は可）のときだけ次へ。
+     そうでなければ何も変えずに止まり、提案は Axis Auto-place の欄にそのまま残す（人が見て Apply する）。
+  2. 軸を適用する（ここで `auto.digitize` を 1 回 capture）。
+  3. 選んだ方法で Server Extraction。範囲は Auto-place が見つけた枠（plot area）。
+  4. 下書きを作る。**capture しない**ので 2. と同じ 1 手順になる。
+- Undo: 1 回で実行前に戻る。待っている間に人が編集・Undo をした（履歴が動いた）ときだけ、
+  下書きは別の手順（`extract.server`）にする。黙って前の手順に混ぜないため。
+- 途中で失敗したとき: 結果パネルに手順ごとの ✓ / ✗ / – と理由を出す。
+  軸まで進んでいれば軸は残る（Undo 1 回で消える）。
+- Cancel（実行中だけ出る）、画像の差し替え、パネルの破棄で中断する。遅れて来た答えは使わない。
+  実行中は経過秒を出し、20 秒を過ぎたら「サービスが混んでいるかもしれない」と添える。
+
 ## 5. Undo/Redo（P3）
 
 - Extract 1 回 = 1 手順（`extract.server`）。系列がいくつあっても、Undo 1 回で下書きが全部消えて元に戻る。

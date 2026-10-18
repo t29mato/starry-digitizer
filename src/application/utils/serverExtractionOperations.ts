@@ -121,10 +121,26 @@ export function applyServerExtraction(
   return applyDrafts(ctx, result, method).datasetIds
 }
 
+/**
+ * applyServerExtraction(), with control over the undo step: `action` names
+ * it, and null captures NOTHING, for a caller that already captured the
+ * state to go back to and wants these drafts in that same step (Auto
+ * digitize: axes + drafts = one Undo, autoDigitizeOperations.ts).
+ */
+export function applyServerExtractionDrafts(
+  ctx: DigitizerContext,
+  result: ServerExtractionResult,
+  method: ExtractionMethod,
+  action: string | null = 'extract.server',
+): { datasetIds: number[]; replacedDraftCount: number } {
+  return applyDrafts(ctx, result, method, action)
+}
+
 function applyDrafts(
   ctx: DigitizerContext,
   result: ServerExtractionResult,
   method: ExtractionMethod,
+  action: string | null = 'extract.server',
 ): { datasetIds: number[]; replacedDraftCount: number } {
   if (result.series.length === 0) {
     return { datasetIds: [], replacedDraftCount: 0 }
@@ -132,7 +148,7 @@ function applyDrafts(
   const { axisSetRepository, datasetRepository } = ctx
   const { historyManager, interpolator } = ctx
 
-  historyManager.capture('extract.server')
+  if (action !== null) historyManager.capture(action)
   if (interpolator.isActive) interpolator.clearPreview()
   axisSetRepository.activeAxisSet.inactivateAxis()
 

@@ -56,6 +56,22 @@ export async function requestAutoCalibration(
   return proposal
 }
 
+// INFO: the backend's failure codes (wpd-auto backend README, MIT), in the
+// words the panels show. Shared by Axis Auto-place and Auto digitize.
+const AXIS_FAILURE_TEXT: Record<string, string> = {
+  no_axis_frame: 'no axis frame found',
+  axes_not_calibrated: 'axes could not be calibrated',
+  no_labels_read: 'no tick labels could be read',
+  too_few_labels: 'too few tick labels read',
+  no_consistent_fit: 'tick labels do not fit a scale',
+}
+
+/** A failure code of the calibration answer, in words. */
+export function describeAxisFailure(reason: string | null): string {
+  const code = reason ?? 'unknown'
+  return AXIS_FAILURE_TEXT[code] ?? code
+}
+
 /** Drop the pending proposal without touching the axes. */
 export function discardAutoCalibration(ctx: DigitizerContext): void {
   ctx.autoFeatures.clearProposal()
@@ -68,6 +84,9 @@ export function discardAutoCalibration(ctx: DigitizerContext): void {
  * out rather than taken as a reference). The plot frame becomes the axis
  * set's plot area when it has none yet.
  *
+ * `action` names the undo step; Auto digitize passes its own, because the
+ * axes are the first half of ITS one step (autoDigitizeOperations.ts).
+ *
  * @returns the axes that were applied. Nothing is captured when none was
  * usable.
  */
@@ -75,13 +94,14 @@ export function applyAutoCalibration(
   ctx: DigitizerContext,
   proposal: AutoCalibrationProposal | null = ctx.autoFeatures.proposal,
   axes: AutoAxisName[] = ['x', 'y'],
+  action = 'axis.auto-place',
 ): AutoAxisName[] {
   if (!proposal) return []
   const usable = axes.filter((name) => proposal[name].ok)
   if (usable.length === 0) return []
 
   const { axisSetRepository, historyManager } = ctx
-  historyManager.capture('axis.auto-place')
+  historyManager.capture(action)
   const axisSet = axisSetRepository.activeAxisSet
 
   if (usable.includes('x')) applyXAxis(axisSet, proposal)
