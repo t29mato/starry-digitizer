@@ -76,6 +76,15 @@
           @change-name="collect.choosing = true"
         />
       </template>
+      <template v-if="collect.login.on">
+        <br />
+        <auth-status
+          :user-name="collect.login.userName"
+          :busy="collect.signingOut"
+          @sign-out="onSignOut"
+          @sign-in="collect.choosing = true"
+        />
+      </template>
     </footer>
     <collect-user-dialog
       v-if="collect.on && collect.hasNames"
@@ -83,6 +92,21 @@
       :users="collect.users"
       :guest-allowed="collect.guestAllowed"
       @choose="onChooseUser"
+    />
+    <!-- INFO: the password login (src/hosting/collect/auth.ts), when the
+         server uses passwords; docs/design/starryai-auto.md §11 -->
+    <login-dialog
+      v-if="collect.login.on"
+      :model-value="collect.login.needed || collect.choosing"
+      :users="collect.login.users"
+      :guest-allowed="collect.login.guestAllowed"
+      :reason="collect.login.reason"
+      :last-user="collect.login.lastUser"
+      :closable="!collect.login.needed"
+      :sign-in="signIn"
+      @signed-in="collect.choosing = false"
+      @guest="onChooseUser(null)"
+      @close="collect.choosing = false"
     />
     <sd-snackbar v-model="showError" color="error" :timeout="4000">
       <span data-cy="error-snackbar">{{ errorMessage }}</span>
@@ -141,7 +165,14 @@ import {
 
 import CollectNotice from '@/hosting/collect/CollectNotice.vue'
 import CollectUserDialog from '@/hosting/collect/CollectUserDialog.vue'
-import { startCollect, type CollectHandle } from '@/hosting/collect/collectApp'
+import LoginDialog from '@/hosting/collect/LoginDialog.vue'
+import AuthStatus from '@/hosting/collect/AuthStatus.vue'
+import type { LoginResult } from '@/hosting/collect/auth'
+import {
+  startCollect,
+  type CollectHandle,
+  type LoginView,
+} from '@/hosting/collect/collectApp'
 import type { CollectUser } from '@/hosting/collect/collectClient'
 
 import { version } from '../package.json'
@@ -188,6 +219,8 @@ export default defineComponent({
     SdSnackbar,
     CollectNotice,
     CollectUserDialog,
+    LoginDialog,
+    AuthStatus,
   },
 
   // INFO: the same context <StarryDigitizer> is given, provided here too so
@@ -239,6 +272,16 @@ export default defineComponent({
       userName: null as string | null,
       users: [] as CollectUser[],
       guestAllowed: true,
+      signingOut: false,
+      login: {
+        on: false,
+        userName: null,
+        needed: false,
+        guestAllowed: true,
+        users: [],
+        reason: null,
+        lastUser: null,
+      } as LoginView,
     },
   }),
   computed: {
@@ -558,6 +601,20 @@ export default defineComponent({
     onChooseUser(user: string | null) {
       this.collect.choosing = false
       collectHandle?.chooseUser(user)
+    },
+    signIn(user: string, password: string): Promise<LoginResult> {
+      if (!collectHandle)
+        return Promise.resolve({ ok: false, error: 'network' } as LoginResult)
+      return collectHandle.signIn(user, password)
+    },
+    async onSignOut() {
+      if (!collectHandle || this.collect.signingOut) return
+      this.collect.signingOut = true
+      try {
+        await collectHandle.signOut()
+      } finally {
+        this.collect.signingOut = false
+      }
     },
     onDigitizerError(payload: DigitizerErrorPayload) {
       this.showErrorSnackbar(payload.message)

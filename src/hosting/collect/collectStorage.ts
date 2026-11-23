@@ -133,3 +133,19 @@ export function saveUserChoice(
 ): void {
   writeItem(storage, `${prefix}user`, JSON.stringify({ user }))
 }
+
+/** The UTF-8 length of `text` (what the server counts against its limits). */
+export function utf8Length(text: string): number {
+  let n = 0
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i)
+    if (c < 0x80) n += 1
+    else if (c < 0x800) n += 2
+    else if (c >= 0xd800 && c <= 0xdbff && i + 1 < text.length) {
+      // INFO: a surrogate pair is one 4-byte character
+      n += 4
+      i += 1
+    } else n += 3
+  }
+  return n
+}

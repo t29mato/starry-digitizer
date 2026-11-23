@@ -85,10 +85,15 @@ export function createCollectingAutoService(
       throw error
     }
   }
+  // INFO: every route the page uses goes through here (and so carries the
+  // headers, the token among them): the legend reader and the components
+  // list too, which the wrapper had lost when the branches were merged
   return {
     capabilities: () => base.capabilities(),
     methods: () => (base.methods ? base.methods() : Promise.resolve(null)),
     status: () => (base.status ? base.status() : Promise.resolve(null)),
+    components: base.components?.bind(base),
+    legend: base.legend?.bind(base),
     calibrate(image: Blob, options?: AutoRequestOptions) {
       return timed('calibrate', null, (service) =>
         options ? service.calibrate(image, options) : service.calibrate(image),
