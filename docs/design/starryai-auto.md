@@ -1,6 +1,6 @@
 # starry-digitizer に wpd-auto の自動機能を入れ、starryai に置く（設計書の下書き）
 
-- 版: **0.0.2**（2026-11-23。合意までは 0.x.y で上げる）
+- 版: **0.0.3**（2026-11-23。合意までは 0.x.y で上げる）
 - 書いた人: Claude Code（間藤の依頼）。材料に wpd-auto のセッションの下書き
   `~/research/drafts/starryai-hosting-from-wpd-auto-session.md` を使った。
 - 置き場所: starry-digitizer の `docs/design/starryai-auto.md`（ブランチ `feat/starryai-hosting`、`origin/v4` から分けた）。
@@ -114,6 +114,29 @@ starryai に置く版を starry-digitizer 側で **`starryai-0.1.0`** のよう�
 | 0.4 | F2・F4（Bar 軸と BarNet）、F6 に Bars を足す | 軸のモデルに手を入れるので最後にする |
 | 0.5 | F10（候補の方式を揃えるなら）・F16 の My work・F18 | Q5・Q6 の決め方しだい |
 | 外 | F19（論文 PDF）・F20（多パネル） | wpd-auto 側で main に入ってから |
+
+### 2.3 進み具合（0.0.3 の時点）
+
+ブランチ `feat/starryai-hosting`（ローカルだけ。push していない）。
+
+| 段 | 中身 | 状態 | 確かめ方 |
+|---|---|---|---|
+| 0.1 | F8 再試行 | 済み（b475e82） | Jest（モックの fetch） |
+| 0.1 | F5・F7 `/extract/methods`・`/auto/status`、時間外の案内、読み直し（`watchAutoStatus`） | 済み（2c50932） | Jest（部品の表示も）。本物の backend には未接続 |
+| 0.1 | starryai 向けのビルド（§4.3・§4.4） | 済み（e731f6f） | ビルドして中身を見た（base・API の URL・tesseract の資産・SW と Google tag がないこと） |
+| 0.1 | `deploy/deploy.sh`・nginx のひな形（§4.2、案 D2） | 済み（fde3156） | この VM の一時ディレクトリに staging → production @staging → 古いリリースの削除まで流した。nginx は通していない |
+| 0.1 | capabilities（C1、wpd-auto 側） | wpd-auto のセッションに頼んだ（返事待ち） | — |
+| 0.1 | starryai に実際に置く | まだ | starryai に入れるのは間藤の確認の後 |
+| 0.2 | `client`・記録・知らせ | wpd-auto 側は頼んだ。こちらは未着手 | — |
+
+作業中に決めたこと（間藤が変えられる）:
+
+- **starryai 版のビルドは Google tag を読まない**（`STARRY_DIGITIZER_ANALYTICS=off`）。所内の研究用の道具から Google に何も送らないため。
+  Sentry は `main.ts` が `production` のときに `process.env.VUE_APP_SENTRY_DSN` で初期化する。starryai 版では DSN を渡さないので送らない（推測。動かして確かめていない）。
+- OCR の言語データは、CDN の既定と同じもの（`@tesseract.js-data/eng` 1.0.0 の `4.0.0_best_int`、MIT）を devDependency に足して配る。
+  リポジトリの直下の `eng.traineddata` は由来が分からないので使わない。
+- nginx は、wpd-auto の server ブロックに `include` する location のひな形にした。**wpd-auto 側のひな形に `include` の 1 行を足す必要がある**（wpd-auto のセッションに伝える）。
+- リリースのディレクトリ名は `<commit>-<build>`（同じコミットを作り直しても前のものを壊さない）。
 
 ## 3. 呼ぶ API と送る記録
 
@@ -374,6 +397,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 |---|---|---|
 | 0.0.1 | 2026-11-23 | 最初の下書き |
 | 0.0.2 | 2026-11-23 | 間藤の「これで進めて」を受け、§10 に仮決めを書いた。置き場所を docs/design に移した |
+| 0.0.3 | 2026-11-23 | §2.3 進み具合と、作業中に決めたことを足した |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め
 
