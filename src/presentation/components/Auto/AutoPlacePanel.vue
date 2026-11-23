@@ -116,7 +116,7 @@ import {
 import { DigitizerError, toErrorPayload } from '@/application/errors'
 import {
   isImageChangedError,
-  outsideHoursNote,
+  withOutsideHoursNote,
 } from '@/application/utils/autoFeatureOperations'
 
 // INFO: below this the backend's own README counts a noticeable share of
@@ -315,9 +315,7 @@ export default defineComponent({
         const payload = toErrorPayload(
           DigitizerError.from(e, 'AUTO_SERVICE_FAILED'),
         )
-        this.errorMessage = [payload.message, outsideHoursNote(this.ctx)]
-          .filter(Boolean)
-          .join(' ')
+        this.errorMessage = withOutsideHoursNote(this.ctx, payload.message)
         this.$emit('error', payload)
       } finally {
         if (this.controller === controller) this.controller = null
