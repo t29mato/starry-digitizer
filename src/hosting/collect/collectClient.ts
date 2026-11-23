@@ -125,6 +125,13 @@ export class CollectClient {
   /** password mode: Guest was chosen in the login dialog (this page only) */
   guestChosen = false
 
+  /**
+   * Called first by flushOnHide() (the project saver, projectSaver.ts):
+   * sends its own keepalive request and returns the bytes it used, so the
+   * events keep to what is left of the browser's keepalive budget.
+   */
+  onHide: ((budget: number) => number) | null = null
+
   private readonly opts: Required<
     Omit<CollectClientOptions, 'storage' | 'fetch' | 'auth'>
   > & { fetch: typeof fetch; storage: KeyValueStorage | null }
@@ -423,6 +430,16 @@ export class CollectClient {
 
   // --- events --------------------------------------------------------------
 
+  /**
+   * The next sequence number of this page. The events and the project share
+   * one counter (the server keeps an older project of the same session from
+   * overwriting a newer one by it).
+   */
+  nextSeq(): number {
+    this.seq += 1
+    return this.seq
+  }
+
   /** Queue an event. Dropped when collection is off. */
   record(type: string, data: Record<string, unknown> = {}): void {
     if (this.state === 'off' || this.stopped) return
@@ -430,11 +447,10 @@ export class CollectClient {
       this.warnOnce('type', `research event type not sent: ${type}`)
       return
     }
-    this.seq += 1
     const event: CollectEvent = {
       type,
       t: this.opts.now(),
-      seq: this.seq,
+      seq: this.nextSeq(),
       data,
     }
     let bytes: number
@@ -556,9 +572,11 @@ export class CollectClient {
       this.opts.clearTimer(this.batchTimer)
       this.batchTimer = null
     }
-    const batch = this.nextBatch(KEEPALIVE_BYTES, true)
+    // INFO: the project first (as wpd-auto does), the events in what is left
+    const budget = KEEPALIVE_BYTES - (this.onHide?.(KEEPALIVE_BYTES) ?? 0)
+    const batch = this.nextBatch(budget, true)
     if (batch.length === 0) return
-    if (batch.length === 1 && batch[0].bytes + 200 > KEEPALIVE_BYTES) return
+    if (batch.length === 1 && batch[0].bytes + 200 > budget) return
     void this.send(batch, true)
   }
 

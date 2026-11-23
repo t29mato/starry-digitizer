@@ -77,6 +77,10 @@
           @change-name="collect.choosing = true"
         />
       </template>
+      <template v-if="collect.on && collect.save.state !== 'idle'">
+        <br />
+        <save-status :view="collect.save" />
+      </template>
       <template v-if="collect.login.on">
         <br />
         <auth-status
@@ -108,6 +112,16 @@
       @signed-in="collect.choosing = false"
       @guest="onChooseUser(null)"
       @close="collect.choosing = false"
+    />
+    <!-- INFO: File > My work on the server… (src/hosting/collect/myWork.ts);
+         docs/design/starryai-auto.md §3.2(c) -->
+    <my-work-dialog
+      v-if="collect.on"
+      v-model="showMyWork"
+      :list="listWorks"
+      :thumbnail="workThumbnail"
+      :busy="openingWork"
+      @open="onOpenWork"
     />
     <sd-snackbar v-model="showError" color="error" :timeout="4000">
       <span data-cy="error-snackbar">{{ errorMessage }}</span>
@@ -176,6 +190,9 @@ import CollectNotice from '@/hosting/collect/CollectNotice.vue'
 import CollectUserDialog from '@/hosting/collect/CollectUserDialog.vue'
 import LoginDialog from '@/hosting/collect/LoginDialog.vue'
 import AuthStatus from '@/hosting/collect/AuthStatus.vue'
+import SaveStatus from '@/hosting/collect/SaveStatus.vue'
+import MyWorkDialog from '@/hosting/collect/MyWorkDialog.vue'
+import type { ListParams, WorkItem } from '@/hosting/collect/myWork'
 import type { LoginResult } from '@/hosting/collect/auth'
 import {
   startCollect,
@@ -190,6 +207,7 @@ import {
   versionCheckEnabled,
   watchVersion,
 } from '@/hosting/version/versionCheck'
+import type { SaveView } from '@/hosting/collect/projectSaver'
 
 import { version } from '../package.json'
 
@@ -238,6 +256,8 @@ export default defineComponent({
     LoginDialog,
     AuthStatus,
     VersionNotice,
+    SaveStatus,
+    MyWorkDialog,
   },
 
   // INFO: the same context <StarryDigitizer> is given, provided here too so
@@ -273,6 +293,8 @@ export default defineComponent({
     showInfo: false,
     infoMessage: '',
     reviewSession: appContext.reviewSession,
+    showMyWork: false,
+    openingWork: false,
     removeMessageBridge: null as null | (() => void),
     stopAutoStatus: null as null | (() => void),
     stopVersionWatch: null as null | (() => void),
@@ -308,6 +330,8 @@ export default defineComponent({
         reason: null,
         lastUser: null,
       } as LoginView,
+      save: { state: 'idle', savedAt: null } as SaveView,
+      myWork: false,
     },
   }),
   computed: {
@@ -361,6 +385,18 @@ export default defineComponent({
               shortcut: '⌘O',
               action: this.handleLoadProject,
             },
+            // INFO: the starryai build only (the research collection is on)
+            ...(this.collect.on
+              ? [
+                  {
+                    text: 'My work on the server…',
+                    disabled: !this.collect.myWork,
+                    action: () => {
+                      this.showMyWork = true
+                    },
+                  },
+                ]
+              : []),
             { text: 'divider', divider: true },
             {
               text: 'Copy Data to Clipboard',
@@ -645,6 +681,9 @@ export default defineComponent({
       )
       if (!confirmed) return
       this.autoSaveReady = false
+      // INFO: the image is discarded too, so the server gets a new work; the
+      // old one stays in My work
+      collectHandle?.newWork()
       await persistence.clear()
       // INFO: an empty project plus the default figure — the same state a
       // first-ever visit shows.
@@ -661,6 +700,44 @@ export default defineComponent({
         handle ? () => handle.flushBeforeReload() : null,
         () => window.location.reload(),
       )
+    },
+    listWorks(params: ListParams) {
+      if (!collectHandle) return Promise.reject(new Error('Not available.'))
+      return collectHandle.listWorks(params)
+    },
+    workThumbnail(projectId: string) {
+      return collectHandle?.thumbnail(projectId) ?? Promise.resolve(null)
+    },
+    // INFO: My work's Open. Asks first when the screen holds work (the same
+    // window.confirm as Start Over); the work on screen is saved on the
+    // server before it is replaced, so it can be opened again later.
+    async onOpenWork(work: WorkItem) {
+      if (!collectHandle || this.openingWork) return
+      if (
+        collectHandle.hasWork() &&
+        !window.confirm(
+          'Open this work? It replaces the work on screen, which is saved on the server first.',
+        )
+      )
+        return
+      this.openingWork = true
+      try {
+        await collectHandle.openWork(work.projectId, async (project, image) => {
+          await this.digitizerRef()?.loadProject(project, image)
+          // INFO: loadProject() emits no update:project (it is a restore),
+          // so the browser's auto-save is given the opened work here; a
+          // reload then shows it, not the work before
+          persistence.saveProject(this.appContext.projectService.toProjectDTO())
+        })
+        this.showMyWork = false
+      } catch (error) {
+        this.showErrorSnackbar(
+          error instanceof Error ? error.message : String(error),
+          'menu.my_work.open',
+        )
+      } finally {
+        this.openingWork = false
+      }
     },
     onImageReplaced(payload: { blob: Blob }) {
       collectHandle?.noteFile(payload.blob)

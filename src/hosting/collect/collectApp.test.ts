@@ -1,6 +1,7 @@
 import { createDigitizerContext } from '@/application/digitizerContext'
 import { CollectClient } from './collectClient'
 import { appInfo, CollectView, startCollect } from './collectApp'
+import { ProjectSaver } from './projectSaver'
 
 function client(status: unknown, users: unknown = { enabled: false }) {
   const urls: string[] = []
@@ -123,6 +124,24 @@ describe('startCollect', () => {
     expect(await handle.flushBeforeReload()).toBe(true)
     expect(urls.filter((u) => u.endsWith('/collect/events'))).toHaveLength(1)
     expect(c.pending).toBe(0)
+    handle.stop()
+  })
+
+  it('saves the work too before a reload (as wpd-auto sends project)', async () => {
+    const save = jest
+      .spyOn(ProjectSaver.prototype, 'save')
+      .mockResolvedValue(undefined)
+    const { c } = client({ enabled: true })
+    const handle = startCollect(createDigitizerContext(), '/api', {
+      version: '2.0.0',
+      client: c,
+      onChange: () => undefined,
+      afterRender: async () => undefined,
+    })
+    await settle()
+    await handle.flushBeforeReload()
+    expect(save).toHaveBeenCalled()
+    save.mockRestore()
     handle.stop()
   })
 

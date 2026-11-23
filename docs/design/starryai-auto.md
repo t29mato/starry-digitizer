@@ -1,6 +1,6 @@
 # starry-digitizer に wpd-auto の自動機能を入れ、starryai に置く（設計書の下書き）
 
-- 版: **0.0.11**（2026-11-24。合意までは 0.x.y で上げる）
+- 版: **0.0.13**（2026-11-24。合意までは 0.x.y で上げる）
 - 書いた人: Claude Code（間藤の依頼）。材料に wpd-auto のセッションの下書き
   `~/research/drafts/starryai-hosting-from-wpd-auto-session.md` を使った。
 - 置き場所: starry-digitizer の `docs/design/starryai-auto.md`（ブランチ `feat/starryai-hosting`、`origin/v4` から分けた）。
@@ -147,7 +147,8 @@ starryai に置く版を starry-digitizer 側で **`starryai-0.1.0`** のよう�
 | 0.3 | F9 凡例の読み取り | 済み。ブランチ `feat/legend-reader`（ローカルだけ。push していない） | Jest。本物の backend（下の「F9 凡例の読み取り」） |
 | 0.4 | F2 Bar の Auto-place（`?plot=bar`）・F4 BarNet・F6 の Bars | 済み（ブランチ `feat/bar-charts`、ローカルだけ） | Jest（backend のコードとテストから作った答えの形）。本物の backend にも当てた（下の「Bar をつないで確かめたこと」）。BarNet・BarRulerNet の重みがないので、成功の道は本物では未確認 |
 | 0.2 | 記録を送る（§3.4）・知らせ（§5.2）・名前の選択 | 済み（ブランチ `feat/research-collect`、1bf089e・72652f1・babd869。push していない） | Jest（モックの fetch）と、本物の backend に 1 セッションを送って保存された行を見た（下の「0.2 の確かめ」）。ブラウザでは未確認 |
-| 0.2 | project（P1）を送る | まだ（backend 側が用意できていない。§10 Q8） | — |
+| 0.2 | project（P1）を送る | 済み（ブランチ `feat/my-work`、ローカルだけ。push していない）。wpd-auto の下書き `docs/starry-digitizer-projects.md` 0.0.1 に合わせた。**backend にはまだない** | Jest。下書きに沿ったモックのサーバーと、今の backend（format がない）に当てた（下の「P1・F16 My work」） |
+| 0.5 | F16 My work（File > My work on the server…） | 済み（同じブランチ） | 同上。ブラウザでは未確認 |
 | 0.3 | F17 新しい版の知らせと Reload | 済み（ブランチ `feat/small-features`、ローカルだけ） | Jest（VERSION.txt の読み方・5 分ごと・タブに戻ったとき・Reload の前の送り）。ビルドして `VITE_PWA_OFF` が入ることを見た。ブラウザでは未確認 |
 | 0.5 | F18 SID / Fig. の欄と `starrydata.ref` | 済み（同じブランチ） | Jest（project の保存と読み込み・部品・記録）。本物の backend に送って保存された行を見た（下の「F17・F18・ui.* の確かめ」）。ブラウザでは未確認 |
 | 0.2 | `ui.error`・`ui.message` | 済み（同じブランチ） | Jest。本物の backend に送って保存された行を見た |
@@ -159,7 +160,7 @@ starryai に置く版を starry-digitizer 側で **`starryai-0.1.0`** のよう�
   - `${BASE_URL}VERSION.txt` を、開いたとき・5 分ごと・タブに戻ったときに `no-store` で読む。1 行目の commit か `build=` が今のページと違えば知らせる。
   - 知らせは右下の小さな帯「A new version is available.」と Reload・×。自分では読み直さない。× で閉じても、さらに新しい版が出ればまた出す。
   - Reload は、研究用の待ち行列を最長 4 秒送ってから読み直す（`flushNow`。やり直しの待ち中でも 1 回試す）。送り切れない分は、読み直しの `pagehide` の keepalive に任せる。
-  - wpd-auto は Reload の前に `project`（`reason: reload`）を送る。starry-digitizer はまだ project を送らない（§10 Q8）。作業そのものはブラウザの自動保存に残る。
+  - wpd-auto と同じく、Reload の前に作業（project）も送る（0.0.13。待ち行列と同じく最長 4 秒）。作業そのものはブラウザの自動保存にも残る。
   - Vercel 版の PWA の更新の窓（`PWAUpdatePrompt.vue`）は変えていない。
 - F18（SID / Fig.）:
   - 置き場所: 左の列の画像の欄（Choose an image）のすぐ下に、「Starrydata SID」と「Fig.」の 2 つの小さな欄を横に並べた。画像のことなので画像の隣にした。wpd-auto は左の欄のいちばん下。
@@ -324,6 +325,55 @@ backend の形は wpd-auto `feat/client-capabilities` の `backend/README.md`・
 - VLM そのもの（qwen3.5:9b）の読みは確かめていない。偽の Ollama は答えを固定で返すだけ。
 - 呼び出しは Jest の中から本物の `fetch` で行った。**ブラウザでの確認はまだ**。
 
+**P1・F16 My work（2026-11-24、ブランチ `feat/my-work`）**
+
+wpd-auto の下書き `docs/starry-digitizer-projects.md` 0.0.1（`feat/user-passwords` 6482ef2、文書だけ）と `backend/COLLECT.md`（My work の節）に合わせた。wpd-auto の frontend は読んでいない。
+
+- 置き場所: `src/hosting/collect/projectSaver.ts`（送る役）、`myWork.ts`（一覧と開く）、`MyWorkDialog.vue`（窓）、`SaveStatus.vue`（フッター）。ライブラリには入れない。
+- ブラウザの自動保存（IndexedDB）はそのまま残す。サーバーの保存は 2 つめの写し。
+- 送るもの: `POST /collect/project` に `format: "starry-digitizer/project"`、`project_json`（`toProjectDTO()` の JSON の文字列）、`data.files`（今の画像 1 つ: `index`・`sha256`・`name`・`type`・`size`）、`data.view {file_index: 0}`。画像は今の記録と同じく `images/` に GET → PUT。
+- いつ: 作業が変わってから 3 秒後、最短 15 秒おき（wpd-auto と同じ）。タブを隠す・閉じるときはすぐ。
+  - 閉じるときは作業を先に `keepalive` で送り、残りの枠（60 000 バイトから引いた分）でイベントを送る。入らない大きな作業は普通の要求にする（閉じるときは届かないことがある）。
+  - 変わっていなければ送らない（`timestamp` だけの違いは変わったとみなさない）。点も軸の点もない作業は、まだ送っていなければ送らない。
+  - 送る前の門は記録と同じ: 収集が on、知らせを描いた後、名前（か Guest）が決まった後。パスワードのときはその人の token があるときだけ。**名前が決まる前に閉じても、作業は Guest として送らない**（記録とは違う。後でログインした人の作業と分かれるため）。
+- 作業（`project_id`）の決め方（間藤が変えられる）:
+  - 画像（sha256）と人ごとに 1 つ。新しい画像、別の人（Change・ログイン）なら新しい作業。
+  - My work から開いた作業は、その画像が画面にある限り同じ `project_id` に保存する。
+  - Start over (keep image)（F12）は画像が同じなので**同じ作業**のまま。File > Start Over（画像も捨てる）は**新しい作業**にする。前の作業は My work に残る。
+  - 再読み込みで IndexedDB から戻った作業は、同じ画像・同じ人なら同じ `project_id` を続ける（localStorage `starry-digitizer.<environment>.project` に `{project_id, sha256, user}`）。2 つのタブで同じ画像を開くと、同じ作業に交互に保存する（推測。IndexedDB の自動保存も同じく 1 つを取り合う）。
+- 答えの扱い:
+  - 409 `conflict` → 新しい `project_id` で、すぐ送り直す（3 回続いたらやめて refused）。
+  - 400 `invalid_params` で、`detail` に `wpd_json` か `format` がある → backend がこの形式を知らない。このページでは作業を送らない（記録は送る）。フッターにも出さない。
+  - ほかの 400・413・415 → refused。同じ中身は送り直さない。変われば送る。
+  - 401 `invalid_token` → token を捨て（ログインの窓が出る）、作業は待つ。404 → 収集が止まったとみなす。
+  - 通信の失敗・5xx・429 など → 2 秒から倍々（最長 2 分、`Retry-After` があればそれ以上）でやり直す。
+- フッター（英語）: 「Saved on the server 12:34」、「Not saved yet — retrying (last saved 12:34)」、「Not saved: the server refused the work」。まだ何も保存していない・収集が off・形式を知らない backend のときは出さない。
+- My work（File > My work on the server…、収集が on のときだけ。名前か Guest が決まるまでは押せない）:
+  - `GET /collect/works?format=starry-digitizer/project&limit=50[&q=&sort=&offset=]`。検索の欄（打ち終わって 0.3 秒後）、並べ替え（last saved / file name / SID / figure）、件数、Show more（50 件ずつ）。
+  - 各行: サムネイル（`/thumbnail`、1 つずつ順に取る。1 分 120 要求の制限のため）、「SID … · Fig. … — ファイル名」、保存した時刻・データセットと点の数・大きさ、Open。
+  - **`format` のない作業は出さない**。今の backend は `format` を無視して wpd の作業を返すため（確かめた）。そのときは「This server does not keep starry-digitizer work yet.」。
+  - だれの作業が出るかは backend が決める（token、名前、Guest はこのブラウザの `client_id`）。ページは今の記録と同じヘッダー（`X-WPD-Client-Id`・`X-WPD-Token` または `X-WPD-User`）を付けるだけ。
+  - Open: 画面に作業があれば `window.confirm`（Start Over と同じ形）。今の作業を先にサーバーへ（5 秒まで待つ）。作業と画像をダウンロードし、`migrateProject` で検査、画像の sha256 を確かめる。どれかが失敗すれば画面は何も変わらず、エラーをスナックバーに出す。
+  - 戻すのは `<StarryDigitizer>` の `loadProject(project, image)`（Load Project と同じ道）。Undo の履歴は消える。開いた作業は IndexedDB にも書く（`loadProject` は `update:project` を出さないため）。
+  - wpd の作業（`work.format` が別）は「This work was saved by another app and cannot be opened here.」。
+- 送る記録の `project` は backend が作る（下書き §2）。ページは別のイベントを足していない。
+- ProjectDTO は変えていない。
+
+確かめたこと（2026-11-24、この VM の中）:
+
+| 確かめたこと | 結果 |
+|---|---|
+| Jest（`projectSaver.test.ts`・`myWork.test.ts`・`MyWorkDialog.test.ts`） | 間隔（3 秒・15 秒）、変わらないときに送らない、空の作業を送らない、門、409 → 新しい id、400（wpd_json）→ 止まる、ほかの 400・413、やり直し・`Retry-After`、keepalive と枠の分け合い、作業の id の決め方、token、要求の形、一覧の読み取り、Open（戻す道・失敗で何も変わらない） |
+| 今の backend（wpd-auto `feat/user-passwords` 6482ef2、`127.0.0.1:24868`、ステージング、収集は一時ディレクトリ） | `POST /collect/project`（format・project_json だけ）→ 400 `invalid_params`「wpd_json must be the project's JSON text」。ページは unsupported になり、作業を送らなくなった（`project.backend.test.ts`） |
+| 同じ backend の `GET /collect/works?format=starry-digitizer/project` | 200。`format` を無視し、wpd の作業を `format` なしで返した（curl）。だからページで `format` を見て落とす |
+| 下書きに沿ったモックのサーバー（スクラッチの Python、`127.0.0.1:24980`、コミットしていない） | 保存 → 一覧（点の数）→ Open（ProjectDTO と画像の sha256 が一致）→ 別のブラウザ（Guest）から同じ id → 409 → 新しい id で保存（`project.backend.test.ts`） |
+
+確かめていないこと:
+- 本物の backend の `format`（まだない）。できたら `PROJECT_BACKEND_URL=<…/api/v1> npx jest src/hosting/collect/project.backend.test.ts`。
+- ブラウザでの見た目（窓・フッター・確認）と、タブを閉じるときの keepalive。この VM にはブラウザがない。
+- サムネイル（モックは 204 を返すだけ）。
+- 2 つのタブで同じ作業を開いたとき。
+
 ### 2.4 軸の値の自動入力：starry-digitizer の OCR と wpd-auto の比較（2026-11-23）
 
 間藤の依頼で 2 つを比べた。
@@ -392,7 +442,7 @@ backend の形は wpd-auto `feat/client-capabilities` の `backend/README.md`・
 | `GET /auto/status` | F7 | `{auto:{available,hours,timezone,next_change}}` |
 | `GET /components` | F14 | |
 | `GET /collect/status`・`POST /collect/events`・`POST /collect/project`・`GET/PUT /collect/images/{sha}` | F15 | §3.4 |
-| `GET /collect/users`・`/collect/works*` | F16 | 決めた場合だけ |
+| `GET /collect/users`・`/collect/works*` | F16 | 名前の選択（0.2）と My work（`?format=starry-digitizer/project`、§2.3「P1・F16 My work」） |
 | `/healthz` | デプロイの確認 | |
 
 - 記録用のヘッダー `X-WPD-Client-Id`・`X-WPD-Session-Id`・`X-WPD-Request-Id`・`X-WPD-User` を、calibrate・extract・legend・collect の全部に付ける。
@@ -435,6 +485,10 @@ backend の形は wpd-auto `feat/client-capabilities` の `backend/README.md`・
   - **案 P1**: 本文に `format: "wpd" | "starry-digitizer/project"` を足し、`project_json` を同じ口で受ける。管理画面の読み手は、format ごとに分ける。
   - **案 P2**: starry-digitizer の画面で、WPD の形に変換して送る。backend は変えない。ただし変換に落ちるものがある（推測）。
   - **案 P3**: 0.x では project を送らない。events と画像だけにする。管理画面の「点」の数字は starry-digitizer の分が欠ける。
+- **2026-11-24**: wpd-auto のセッションが P1 の下書きを書いた（`docs/starry-digitizer-projects.md` 0.0.1、`feat/user-passwords`。文書だけで、backend のコードはまだない）。
+  - `format: "starry-digitizer/project"` と `project_json`。形式と `X-WPD-App` が合わなければ 400、同じ `project_id` を違う形式・違う人で送れば 409。
+  - My work の一覧は `?format=` で形式ごと（ないときは `wpd`）。`GET /works/<id>` は `{work, project_json}`。
+  - starry-digitizer はこれに合わせて実装した（§2.3「P1・F16 My work」）。
 
 **(d) 文書とテスト**
 
@@ -508,7 +562,7 @@ starry-digitizer は `GET {baseUrl}/capabilities` → `{features:[…]}` を前�
 - localStorage: `starry-digitizer.<environment>.client-id`（UUID）と `starry-digitizer.<environment>.user`（`{"user": "<id>"|null}`）。`<environment>` は `/collect/status` の `environment`。読めない・書けないときは、開くごとに新しい ID になり、名前もまた聞く。
 - sha256 と UUID は JavaScript で作る（http のページでは `crypto.subtle`・`randomUUID` が使えない）。
 - `app_commit`・`app_build` はビルドの `VITE_APP_COMMIT`・`VITE_APP_BUILD`（`deploy.sh` が渡す）。`app_version` は package.json。形が合わなければ null。
-- project（P1）はまだ送らない（backend が受けられない。§10 Q8）。
+- project（P1）は `projectSaver.ts` が送る（2026-11-24、`feat/my-work`。§2.3「P1・F16 My work」）。backend がこの形式を知らなければ（400）、そのページでは送らない。
 
 **送る記録（0.2 の実装）**
 
@@ -532,7 +586,8 @@ starry-digitizer は `GET {baseUrl}/capabilities` → `{features:[…]}` を前�
 | `ui.message` | 知らせのスナックバーを出したとき | ホスト（`App.vue`） | `where`・`message`（500 文字まで）。今は Auto-Extraction の取り込みの結果だけ。wpd-auto は「題」を持つが、starry-digitizer の知らせには題がないので `where` にした |
 
 - `export` に `starrydata`（`{sid, figure}`、なければ null）を足した（0.0.11。wpd-auto の `export` と同じ）。
-- wpd-auto にある `candidates.*`・`ops`・`project` は、まだ送らない。
+- wpd-auto にある `candidates.*`・`ops` は、まだ送らない。
+- 作業そのものは `POST /collect/project`（format `starry-digitizer/project`）で送る。記録の `project` は backend がそこから作る（wpd-auto の下書き §2）。
 - `ui.*` の `message` は画面の文そのままなので、エラーの文に含まれるファイル名などは入りうる（推測。今の文を全部は調べていない）。打った文字をほかに足すことはしない。
 - `calibration.final` は wpd-auto では「OK を押したとき」である。starry-digitizer には OK がないので、変わってから 2 秒で区切った。同じ軸を何度も直すと何本も出る（推測で決めた区切り方。間藤が変えられる）。
 
@@ -700,6 +755,8 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.9 | 2026-11-24 | §1.2b 2026-11-24 の決定（棒グラフ・ライブラリを考えない・パスワード）。Q17〜Q20。凡例の名前を文字だけにした。§11 パスワード（wpd-auto と相談中） |
 | 0.0.10 | 2026-11-24 | §11.1〜11.4: ページのログイン（wpd-auto の下書き `docs/user-passwords.md` 0.0.1 の API に合わせた。ブランチ `feat/login`）。自動機能の包みが legend・components を落としていたのを直した |
 | 0.0.11 | 2026-11-24 | F17 新しい版の知らせと Reload、F18 SID / Fig. の欄と `starrydata.ref`、`ui.error`・`ui.message`（ブランチ `feat/small-features`。§2.3・§3.4） |
+| 0.0.12 | 2026-11-24 | P1（作業をサーバーに保存）と F16 My work（ブランチ `feat/my-work`）。§2.3・§3.2(c)・§3.4・Q5・Q8 |
+| 0.0.13 | 2026-11-24 | `feat/small-features` と `feat/my-work` をまとめた。作業を送るときに SID・Fig. を `data.starrydata`（wpd-auto と同じ形）で付ける。新しい版の Reload の前に作業も送る |
 | 0.0.8 | 2026-11-23 | 5 つのブランチを `feat/starryai-hosting` にまとめた: ブラウザの OCR の改善（§2.4、91 図で 23 → 69）、0.2 の記録・知らせ・名前の選択（§3.4・§5.2）、F12 Start over・F14 Components、F9 凡例の読み取り、F2・F4・F6 の棒グラフ（Q7）。棒の抽出の後は凡例を読まない（backend が marker と line だけを受けるため） |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め
@@ -713,10 +770,10 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | Q2 土台・記録の深さ | 土台は `origin/v4`（= feat/auto-digitize + docs）。starryai 版は wpd-auto と同じく作業の中身まで送る。ライブラリの既定（どこにも送らない）は変えない | 推した案 |
 | Q3 名前 | ヘッダー `X-WPD-App`、値 `wpd-auto`・`starry-digitizer`。starry-digitizer にだけある型には `sd.` を付けない（`client` で分かる） | 既定 |
 | Q4 管理画面 | まず `?client=` の絞り込みだけ。内訳の列は後で | 既定 |
-| Q5 名前の選択・My work | 名前の選択は 0.2 で入れる（記録を揃えるため）。My work とサーバーだけへの保存は 0.5 で決め直す。それまでブラウザへの保存は今のまま | 既定 |
+| Q5 名前の選択・My work | 名前の選択は 0.2 で入れる（記録を揃えるため）。**My work は入れた**（2026-11-24、`feat/my-work`）。ブラウザへの保存（IndexedDB）は残し、サーバーには 2 つめの写しとして保存する | 既定 |
 | Q6 候補の方式 | 下書きのデータセットのまま。記録の型を対応させる（§3.4） | 既定 |
 | Q7 Bar 軸 | **x = 棒の番号（0,1,2…）の X-Y 軸セット**。軸の種類は足さない。機能の名前は `auto_axis_bar`（下の本文） | 既定（0.4 で実装） |
-| Q8 project の受け口 | 案 P1（`format` を足す）。0.2 の段で wpd-auto 側と詰める | 既定 |
+| Q8 project の受け口 | 案 P1（`format` を足す）。wpd-auto の下書き 0.0.1 に合わせて実装した（backend はまだ） | 既定 |
 | Q9 版と URL | アプリの版は package.json のまま（2.0.0 系）。この文書の段の番号（0.1〜0.5）は版ではなく段の名前として使う。パスは `/starry-digitizer/` | 既定 |
 | Q10 しきい値 | starry-digitizer の 0.5 のまま | 既定 |
 | Q11 範囲 | Start over（F12）は入れる。Set up series などサーバーを使わないものは後で | 既定 |

@@ -133,6 +133,14 @@ export interface CollectWiringOptions {
   now?: () => Date
 }
 
+/** The image on the canvas, as a work's `files` entry names it. */
+export interface CurrentImage {
+  sha256: string
+  name: string | null
+  type: string
+  size: number
+}
+
 export interface CollectWiring {
   /** the person loaded this file (ImageSettings' `image-replaced`) */
   noteFile(file: Blob): void
@@ -146,6 +154,8 @@ export interface CollectWiring {
   noteMessage(message: { where: string; message: string }): void
   /** record what is waiting for its debounce now (before a reload) */
   recordPending(): void
+  /** the image on the canvas now; null = none (or not looked at yet) */
+  currentImage(): CurrentImage | null
   /** record what is pending now and send it (the tab is being hidden) */
   flushPending(): void
   detach(): void
@@ -165,6 +175,7 @@ export function attachCollector(
     options.window ?? (typeof window === 'undefined' ? undefined : window)
   const debounceMs = options.calibrationDebounceMs ?? CALIBRATION_DEBOUNCE_MS
   let view: ImageView = { sha256: null, width: 0, height: 0 }
+  let image: CurrentImage | null = null
   let pendingFile: { name: string; size: number; type: string } | null = null
   // INFO: per axis set, for the current image: what Auto-place placed
   // (calibrationKey) and its request, and what was last recorded as final
@@ -228,6 +239,7 @@ export function attachCollector(
     const decoded = url ? decodeDataUrl(url) : null
     if (!decoded) {
       view = { sha256: null, width: 0, height: 0 }
+      image = null
       return
     }
     const file =
@@ -244,6 +256,14 @@ export function attachCollector(
       height,
     })
     view = { sha256, width, height }
+    image = sha256
+      ? {
+          sha256,
+          name: file?.name || null,
+          type: file?.type || decoded.type,
+          size: decoded.bytes.length,
+        }
+      : null
   }
   const stopImage = watch(
     () => ctx.canvasHandler.uploadImageUrl,
@@ -363,6 +383,15 @@ export function attachCollector(
       client.record('ui.message', uiMessageData(message, view))
     },
     recordPending,
+    currentImage() {
+      // INFO: an image change not looked at yet is looked at now, so a
+      // project is never sent with the previous image's sha256
+      if (imageTimer !== null) {
+        clearTimeout(imageTimer)
+        takeImage()
+      }
+      return image
+    },
     flushPending,
     detach() {
       stopImage()
