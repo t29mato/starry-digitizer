@@ -50,6 +50,14 @@ export interface StarryDigitizerFeatures {
    */
   startOver: boolean
   /**
+   * Show the two small "Starrydata SID" / "Fig." fields under the image
+   * panel: which Starrydata paper and which figure in it the image is. Saved
+   * with the project (ProjectDTO.starrydata) whether shown or not. Off by
+   * default; the starryai build turns it on (docs/design/starryai-auto.md
+   * F18).
+   */
+  starrydataRef: boolean
+  /**
    * All keyboard shortcuts at once — the default the three groups below fall
    * back to, and nothing else. It handles no key of its own.
    *
@@ -167,6 +175,7 @@ export const DEFAULT_FEATURES: StarryDigitizerFeatures = {
   dataTable: true,
   reviewTools: true,
   startOver: true,
+  starrydataRef: false,
   keyboardShortcuts: true,
   keyboardHistory: true,
   keyboardFile: true,

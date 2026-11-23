@@ -10,6 +10,7 @@ export const COLLECT_DETAILS =
   'Saved for research, e.g. to improve automatic calibration and extraction: ' +
   'the images you load; the axis calibration, including Auto-place proposals; ' +
   'the data points; the results of automatic extraction; the fact of exports ' +
-  '(not their contents); the features used, without anything typed; the ' +
+  '(not their contents); the Starrydata SID and Fig.; ' +
+  'the features used, without anything else typed; the ' +
   'browser name and window size; an anonymous ID and the name chosen. ' +
   'No IP address is saved.'

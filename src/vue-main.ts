@@ -38,6 +38,7 @@ export {
   MaskSettings,
   ColorSettings,
   StartOverSettings,
+  StarrydataRefSettings,
 } from './presentation/components/Settings'
 export { default as DataTable } from './presentation/components/Export/DataTable.vue'
 export { default as ConfirmerBar } from './presentation/components/Generals/ConfirmerBar.vue'

@@ -39,6 +39,7 @@
           imageUpload: true,
           zipExportImport: true,
           csvExport: true,
+          starrydataRef: starryaiBuild,
         }"
         :confirm-image-replace="true"
         :asset-base-url="ocrAssetBaseUrl"
@@ -262,6 +263,9 @@ export default defineComponent({
     githubRunNumber: import.meta.env.VITE_APP_GITHUB_RUN_NUMBER,
     isProd: import.meta.env.MODE === 'production',
     ocrAssetBaseUrl: OCR_ASSET_BASE_URL,
+    // INFO: a build that names an auto service is the starryai one; it
+    // shows the SID / Fig. fields (F18)
+    starryaiBuild: Boolean(import.meta.env.VITE_AUTO_SERVICE_URL),
     showError: false,
     errorMessage: '',
     showKeyboardShortcuts: false,

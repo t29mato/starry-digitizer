@@ -17,6 +17,7 @@ import { DigitizerError } from '@/application/errors'
 import { MANUAL_MODE, MASK_MODE, POINT_MODE } from '@/constants'
 import { ReviewSession } from '@/application/services/reviewSession/reviewSession'
 import { AutoFeatures } from '@/application/services/autoService/autoFeatures'
+import { StarrydataRef } from '@/application/services/starrydataRef/starrydataRef'
 
 const DATA_URL = 'data:image/png;base64,iVBORw0KGgo='
 
@@ -77,6 +78,7 @@ const buildContext = () => {
     historyManager,
     reviewSession: new ReviewSession(),
     autoFeatures: new AutoFeatures(),
+    starrydataRef: new StarrydataRef(),
   }
 
   return { ctx: ctx as unknown as DigitizerContext, ...ctx }
@@ -178,6 +180,14 @@ describe('replaceImage', () => {
     )
     expect(c.historyManager.clear).toHaveBeenCalled()
     expect(c.historyManager.canUndo).toBe(false)
+  })
+
+  it('empties the SID / Fig. of the previous image (F18)', async () => {
+    c.starrydataRef.set({ sid: '12345', figure: '3(b)' })
+
+    await replaceImage(c.ctx, DATA_URL)
+
+    expect(c.starrydataRef.toDTO()).toBeUndefined()
   })
 
   it('ends an auto-extraction review and drops an Auto-place proposal', async () => {

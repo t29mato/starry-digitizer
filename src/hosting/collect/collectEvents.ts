@@ -234,3 +234,33 @@ export function calibrationKey(axisSet: AxisSetInterface): string {
   const { points, x_log, y_log, point_mode } = axisSetCalibration(axisSet)
   return JSON.stringify([points, x_log, y_log, point_mode])
 }
+
+/** A SID / Fig. pair as the record carries it. */
+export interface StarrydataRefValue {
+  sid: string
+  figure: string
+}
+
+/**
+ * `starrydata.ref` (wpd-auto's record of the same name, backend/COLLECT.md):
+ * the person changed the image's SID or Fig. starry-digitizer has one image
+ * per project, so `file_index` is always 0 and `page` null.
+ */
+export function starrydataRefData(
+  current: StarrydataRefValue,
+  previous: StarrydataRefValue,
+  view: ImageView,
+  clientTime: string,
+): Record<string, unknown> {
+  return {
+    file_index: 0,
+    page: null,
+    file_sha256: view.sha256,
+    sid: current.sid,
+    figure: current.figure,
+    previous: { sid: previous.sid, figure: previous.figure },
+    sid_numeric: current.sid === '' ? null : /^[0-9]+$/.test(current.sid),
+    client_time: clientTime,
+    view,
+  }
+}

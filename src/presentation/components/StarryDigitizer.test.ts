@@ -239,3 +239,20 @@ describe('<StarryDigitizer> features.startOver', () => {
     expect(hidden.find('[data-cy="start-over-button"]').exists()).toBe(false)
   })
 })
+
+describe('<StarryDigitizer> features.starrydataRef', () => {
+  it('hides the SID / Fig. fields by default and shows them when on', () => {
+    const hidden = mount(StarryDigitizer, {
+      props: { context: createDigitizerContext() },
+    })
+    expect(hidden.find('[data-cy="starrydata-ref"]').exists()).toBe(false)
+
+    const shown = mount(StarryDigitizer, {
+      props: {
+        context: createDigitizerContext(),
+        features: { starrydataRef: true },
+      },
+    })
+    expect(shown.find('[data-cy="starrydata-sid"]').exists()).toBe(true)
+  })
+})

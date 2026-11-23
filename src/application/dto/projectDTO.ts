@@ -5,6 +5,7 @@ import { DigitizerError } from '@/application/errors'
 import { MANUAL_MODE, POINT_MODE } from '@/constants'
 import type { ReviewSessionDTO } from '@/application/services/reviewSession/reviewSession'
 import type { Rect } from '@/@types/types'
+import { normalizeStarrydataRef } from '@/application/services/starrydataRef/starrydataRef'
 
 /**
  * Schema version written into `ProjectDTO.version`.
@@ -47,6 +48,20 @@ export interface ProjectDTO {
    * counting after save → reopen. Optional and additive: no version bump.
    */
   reviewSession?: ReviewSessionDTO
+  /**
+   * The Starrydata paper id (SID) and the figure the image is (F18 in
+   * docs/design/starryai-auto.md), as typed by the person. Present only when
+   * one of them is set. Optional and additive: no version bump.
+   */
+  starrydata?: StarrydataRefDTO
+}
+
+/** The Starrydata reference of the image (trimmed; '' = not given). */
+export interface StarrydataRefDTO {
+  /** the paper's id in Starrydata, usually digits, e.g. "12345" */
+  sid: string
+  /** the figure in the paper, e.g. "3(b)" */
+  figure: string
 }
 
 function parseMajor(version: unknown): number | null {
@@ -130,6 +145,11 @@ export function migrateProject(input: unknown): ProjectDTO {
   const reviewSession = migrateReviewSession(input.reviewSession)
   if (reviewSession) {
     migrated.reviewSession = reviewSession
+  }
+
+  const starrydata = migrateStarrydataRef(input.starrydata)
+  if (starrydata) {
+    migrated.starrydata = starrydata
   }
 
   return migrated
@@ -236,6 +256,15 @@ function migrateDatasetLegend(raw: unknown): DatasetDTO['legend'] {
     source,
     status: status as NonNullable<DatasetDTO['legend']>['status'],
   }
+}
+
+// INFO: a note typed by the person; one that is not the documented shape (or
+// is empty) is dropped rather than failing the load. Trimmed and cut to the
+// same limits as the fields.
+function migrateStarrydataRef(raw: unknown): StarrydataRefDTO | undefined {
+  if (!isRecord(raw)) return undefined
+  const dto = normalizeStarrydataRef(raw)
+  return dto.sid || dto.figure ? dto : undefined
 }
 
 /**

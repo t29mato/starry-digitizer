@@ -14,6 +14,7 @@ import { ConfidenceReview } from '@/application/services/confidenceReview/confid
 import { ReviewView } from '@/application/services/reviewView/reviewView'
 import { AutoFeatures } from '@/application/services/autoService/autoFeatures'
 import { CurveTraceSettings } from '@/application/services/curveTrace/curveTraceSettings'
+import { StarrydataRef } from '@/application/services/starrydataRef/starrydataRef'
 import {
   ResearchEvents,
   type ResearchEventsInterface,
@@ -74,6 +75,10 @@ export interface DigitizerContext {
   // INFO: the research-record hook (docs/design/auto-service.md §9). Inert
   // until a host sets a listener; the digitizer never sends events anywhere.
   researchEvents: ResearchEventsInterface
+  // INFO: the image's Starrydata paper id and figure (F18 in docs/design/
+  // starryai-auto.md). Project state, saved in ProjectDTO.starrydata; shown
+  // only with `features.starrydataRef`.
+  starrydataRef: StarrydataRef
 }
 
 export function createDigitizerContext(): DigitizerContext {
@@ -85,6 +90,7 @@ export function createDigitizerContext(): DigitizerContext {
     canvasHandler,
   ).getNewInstance()
   const reviewSession = new ReviewSession()
+  const starrydataRef = new StarrydataRef()
   const researchEvents = new ResearchEvents(
     () => reviewSession.data?.importedAt ?? null,
   )
@@ -139,6 +145,7 @@ export function createDigitizerContext(): DigitizerContext {
       datasetRepository,
       canvasHandler,
       reviewSession,
+      starrydataRef,
     ),
     historyManager,
     reviewSession,
@@ -149,5 +156,6 @@ export function createDigitizerContext(): DigitizerContext {
     // INFO: markRaw — it holds a host callback and a counter, nothing a view
     // renders, so there is nothing for reactivity to track
     researchEvents: markRaw(researchEvents),
+    starrydataRef,
   }) as DigitizerContext
 }
