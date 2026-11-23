@@ -127,6 +127,7 @@ deploy() {
     PUPPETEER_SKIP_DOWNLOAD=1 CYPRESS_INSTALL_BINARY=0 "${YARN[@]}" install --frozen-lockfile --ignore-scripts
     STARRY_DIGITIZER_PWA=off STARRY_DIGITIZER_ANALYTICS=off \
       VITE_OCR_ASSET_DIR=tesseract VITE_AUTO_SERVICE_URL="$API_URL" \
+      VITE_APP_COMMIT="$commit" VITE_APP_BUILD="$build" \
       npx vite build --base="$PREFIX" --outDir "$tmp/dist"
   )
   printf '%s\nversion=%s\nbuild=%s\nenvironment=%s\ndeployed=%s\n' \
