@@ -348,7 +348,14 @@ export default defineComponent({
     // are shown only if the service's capabilities answer allows them.
     const autoServiceUrl = import.meta.env.VITE_AUTO_SERVICE_URL
     if (autoServiceUrl) {
-      configureAutoService(this.appContext, { baseUrl: autoServiceUrl })
+      configureAutoService(this.appContext, {
+        baseUrl: autoServiceUrl,
+        // INFO: which page the wpd-auto backend's records come from (its
+        // `client` field, the admin report's ?client=); the backend shared
+        // with wpd-auto takes a missing header for wpd-auto.
+        // docs/design/starryai-auto.md §3.2
+        headers: { 'X-WPD-App': 'starry-digitizer' },
+      })
       // INFO: such a page stays open all day; the server's supported hours
       // (and LineFormer, off outside them) change under it
       this.stopAutoStatus = watchAutoStatus(this.appContext)
