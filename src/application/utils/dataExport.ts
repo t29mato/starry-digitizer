@@ -1,6 +1,7 @@
 import { DigitizerContext } from '@/application/digitizerContext'
 import { datasetToValues } from '@/application/utils/datasetValues'
 import { DatasetInterface } from '@/domain/models/dataset/datasetInterface'
+import { recordExport } from '@/application/utils/researchEventOperations'
 
 export type TableRow = { X: string | null; Y: string | null }
 
@@ -65,5 +66,9 @@ export async function copyActiveDatasetToClipboard(
   success: boolean
   errorMessage?: string
 }> {
-  return copyRowsToClipboard(getActiveDatasetTableData(ctx))
+  const result = await copyRowsToClipboard(getActiveDatasetTableData(ctx))
+  if (result.success) {
+    recordExport(ctx, 'copy', 'dataset', [ctx.datasetRepository.activeDataset])
+  }
+  return result
 }

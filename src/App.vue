@@ -44,7 +44,19 @@
         :asset-base-url="ocrAssetBaseUrl"
         @update:project="onProjectUpdate"
         @error="onDigitizerError"
+        @image-replaced="onImageReplaced"
       >
+        <!-- INFO: the starryai build's research notice, next to where an
+             image is loaded (docs/design/starryai-auto.md §5.2) -->
+        <template v-if="collect.on" #aside-top>
+          <p class="c__collect-inline">
+            <collect-notice
+              :user-name="collect.userName"
+              :has-names="collect.hasNames"
+              inline
+            />
+          </p>
+        </template>
         <!-- INFO: the version/build caption is app-only (it reads
         package.json and import.meta.env), so it is injected through the
         component's slot instead of living inside the library. -->
@@ -56,7 +68,22 @@
     <footer class="c__footer" :class="{ 'c__footer--dev': !isProd }">
       {{ new Date().getFullYear() }} — <strong>StarryDigitizer</strong
       ><span class="ml-2">{{ isProd ? version : '' }}</span>
+      <template v-if="collect.on">
+        <br />
+        <collect-notice
+          :user-name="collect.userName"
+          :has-names="collect.hasNames"
+          @change-name="collect.choosing = true"
+        />
+      </template>
     </footer>
+    <collect-user-dialog
+      v-if="collect.on && collect.hasNames"
+      :model-value="collect.needsUser || collect.choosing"
+      :users="collect.users"
+      :guest-allowed="collect.guestAllowed"
+      @choose="onChooseUser"
+    />
     <sd-snackbar v-model="showError" color="error" :timeout="4000">
       <span data-cy="error-snackbar">{{ errorMessage }}</span>
     </sd-snackbar>
@@ -87,6 +114,7 @@ import {
   triggerLoadProjectDialog,
 } from '@/presentation/utils/projectFileDialog'
 import { copyActiveDatasetToClipboard } from '@/application/utils/dataExport'
+import { recordExport } from '@/application/utils/researchEventOperations'
 import { toggleInterpolation } from '@/presentation/utils/interpolationToggle'
 import { createAppPersistence } from '@/appPersistence'
 import type { ProjectDTO } from '@/application/dto/projectDTO'
@@ -110,6 +138,11 @@ import {
   configureAutoService,
   watchAutoStatus,
 } from '@/application/utils/autoFeatureOperations'
+
+import CollectNotice from '@/hosting/collect/CollectNotice.vue'
+import CollectUserDialog from '@/hosting/collect/CollectUserDialog.vue'
+import { startCollect, type CollectHandle } from '@/hosting/collect/collectApp'
+import type { CollectUser } from '@/hosting/collect/collectClient'
 
 import { version } from '../package.json'
 
@@ -137,6 +170,12 @@ const OCR_ASSET_BASE_URL = import.meta.env.VITE_OCR_ASSET_DIR
 // there is exactly one App instance and it is not reactive state.
 const persistence = createAppPersistence()
 
+// INFO: the starryai build's research collection (src/hosting/collect),
+// started only when the build names an auto service. Module scope like
+// `persistence`: one App, and nothing a view renders (the view gets the
+// `collect` data below).
+let collectHandle: CollectHandle | null = null
+
 export default defineComponent({
   name: 'App',
 
@@ -147,6 +186,8 @@ export default defineComponent({
     AboutDialog,
     SdMenu,
     SdSnackbar,
+    CollectNotice,
+    CollectUserDialog,
   },
 
   // INFO: the same context <StarryDigitizer> is given, provided here too so
@@ -189,6 +230,16 @@ export default defineComponent({
     // empty startup state would overwrite the very work we are about to read.
     autoSaveReady: false,
     lastSavedImageUrl: '',
+    // INFO: the research collection, as the view needs it (collectApp.ts)
+    collect: {
+      on: false,
+      hasNames: false,
+      needsUser: false,
+      choosing: false,
+      userName: null as string | null,
+      users: [] as CollectUser[],
+      guestAllowed: true,
+    },
   }),
   computed: {
     // INFO: "v<version>#<GitHub Actions build number>"; used to be rendered
@@ -380,14 +431,21 @@ export default defineComponent({
     // are shown only if the service's capabilities answer allows them.
     const autoServiceUrl = import.meta.env.VITE_AUTO_SERVICE_URL
     if (autoServiceUrl) {
-      configureAutoService(this.appContext, {
-        baseUrl: autoServiceUrl,
-        // INFO: which page the wpd-auto backend's records come from (its
-        // `client` field, the admin report's ?client=); the backend shared
-        // with wpd-auto takes a missing header for wpd-auto.
-        // docs/design/starryai-auto.md §3.2
-        headers: { 'X-WPD-App': 'starry-digitizer' },
+      // INFO: every request carries `X-WPD-App: starry-digitizer` (the
+      // wpd-auto backend's records' `client`, the admin report's ?client=;
+      // a missing header counts as wpd-auto), and — once the research notice
+      // is on screen — the ids that join the server's records to the page's.
+      // docs/design/starryai-auto.md §3.2, §3.4
+      collectHandle = startCollect(this.appContext, autoServiceUrl, {
+        commit: import.meta.env.VITE_APP_COMMIT,
+        build: import.meta.env.VITE_APP_BUILD,
+        version,
+        onChange: (view) => Object.assign(this.collect, view),
+        // INFO: after the notice has been rendered — nothing is sent before
+        // the person could see it
+        afterRender: () => this.$nextTick(),
       })
+      configureAutoService(this.appContext, collectHandle.service)
       // INFO: such a page stays open all day; the server's supported hours
       // (and LineFormer, off outside them) change under it
       this.stopAutoStatus = watchAutoStatus(this.appContext)
@@ -398,6 +456,8 @@ export default defineComponent({
     this.removeMessageBridge = null
     this.stopAutoStatus?.()
     this.stopAutoStatus = null
+    collectHandle?.stop()
+    collectHandle = null
   },
   methods: {
     importPoints(points: any) {
@@ -492,6 +552,13 @@ export default defineComponent({
       await this.digitizerRef()?.loadProject(undefined, DEFAULT_IMAGE)
       await this.markAutoSaveBaseline()
     },
+    onImageReplaced(payload: { blob: Blob }) {
+      collectHandle?.noteFile(payload.blob)
+    },
+    onChooseUser(user: string | null) {
+      this.collect.choosing = false
+      collectHandle?.chooseUser(user)
+    },
     onDigitizerError(payload: DigitizerErrorPayload) {
       this.showErrorSnackbar(payload.message)
     },
@@ -559,10 +626,18 @@ export default defineComponent({
         buildDataDocument(this.appContext),
         `data-${timestamp()}.json`,
       )
+      recordExport(
+        this.appContext,
+        'json',
+        'all',
+        this.datasetRepository.datasets,
+      )
     },
     handleExportEditLog() {
       const editLog = buildEditLog(this.appContext)
       if (!editLog) return
+      // INFO: no recordExport here: buildEditLog() already reports
+      // `review.export`
       downloadJson(editLog, `edit-log-${timestamp()}.json`)
     },
     handleAutoExtractionResult(result: AutoExtractionOperationResult) {
@@ -625,6 +700,14 @@ $bar-dev: #fb8c00;
 
   &__main {
     flex: 1;
+  }
+
+  &__collect-inline {
+    margin: 0 0 6px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    background: #e3f2fd;
+    color: #0d47a1;
   }
 
   &__footer {

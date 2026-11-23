@@ -132,8 +132,9 @@ export function applyServerExtractionDrafts(
   result: ServerExtractionResult,
   method: ExtractionMethod,
   action: string | null = 'extract.server',
+  source: 'extract' | 'auto_digitize' = 'extract',
 ): { datasetIds: number[]; replacedDraftCount: number } {
-  return applyDrafts(ctx, result, method, action)
+  return applyDrafts(ctx, result, method, action, source)
 }
 
 function applyDrafts(
@@ -141,6 +142,29 @@ function applyDrafts(
   result: ServerExtractionResult,
   method: ExtractionMethod,
   action: string | null = 'extract.server',
+  source: 'extract' | 'auto_digitize' = 'extract',
+): { datasetIds: number[]; replacedDraftCount: number } {
+  const applied = makeDrafts(ctx, result, method, action)
+  if (applied.datasetIds.length > 0) {
+    ctx.researchEvents.emit(() => ({
+      type: 'extraction.apply',
+      method,
+      source,
+      action,
+      series: result.series.length,
+      points: result.series.reduce((n, s) => n + s.points.length, 0),
+      datasets: applied.datasetIds,
+      replaced: applied.replacedDraftCount,
+    }))
+  }
+  return applied
+}
+
+function makeDrafts(
+  ctx: DigitizerContext,
+  result: ServerExtractionResult,
+  method: ExtractionMethod,
+  action: string | null,
 ): { datasetIds: number[]; replacedDraftCount: number } {
   if (result.series.length === 0) {
     return { datasetIds: [], replacedDraftCount: 0 }

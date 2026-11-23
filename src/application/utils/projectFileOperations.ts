@@ -1,6 +1,7 @@
 import { DigitizerContext } from '@/application/digitizerContext'
 import { loadProject } from '@/application/utils/digitizerOperations'
 import { DigitizerError } from '@/application/errors'
+import { recordExport } from '@/application/utils/researchEventOperations'
 
 // INFO: Pure orchestration only — no DOM. The <a download> / <input type=file>
 // halves live in @/presentation/utils/downloadBlob and projectFileDialog, so
@@ -35,6 +36,9 @@ export async function saveProject(
 ): Promise<ProjectSaveResult> {
   try {
     const blob = await ctx.projectService.exportProject()
+    // INFO: "built", not "downloaded": the caller decides where the blob
+    // goes, but either way the project has left the digitizer
+    recordExport(ctx, 'project', 'project', ctx.datasetRepository.datasets)
     return { success: true, blob, filename: defaultProjectZipFilename() }
   } catch (error) {
     console.error('Error saving project:', error)

@@ -1,4 +1,5 @@
 import { EditLogSummary } from '@/application/utils/editLogDiff'
+import type { ExtractionMethod } from '@/application/services/autoService/autoService'
 
 // INFO: Research record as a HOST HOOK (Starrydata2 v4 board P4,
 // docs/design/auto-service.md §9). The digitizer never sends these anywhere
@@ -94,6 +95,79 @@ export interface ResearchReviewEndEvent extends ResearchEventBase {
   type: 'review.end'
 }
 
+/**
+ * An Auto-place answer was applied to the axes (Axis Auto-place's Apply, or
+ * the first half of Auto digitize — see `action`). A summary of the answer
+ * only: whether each axis was read, its scale, how many ticks, the engine's
+ * confidence. Where the markers went is the host's to read from the
+ * context, if it wants to (the event itself carries no coordinates).
+ */
+export interface ResearchAutoPlaceApplyEvent extends ResearchEventBase {
+  type: 'auto_place.apply'
+  /** the undo step's name: 'axis.auto-place' or 'auto.digitize' */
+  action: string
+  /** the axes that were applied */
+  axes: ('x' | 'y')[]
+  /** the answer's overall status */
+  status: 'ok' | 'partial' | 'failed'
+  x: ResearchAutoAxisSummary
+  y: ResearchAutoAxisSummary
+}
+
+export interface ResearchAutoAxisSummary {
+  ok: boolean
+  scale: 'linear' | 'log' | null
+  ticks: number
+  confidence: number | null
+  /** the backend's failure code (a fixed identifier), or null */
+  failure: string | null
+}
+
+/**
+ * Server Extraction results became draft datasets (the Extract button, or
+ * the second half of Auto digitize — see `source`).
+ */
+export interface ResearchExtractionApplyEvent extends ResearchEventBase {
+  type: 'extraction.apply'
+  method: ExtractionMethod
+  source: 'extract' | 'auto_digitize'
+  /** the undo step's name, null when it joined Auto digitize's step */
+  action: string | null
+  series: number
+  points: number
+  /** the digitizer's ids of the draft datasets, in series order */
+  datasets: number[]
+  /** untouched drafts of an earlier Extract that were replaced */
+  replaced: number
+}
+
+/** An Auto digitize run ended (any outcome). */
+export interface ResearchAutoDigitizeEndEvent extends ResearchEventBase {
+  type: 'auto_digitize.end'
+  method: ExtractionMethod
+  status: 'done' | 'no_points' | 'stopped' | 'failed' | 'cancelled'
+  /** the step the run ended at without finishing; null when done */
+  stopped_at: 'axes' | 'extract' | null
+  applied_axes: ('x' | 'y')[]
+  series: number
+  points: number
+  undo_steps: number
+}
+
+/**
+ * Data left the digitizer (a copy to the clipboard, a project file, a JSON
+ * download). What kind and how much — never the values.
+ */
+export interface ResearchExportEvent extends ResearchEventBase {
+  type: 'export'
+  /** 'copy', 'project', 'json', 'edit_log', … */
+  kind: string
+  /** 'dataset' (one dataset), 'all' or 'project' */
+  scope: string
+  datasets: number
+  points: number
+}
+
 export type ResearchEvent =
   | ResearchEditEvent
   | ResearchUndoEvent
@@ -102,6 +176,10 @@ export type ResearchEvent =
   | ResearchReviewStepEvent
   | ResearchReviewExportEvent
   | ResearchReviewEndEvent
+  | ResearchAutoPlaceApplyEvent
+  | ResearchExtractionApplyEvent
+  | ResearchAutoDigitizeEndEvent
+  | ResearchExportEvent
 
 export type ResearchEventType = ResearchEvent['type']
 

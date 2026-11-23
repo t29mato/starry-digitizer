@@ -15,6 +15,8 @@ import {
   triggerLoadProjectDialog,
 } from './projectFileDialog'
 
+import { ResearchEvents } from '@/application/services/researchEvents/researchEvents'
+
 const mockExportProject = jest.fn()
 const mockImportProject = jest.fn()
 
@@ -24,6 +26,8 @@ const buildContext = () =>
       exportProject: (...args: unknown[]) => mockExportProject(...args),
       importProject: (...args: unknown[]) => mockImportProject(...args),
     },
+    datasetRepository: { datasets: [] },
+    researchEvents: new ResearchEvents(),
   }) as unknown as DigitizerContext
 
 describe('projectFileDialog', () => {

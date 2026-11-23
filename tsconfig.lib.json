@@ -32,6 +32,9 @@
     // work is persisted is the embedding host's decision.
     "src/appPersistence.ts",
     "src/appPersistence.test.ts",
+    // INFO: the starryai build's research collection (host code, sends to
+    // the wpd-auto backend). The library never sends anything; it is not API.
+    "src/hosting",
     // INFO: leftover Vue 2 ambient shims. copyDtsFiles would publish them
     // verbatim and they no longer type-check against Vue 3.
     "src/shims-tsx.d.ts",

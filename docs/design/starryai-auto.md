@@ -131,9 +131,10 @@ starryai に置く版を starry-digitizer 側で **`starryai-0.1.0`** のよう�
 | 0.1 | starryai に実際に置く | まだ | starryai に入れるのは間藤の確認の後 |
 | 0.3 | F12 Start over（画像は残す。Undo 1 段 `project.start-over`） | 済み（caea31f、ブランチ `feat/start-over-components`） | Jest（操作と部品）。ブラウザでは見ていない |
 | 0.3 | F14 Components（Help > About の折りたたみ） | 済み（6f135e7、同じブランチ） | 本物の backend の答えを Jest の fixture にした。ブラウザでは見ていない |
-| 0.2 | 記録を送る（§3.4）・知らせ（§5.2）・名前の選択 | 未着手 | — |
 | 0.3 | F9 凡例の読み取り | 済み。ブランチ `feat/legend-reader`（ローカルだけ。push していない） | Jest。本物の backend（下の「F9 凡例の読み取り」） |
 | 0.4 | F2 Bar の Auto-place（`?plot=bar`）・F4 BarNet・F6 の Bars | 済み（ブランチ `feat/bar-charts`、ローカルだけ） | Jest（backend のコードとテストから作った答えの形）。本物の backend にも当てた（下の「Bar をつないで確かめたこと」）。BarNet・BarRulerNet の重みがないので、成功の道は本物では未確認 |
+| 0.2 | 記録を送る（§3.4）・知らせ（§5.2）・名前の選択 | 済み（ブランチ `feat/research-collect`、1bf089e・72652f1・babd869。push していない） | Jest（モックの fetch）と、本物の backend に 1 セッションを送って保存された行を見た（下の「0.2 の確かめ」）。ブラウザでは未確認 |
+| 0.2 | project（P1）を送る | まだ（backend 側が用意できていない。§10 Q8） | — |
 
 **つないで確かめたこと（2026-11-23、この VM の中）**
 
@@ -195,6 +196,29 @@ wpd-auto の `feat/client-capabilities`（e6cc862）の backend を `127.0.0.1:2
 **残り・決めること**
 - Bar の Auto-place の capabilities の名前は、starry-digitizer 側で `auto_axis_bar` にした（§10 Q7）。**wpd-auto の backend に足してもらう必要がある**。
   返す条件の案: `?plot=bar` に答えられるとき（BarRulerNet の `check()` が通る、または BarRulerNet がなく X-Y のエンジンの `check()` が通る）。
+
+**0.2 の確かめ（2026-11-23、この VM の中）**
+
+wpd-auto の `feat/client-capabilities`（e6cc862）の backend を `127.0.0.1:24861` で動かした。
+- 設定: `WPD_AUTO_COLLECT_DIR` は一時ディレクトリ、`WPD_AUTO_ENVIRONMENT=staging`、users.json に `alice` を 1 人。
+- 画面の代わりに Jest（node）から送った（`src/hosting/collect/collect.backend.test.ts`。`COLLECT_BACKEND_URL` を付けたときだけ走る）。
+- 流したこと: 画像（`sample_graph_curve.png`）→ 名前 alice を選ぶ → Auto-place（本物の `/calibrate`）→ Apply → x2 の値を直す → 抽出の結果を当てる（MarkerNet の重みがないので、答えは手で作った）→ Undo・Redo → コピー。
+
+| 確かめたこと | 結果 |
+|---|---|
+| `events/*.jsonl` の行の `client` | すべて `starry-digitizer`（`server.image`・`server.calibrate` も） |
+| `user` | すべて `alice`。名前を選ぶ前の `session.start`・`image` も alice で入った |
+| `app_commit`・`app_version`・`app_build` | 送った値（`abcdef1`・`2.0.0`・`1`）のまま |
+| 送った型 | `session.start`・`image`・`edit`・`calibration.auto`・`calibration.final`（`auto`、直した後に `edit`）・`extraction.result`・`undo`・`redo`・`export` |
+| `calibration.auto` の `request_id` | `server.calibrate` の `request_id` と同じ。`client_id`・`session_id` も同じ |
+| 画像 | `images/e7/e711…` に 1 回だけ保存（GET → PUT）。`image` のファイル名も入った |
+
+確かめていないこと:
+- ブラウザでの表示（知らせ・名前の窓・ツールチップ）と、タブを閉じるときの keepalive。この VM にはブラウザがない。keepalive は Jest で形だけ確かめた。
+- テストの中では画像を描けないので、`image` の `width`・`height` は 300×150（キャンバスの既定）になった。ブラウザでは画像の大きさが入る（推測。`applyImage` が大きさを決めてから URL を入れる順になっている）。
+- starryai の nginx を通したとき。
+
+（BarRulerNet）の capabilities の名前は、まだ入れていない。0.4 の段（Bar 軸）で決める。仮の名前は `auto_axis_bar`。
 - P1（project を ProjectDTO で受ける）について、wpd-auto のセッションの見立て（推測を含む）:
   - 無理はない。
   - ただし、wpd.json の形を前提にした所が 3 つある。`collect.work_summary`、`admin_stats._work_counts`・`_points_table`、`admin_points.index`。
@@ -410,12 +434,52 @@ starry-digitizer は `GET {baseUrl}/capabilities` → `{features:[…]}` を前�
 
 **載せないもの**
 
-- 今の `researchEvents.ts:9-15` は、座標・値・名前を載せない線を引いている。
-- 一方で wpd-auto の記録は、校正の点や抽出の結果そのものを載せている（研究の目的がそこにある）。
-- starryai 版はどちらに合わせるかを決める（§10 Q2）。
-  - **推す案**: wpd-auto に合わせ、作業の内容まで送る。
-  - その場合も、ライブラリとしての既定（どこにも送らない、フックにも座標を載せない）は変えない。
-  - starryai 版のホストが、`DigitizerContext` から別に状態を読んで送る。
+- ライブラリのフック（`researchEvents.ts`）は、今までどおり座標・値・名前を載せない。
+- 0.2 で足したフックの型も、数と決まった名前だけにした（下の表の「元」）。
+- 作業の中身（軸の点・値・ファイル名・データセット名）は、starryai 版のホスト（`src/hosting/collect`）が `DigitizerContext` から読んで足す（§10 Q2）。
+
+**作り（0.2、実装した）**
+
+- `src/hosting/collect/`（ライブラリの入口からは出さない。`tsconfig.lib.json` でも外した）
+  - `collectClient.ts`: 送る役。状態の問い合わせ、待ち行列、まとめ送り、画像、ヘッダー。
+  - `collectWiring.ts`: フック・画像・軸を記録にする。calibrate・extract を包んで `X-WPD-Request-Id` を付ける。
+  - `collectEvents.ts`: 各記録の `data` の形（純粋な関数）。
+  - `collectApp.ts`: `App.vue` が呼ぶ 1 つの入口。`CollectNotice.vue`・`CollectUserDialog.vue`: 知らせと名前の窓。
+- 動くのは、ビルドに `VITE_AUTO_SERVICE_URL` があり、`GET /collect/status` が `enabled: true` のときだけ。404・`enabled:false`・届かないときは、ためた記録を捨て、フックも外す。
+- 送る順の決まり:
+  1. `/collect/status` が on。
+  2. 知らせを画面に描いた後（`markNoticeShown()`）。
+  3. 名前の一覧があれば、名前を選んだ後。ただしタブを隠す・閉じるときは、残りを Guest として送る（wpd-auto と同じ）。
+- それまでの記録は待ち行列に残す（2000 件まで、古いものから捨てる）。
+- まとめ送り: 4 秒待って `POST /collect/events`。1 回 500 件まで、本文は `max_json_bytes` の半分まで。名前が違う記録は別の要求にする。
+- 失敗: 429・408・5xx・507・通信の失敗は 2 秒から倍々（最長 2 分、`Retry-After` があればそれ以上）でやり直す。400・413・415 は捨てる。404 は収集が止まったとみなす。警告はコンソールに種類ごとに 1 回。
+- タブを隠す・閉じる（`visibilitychange` hidden・`pagehide`）: 待っている校正を先に記録し、`keepalive` の fetch で 60 000 バイトまで送る。
+- ヘッダー: どの要求にも `X-WPD-App: starry-digitizer`。知らせを描いた後だけ `X-WPD-Client-Id`・`X-WPD-Session-Id`、名前があれば `X-WPD-User`。calibrate・extract は要求ごとに `X-WPD-Request-Id`（UUID）。
+- localStorage: `starry-digitizer.<environment>.client-id`（UUID）と `starry-digitizer.<environment>.user`（`{"user": "<id>"|null}`）。`<environment>` は `/collect/status` の `environment`。読めない・書けないときは、開くごとに新しい ID になり、名前もまた聞く。
+- sha256 と UUID は JavaScript で作る（http のページでは `crypto.subtle`・`randomUUID` が使えない）。
+- `app_commit`・`app_build` はビルドの `VITE_APP_COMMIT`・`VITE_APP_BUILD`（`deploy.sh` が渡す）。`app_version` は package.json。形が合わなければ null。
+- project（P1）はまだ送らない（backend が受けられない。§10 Q8）。
+
+**送る記録（0.2 の実装）**
+
+すべての `data` の中の `view` は `{sha256, width, height}`（今の画像）。
+
+| 型 | いつ | 元 | `data` |
+|---|---|---|---|
+| `session.start` | ページを開いたとき | ホスト | `user_agent`・`language`・`languages`・`timezone`・`viewport{width,height}`・`screen{width,height}`・`device_pixel_ratio`・`path` |
+| `image` | 画像が変わったとき（sha256 ごとに 1 回） | ホスト（`uploadImageUrl` を見る） | `sha256`・`size`・`type`・`name`（読み込んだファイル名。貼り付けなどはないことがある）・`width`・`height`。バイト列は `images/` に GET → PUT |
+| `image.not_sent` | 画像が `max_image_bytes` を超えたとき | ホスト | `sha256`・`size` |
+| `calibration.auto` | Auto-place の Apply（Auto digitize の軸も） | フック `auto_place.apply` | `request_id`（`server.calibrate` と同じ）・`ms`・`action`・`applied`（当てた軸）・`status`・`x`/`y`（`ok`・`scale`・`ticks` の数・`confidence`・`failure`）・`placement`（置いた点 `[{label:X1…,px,py,value}]`）・`axis_set`・`x_log`・`y_log`・`plot_area` |
+| `calibration.final` | 軸が変わって 2 秒たったとき（軸セットごと、変わったときだけ。点のない軸セットは送らない） | ホスト（軸を見る） | `mode`（`auto` Auto-place のまま / `edit` その後に直した / `manual` Auto-place なし）・`auto_request_id`・`axis_set{id,name}`・`point_mode`・`x_log`・`y_log`・`consider_tilt`・`plot_area`・`points` |
+| `extraction.result` | Server Extraction で下書きを作ったとき（Auto digitize も） | フック `extraction.apply` | `request_id`・`ms`・`method`・`source`（`extract`/`auto_digitize`）・`query`（method・area・params）・`series`・`points`・`drafts[{series_index,dataset_id,name,points}]`・`replaced`・`action` |
+| `auto_digitize.result` | Auto digitize が終わったとき | フック `auto_digitize.end` | `method`・`outcome`（`done`/`no_points`/`stopped`/`failed`/`cancelled`）・`stopped_at`・`applied_axes`・`series`・`points`・`undo_steps`・`calibrate_request_id`・`extract_request_id` |
+| `export` | コピー（表・データセット一覧・メニュー）、Save Project、Export Data (JSON) | フック `export` | `kind`（`copy`/`project`/`json`）・`scope`（`dataset`/`all`/`project`）・`datasets`・`points`（数だけ。値は送らない） |
+| `edit`・`undo`・`redo` | Undo できる操作のたび | フック（そのまま） | `action`（`point.add` など）・`review_t_ms`・`sd_seq`（フックの通し番号） |
+| `review.start`・`review.step`・`review.export`・`review.end` | 自動抽出の確認 | フック（そのまま） | フックの欄のまま（数だけ）と `sd_seq`。Export Edit Log は `review.export` だけ（`export` は出さない） |
+| `user.changed` | Change で名前を変えたとき | ホスト | `guest`・`was_guest` |
+
+- wpd-auto にある `candidates.*`・`ops`・`ui.*`・`starrydata.ref`・`project` は、まだ送らない。
+- `calibration.final` は wpd-auto では「OK を押したとき」である。starry-digitizer には OK がないので、変わってから 2 秒で区切った。同じ軸を何度も直すと何本も出る（推測で決めた区切り方。間藤が変えられる）。
 
 ## 4. starryai での置き方
 
@@ -533,6 +597,15 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 - Vercel の公開版には何も出さない（送らないので）。
 - 知らせを出す前に記録を送らない。0.2 の段で、記録と知らせを**同時に**入れる。
 
+**実装（0.2）**
+
+- 本文（英語、we/us なし）: 「Your work (images, axes, data points) is saved on the NIMS server for research.」（`collectNoticeText.ts`）。
+- 出す所: フッター（ツールチップで中身）と、左の欄の画像の読み込みの上（折りたたみで中身）。名前の窓にも同じ本文。
+- 中身の文: 研究（自動校正・自動抽出の改善など）のため、読み込んだ画像、軸の校正（Auto-place の提案も）、データ点、自動抽出の結果、エクスポートの事実（中身は除く）、使った機能（打った文字は除く）、ブラウザ名と窓の大きさ、匿名の ID と選んだ名前。IP アドレスは保存しない。
+- 出すのは収集が on のときだけ。Vercel の公開版と、収集のない backend では何も出ない。
+- 名前の選択: `/collect/users` に名前があれば、「Who is working?」の窓で名前か Guest を選ぶ（`guest:false` なら Guest はない）。Esc や外のクリックでは閉じない。選んだものは localStorage に残し、次からは聞かない。一覧から消えた名前ならまた聞く。フッターに「Name: …」と Change。パスワードはない（ラベル）。
+- ブラウザへの保存（IndexedDB の自動保存）は今のまま（§10 Q5）。
+
 ## 6. 試験の方針（案）
 
 | 段 | 何を | どこで |
@@ -567,6 +640,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.4 | 2026-11-23 | wpd-auto 側の capabilities・client・管理画面の絞り込みとつないで確かめた結果を足した |
 | 0.0.6 | 2026-11-23 | Q16: Vercel の公開版は今のまま（starryai に届かせない）と決まった |
 | 0.0.7 | 2026-11-23 | §2.3 に F9 凡例の読み取りの実装と、backend とつないで確かめた結果を足した |
+| 0.0.7 | 2026-11-23 | 0.2 を実装した（記録を送る・知らせ・名前の選択）。§2.3・§3.4・§5.2 を実装に合わせた |
 | 0.0.5 | 2026-11-23 | §2.4 軸の値の自動入力の比較（SD-OCR 23／wpd-auto 76／サーバーで人の点の値 79、91 図）と、Auto-fill values をサーバーの校正で埋める実装。Q16 |
 | 0.0.7 | 2026-11-23 | 0.4 の段（F2・F4・F6 の Bars）を `feat/bar-charts` に入れた。Q7 を決めた（棒の軸は種類を足さず、x = 棒の番号の X-Y） |
 

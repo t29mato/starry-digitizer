@@ -77,6 +77,7 @@ import {
   copyRowsToClipboard,
   TableRow,
 } from '@/application/utils/dataExport'
+import { recordExport } from '@/application/utils/researchEventOperations'
 import {
   MAX_EFFECTIVE_DIGITS,
   MIN_EFFECTIVE_DIGITS,
@@ -160,7 +161,12 @@ export default defineComponent({
     async copyData() {
       // INFO: copies exactly what the user sees, i.e. in the displayed sort
       // order.
-      await copyRowsToClipboard(this.sortedRows)
+      const result = await copyRowsToClipboard(this.sortedRows)
+      if (result.success) {
+        recordExport(this.ctx, 'copy', 'dataset', [
+          this.ctx.datasetRepository.activeDataset,
+        ])
+      }
     },
   },
 })

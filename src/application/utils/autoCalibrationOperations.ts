@@ -1,6 +1,7 @@
 import { DigitizerContext } from '@/application/digitizerContext'
 import {
   AutoAxisName,
+  AutoAxisProposal,
   AutoCalibrationProposal,
   parseCalibrationResponse,
 } from '@/application/services/autoService/autoServiceWire'
@@ -14,6 +15,7 @@ import { CalibrationPlot } from '@/application/services/autoService/autoService'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { Rect } from '@/@types/types'
 import { POINT_MODE } from '@/constants'
+import type { ResearchAutoAxisSummary } from '@/application/services/researchEvents/researchEvents'
 
 // INFO: Axis Auto-place (Starrydata2 v4 board P1): the backend reads the tick
 // labels and proposes a calibration; the user looks at it and applies it —
@@ -132,7 +134,26 @@ export function applyAutoCalibration(
 
   ctx.historyManager.capture(action)
   placeAxes(ctx, proposal, usable)
+  emitAutoPlace(ctx, proposal, usable, action)
   return usable
+}
+
+// INFO: after the axes moved, so a research listener that wants to know
+// where the markers went can read them off the context right away
+function emitAutoPlace(
+  ctx: DigitizerContext,
+  proposal: AutoCalibrationProposal,
+  axes: AutoAxisName[],
+  action: string,
+): void {
+  ctx.researchEvents.emit(() => ({
+    type: 'auto_place.apply',
+    action,
+    axes,
+    status: proposal.status,
+    x: summarizeAxis(proposal.x),
+    y: summarizeAxis(proposal.y),
+  }))
 }
 
 // INFO: the part of an Apply after its capture: the axes, four-points mode,
@@ -176,7 +197,9 @@ export function applyBarAutoCalibration(
   ctx.historyManager.capture(action)
   placeAxes(ctx, proposal, ['y'])
   const placed = setBarIndexXAxis(ctx, barCentresPx, proposal.frame)
-  return placed ? ['x', 'y'] : ['y']
+  const axes: AutoAxisName[] = placed ? ['x', 'y'] : ['y']
+  emitAutoPlace(ctx, proposal, axes, action)
+  return axes
 }
 
 /**
@@ -212,6 +235,16 @@ export function setBarIndexXAxis(
   axisSet.pointMode = POINT_MODE.FOUR_POINTS
   axisSet.inactivateAxis()
   return true
+}
+
+function summarizeAxis(axis: AutoAxisProposal): ResearchAutoAxisSummary {
+  return {
+    ok: axis.ok,
+    scale: axis.scale,
+    ticks: axis.ticks.length,
+    confidence: axis.confidence,
+    failure: axis.failureReason,
+  }
 }
 
 // INFO: Ticks are 1-D, so the x markers still need a y to be drawn at (and

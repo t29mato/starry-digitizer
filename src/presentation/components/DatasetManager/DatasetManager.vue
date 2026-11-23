@@ -145,6 +145,7 @@ import {
 } from '@mdi/js'
 
 import { SdButton, SdCombobox, SdTextField } from '@/presentation/ui'
+import { recordExport } from '@/application/utils/researchEventOperations'
 import { useDigitizerContext } from '@/presentation/digitizerContextProvider'
 import {
   requestConfirmation,
@@ -318,7 +319,10 @@ export default defineComponent({
       // INFO: getDatasetTableData() calibrates with the dataset's own axis
       // set, so a row copied here matches the dataset even when another
       // axis set is currently active.
-      await copyRowsToClipboard(getDatasetTableData(this.ctx, dataset))
+      const result = await copyRowsToClipboard(
+        getDatasetTableData(this.ctx, dataset),
+      )
+      if (result.success) recordExport(this.ctx, 'copy', 'dataset', [dataset])
     },
     handleOnClickClearDatasetPoints(datasetId: number) {
       clearDatasetPoints(this.ctx, datasetId)
