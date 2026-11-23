@@ -1,6 +1,6 @@
 # starry-digitizer に wpd-auto の自動機能を入れ、starryai に置く（設計書の下書き）
 
-- 版: **0.0.6**（2026-11-23。合意までは 0.x.y で上げる）
+- 版: **0.0.7**（2026-11-23。合意までは 0.x.y で上げる）
 - 書いた人: Claude Code（間藤の依頼）。材料に wpd-auto のセッションの下書き
   `~/research/drafts/starryai-hosting-from-wpd-auto-session.md` を使った。
 - 置き場所: starry-digitizer の `docs/design/starryai-auto.md`（ブランチ `feat/starryai-hosting`、`origin/v4` から分けた）。
@@ -129,6 +129,8 @@ starryai に置く版を starry-digitizer 側で **`starryai-0.1.0`** のよう�
 | 0.2 | `client`（wpd-auto 側：`X-WPD-App` → 記録の `client`、管理画面の `?client=`）と nginx の `include` | 済み（同じブランチ） | 同上（nginx は未確認） |
 | 0.2 | starryai 版が `X-WPD-App: starry-digitizer` を付ける | 済み（2c54247） | 同上 |
 | 0.1 | starryai に実際に置く | まだ | starryai に入れるのは間藤の確認の後 |
+| 0.3 | F12 Start over（画像は残す。Undo 1 段 `project.start-over`） | 済み（caea31f、ブランチ `feat/start-over-components`） | Jest（操作と部品）。ブラウザでは見ていない |
+| 0.3 | F14 Components（Help > About の折りたたみ） | 済み（6f135e7、同じブランチ） | 本物の backend の答えを Jest の fixture にした。ブラウザでは見ていない |
 | 0.2 | 記録を送る（§3.4）・知らせ（§5.2）・名前の選択 | 未着手 | — |
 
 **つないで確かめたこと（2026-11-23、この VM の中）**
@@ -152,6 +154,25 @@ wpd-auto のセッションの報告（読んだだけ）:
 - 画面の node テストで落ちる 20 件は、変更前と同じ。
 - capabilities は calibrate のエンジンと各方法の check() から作る。LineFormer の確認は 5 秒キャッシュ、最長 1 秒。
 - 収集が無効のとき、wpd-auto の画面はヘッダーを付けない（「なし = wpd-auto」に頼る）。
+
+**F12・F14 で決めたこと（2026-11-23。間藤が変えられる）**
+
+- F12 の操作は `startOver(ctx)`（`startOverOperations.ts`）。
+  - 全部の軸セットと全部のデータセットを、新しい project と同じ形（`XY Axes 1`・`dataset 1`）に戻す。
+  - レビュー・Review Points の位置・Auto-place の提案・補間のプレビュー・マスクも消す。画像と拡大率は残す。
+  - Undo で戻るのは軸とデータだけ。レビューと提案は undo の対象の外なので戻らない（今の HistoryManager の作り）。
+  - 研究用のフックには `edit`（action `project.start-over`）が届く。レビュー中なら続けて `review.end`。
+  - 消すものがないときは何もしない。
+- F12 のボタンは、左の列の画像の欄の下に「Start over (keep image)」と置いた。確かめは `options.confirm`。`features.startOver`（既定 true）で隠せる。
+  - スタンドアロンの File > Start Over（画像も自動保存も捨てる。Undo できない）とは別物。名前が似るので「(keep image)」を付けた。
+- F14 は Help > About に置いた（今までスタンドアロンに About はなかった）。
+  - このページの version・build・commit を出す。starryai 版は `deploy.sh` が `VITE_APP_COMMIT`・`VITE_APP_BUILD` を渡す。Vercel 版は GitHub の run number だけ。
+  - 「Components」の折りたたみは auto service があるときだけ出る。開いたときに `GET /components` を聞く。保存しない。
+  - 部品は `<AutoComponentsPanel>` としてライブラリからも出す。`<StarryDigitizer>` の中には置いていない。
+- `GET /components` の答え（この VM、wpd-auto `feat/client-capabilities`、0.3.0、重みなし・LineFormer なし・Ollama なし）:
+  - `format` 2、部品は 9 つ（calibration・ocr・upscale・legend・markernet・lineformer・legend_reader・vlm・runtime）。
+  - markernet は `weights_missing`、lineformer は `not configured`、vlm は `not running`。
+  - `app` の build・commit は null だった。本番では値が入る（推測）。
 
 **残り・決めること**
 - Bar の Auto-place（BarRulerNet）の capabilities の名前は、まだ入れていない。0.4 の段（Bar 軸）で決める。仮の名前は `auto_axis_bar`。
