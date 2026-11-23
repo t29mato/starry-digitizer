@@ -15,6 +15,7 @@ interface AutoService {
   capabilities(): Promise<readonly string[]>          // 出してよい機能
   calibrate(image: Blob): Promise<unknown>             // POST /calibrate の応答本文そのまま
   extract(image: Blob, req: ExtractionRequest): Promise<unknown> // POST /extract の応答本文そのまま
+  legend?(body: unknown): Promise<unknown>             // POST /legend の応答本文そのまま（省略可）
 }
 ```
 
@@ -116,6 +117,14 @@ interface AutoService {
   軸まで進んでいれば軸は残る（Undo 1 回で消える）。
 - Cancel（実行中だけ出る）、画像の差し替え、パネルの破棄で中断する。遅れて来た答えは使わない。
   実行中は経過秒を出し、20 秒を過ぎたら「サービスが混んでいるかもしれない」と添える。
+
+## 4c. 凡例の読み取り（F9）
+
+`legendOperations.ts` の `readLegendNames()` と `LegendNamingResult.vue`。抽出の後に待たずに呼び、
+`POST /legend`（backend README、MIT）の答えで下書きに名前を付け、凡例の順に並べる。
+確度 0.5 以上（`source: vlm`）は名前を付けて「auto」、0.3〜0.5 は「?」の候補（押せば付く）。
+名前・記録・順は Undo 1 段（`extract.legend`）。人が変えた名前は上書きしない。失敗は小さな 1 行だけ。
+詳しくは `starryai-auto.md` §2.3「F9 凡例の読み取り」。
 
 ## 5. Undo/Redo（P3）
 
