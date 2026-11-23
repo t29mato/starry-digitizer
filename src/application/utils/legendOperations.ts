@@ -288,7 +288,7 @@ export function applyLegendReading(
   )
   changes.forEach(({ dataset, rename, note }) => {
     if (rename) {
-      const name = uniqueName(legendName(note.label, target.method), taken)
+      const name = uniqueName(legendName(note.label), taken)
       taken.add(name)
       dataset.name = name
     }
@@ -319,7 +319,7 @@ export function acceptLegendSuggestion(
       .filter((other) => other !== dataset)
       .map((other) => other.name),
   )
-  dataset.name = uniqueName(legendName(note.label, method), taken)
+  dataset.name = uniqueName(legendName(note.label), taken)
   dataset.legend = { ...note, status: 'accepted' }
   // INFO: accepting is a person's choice of a name, but not an edit of the
   // draft's points: re-extracting may still replace it, like a draft the
@@ -328,11 +328,12 @@ export function acceptLegendSuggestion(
   return true
 }
 
-// INFO: the same shape as an extraction's draft name (serverExtraction
-// Operations.ts draftName): the method stays, so a draft is recognisable
-// as one in the dataset list
-export function legendName(label: string, method: ExtractionMethod): string {
-  return `${label} (${method})`
+// INFO: the legend's text alone (2026-11-23, the owner left it to us): the
+// name is what a curator reads and exports; that the draft came from an
+// extraction is kept on the dataset (`legend`, the draft record), not in
+// its name.
+export function legendName(label: string): string {
+  return label
 }
 
 // INFO: the run's drafts go into the places they hold in the list now, in

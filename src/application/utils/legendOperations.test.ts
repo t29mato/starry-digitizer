@@ -146,7 +146,7 @@ describe('legend reading (F9)', () => {
     expect(outcome.changed).toBe(true)
     // INFO: in draft_order; the suggestion does not rename
     expect(names(ctx)).toEqual([
-      '100 nm (markernet)',
+      '100 nm',
       'circle (markernet)',
       'square (markernet)',
     ])
@@ -179,7 +179,7 @@ describe('legend reading (F9)', () => {
     ])
     expect(ctx.datasetRepository.datasets.every((d) => !d.legend)).toBe(true)
     ctx.historyManager.redo()
-    expect(names(ctx)[0]).toBe('100 nm (markernet)')
+    expect(names(ctx)[0]).toBe('100 nm')
   })
 
   test('a name a person changed meanwhile is kept', async () => {
@@ -228,8 +228,8 @@ describe('legend reading (F9)', () => {
     const target = await extract(ctx)
     await readLegendNames(ctx, target)
     expect(names(ctx)).toEqual([
-      'A (markernet)',
-      'A (markernet) 2',
+      'A',
+      'A 2',
       'triangle (markernet)',
     ])
   })
@@ -328,7 +328,7 @@ describe('legend reading (F9)', () => {
     expect(acceptLegendSuggestion(ctx, 1, 'markernet')).toBe(true)
     expect(actions).toEqual([LEGEND_ACCEPT_ACTION])
     const dataset = ctx.datasetRepository.datasets.find((d) => d.id === 1)
-    expect(dataset?.name).toBe('200 nm (markernet)')
+    expect(dataset?.name).toBe('200 nm')
     expect(dataset?.legend?.status).toBe('accepted')
     // INFO: nothing left to accept
     expect(acceptLegendSuggestion(ctx, 1, 'markernet')).toBe(false)

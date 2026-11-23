@@ -107,7 +107,7 @@ describe('fromDatasetDTO', () => {
 
 describe('the legend record of a dataset (F9)', () => {
   it('round-trips as a copy, and is absent when never set', () => {
-    const dataset = new Dataset('100 nm (markernet)', [], 1)
+    const dataset = new Dataset('100 nm', [], 1)
     expect('legend' in toDatasetDTO(dataset)).toBe(false)
 
     dataset.legend = {

@@ -300,7 +300,7 @@ describe('AutoDigitizePanel', () => {
     expect(wrapper.get('[data-cy="legend-naming-named"]').text()).toContain(
       'Bi2Te3',
     )
-    expect(s.ctx.datasetRepository.datasets[0].name).toBe('Bi2Te3 (lineformer)')
+    expect(s.ctx.datasetRepository.datasets[0].name).toBe('Bi2Te3')
     // INFO: its own step: Undo once takes the name back, twice the run
     s.ctx.historyManager.undo()
     expect(s.ctx.datasetRepository.datasets[0].name).toBe('line 1 (lineformer)')

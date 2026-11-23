@@ -1,6 +1,6 @@
 # starry-digitizer に wpd-auto の自動機能を入れ、starryai に置く（設計書の下書き）
 
-- 版: **0.0.8**（2026-11-23。合意までは 0.x.y で上げる）
+- 版: **0.0.9**（2026-11-24。合意までは 0.x.y で上げる）
 - 書いた人: Claude Code（間藤の依頼）。材料に wpd-auto のセッションの下書き
   `~/research/drafts/starryai-hosting-from-wpd-auto-session.md` を使った。
 - 置き場所: starry-digitizer の `docs/design/starryai-auto.md`（ブランチ `feat/starryai-hosting`、`origin/v4` から分けた）。
@@ -59,6 +59,18 @@ starry-digitizer でも wpd-auto と同じ自動機能（軸の自動校正・�
    - MarkerNet: NC
    - BarNet・BarRulerNet: CC BY-NC-SA 4.0
    - LineFormer: 公開されたライセンスがない
+
+### 1.2b 2026-11-24 に間藤が決めたこと
+
+1. **棒グラフも starry-digitizer に入れる**（F2・F4・F6）。starry-digitizer 側は実装済み。wpd-auto の backend に capabilities の `auto_axis_bar` を足してもらう（wpd-auto のセッションに頼んだ）。
+2. **ライブラリとしての starry-digitizer は、いったん考えない。所内向けに公開するアプリ（starryai 版）として進める。**
+   - package の版（npm・GitHub Release）や、ライブラリの API の互換は、この作業では気にしない。
+   - 今まで入れた「ライブラリの既定ではどこにも送らない」などの作りは、そのまま残す（外す作業はしない）。
+3. **パスワードを入れる**（wpd-auto も含めて）。他の人の作業をいじれないようにする。
+   - 最初は簡単に: 間藤が人ごとに適当な文字列のパスワードを作って渡す。
+   - パスワードは管理画面で作れる形にする。
+   - backend（wpd-auto）が持つので、設計と backend・wpd-auto の画面は wpd-auto のセッションに頼んだ。starry-digitizer は決まった API に合わせてログインの窓を作る（§11）。
+4. Start over の名前・場所と、凡例の名前・Undo は「お任せ」。`calibration.final` の区切り（2 秒）と、名前を選ぶ前に閉じたら Guest で送ることは OK（§10 Q17〜Q19）。
 
 ### 1.3 そこから出てくる前提
 
@@ -248,7 +260,7 @@ backend の形は wpd-auto `feat/client-capabilities` の `backend/README.md`・
   - 点は `toBackendPx`（0.5px 引く）で送る。
   - 上限（系列 100、1 系列 2 万点、全体 20 万点）を超える分は、系列を切り、点を等間隔に間引く。断られないため。
 - 答えの使い方（backend の規則と同じ）:
-  - `legend.source` が `vlm` で確度 0.5 以上: 下書きの名前を `<凡例の文字> (<method>)` にし、「auto」の印を出す。
+  - `legend.source` が `vlm` で確度 0.5 以上: 下書きの名前を `<凡例の文字>` にし、「auto」の印を出す（2026-11-23 に `(<method>)` を外した。間藤が任せた）。
   - 0.3〜0.5: 名前は変えない。結果の欄に「"<今の名前>": <文字>?」と「Use this name」を出す。押すと名前を付ける（Undo 1 段 `extract.legend.accept`）。
   - それ未満、または `vlm` 以外: 何もしない。
   - 下書きを `draft_order` の順に並べ直す。動かすのはこの抽出の下書きだけで、今いる場所の中で入れ替える。
@@ -642,6 +654,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.5 | 2026-11-23 | §2.4 軸の値の自動入力の比較（SD-OCR 23／wpd-auto 76／サーバーで人の点の値 79、91 図）と、Auto-fill values をサーバーの校正で埋める実装 |
 | 0.0.6 | 2026-11-23 | Q16: Vercel の公開版は今のまま（starryai に届かせない）と決まった |
 | 0.0.7 | 2026-11-23 | 並列に進めた 5 つのブランチがそれぞれ書いた分（下の 0.0.8 でまとめた） |
+| 0.0.9 | 2026-11-24 | §1.2b 2026-11-24 の決定（棒グラフ・ライブラリを考えない・パスワード）。Q17〜Q20。凡例の名前を文字だけにした。§11 パスワード（wpd-auto と相談中） |
 | 0.0.8 | 2026-11-23 | 5 つのブランチを `feat/starryai-hosting` にまとめた: ブラウザの OCR の改善（§2.4、91 図で 23 → 69）、0.2 の記録・知らせ・名前の選択（§3.4・§5.2）、F12 Start over・F14 Components、F9 凡例の読み取り、F2・F4・F6 の棒グラフ（Q7）。棒の抽出の後は凡例を読まない（backend が marker と line だけを受けるため） |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め
@@ -667,6 +680,10 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | Q14 capabilities | 案 C1（backend に `/capabilities`） | 推した案 |
 | Q15 wpd-auto 側の分担 | wpd-auto のセッション（w3:p1）に頼む（そのセッションが申し出ていた） | 既定 |
 | Q16 公開版の軸の値 | **今のまま**（ブラウザの OCR）。Vercel の公開版からは starryai にアクセスさせない | 間藤が決めた（2026-11-23） |
+| Q17 Start over | 名前「Start over (keep image)」と場所（画像の欄の下）はこのまま。Undo で戻るのは軸とデータだけ（レビューと提案は戻らない） | 任された（2026-11-24） |
+| Q18 凡例の名前と Undo | 名前は凡例の文字だけ（`(<method>)` を外した）。Undo は抽出と凡例で 2 段のまま（凡例の答えは後から届くので、1 段にすると抽出の Undo が答えを待つことになる） | 任された（2026-11-24） |
+| Q19 記録の区切り | `calibration.final` は軸が変わってから 2 秒で 1 件。名前を選ぶ前に閉じたら Guest で送る | 間藤が OK（2026-11-24） |
+| Q20 ライブラリ | いったん考えない。所内向けのアプリとして進める。package の版は上げない | 間藤が決めた（2026-11-24） |
 
 以下は 0.0.1 の問いの本文（残しておく）。
 
@@ -717,6 +734,20 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 13. **Q13 PWA**: starryai 版で PWA を切ってよいか。
 14. **Q14 capabilities**: 案 C1（backend に `/capabilities` を足す）か、案 C2（画面で組み立てる）か。
 15. **Q15 wpd-auto 側の作業の分担**: backend の変更（§3.2）は wpd-auto のセッションに頼むか、こちらでブランチを切るか。
+21. **Q21 パスワードと http**: starryai は http のままで、パスワードが所内の LAN を平文で流れることを許すか。https にするか（§11）。
 16. **Q16 公開版の軸の値**: Vercel の公開版でも wpd-auto の校正（PlotRuler v4、重みなし・MIT）を使えるようにするか。
     - 使うなら、NIMS の外から届く場所に校正だけの口を置くことになる。
     - 置かないなら、公開版はブラウザの OCR のまま（91 図で 23 図）。
+
+## 11. パスワード（2026-11-24、wpd-auto のセッションと相談中）
+
+- 目的: 他の人の作業を見たり上書きしたりできないようにする。今の名前（`X-WPD-User`）はラベルで、だれでもどの名前でも選べる（wpd-auto `backend/COLLECT.md`「利用者の名前」）。
+- 間藤の希望: 最初は簡単に。間藤が人ごとに適当な文字列のパスワードを作って渡す。パスワードは管理画面で作れる。
+- たたき台（wpd-auto のセッションに送ったもの。決まったら書き直す）:
+  - users.json に人ごとのパスワードのハッシュ（scrypt、ソルト付き）。平文は保存しない。
+  - 管理画面に「パスワードを作る（作り直す）」と「人を足す」。作ったパスワードは 1 度だけ画面に出す。form の POST なので CSRF 対策が要る。
+  - `POST /api/v1/collect/login` → token。以後の要求は token のヘッダーで人を決める。失敗の回数を制限する。
+  - token は 2 つの画面で共有する（同じオリジン・同じ backend）。片方でログインすれば、もう片方もログイン済み。
+  - Guest は今のまま。
+- **気を付けること**: starryai は http なので、パスワードは所内の LAN を平文で流れる。所内に限った簡単な仕組みとしては許せる範囲か、https にするかを間藤が決める（§10 Q21）。
+- starry-digitizer でやること: 今の名前の窓（`src/hosting/collect/CollectUserDialog.vue`）を、名前 + パスワードのログインの窓にする。My work（自分の作業を開き直す）は別に決める。

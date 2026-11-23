@@ -473,12 +473,12 @@ describe('ServerExtractionPanel: legend reading (F9)', () => {
     const suggestion = wrapper.find('[data-cy="legend-naming-suggestion"]')
     expect(suggestion.text()).toContain('200 nm?')
     expect(ctx.datasetRepository.datasets.map((d) => d.name)).toEqual([
-      '100 nm (markernet)',
+      '100 nm',
       'square (markernet)',
     ])
 
     await wrapper.find('[data-cy="legend-naming-accept"]').trigger('click')
-    expect(ctx.datasetRepository.datasets[1].name).toBe('200 nm (markernet)')
+    expect(ctx.datasetRepository.datasets[1].name).toBe('200 nm')
     expect(wrapper.find('[data-cy="legend-naming-suggestion"]').exists()).toBe(
       false,
     )
