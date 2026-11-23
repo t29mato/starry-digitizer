@@ -233,3 +233,80 @@ function parseSeries(raw: unknown): ServerExtractionSeries[] {
     },
   ]
 }
+
+/**
+ * The supported hours of the automatic features (`auto` of
+ * `GET /auto/status`, `/extract/methods` and `/healthz`). Outside them the
+ * backend refuses nothing; some methods (LineFormer, on a GPU that is used
+ * for other work then) are simply off. The page never reads its own clock
+ * for this: the server's answer is the truth.
+ */
+export interface AutoHours {
+  available: boolean
+  /** e.g. `09:00-17:00`; null = always */
+  hours: string | null
+  /** e.g. `Asia/Tokyo` */
+  timezone: string | null
+  /** ISO time of the next change of `available`; null = none */
+  nextChange: string | null
+}
+
+/** One entry of `GET /extract/methods`. */
+export interface ExtractionMethodInfo {
+  id: string
+  label: string
+  description: string
+  available: boolean
+  /** e.g. `service_unavailable`, `not_configured` */
+  unavailableReason: string | null
+  /** of the weights / data behind the method; shown where it is offered */
+  license: string | null
+  attribution: string | null
+}
+
+const text = (v: unknown): string | null =>
+  typeof v === 'string' && v.trim() !== '' ? v : null
+
+/** The `auto` object, or null when the backend has none (no hours set). */
+export function parseAutoHours(raw: unknown): AutoHours | null {
+  if (!isRecord(raw) || typeof raw.available !== 'boolean') return null
+  return {
+    available: raw.available,
+    hours: text(raw.hours),
+    timezone: text(raw.timezone),
+    nextChange: text(raw.next_change),
+  }
+}
+
+/** `GET /auto/status` body → its `auto`. */
+export function parseAutoStatusResponse(body: unknown): AutoHours | null {
+  return isRecord(body) ? parseAutoHours(body.auto) : null
+}
+
+/** `GET /extract/methods` body → the methods (odd entries dropped) and `auto`. */
+export function parseExtractionMethodsResponse(body: unknown): {
+  methods: ExtractionMethodInfo[]
+  hours: AutoHours | null
+} {
+  if (!isRecord(body) || !Array.isArray(body.methods)) {
+    throw invalid('extract/methods has no `methods` array')
+  }
+  const methods = body.methods.flatMap((raw: unknown) => {
+    if (!isRecord(raw) || !text(raw.id) || typeof raw.available !== 'boolean') {
+      return []
+    }
+    const id = raw.id as string
+    return [
+      {
+        id,
+        label: text(raw.label) ?? id,
+        description: text(raw.description) ?? '',
+        available: raw.available,
+        unavailableReason: text(raw.unavailable_reason),
+        license: text(raw.license),
+        attribution: text(raw.attribution),
+      },
+    ]
+  })
+  return { methods, hours: parseAutoHours(body.auto) }
+}

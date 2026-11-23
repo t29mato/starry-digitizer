@@ -80,7 +80,10 @@ import {
 } from '@/application/services/autoService/autoServiceWire'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { DigitizerError, toErrorPayload } from '@/application/errors'
-import { isImageChangedError } from '@/application/utils/autoFeatureOperations'
+import {
+  isImageChangedError,
+  outsideHoursNote,
+} from '@/application/utils/autoFeatureOperations'
 
 // INFO: below this the backend's own README counts a noticeable share of
 // misread axes (its confidence is an heuristic, not a probability)
@@ -200,7 +203,9 @@ export default defineComponent({
         const payload = toErrorPayload(
           DigitizerError.from(e, 'AUTO_SERVICE_FAILED'),
         )
-        this.errorMessage = payload.message
+        this.errorMessage = [payload.message, outsideHoursNote(this.ctx)]
+          .filter(Boolean)
+          .join(' ')
         this.$emit('error', payload)
       } finally {
         if (this.controller === controller) this.controller = null

@@ -139,6 +139,9 @@ export type { ImageSource } from './application/utils/imageLoader'
 export {
   configureAutoService,
   refreshAutoFeatures,
+  refreshAutoStatus,
+  watchAutoStatus,
+  outsideHoursNote,
 } from './application/utils/autoFeatureOperations'
 export type { AutoServiceOption } from './application/utils/autoFeatureOperations'
 export {
@@ -213,9 +216,13 @@ export type {
 export {
   parseCalibrationResponse,
   parseExtractionResponse,
+  parseExtractionMethodsResponse,
+  parseAutoStatusResponse,
   BACKEND_PIXEL_OFFSET,
 } from './application/services/autoService/autoServiceWire'
 export type {
+  AutoHours,
+  ExtractionMethodInfo,
   AutoCalibrationProposal,
   AutoAxisProposal,
   ServerExtractionResult,

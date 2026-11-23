@@ -100,7 +100,10 @@ import {
   type AutoExtractionOperationResult,
 } from '@/application/utils/autoExtractionBridge'
 import { downloadJson, timestamp } from '@/presentation/utils/jsonDownload'
-import { configureAutoService } from '@/application/utils/autoFeatureOperations'
+import {
+  configureAutoService,
+  watchAutoStatus,
+} from '@/application/utils/autoFeatureOperations'
 
 import { version } from '../package.json'
 
@@ -157,6 +160,7 @@ export default defineComponent({
     infoMessage: '',
     reviewSession: appContext.reviewSession,
     removeMessageBridge: null as null | (() => void),
+    stopAutoStatus: null as null | (() => void),
     // INFO: left undefined until mounted() has looked for auto-saved work, so
     // a restored image is not preceded by a pointless fetch/decode of the
     // sample figure (and its flash on screen).
@@ -339,11 +343,16 @@ export default defineComponent({
     const autoServiceUrl = import.meta.env.VITE_AUTO_SERVICE_URL
     if (autoServiceUrl) {
       configureAutoService(this.appContext, { baseUrl: autoServiceUrl })
+      // INFO: such a page stays open all day; the server's supported hours
+      // (and LineFormer, off outside them) change under it
+      this.stopAutoStatus = watchAutoStatus(this.appContext)
     }
   },
   beforeUnmount() {
     this.removeMessageBridge?.()
     this.removeMessageBridge = null
+    this.stopAutoStatus?.()
+    this.stopAutoStatus = null
   },
   methods: {
     importPoints(points: any) {

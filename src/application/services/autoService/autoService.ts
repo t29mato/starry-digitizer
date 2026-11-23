@@ -63,4 +63,12 @@ export interface AutoService {
     request: ExtractionRequest,
     options?: AutoRequestOptions,
   ): Promise<unknown>
+  /**
+   * Optional: the body of `GET /extract/methods` (which methods run right
+   * now, why not, their licences, and `auto`, the supported hours). A
+   * service without it simply shows no such details.
+   */
+  methods?(): Promise<unknown>
+  /** Optional: the body of `GET /auto/status` (`{ auto: {...} }`). */
+  status?(): Promise<unknown>
 }

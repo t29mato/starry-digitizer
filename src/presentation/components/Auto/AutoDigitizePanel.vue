@@ -83,6 +83,13 @@
       >
         {{ outcome.reason }}
       </div>
+      <div
+        v-if="outcome.status === 'failed' && hoursNote"
+        class="c__muted"
+        data-cy="auto-digitize-hours"
+      >
+        {{ hoursNote }}
+      </div>
       <div v-if="undoNote" class="c__muted" data-cy="auto-digitize-undo">
         {{ undoNote }}
       </div>
@@ -110,6 +117,7 @@ import {
 } from '@/application/utils/autoDigitizeOperations'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { toErrorPayload } from '@/application/errors'
+import { outsideHoursNote } from '@/application/utils/autoFeatureOperations'
 
 const METHOD_CHOICES: Record<
   ExtractionMethod,
@@ -186,6 +194,9 @@ export default defineComponent({
     },
     isAvailable(): boolean {
       return this.autoFeatures.canAutoPlace && this.allowedMethods.length > 0
+    },
+    hoursNote(): string {
+      return outsideHoursNote(this.ctx)
     },
     methodChoices(): {
       method: ExtractionMethod

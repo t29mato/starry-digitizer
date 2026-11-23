@@ -271,3 +271,62 @@ describe('ServerExtractionPanel: options and cancelling', () => {
     wrapper.unmount()
   })
 })
+
+describe('ServerExtractionPanel: methods and hours from the server', () => {
+  it('says why a known method is not offered, and the supported hours', () => {
+    const ctx = createDigitizerContext()
+    ctx.autoFeatures.setFeatures(['markernet'])
+    ctx.autoFeatures.setStatus(
+      [
+        {
+          id: 'markernet',
+          label: 'MarkerNet',
+          description: '',
+          available: true,
+          unavailableReason: null,
+          license: null,
+          attribution: 'PlotQA (CC BY 4.0)',
+        },
+        {
+          id: 'lineformer',
+          label: 'LineFormer',
+          description: '',
+          available: false,
+          unavailableReason: 'service_unavailable',
+          license: null,
+          attribution: null,
+        },
+      ],
+      {
+        available: false,
+        hours: '09:00-17:00',
+        timezone: 'Asia/Tokyo',
+        nextChange: null,
+      },
+    )
+    const wrapper = mountWith(ServerExtractionPanel, ctx)
+    expect(
+      wrapper.find('[data-cy="server-extraction-unavailable"]').text(),
+    ).toBe('LineFormer (lines): not available now (service_unavailable).')
+    expect(
+      wrapper.find('[data-cy="server-extraction-attribution"]').text(),
+    ).toBe('Sources: PlotQA (CC BY 4.0)')
+    expect(wrapper.find('[data-cy="server-extraction-hours"]').text()).toBe(
+      'Automatic features are supported 09:00–17:00 (Asia/Tokyo). Manual digitizing works at any time.',
+    )
+    wrapper.unmount()
+  })
+
+  it('shows none of that without a methods answer', () => {
+    const ctx = createDigitizerContext()
+    ctx.autoFeatures.setFeatures(['markernet'])
+    const wrapper = mountWith(ServerExtractionPanel, ctx)
+    expect(
+      wrapper.find('[data-cy="server-extraction-unavailable"]').exists(),
+    ).toBe(false)
+    expect(wrapper.find('[data-cy="server-extraction-hours"]').exists()).toBe(
+      false,
+    )
+    wrapper.unmount()
+  })
+})

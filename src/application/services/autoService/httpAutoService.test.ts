@@ -282,6 +282,24 @@ describe('createHttpAutoService retries', () => {
   })
 })
 
+describe('createHttpAutoService methods / status', () => {
+  test('GET {baseUrl}/extract/methods and {baseUrl}/auto/status', async () => {
+    const fetch = jest.fn(async () => jsonResponse(200, { methods: [] }))
+    const service = createHttpAutoService({
+      baseUrl: '/wpd-auto/api/v1/',
+      fetch: fetch as unknown as typeof globalThis.fetch,
+    })
+    await expect(service.methods?.()).resolves.toEqual({ methods: [] })
+    await service.status?.()
+    const urls = fetch.mock.calls.map((c) => (c as unknown as FetchCall)[0])
+    expect(urls).toEqual([
+      '/wpd-auto/api/v1/extract/methods',
+      '/wpd-auto/api/v1/auto/status',
+    ])
+    expect((fetch.mock.calls[0] as unknown as FetchCall)[1].method).toBe('GET')
+  })
+})
+
 describe('isBlockedAsMixedContent', () => {
   test('only an http target from an https page is blocked', () => {
     expect(

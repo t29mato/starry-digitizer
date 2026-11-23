@@ -62,6 +62,9 @@ export const DEFAULT_REQUEST_TIMEOUT_MS = 120000
 // (a deploy restarts it and waits for /healthz); longer than that, the
 // person is better off with the error and the button.
 export const DEFAULT_RETRY_BUDGET_MS = 30000
+// INFO: extract/methods asks the LineFormer service's /healthz (2 s upper
+// bound, backend README) before it answers
+export const DEFAULT_STATUS_TIMEOUT_MS = 10000
 // INFO: 503s that say "this will not change by waiting" (backend README,
 // "API"): the engine or method is not installed or its service is down.
 const PERMANENT_503 = ['engine_unavailable', 'method_unavailable']
@@ -204,6 +207,27 @@ export function createHttpAutoService(
     }
   }
 
+  async function getJson(url: string): Promise<unknown> {
+    if (isBlockedAsMixedContent(url)) {
+      throw new DigitizerError(
+        'AUTO_SERVICE_FAILED',
+        'The auto service is http and this page is https',
+      )
+    }
+    try {
+      const response = await request(
+        url,
+        { method: 'GET', headers: headers() },
+        DEFAULT_STATUS_TIMEOUT_MS,
+      )
+      return await readJson(response)
+    } catch (error) {
+      throw error instanceof RequestFailed
+        ? failureError(error, DEFAULT_STATUS_TIMEOUT_MS)
+        : error
+    }
+  }
+
   // INFO: null = use this answer (success, or an error waiting will not fix,
   // or the budget is spent); a number = wait that long and ask again.
   async function retryWait(
@@ -250,6 +274,14 @@ export function createHttpAutoService(
       return Array.isArray(features)
         ? features.filter((f): f is string => typeof f === 'string')
         : []
+    },
+
+    methods() {
+      return getJson(`${baseUrl}/extract/methods`)
+    },
+
+    status() {
+      return getJson(`${baseUrl}/auto/status`)
     },
 
     calibrate(image, options) {

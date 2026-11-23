@@ -9,6 +9,10 @@ import {
   DEFAULT_CAPABILITIES_TIMEOUT_MS,
   HttpAutoServiceConfig,
 } from '@/application/services/autoService/httpAutoService'
+import {
+  parseAutoStatusResponse,
+  parseExtractionMethodsResponse,
+} from '@/application/services/autoService/autoServiceWire'
 import { DigitizerError } from '@/application/errors'
 
 // INFO: Turning the server-side automatic features on for one digitizer, and
@@ -64,6 +68,7 @@ export async function refreshAutoFeatures(
     return []
   }
   let features: AutoFeature[] = []
+  const status = refreshAutoStatus(ctx)
   try {
     const answer = await withTimeout(service.capabilities(), timeoutMs)
     features = Array.isArray(answer)
@@ -73,11 +78,106 @@ export async function refreshAutoFeatures(
     // INFO: deliberately silent — see THE RULE above
     features = []
   }
+  await status
   // INFO: a newer configureAutoService() call has replaced the service while
   // this answer was in flight; it is not ours to apply any more
   if (autoFeatures.service !== service) return autoFeatures.features
   autoFeatures.setFeatures(features)
   return features
+}
+
+/**
+ * Ask the service for the methods' details and the supported hours, if it
+ * can tell (`methods()` / `status()` are optional). Never rejects: details
+ * that cannot be had are simply not shown.
+ */
+export async function refreshAutoStatus(ctx: DigitizerContext): Promise<void> {
+  const { autoFeatures } = ctx
+  const service = autoFeatures.service
+  if (!service) return
+  try {
+    if (service.methods) {
+      const { methods, hours } = parseExtractionMethodsResponse(
+        await service.methods(),
+      )
+      if (autoFeatures.service === service)
+        autoFeatures.setStatus(methods, hours)
+    } else if (service.status) {
+      const hours = parseAutoStatusResponse(await service.status())
+      if (autoFeatures.service === service) autoFeatures.setStatus(null, hours)
+    }
+  } catch {
+    // INFO: silent, as the capabilities question — see THE RULE above
+  }
+}
+
+/**
+ * The sentence to add to an automatic feature's failure when the server
+ * says it is outside the supported hours; '' otherwise. Only added to a
+ * failure: outside the hours nothing is refused, and most features still
+ * answer.
+ */
+export function outsideHoursNote(ctx: DigitizerContext): string {
+  const { hours } = ctx.autoFeatures
+  if (!hours || hours.available || !hours.hours) return ''
+  const zone = hours.timezone ? ` (${hours.timezone})` : ''
+  return `Automatic features are supported ${hours.hours.replace(
+    '-',
+    '–',
+  )}${zone}; outside those hours some of them are off.`
+}
+
+export const AUTO_STATUS_INTERVAL_MS = 5 * 60 * 1000
+// INFO: a little after next_change, so the server has switched (LineFormer
+// started or stopped by its timer) when it is asked
+const AFTER_CHANGE_MS = 5000
+
+/**
+ * Keep the features and the hours current while the page is open: every
+ * 5 minutes, just after the next change of the hours, and when the tab is
+ * shown again. For a host that keeps a page open all day (the starryai
+ * build); the library itself never starts this. Returns the stop function.
+ */
+export function watchAutoStatus(
+  ctx: DigitizerContext,
+  intervalMs = AUTO_STATUS_INTERVAL_MS,
+  now: () => number = Date.now,
+): () => void {
+  let timer: ReturnType<typeof setTimeout> | null = null
+  let stopped = false
+  const schedule = () => {
+    if (stopped) return
+    if (timer) clearTimeout(timer)
+    let delay = intervalMs
+    const next = ctx.autoFeatures.hours?.nextChange
+    const at = next ? Date.parse(next) : NaN
+    if (Number.isFinite(at)) {
+      delay = Math.min(delay, Math.max(0, at - now()) + AFTER_CHANGE_MS)
+    }
+    timer = setTimeout(refresh, delay)
+  }
+  const refresh = () => {
+    refreshAutoFeatures(ctx).finally(schedule)
+  }
+  const onVisible = () => {
+    if (
+      typeof document !== 'undefined' &&
+      document.visibilityState === 'visible'
+    ) {
+      refresh()
+    }
+  }
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', onVisible)
+  }
+  schedule()
+  return () => {
+    stopped = true
+    if (timer) clearTimeout(timer)
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }
 }
 
 // INFO: on top of the HTTP timeout, because a host-provided service need not

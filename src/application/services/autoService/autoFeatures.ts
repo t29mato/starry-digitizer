@@ -1,6 +1,10 @@
 import { markRaw } from '@vue/reactivity'
 import { AutoFeature, AutoService } from './autoService'
-import { AutoCalibrationProposal } from './autoServiceWire'
+import {
+  AutoCalibrationProposal,
+  AutoHours,
+  ExtractionMethodInfo,
+} from './autoServiceWire'
 
 // INFO: Per-instance state of the server-side automatic features. Lives on
 // the DigitizerContext (reactive), so panels re-render when the capabilities
@@ -20,6 +24,14 @@ export class AutoFeatures {
    */
   proposal: AutoCalibrationProposal | null = null
   proposalAxisSetId: number | null = null
+  /**
+   * What `/extract/methods` said (empty: not asked, or the service has no
+   * such call). Details only — WHETHER a method is offered is still the
+   * capabilities answer's.
+   */
+  methods: ExtractionMethodInfo[] = []
+  /** The supported hours; null = unknown or always. */
+  hours: AutoHours | null = null
 
   has(feature: AutoFeature): boolean {
     return this.features.includes(feature)
@@ -33,13 +45,29 @@ export class AutoFeatures {
     return this.has('markernet') || this.has('lineformer')
   }
 
+  /** True when the server says it is outside the supported hours now. */
+  get outsideHours(): boolean {
+    return this.hours !== null && !this.hours.available
+  }
+
+  methodInfo(id: string): ExtractionMethodInfo | null {
+    return this.methods.find((method) => method.id === id) ?? null
+  }
+
   setService(service: AutoService | null): void {
     // INFO: markRaw — the service is a bag of closures over fetch; proxying
     // it buys nothing and would hand the transport reactive arguments.
     this.service = service ? markRaw(service) : null
     this.features = []
     this.checked = false
+    this.methods = []
+    this.hours = null
     this.clearProposal()
+  }
+
+  setStatus(methods: ExtractionMethodInfo[] | null, hours: AutoHours | null) {
+    if (methods) this.methods = methods
+    this.hours = hours
   }
 
   setFeatures(features: AutoFeature[]): void {

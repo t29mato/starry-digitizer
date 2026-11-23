@@ -83,6 +83,14 @@
         @update:model-value="followLoops = Boolean($event)"
       ></sd-checkbox>
     </div>
+    <div
+      v-for="line in unavailableLines"
+      :key="line"
+      class="text-caption c__muted"
+      data-cy="server-extraction-unavailable"
+    >
+      {{ line }}
+    </div>
     <div class="text-caption c__muted">{{ areaCaption }}</div>
     <div v-if="cancelMessage" class="text-caption c__muted">
       {{ cancelMessage }}
@@ -97,6 +105,20 @@
       </div>
     </div>
     <div class="text-caption c__muted c__licence">{{ licenceNote }}</div>
+    <div
+      v-if="attribution"
+      class="text-caption c__muted c__licence"
+      data-cy="server-extraction-attribution"
+    >
+      {{ attribution }}
+    </div>
+    <div
+      v-if="hoursCaption"
+      class="text-caption c__muted c__licence"
+      data-cy="server-extraction-hours"
+    >
+      {{ hoursCaption }}
+    </div>
   </div>
 </template>
 
@@ -111,7 +133,10 @@ import {
   ExtractionMethod,
 } from '@/application/services/autoService/autoService'
 import { runServerExtraction } from '@/application/utils/serverExtractionOperations'
-import { isImageChangedError } from '@/application/utils/autoFeatureOperations'
+import {
+  isImageChangedError,
+  outsideHoursNote,
+} from '@/application/utils/autoFeatureOperations'
 import { DigitizerError, toErrorPayload } from '@/application/errors'
 
 // INFO: the backend's own defaults (backend README, method table), so an
@@ -229,6 +254,37 @@ export default defineComponent({
     licenceNote(): string {
       return this.selectedMethod ? LICENCE_NOTES[this.selectedMethod] : ''
     },
+    // INFO: the sources the backend asks to cite for the method (training
+    // data), from /extract/methods; the fixed licence lines above stay,
+    // since they are required even when that answer is missing
+    attribution(): string {
+      const info = this.selectedMethod
+        ? this.autoFeatures.methodInfo(this.selectedMethod)
+        : null
+      return info?.attribution ? `Sources: ${info.attribution}` : ''
+    },
+    // INFO: a method the server knows but cannot run right now (LineFormer
+    // outside the supported hours, a service that is down) is not offered;
+    // say why, so it does not look like it was never there
+    unavailableLines(): string[] {
+      return EXTRACTION_METHODS.flatMap((method) => {
+        const info = this.autoFeatures.methodInfo(method)
+        if (!info || info.available || this.allowedMethods.includes(method)) {
+          return []
+        }
+        const why = info.unavailableReason ? ` (${info.unavailableReason})` : ''
+        return [`${METHOD_TITLES[method]}: not available now${why}.`]
+      })
+    },
+    hoursCaption(): string {
+      const hours = this.autoFeatures.hours
+      if (!hours?.hours) return ''
+      const zone = hours.timezone ? ` (${hours.timezone})` : ''
+      return `Automatic features are supported ${hours.hours.replace(
+        '-',
+        '–',
+      )}${zone}. Manual digitizing works at any time.`
+    },
   },
   created() {
     // INFO: an answer is for the image it was asked for; a new image (upload,
@@ -326,7 +382,9 @@ export default defineComponent({
         const payload = toErrorPayload(
           DigitizerError.from(e, 'AUTO_SERVICE_FAILED'),
         )
-        this.errorMessage = payload.message
+        this.errorMessage = [payload.message, outsideHoursNote(this.ctx)]
+          .filter(Boolean)
+          .join(' ')
         this.$emit('error', payload)
       } finally {
         if (this.controller === controller) this.controller = null
