@@ -223,7 +223,6 @@ describe('CollectClient with passwords', () => {
     const handle = startCollect(createDigitizerContext(), '/api', {
       version: '2.0.0',
       client: s.client,
-      auth: s.auth,
       fetch: s.fetchFn as unknown as typeof fetch,
       onChange: (view) => views.push(view),
       afterRender: async () => undefined,
@@ -274,7 +273,6 @@ describe('the auto service with passwords', () => {
     const handle = startCollect(ctx, '/api', {
       version: '2.0.0',
       client: s.client,
-      auth: s.auth,
       fetch: s.fetchFn as unknown as typeof fetch,
       onChange: () => undefined,
       afterRender: async () => undefined,

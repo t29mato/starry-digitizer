@@ -59,8 +59,6 @@ export interface CollectAppOptions {
   afterRender(): Promise<void>
   /** for tests */
   client?: CollectClient
-  /** for tests (given with `client`, it must be the client's own) */
-  auth?: AuthSession
   /** for tests: the fetch under the auto service */
   fetch?: typeof fetch
 }
@@ -99,19 +97,20 @@ export function startCollect(
   baseUrl: string,
   options: CollectAppOptions,
 ): CollectHandle {
-  const auth =
-    options.auth ??
-    new AuthSession({
-      baseUrl,
-      headers: () => ({ [APP_HEADER]: APP_NAME }),
-    })
   const client =
     options.client ??
     new CollectClient({
       baseUrl,
       app: appInfo(options.commit, options.build, options.version),
-      auth,
+      auth: new AuthSession({
+        baseUrl,
+        headers: () => ({ [APP_HEADER]: APP_NAME }),
+      }),
     })
+  // INFO: the client's own login; a client made without one has none (the
+  // requests then go out as before, without waiting for a login check)
+  const auth = client.auth ?? new AuthSession({ baseUrl })
+  if (!client.auth) auth.disable()
   const calls: ServiceCalls = { calibrate: null, extract: null }
   const wiring = attachCollector(ctx, client, calls)
   const view = (): CollectView => {

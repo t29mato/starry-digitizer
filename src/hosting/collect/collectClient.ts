@@ -128,7 +128,8 @@ export class CollectClient {
   private readonly opts: Required<
     Omit<CollectClientOptions, 'storage' | 'fetch' | 'auth'>
   > & { fetch: typeof fetch; storage: KeyValueStorage | null }
-  private readonly auth: AuthSession | null
+  /** the login (auth.ts); null = name labels only */
+  readonly auth: AuthSession | null
   private prefix = storagePrefix(null)
   private queue: QueuedEvent[] = []
   private seq = 0

@@ -1,6 +1,6 @@
 # starry-digitizer に wpd-auto の自動機能を入れ、starryai に置く（設計書の下書き）
 
-- 版: **0.0.9**（2026-11-24。合意までは 0.x.y で上げる）
+- 版: **0.0.10**（2026-11-24。合意までは 0.x.y で上げる）
 - 書いた人: Claude Code（間藤の依頼）。材料に wpd-auto のセッションの下書き
   `~/research/drafts/starryai-hosting-from-wpd-auto-session.md` を使った。
 - 置き場所: starry-digitizer の `docs/design/starryai-auto.md`（ブランチ `feat/starryai-hosting`、`origin/v4` から分けた）。
@@ -632,7 +632,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 ## 7. 範囲の外（この版では）
 
 - 論文の PDF（F19）、多パネル（F20）
-- ログイン（wpd-auto と同じく、ネットワークの範囲に頼る）
+- ~~ログイン~~ → 0.0.10 で入れた（§11。wpd-auto の backend の下書きに合わせた）
 - v4（Starrydata2）への埋め込みと D7 の中継（`auto-service.md` §7 のまま）
 - Vercel の公開版に自動機能を出すこと
 
@@ -655,6 +655,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.6 | 2026-11-23 | Q16: Vercel の公開版は今のまま（starryai に届かせない）と決まった |
 | 0.0.7 | 2026-11-23 | 並列に進めた 5 つのブランチがそれぞれ書いた分（下の 0.0.8 でまとめた） |
 | 0.0.9 | 2026-11-24 | §1.2b 2026-11-24 の決定（棒グラフ・ライブラリを考えない・パスワード）。Q17〜Q20。凡例の名前を文字だけにした。§11 パスワード（wpd-auto と相談中） |
+| 0.0.10 | 2026-11-24 | §11.1〜11.4: ページのログイン（wpd-auto の下書き `docs/user-passwords.md` 0.0.1 の API に合わせた。ブランチ `feat/login`）。自動機能の包みが legend・components を落としていたのを直した |
 | 0.0.8 | 2026-11-23 | 5 つのブランチを `feat/starryai-hosting` にまとめた: ブラウザの OCR の改善（§2.4、91 図で 23 → 69）、0.2 の記録・知らせ・名前の選択（§3.4・§5.2）、F12 Start over・F14 Components、F9 凡例の読み取り、F2・F4・F6 の棒グラフ（Q7）。棒の抽出の後は凡例を読まない（backend が marker と line だけを受けるため） |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め
@@ -751,3 +752,62 @@ wpd-auto のしくみ（読んだ）は次のとおり。
   - Guest は今のまま。
 - **気を付けること**: starryai は http なので、パスワードは所内の LAN を平文で流れる。所内に限った簡単な仕組みとしては許せる範囲か、https にするかを間藤が決める（§10 Q21）。
 - starry-digitizer でやること: 今の名前の窓（`src/hosting/collect/CollectUserDialog.vue`）を、名前 + パスワードのログインの窓にする。My work（自分の作業を開き直す）は別に決める。
+
+### 11.1 合わせた API（下書き）
+
+- wpd-auto の `feat/user-passwords`（18ca51e）の `docs/user-passwords.md` 0.0.1 に合わせた。下書きなので変わりうる。
+- 2026-11-24 の時点で、このブランチには**文書しかない**。backend のコード（`/auth/*`）はまだない（確かめた。`/api/v1/auth/status` は 404）。
+- 使う経路: `GET /auth/status`・`POST /auth/login`・`POST /auth/logout`・`GET /auth/me`。名前の一覧は今の `GET /collect/users`（下書きで消えていない）。
+
+### 11.2 ページがすること（`feat/login` で実装した）
+
+- 置き場所: `src/hosting/collect/auth.ts`（ログインの状態と要求）、`LoginDialog.vue`（窓）、`AuthStatus.vue`（フッター）。ライブラリには入れない。
+- 開いたとき:
+  1. `GET /collect/status` で `environment` を知る。
+  2. `GET /auth/status` を見る。`password` ならログインを使う。`label`・`off`・404・届かない・形が違うときは、今の名前の選び方のまま（何も変えない）。
+  3. `password` なら、localStorage の token を読む。期限が過ぎていれば捨てる。あれば `GET /auth/me` で確かめる。401 なら捨てる。届かない・5xx なら token を残す（後の要求の 401 で分かる）。
+- token の置き場所: localStorage の `starrydata-auth`（ステージングは `starrydata-auth--staging`）。中身は `{token, user:{id,name}, expires_at}`。wpd-auto の画面と同じ。
+  - `production`・`environment` がないときは `starrydata-auth`、それ以外は `starrydata-auth--<environment>` にした（下書きは `staging` だけを書いている。ほかの環境の名前は推測）。
+  - `storage` イベントを聞く。もう片方の画面でログインすれば、こちらもその人になる。ログアウトすれば、こちらもログインの窓を出す。
+  - localStorage が使えないときも動く（開くごとにログインする）。
+- ヘッダー: `password` のときは、backend へのすべての要求に `X-WPD-Token` を付け、`X-WPD-User` は付けない。
+  - collect の要求（events・images）と、自動機能の calibrate・extract・legend・components・methods・status・capabilities の全部。
+  - 自動機能の要求は、ログインの確かめ（上の 3）が終わるまで最長 5 秒待つ。最初の capabilities にも確かめた token が乗る。
+  - `label` のときは今のまま（`X-WPD-User`、token なし）。
+- 401 `invalid_token`（どの要求でも）: token を捨て、ログインの窓を出す（「The sign-in is no longer valid.」）。
+  - 失敗した自動機能の操作は、そのエラーを出すだけ。次の操作は新しい token（なければ token なし）で送る。
+  - 送れなかった記録は捨てない。名前を選ぶ前と同じく待たせ、次にログインした人（か Guest を選んだとき Guest）の分として送る。
+  - 期限が過ぎた token は、送る前にページが捨てる（401 を待たない）。
+- 記録の扱い:
+  - 記録は、起きたときにログインしていた人の印を付ける。その人の token があるときだけ、その token で送る。ほかの人の token では送らない。
+  - ログインする前の記録は待たせる。ログインするか Guest を選べば送る（今の名前の窓と同じ）。
+  - タブを隠す・閉じるときは、今と同じく `keepalive` の fetch で送る（ヘッダーが付く）。まだ人が決まっていない記録は Guest として送る。`sendBeacon` は使っていない。
+  - ログアウトは、待っている記録をその人の token で送ってから `POST /auth/logout` する。
+- 窓（英語、we/us なし）: 「Sign in」。Name（`/collect/users` に名前があれば選ぶ、なければ打つ）と Password。「Sign in」と、Guest が許されていれば「Continue as Guest」。
+  - Enter で送る。開いたら名前（選んであればパスワード）に focus。ラベルは `for` で欄に付けた。エラーは `role="alert"`。
+  - エラーの文: 401 → 「The name or password is not correct.」、429 → 「Too many failed sign-ins. Try again in N minutes.」（`Retry-After` から）、届かない → 「The server could not be reached. …」、404 `login_disabled` → 「… Reload the page.」。
+  - パスワードは送ったらすぐ欄から消す。保存しない。ログにも URL にも出さない。
+  - ログインが要るときは Esc や外のクリックで閉じない。Guest がフッターの「Sign in」から開いたときは閉じられる。
+  - Guest の選択は残さない。token がなければ、開くたびに窓を出す（推測で決めた。wpd-auto の文書の「token がなければログインの窓」に合わせた）。
+- フッター: 「Signed in as <name> · Sign out」、Guest なら「Guest · Sign in」。
+- 人が変わったら capabilities を聞き直す（人ごとに出す機能が変わるかもしれないため。推測）。
+- 直したこと: `createCollectingAutoService`（`collectWiring.ts`）が legend と components を渡していなかった。0.0.8 で 3 つのブランチをまとめたときに抜けた（確かめた）。そのため starryai 版では凡例の読み取りと Components が出ていなかったはず（推測。画面では確かめていない）。
+
+### 11.3 確かめたこと・確かめていないこと
+
+- **確かめた**:
+  - Jest の単体テスト（`auth.test.ts`・`collectAuth.test.ts`・`LoginDialog.test.ts`）。状態の問い合わせ・token の保存と storage イベント・期限・401 で token を捨てて記録を待たせる・ヘッダー（全経路に token、`X-WPD-User` なし）・窓（ラベル・Enter・エラーの文・パスワードを消す・Guest）。
+  - `feat/user-passwords` の backend（`git archive` で取り出し、ステージング、users.json あり）を 127.0.0.1:24865 で動かした。`/auth/status` は 404 で、ページは今の名前のまま動いた（`auth.backend.test.ts`、`collect.backend.test.ts` も通った）。
+  - 下書きに沿ったモックのサーバー（スクラッチに置いた Python、コミットしていない）で、`auth.backend.test.ts` を通した: 違うパスワード → 401、ログイン → 記録が token で `alice` として届く（`X-WPD-User` なし）、裏で token を消す → 401 → 記録が残る → もう一度ログイン → 送れる → ログアウト。
+- **確かめていない**:
+  - 本物の backend の `/auth/*`（まだない）との結合。backend ができたら `AUTH_BACKEND_URL` と `AUTH_BACKEND_USER`・`AUTH_BACKEND_PASSWORD` を付けて `auth.backend.test.ts` を走らせる。
+  - ブラウザでの見た目と、wpd-auto の画面との token の共有（wpd-auto の画面にもまだない）。
+  - 429 の `Retry-After` の形（秒の数とみなした。日時の形は読まない）。
+
+### 11.4 wpd-auto のセッションへの問い
+
+1. `environment` が `staging` でも `production` でもないとき（開発など）の localStorage のキーを決めてほしい。ページは `starrydata-auth--<environment>` にした。
+2. `login: password` のとき、`GET /collect/users` は今のまま名前の一覧を返すか。ページは窓で選ばせるのに使う（返さなければ、打たせる）。
+3. `/collect/status` と `/auth/status` は token なしでも 401 にならないか（ページは token を付けずに送る）。無効な token が付いていても、`/auth/login`・`/auth/logout` は 401 にしないでほしい（ページは login に token を付けない。logout は付ける。下書きどおり「もう無効でも 204」を前提にした）。
+4. `GET /capabilities` は人によって答えが変わるか。ページは人が変わったら聞き直す。
+5. 429 の `Retry-After` は秒でよいか。

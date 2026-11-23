@@ -283,6 +283,13 @@ export class AuthSession {
 
   // --- start ---------------------------------------------------------------
 
+  /** No login at all (a page without one): ready at once, nothing changes. */
+  disable(): void {
+    this.mode = null
+    this.phase = 'none'
+    this.resolveReady()
+  }
+
   /**
    * Ask the server for its login mode and check a kept token. `environment`
    * is `/collect/status`'s (it chooses the storage key). Never rejects.
