@@ -120,4 +120,41 @@ run('collect against a real backend', () => {
     console.log(`session ${client.sessionId} client ${client.clientId}`)
     handle.stop()
   })
+
+  it('sends starrydata.ref, ui.error and ui.message, then flushes for a reload', async () => {
+    ;(globalThis as { window?: Window }).window = fakeWindow
+    const ctx = createDigitizerContext()
+    const client = new CollectClient({
+      baseUrl: BASE as string,
+      app: { commit: 'abcdef1', version: '2.0.0', build: 1 },
+      storage: null,
+      batchDelayMs: 60000,
+    })
+    const handle = startCollect(ctx, BASE as string, {
+      version: '2.0.0',
+      client,
+      onChange: () => undefined,
+      afterRender: async () => undefined,
+    })
+    await wait(200)
+    if (client.needsUserChoice) handle.chooseUser(null)
+    ctx.starrydataRef.set({ sid: '1' })
+    await wait(10)
+    ctx.starrydataRef.set({ sid: '12345' })
+    await wait(10)
+    ctx.starrydataRef.set({ figure: '3(b)' })
+    await wait(1700)
+    handle.noteError('menu.save_project', 'EXPORT_FAILED', 'No image loaded')
+    handle.noteMessage(
+      'auto_extraction.import',
+      'Imported 1 series / 2 points.',
+    )
+    ctx.starrydataRef.set({ sid: '123456' })
+    // INFO: before its 1.5 s: recorded by the flush for the reload
+    expect(await handle.flushBeforeReload()).toBe(true)
+    expect(client.pending).toBe(0)
+    // eslint-disable-next-line no-console
+    console.log(`session ${client.sessionId} client ${client.clientId}`)
+    handle.stop()
+  })
 })
