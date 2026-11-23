@@ -264,3 +264,38 @@ export function starrydataRefData(
     view,
   }
 }
+
+// INFO: a message is cut here; it is what the page showed, not a log
+export const UI_MESSAGE_MAX_LENGTH = 500
+
+function cut(message: string): string {
+  return message.length > UI_MESSAGE_MAX_LENGTH
+    ? message.slice(0, UI_MESSAGE_MAX_LENGTH)
+    : message
+}
+
+/**
+ * `ui.error` (wpd-auto's record of the same name): the page showed an error
+ * (the error snackbar). `where` names the place in the page (a fixed id),
+ * `code` the DigitizerError code when there is one. Only the shown text:
+ * nothing else the person typed.
+ */
+export function uiErrorData(
+  error: { where: string; code: string | null; message: string },
+  view: ImageView,
+): Record<string, unknown> {
+  return {
+    where: error.where,
+    code: error.code,
+    message: cut(error.message),
+    view,
+  }
+}
+
+/** `ui.message`: the page showed an information message (the snackbar). */
+export function uiMessageData(
+  message: { where: string; message: string },
+  view: ImageView,
+): Record<string, unknown> {
+  return { where: message.where, message: cut(message.message), view }
+}

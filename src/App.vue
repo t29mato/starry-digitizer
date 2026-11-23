@@ -684,24 +684,24 @@ export default defineComponent({
       }
     },
     onDigitizerError(payload: DigitizerErrorPayload) {
-      this.showErrorSnackbar(payload.message)
+      this.showErrorSnackbar(payload.message, 'digitizer', payload.code)
     },
     async handleSaveProject() {
       const result = await saveProjectAndDownload(this.appContext)
       if (!result.success) {
-        this.showErrorSnackbar(result.errorMessage)
+        this.showErrorSnackbar(result.errorMessage, 'menu.save_project')
       }
     },
     async handleLoadProject() {
       const result = await triggerLoadProjectDialog(this.appContext)
       if (!result.success && result.errorMessage) {
-        this.showErrorSnackbar(result.errorMessage)
+        this.showErrorSnackbar(result.errorMessage, 'menu.load_project')
       }
     },
     async handleCopyData() {
       const result = await copyActiveDatasetToClipboard(this.appContext)
       if (!result.success) {
-        this.showErrorSnackbar(result.errorMessage)
+        this.showErrorSnackbar(result.errorMessage, 'menu.copy_data')
       }
     },
     handleZoomIn() {
@@ -766,19 +766,34 @@ export default defineComponent({
     },
     handleAutoExtractionResult(result: AutoExtractionOperationResult) {
       if (!result.success) {
-        if (result.errorMessage) this.showErrorSnackbar(result.errorMessage)
+        if (result.errorMessage)
+          this.showErrorSnackbar(result.errorMessage, 'auto_extraction.import')
         return
       }
       if (!result.result) return
       const { series, points, warnings } = result.result
-      this.infoMessage =
+      this.showInfoSnackbar(
         `Imported ${series} series / ${points} points.` +
-        (warnings.length ? ` Warnings: ${warnings.join('; ')}` : '')
-      this.showInfo = true
+          (warnings.length ? ` Warnings: ${warnings.join('; ')}` : ''),
+        'auto_extraction.import',
+      )
     },
-    showErrorSnackbar(message?: string) {
+    // INFO: every message the app shows goes through these two, so the
+    // starryai build records each one (`ui.error` / `ui.message`); `where`
+    // is a fixed id of the place, `code` the DigitizerError code if any
+    showErrorSnackbar(
+      message: string | undefined,
+      where: string,
+      code: string | null = null,
+    ) {
       this.errorMessage = message ?? 'An error occurred'
       this.showError = true
+      collectHandle?.noteError(where, code, this.errorMessage)
+    },
+    showInfoSnackbar(message: string, where: string) {
+      this.infoMessage = message
+      this.showInfo = true
+      collectHandle?.noteMessage(where, message)
     },
   },
 })

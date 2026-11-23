@@ -26,6 +26,8 @@ import {
   forwardedResearchEvent,
   sessionStartData,
   starrydataRefData,
+  uiErrorData,
+  uiMessageData,
   type StarrydataRefValue,
 } from './collectEvents'
 import { normalizeStarrydataRef } from '@/application/services/starrydataRef/starrydataRef'
@@ -134,6 +136,14 @@ export interface CollectWiringOptions {
 export interface CollectWiring {
   /** the person loaded this file (ImageSettings' `image-replaced`) */
   noteFile(file: Blob): void
+  /** the page showed an error (`ui.error`) */
+  noteError(error: {
+    where: string
+    code: string | null
+    message: string
+  }): void
+  /** the page showed an information message (`ui.message`) */
+  noteMessage(message: { where: string; message: string }): void
   /** record what is waiting for its debounce now (before a reload) */
   recordPending(): void
   /** record what is pending now and send it (the tab is being hidden) */
@@ -345,6 +355,12 @@ export function attachCollector(
         size: file.size,
         type: file.type,
       }
+    },
+    noteError(error) {
+      client.record('ui.error', uiErrorData(error, view))
+    },
+    noteMessage(message) {
+      client.record('ui.message', uiMessageData(message, view))
     },
     recordPending,
     flushPending,
