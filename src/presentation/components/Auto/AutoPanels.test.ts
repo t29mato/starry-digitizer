@@ -34,6 +34,7 @@ function mountWith(component: unknown, ctx: DigitizerContext) {
 }
 
 const proposal = (): AutoCalibrationProposal => ({
+  plot: 'xy',
   status: 'partial',
   failureReason: null,
   frame: { xPx: 10, yPx: 10, widthPx: 100, heightPx: 80 },
@@ -106,6 +107,74 @@ describe('AutoPlacePanel', () => {
     wrapper.unmount()
   })
 
+  it('offers the plot type only when both X-Y and Bar are allowed', async () => {
+    ctx.autoFeatures.setFeatures(['auto_axis'])
+    let wrapper = mountWith(AutoPlacePanel, ctx)
+    expect(wrapper.find('[data-cy="auto-place-plot"]').exists()).toBe(false)
+    wrapper.unmount()
+
+    ctx.autoFeatures.setFeatures(['auto_axis', 'auto_axis_bar'])
+    wrapper = mountWith(AutoPlacePanel, ctx)
+    const buttons = wrapper.findAll('[data-cy="auto-place-plot"] button')
+    expect(buttons.map((b) => b.text())).toEqual(['X-Y', 'Bar'])
+    wrapper.unmount()
+
+    // INFO: Bar alone still shows the panel, without a choice
+    ctx.autoFeatures.setFeatures(['auto_axis_bar'])
+    wrapper = mountWith(AutoPlacePanel, ctx)
+    expect(wrapper.find('[data-cy="auto-place"]').exists()).toBe(true)
+    expect(wrapper.find('[data-cy="auto-place-plot"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('a bar proposal: x is the bar index of the active dataset’s points', async () => {
+    ctx.autoFeatures.setFeatures(['auto_axis_bar'])
+    const bar: AutoCalibrationProposal = {
+      ...proposal(),
+      plot: 'bar',
+      x: {
+        ...proposal().x,
+        ok: false,
+        ticks: [],
+        failureReason: 'not_read_bar_plot',
+      },
+      y: {
+        ok: true,
+        scale: 'linear',
+        ticks: [
+          { value: 0, px: 90 },
+          { value: 10, px: 10 },
+        ],
+        confidence: 0.9,
+        residualPx: 0,
+        failureReason: null,
+      },
+    }
+    ctx.autoFeatures.setProposal(bar, ctx.axisSetRepository.activeAxisSetId)
+    const wrapper = mountWith(AutoPlacePanel, ctx)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.get('[data-cy="auto-place-axis-x"]').text()).toContain(
+      'no bars yet',
+    )
+    // INFO: the value axis alone can be applied
+    expect(
+      wrapper.get('[data-cy="auto-place-apply"]').attributes('disabled'),
+    ).toBeUndefined()
+
+    ctx.datasetRepository.activeDataset.addPoint(30, 50)
+    ctx.datasetRepository.activeDataset.addPoint(60, 40)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.get('[data-cy="auto-place-axis-x"]').text()).toContain(
+      'bar index 0 … 1',
+    )
+    await wrapper.get('[data-cy="auto-place-apply"]').trigger('click')
+    const axisSet = ctx.axisSetRepository.activeAxisSet
+    expect([axisSet.x1.value, axisSet.x2.value]).toEqual([0, 1])
+    expect([axisSet.x1.coord.xPx, axisSet.x2.coord.xPx]).toEqual([30, 60])
+    expect([axisSet.y1.value, axisSet.y2.value]).toEqual([0, 10])
+    wrapper.unmount()
+  })
+
   it('hides a proposal made for another axis set', async () => {
     ctx.autoFeatures.setFeatures(['auto_axis'])
     ctx.autoFeatures.setProposal(proposal(), 999)
@@ -126,6 +195,20 @@ describe('ServerExtractionPanel', () => {
     ctx.autoFeatures.setFeatures(['auto_axis'])
     const wrapper = mountWith(ServerExtractionPanel, ctx)
     expect(wrapper.find('[data-cy="server-extraction"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('offers BarNet with its licence', () => {
+    ctx.autoFeatures.setFeatures(['barnet'])
+    const wrapper = mountWith(ServerExtractionPanel, ctx)
+    const options = wrapper
+      .findAll('[data-cy="server-extraction-method"] option')
+      .map((o) => o.attributes('value'))
+    expect(options).toEqual(['barnet'])
+    expect(wrapper.text()).toContain('CC BY-NC-SA 4.0')
+    expect(
+      wrapper.get('[data-cy="server-extraction-bar-note"]').text(),
+    ).toContain('One point per bar')
     wrapper.unmount()
   })
 

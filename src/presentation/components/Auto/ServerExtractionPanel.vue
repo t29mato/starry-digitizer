@@ -92,6 +92,16 @@
       {{ line }}
     </div>
     <div class="text-caption c__muted">{{ areaCaption }}</div>
+    <!-- INFO: BarNet gives one point per bar (its value end), all in one
+         draft; x of a bar is its index once Axis Auto-place (Bar) is
+         applied with that draft active (starryai-auto.md §10 Q7) -->
+    <div
+      v-if="selectedMethod === 'barnet'"
+      class="text-caption c__muted"
+      data-cy="server-extraction-bar-note"
+    >
+      {{ barNote }}
+    </div>
     <div v-if="cancelMessage" class="text-caption c__muted">
       {{ cancelMessage }}
     </div>
@@ -144,6 +154,7 @@ import { DigitizerError, toErrorPayload } from '@/application/errors'
 const DEFAULT_THRESHOLD: Record<ExtractionMethod, number> = {
   markernet: 0.4,
   lineformer: 0.3,
+  barnet: 0.4,
 }
 const DEFAULT_INTERVAL_PX = 10
 // INFO: wpd-auto backend (MIT) MarkerNet `series_threshold` (the distance at
@@ -160,6 +171,7 @@ const SERIES_THRESHOLD_MAX = 5
 const METHOD_TITLES: Record<ExtractionMethod, string> = {
   markernet: 'MarkerNet (markers)',
   lineformer: 'LineFormer (lines)',
+  barnet: 'BarNet (vertical bars)',
 }
 
 // INFO: the backend README requires these lines wherever the methods are
@@ -169,6 +181,8 @@ const LICENCE_NOTES: Record<ExtractionMethod, string> = {
   markernet: 'MarkerNet weights: non-commercial use only.',
   lineformer:
     'LineFormer (Lal et al., ICDAR 2023). The code and weights have no published licence; used here internally at NIMS for non-commercial research only.',
+  // INFO: wpd-auto backend README, "BarNet の重み" (MIT text)
+  barnet: 'BarNet weights: CC BY-NC-SA 4.0 (non-commercial, share alike).',
 }
 
 // INFO: Server Extraction (board P2). The backend returns pixels only; each
@@ -245,6 +259,12 @@ export default defineComponent({
         !this.isExtracting &&
         Boolean(this.canvasHandler.uploadImageUrl)
       )
+    },
+    barNote(): string {
+      const base = 'One point per bar (its value end), all in one draft.'
+      return this.autoFeatures.canAutoPlaceBar
+        ? `${base} For x = bar index (0, 1, 2, …), apply Axis Auto-place (Bar) with that draft active.`
+        : base
     },
     areaCaption(): string {
       return this.axisSetRepository.activeAxisSet.plotArea

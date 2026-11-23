@@ -128,6 +128,60 @@ describe('AutoDigitizePanel', () => {
     expect(buttons.map((b) => b.text())).toEqual(['Markers'])
   })
 
+  it('offers Bars only with auto_axis_bar and barnet', async () => {
+    const without = await setup(['auto_axis', 'lineformer', 'barnet'])
+    expect(
+      without.wrapper
+        .findAll('[data-cy="auto-digitize-method"] button')
+        .map((b) => b.text()),
+    ).toEqual(['Lines'])
+    without.wrapper.unmount()
+
+    // INFO: Bars alone is enough to show the panel (no X-Y Auto-place)
+    const s = await setup(['auto_axis_bar', 'barnet'])
+    wrapper = s.wrapper
+    const buttons = wrapper.findAll('[data-cy="auto-digitize-method"] button')
+    expect(buttons.map((b) => b.text())).toEqual(['Bars'])
+  })
+
+  it('Bars: says x is the bar index', async () => {
+    const s = await setup(['auto_axis_bar', 'barnet'])
+    wrapper = s.wrapper
+    const barBody = JSON.parse(JSON.stringify(calibration))
+    barBody.plot = 'bar'
+    barBody.frames[0].axes.x = {
+      status: 'failed',
+      scale: null,
+      ticks: [],
+      failure_reason: 'not_read_bar_plot',
+    }
+    s.service.calibrate.mockResolvedValueOnce(barBody)
+    s.service.extract.mockResolvedValueOnce({
+      method: 'barnet',
+      series: [
+        {
+          label: 'bar',
+          points: [
+            [149.5, 299.5],
+            [299.5, 199.5],
+          ],
+        },
+      ],
+    })
+    await wrapper.get('[data-cy="auto-digitize-run"]').trigger('click')
+    await flushPromises()
+
+    expect(s.service.calibrate.mock.calls[0][1]).toMatchObject({
+      plot: 'bar',
+    })
+    expect(wrapper.get('[data-cy="auto-digitize-step-axes"]').text()).toContain(
+      'x = bar index (Bar0 = 0',
+    )
+    expect(
+      wrapper.get('[data-cy="auto-digitize-step-extract"]').text(),
+    ).toContain('Drafts (BarNet): 1 series, 2 points')
+  })
+
   it('runs with the chosen method and shows both steps done', async () => {
     const s = await setup(['auto_axis', 'markernet', 'lineformer'])
     wrapper = s.wrapper

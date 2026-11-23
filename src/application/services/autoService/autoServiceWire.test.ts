@@ -108,9 +108,87 @@ describe('parseCalibrationResponse', () => {
   test('a body that is not an object is an AUTO_SERVICE_FAILED error', () => {
     expect(() => parseCalibrationResponse('nope')).toThrow(DigitizerError)
   })
+
+  test('without `plot` the proposal is for an X-Y plot', () => {
+    expect(parseCalibrationResponse(calibration).plot).toBe('xy')
+  })
+
+  // INFO: the shape of wpd-auto `engines/barrulernet.py` axes_result() (MIT):
+  // one frame, the value axis as y, x "failed" with not_read_bar_plot; the
+  // ticks are those of its test FakeBar (backend/tests/test_barrulernet.py)
+  test('a BarRulerNet answer: the value axis only, plot bar', () => {
+    const proposal = parseCalibrationResponse({
+      engine: { name: 'barrulernet', version: 'barrulernet-r1' },
+      status: 'partial',
+      failure_reason: null,
+      plot: 'bar',
+      frames: [
+        {
+          box: { x0: 40, y0: 20, x1: 380, y1: 250 },
+          y_side: 'left',
+          axes: {
+            x: {
+              status: 'failed',
+              scale: null,
+              ticks: [],
+              confidence: 0,
+              failure_reason: 'not_read_bar_plot',
+              labels_read: 0,
+            },
+            y: {
+              status: 'ok',
+              scale: 'linear',
+              ticks: [
+                { value: 115, px: 20, x: 40, y: 20 },
+                { value: 0, px: 250, x: 40, y: 250 },
+                { value: 57.5, px: 135, x: 40, y: 135 },
+              ],
+              confidence: 0.6,
+              residual_px: 0.1,
+              failure_reason: null,
+              labels_read: 3,
+            },
+          },
+        },
+      ],
+    })
+    expect(proposal.plot).toBe('bar')
+    expect(proposal.status).toBe('partial')
+    expect(proposal.x).toMatchObject({
+      ok: false,
+      failureReason: 'not_read_bar_plot',
+    })
+    expect(proposal.y.ok).toBe(true)
+  })
 })
 
 describe('parseExtractionResponse', () => {
+  // INFO: wpd-auto `extract/barnet.py` (MIT): every bar in ONE series
+  // labelled "bar", a point per bar at its value end, with point scores
+  test('a BarNet answer: one series, a point per bar', () => {
+    const result = parseExtractionResponse({
+      series: [
+        {
+          label: 'bar',
+          points: [
+            [133.0, 327.2],
+            [239.0, 152.4],
+          ],
+          score: 0.9,
+          point_scores: [0.95, 0.85],
+        },
+      ],
+      method: 'barnet',
+      elapsed_ms: 130,
+    })
+    expect(result.method).toBe('barnet')
+    expect(result.series).toHaveLength(1)
+    expect(result.series[0].points).toEqual([
+      { xPx: 133.5, yPx: 327.7, score: 0.95 },
+      { xPx: 239.5, yPx: 152.9, score: 0.85 },
+    ])
+  })
+
   test('keeps point scores only when they line up with the points', () => {
     const result = parseExtractionResponse({
       method: 'markernet',
@@ -149,7 +227,9 @@ describe('parseExtractionResponse', () => {
   test('LineFormer-style series without point scores', () => {
     const result = parseExtractionResponse({
       method: 'lineformer',
-      series: [{ label: 'line 1', points: [[0, 0]], score: null, point_scores: null }],
+      series: [
+        { label: 'line 1', points: [[0, 0]], score: null, point_scores: null },
+      ],
     })
     expect(result.series[0]).toMatchObject({ score: null, legendLabel: null })
     expect(result.series[0].points[0].score).toBeUndefined()

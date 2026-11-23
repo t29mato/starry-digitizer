@@ -1,8 +1,10 @@
 import {
   AUTO_DIGITIZE_ACTION,
   autoDigitizeAxesProblem,
+  canAutoDigitize,
   runAutoDigitize,
 } from './autoDigitizeOperations'
+import { getDatasetValues } from './datasetValues'
 import { configureAutoService } from './autoFeatureOperations'
 import { parseCalibrationResponse } from '@/application/services/autoService/autoServiceWire'
 import {
@@ -328,5 +330,153 @@ describe('autoDigitizeAxesProblem', () => {
     expect(autoDigitizeAxesProblem(proposal, 0.7)).toBe(
       'x axis: low confidence (0.60)',
     )
+  })
+})
+
+// INFO: Bars (starryai-auto.md F6, §10 Q7). The answers are shaped after the
+// wpd-auto backend (MIT): `?plot=bar` by BarRulerNet (engines/barrulernet.py,
+// y only, x not_read_bar_plot) and BarNet (extract/barnet.py, one series
+// "bar", a point per bar at its value end).
+const barCalibration = (x?: unknown) => {
+  const body = calibration()
+  const frame = body.frames[0] as Record<string, unknown> & {
+    axes: Record<string, unknown>
+  }
+  frame.axes.x = x ?? {
+    status: 'failed',
+    scale: null,
+    ticks: [],
+    confidence: 0,
+    failure_reason: 'not_read_bar_plot',
+  }
+  return { ...body, status: 'partial', plot: 'bar' }
+}
+
+const barExtraction = {
+  method: 'barnet',
+  series: [
+    {
+      label: 'bar',
+      points: [
+        [299.5, 224.5],
+        [149.5, 299.5],
+        [449.5, 99.5],
+      ],
+      score: 0.9,
+      point_scores: [0.9, 0.95, 0.85],
+    },
+  ],
+}
+
+describe('Auto digitize: Bars', () => {
+  const setupBars = async (
+    calibrationBody: unknown = barCalibration(),
+    extractionBody: unknown = barExtraction,
+    features = ['auto_axis', 'auto_axis_bar', 'barnet'],
+  ) => {
+    const { ctx, service } = await setup(features)
+    service.calibrate.mockImplementation(async () => calibrationBody)
+    service.extract.mockImplementation(async () => extractionBody)
+    return { ctx, service }
+  }
+
+  test('x not read: the value axis, then x = bar index from the bars, ONE undo step', async () => {
+    const { ctx, service } = await setupBars()
+    const captures: (string | undefined)[] = []
+    ctx.historyManager.subscribe((change) => {
+      if (change.type === 'capture') captures.push(change.action)
+    })
+
+    const outcome = await runAutoDigitize(ctx, { method: 'barnet' })
+
+    expect(outcome.status).toBe('done')
+    expect(outcome.axesKind).toBe('bar')
+    expect(outcome.appliedAxes).toEqual(['x', 'y'])
+    expect(outcome.undoSteps).toBe(1)
+    expect(captures).toEqual([AUTO_DIGITIZE_ACTION])
+    expect(service.calibrate).toHaveBeenCalledWith(expect.any(Blob), {
+      plot: 'bar',
+    })
+    expect(service.extract).toHaveBeenCalledWith(expect.any(Blob), {
+      method: 'barnet',
+      params: undefined,
+      area: { x0: 99.5, y0: 49.5, x1: 499.5, y1: 399.5 },
+    })
+
+    const axisSet = ctx.axisSetRepository.activeAxisSet
+    expect([axisSet.x1.value, axisSet.x2.value]).toEqual([0, 2])
+    expect(axisSet.x1.coord.xPx).toBeCloseTo(150)
+    expect(axisSet.x2.coord.xPx).toBeCloseTo(450)
+    // INFO: the bars read 0, 1, 2 (Bar0, Bar1, Bar2) and their values
+    const values = getDatasetValues(ctx)[0].points
+    expect(values.map((v) => v.x)).toEqual([1, 0, 2])
+    expect(values.map((v) => v.y)).toEqual([50, 28.57, 85.71])
+    expect(ctx.datasetRepository.datasets.map((d) => d.name)).toEqual([
+      'bar (barnet)',
+    ])
+
+    ctx.historyManager.undo()
+    expectPristine(ctx)
+  })
+
+  test('numbers read on x: X-Y axes, as for the other methods', async () => {
+    const numericX = calibration().frames[0].axes.x
+    const { ctx } = await setupBars(barCalibration(numericX))
+    const outcome = await runAutoDigitize(ctx, { method: 'barnet' })
+    expect(outcome.status).toBe('done')
+    expect(outcome.axesKind).toBe('xy')
+    const axisSet = ctx.axisSetRepository.activeAxisSet
+    expect([axisSet.x1.value, axisSet.x2.value]).toEqual([0, 10])
+  })
+
+  test('x read with a low confidence: the bar index instead', async () => {
+    const numericX = { ...calibration().frames[0].axes.x, confidence: 0.2 }
+    const { ctx } = await setupBars(barCalibration(numericX))
+    const outcome = await runAutoDigitize(ctx, { method: 'barnet' })
+    expect(outcome.axesKind).toBe('bar')
+    expect(ctx.axisSetRepository.activeAxisSet.x2.value).toBe(2)
+  })
+
+  test('the value axis not read: stops, nothing changes', async () => {
+    const body = barCalibration()
+    body.frames[0].axes.y = {
+      status: 'failed',
+      scale: null,
+      ticks: [],
+      failure_reason: 'no_value_axis_read',
+    } as unknown as (typeof body.frames)[0]['axes']['y']
+    const { ctx, service } = await setupBars(body)
+    const outcome = await runAutoDigitize(ctx, { method: 'barnet' })
+    expect(outcome.status).toBe('stopped')
+    expect(outcome.reason).toContain('no value axis could be read')
+    expect(service.extract).not.toHaveBeenCalled()
+    expect(ctx.autoFeatures.proposal?.plot).toBe('bar')
+    expectPristine(ctx)
+  })
+
+  test('no bars found: the value axis stays, x is not set', async () => {
+    const { ctx } = await setupBars(barCalibration(), {
+      method: 'barnet',
+      series: [],
+    })
+    const outcome = await runAutoDigitize(ctx, { method: 'barnet' })
+    expect(outcome.status).toBe('no_points')
+    expect(outcome.appliedAxes).toEqual(['y'])
+    expect(outcome.reason).toContain('no bars were found')
+    expect(ctx.axisSetRepository.activeAxisSet.hasXAxis).toBe(false)
+    ctx.historyManager.undo()
+    expectPristine(ctx)
+  })
+
+  test('needs auto_axis_bar and barnet', async () => {
+    const { ctx, service } = await setupBars(undefined, undefined, [
+      'auto_axis',
+      'barnet',
+    ])
+    const outcome = await runAutoDigitize(ctx, { method: 'barnet' })
+    expect(outcome.status).toBe('failed')
+    expect(service.calibrate).not.toHaveBeenCalled()
+    expect(canAutoDigitize(ctx.autoFeatures, 'barnet')).toBe(false)
+    expect(canAutoDigitize(ctx.autoFeatures, 'lineformer')).toBe(false)
   })
 })

@@ -72,6 +72,21 @@ describe('createHttpAutoService', () => {
     expect((fetch.mock.calls[1] as unknown as FetchCall)[0]).toBe(
       'http://backend.example/wpd-auto/api/v1/calibrate',
     )
+
+    // INFO: a bar plot asks `?plot=bar`; an X-Y plot sends no `plot`
+    await service.calibrate(image, { plot: 'bar' })
+    expect((fetch.mock.calls[2] as unknown as FetchCall)[0]).toBe(
+      'http://backend.example/wpd-auto/api/v1/calibrate?plot=bar',
+    )
+    await service.calibrate(image, { plot: 'xy' })
+    expect((fetch.mock.calls[3] as unknown as FetchCall)[0]).toBe(
+      'http://backend.example/wpd-auto/api/v1/calibrate',
+    )
+
+    await service.extract(image, { method: 'barnet' })
+    expect((fetch.mock.calls[4] as unknown as FetchCall)[0]).toBe(
+      'http://backend.example/wpd-auto/api/v1/extract?method=barnet',
+    )
   })
 
   test('HTTP errors carry the backend code in an AUTO_SERVICE_FAILED error', async () => {

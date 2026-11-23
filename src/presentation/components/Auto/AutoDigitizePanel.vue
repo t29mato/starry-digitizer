@@ -113,6 +113,7 @@ import { ExtractionMethod } from '@/application/services/autoService/autoService
 import {
   AutoDigitizeOutcome,
   AutoDigitizeStep,
+  canAutoDigitize,
   runAutoDigitize,
 } from '@/application/utils/autoDigitizeOperations'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
@@ -133,11 +134,17 @@ const METHOD_CHOICES: Record<
     title: 'MarkerNet: for scatter / marker charts',
     name: 'MarkerNet',
   },
+  barnet: {
+    label: 'Bars',
+    title:
+      'BarNet: for vertical bar charts. x is the bar index (0, 1, 2, …) unless numbers are read on the x axis',
+    name: 'BarNet',
+  },
 }
 
 // INFO: Lines first — most figures are line charts, and it is the choice
 // wpd-auto settled on as the default (wpd-auto PR #34, behaviour only).
-const METHOD_ORDER: ExtractionMethod[] = ['lineformer', 'markernet']
+const METHOD_ORDER: ExtractionMethod[] = ['lineformer', 'markernet', 'barnet']
 
 type StepState = 'done' | 'failed' | 'skipped'
 
@@ -190,10 +197,12 @@ export default defineComponent({
   },
   computed: {
     allowedMethods(): ExtractionMethod[] {
-      return METHOD_ORDER.filter((method) => this.autoFeatures.has(method))
+      return METHOD_ORDER.filter((method) =>
+        canAutoDigitize(this.autoFeatures, method),
+      )
     },
     isAvailable(): boolean {
-      return this.autoFeatures.canAutoPlace && this.allowedMethods.length > 0
+      return this.allowedMethods.length > 0
     },
     hoursNote(): string {
       return outsideHoursNote(this.ctx)
@@ -259,9 +268,7 @@ export default defineComponent({
             : outcome.stoppedAt === 'axes'
             ? stopped
             : 'skipped',
-          text: axesDone
-            ? 'applied (drag the axis markers to adjust)'
-            : 'not applied',
+          text: axesDone ? this.axesText(outcome) : 'not applied',
         },
         {
           name: 'extract',
@@ -302,6 +309,17 @@ export default defineComponent({
     this.stopTimer()
   },
   methods: {
+    axesText(outcome: AutoDigitizeOutcome): string {
+      const adjust = 'drag the axis markers to adjust'
+      if (outcome.axesKind === 'xy' && outcome.method === 'barnet') {
+        return `applied as X-Y: numbers were read on x (${adjust})`
+      }
+      if (outcome.axesKind !== 'bar') return `applied (${adjust})`
+      // INFO: Bars without numbers on x: x is the bar index (Bar0 = 0, …)
+      return outcome.appliedAxes.includes('x')
+        ? `value axis applied; x = bar index (Bar0 = 0, Bar1 = 1, …; ${adjust})`
+        : 'value axis applied; x not set (no bars)'
+    },
     stopTimer() {
       if (this.timer !== null) clearInterval(this.timer)
       this.timer = null

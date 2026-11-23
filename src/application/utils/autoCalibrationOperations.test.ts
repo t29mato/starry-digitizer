@@ -1,5 +1,6 @@
 import {
   applyAutoCalibration,
+  applyBarAutoCalibration,
   discardAutoCalibration,
   requestAutoCalibration,
 } from './autoCalibrationOperations'
@@ -170,5 +171,111 @@ describe('Auto-place: the image changes while it runs', () => {
 
     expect(isImageChangedError(await running.catch((e) => e))).toBe(true)
     expect(ctx.autoFeatures.proposal).toBeNull()
+  })
+})
+
+// INFO: the shape of a wpd-auto `?plot=bar` answer by BarRulerNet (backend
+// `engines/barrulernet.py` axes_result(), MIT): y only, x not read
+const barBody = {
+  status: 'partial',
+  plot: 'bar',
+  frames: [
+    {
+      box: { x0: 79.5, y0: 29.5, x1: 609.5, y1: 418.5 },
+      y_side: 'left',
+      axes: {
+        x: {
+          status: 'failed',
+          scale: null,
+          ticks: [],
+          confidence: 0,
+          failure_reason: 'not_read_bar_plot',
+        },
+        y: {
+          status: 'ok',
+          scale: 'linear',
+          ticks: [
+            { value: 0, px: 418.5 },
+            { value: 25, px: 229.5 },
+            { value: 50, px: 39.5 },
+          ],
+          confidence: 0.9,
+        },
+      },
+    },
+  ],
+}
+
+describe('axis Auto-place of a bar plot', () => {
+  const setupBar = async (features = ['auto_axis', 'auto_axis_bar']) => {
+    const ctx = createDigitizerContext()
+    const calibrate = jest.fn(async () => barBody)
+    await configureAutoService(ctx, {
+      capabilities: async () => features,
+      calibrate,
+      extract: jest.fn(),
+    })
+    ctx.canvasHandler.setUploadImageUrl(PNG)
+    return { ctx, calibrate }
+  }
+
+  test('asks ?plot=bar and keeps a bar proposal', async () => {
+    const { ctx, calibrate } = await setupBar()
+    const proposal = await requestAutoCalibration(ctx, undefined, 'bar')
+    expect(calibrate).toHaveBeenCalledWith(expect.any(Blob), { plot: 'bar' })
+    expect(proposal.plot).toBe('bar')
+    expect(ctx.autoFeatures.proposal).toEqual(proposal)
+  })
+
+  test('needs auto_axis_bar', async () => {
+    const { ctx, calibrate } = await setupBar(['auto_axis'])
+    await expect(
+      requestAutoCalibration(ctx, undefined, 'bar'),
+    ).rejects.toMatchObject({ code: 'AUTO_SERVICE_FAILED' })
+    expect(calibrate).not.toHaveBeenCalled()
+  })
+
+  test('applies the value axis and x = bar index from the bars, in one step', async () => {
+    const { ctx } = await setupBar()
+    await requestAutoCalibration(ctx, undefined, 'bar')
+    const captures: (string | undefined)[] = []
+    ctx.historyManager.subscribe((change) => {
+      if (change.type === 'capture') captures.push(change.action)
+    })
+
+    const applied = applyBarAutoCalibration(ctx, [345, 133.5, 239.5])
+
+    expect(applied).toEqual(['x', 'y'])
+    expect(captures).toEqual(['axis.auto-place'])
+    const axisSet = ctx.axisSetRepository.activeAxisSet
+    expect(axisSet.y1.value).toBe(0)
+    expect(axisSet.y2.value).toBe(50)
+    expect(axisSet.x1.value).toBe(0)
+    expect(axisSet.x2.value).toBe(2)
+    // INFO: least squares through the three bar centres
+    expect(axisSet.x1.coord.xPx).toBeCloseTo(133.58, 1)
+    // INFO: x markers on the frame's bottom edge (the x axis line)
+    expect(axisSet.x1.coord.yPx).toBe(30 + 389)
+    expect(axisSet.xIsLogScale).toBe(false)
+    expect(axisSet.pointMode).toBe(POINT_MODE.FOUR_POINTS)
+    expect(ctx.autoFeatures.proposal).toBeNull()
+
+    ctx.historyManager.undo()
+    expect(ctx.axisSetRepository.activeAxisSet.hasAtLeastOneAxis).toBe(false)
+  })
+
+  test('without bars only the value axis is applied', async () => {
+    const { ctx } = await setupBar()
+    await requestAutoCalibration(ctx, undefined, 'bar')
+    expect(applyBarAutoCalibration(ctx, [])).toEqual(['y'])
+    const axisSet = ctx.axisSetRepository.activeAxisSet
+    expect(axisSet.hasYAxis).toBe(true)
+    expect(axisSet.hasXAxis).toBe(false)
+  })
+
+  test('an X-Y request is made exactly as before (no plot)', async () => {
+    const { ctx, calibrate } = await setupBar()
+    await requestAutoCalibration(ctx)
+    expect(calibrate).toHaveBeenCalledWith(expect.any(Blob))
   })
 })

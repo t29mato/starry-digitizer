@@ -8,7 +8,9 @@ import {
   applyAutoCalibration,
   describeAxisFailure,
   requestAutoCalibration,
+  setBarIndexXAxis,
 } from '@/application/utils/autoCalibrationOperations'
+import { AutoFeatures } from '@/application/services/autoService/autoFeatures'
 import {
   applyServerExtractionDrafts,
   requestServerExtraction,
@@ -22,8 +24,15 @@ import { DigitizerError } from '@/application/errors'
 // run back to back; nothing here talks to the service on its own.
 //
 // The method is the person's choice (Lines = LineFormer, Markers =
-// MarkerNet). There is no fallback from one to the other: when the chosen
-// method fails or finds nothing, the run says so and stops.
+// MarkerNet, Bars = BarNet). There is no fallback from one to the other:
+// when the chosen method fails or finds nothing, the run says so and stops.
+//
+// BARS (docs/design/starryai-auto.md F6, §10 Q7). The calibration is asked
+// for a bar plot (`?plot=bar`): the value (y) axis has to be usable. When
+// the x axis was read as numbers too, the axes are X-Y as for the other
+// methods; otherwise x is the BAR INDEX (0, 1, 2, … from the left = Bar0,
+// Bar1, … in wpd-auto), set from the bars BarNet found, in the same undo
+// step as the drafts.
 //
 // UNDO: the whole run is ONE undo step, 'auto.digitize'. The axes are
 // applied (and captured) as soon as the calibration is in, so the person sees
@@ -86,6 +95,11 @@ export interface AutoDigitizeOutcome {
   error: DigitizerError | null
   /** the axes the run applied (empty when it stopped before) */
   appliedAxes: AutoAxisName[]
+  /**
+   * How x was made: `xy` from the tick labels, `bar` = the bar index from
+   * the bars found (Bars only); null until the axes were applied
+   */
+  axesKind: AutoAxesKind | null
   /** the calibration answer, when one came back */
   proposal: AutoCalibrationProposal | null
   extraction: AutoDigitizeExtraction | null
@@ -95,6 +109,54 @@ export interface AutoDigitizeOutcome {
 
 export const AUTO_DIGITIZE_ACTION = 'auto.digitize'
 
+/** `bar`: x is the bar index (0, 1, 2, …), see BARS above. */
+export type AutoAxesKind = 'xy' | 'bar'
+
+/**
+ * Whether the service allows Auto digitize with `method`: Auto-place of
+ * the matching plot (`auto_axis`, or `auto_axis_bar` for BarNet) and the
+ * method itself.
+ */
+export function canAutoDigitize(
+  autoFeatures: AutoFeatures,
+  method: ExtractionMethod,
+): boolean {
+  const axes =
+    method === 'barnet'
+      ? autoFeatures.canAutoPlaceBar
+      : autoFeatures.canAutoPlace
+  return axes && autoFeatures.has(method)
+}
+
+/**
+ * What a bar plot's answer allows: null when the value (y) axis is not
+ * usable (`problem` says why), else `xy` when x was read as numbers with
+ * enough confidence and `bar` otherwise.
+ */
+export function barAxesKind(
+  proposal: AutoCalibrationProposal,
+  minConfidence = MIN_AUTO_DIGITIZE_AXIS_CONFIDENCE,
+): { kind: AutoAxesKind | null; problem: string | null } {
+  const problem = axisProblem(proposal, 'y', minConfidence)
+  if (problem) return { kind: null, problem }
+  const xIsNumeric = axisProblem(proposal, 'x', minConfidence) === null
+  return { kind: xIsNumeric ? 'xy' : 'bar', problem: null }
+}
+
+function axisProblem(
+  proposal: AutoCalibrationProposal,
+  name: AutoAxisName,
+  minConfidence: number,
+): string | null {
+  const axis = proposal[name]
+  if (!axis.ok)
+    return `${name} axis: ${describeAxisFailure(axis.failureReason)}`
+  if (axis.confidence !== null && axis.confidence < minConfidence) {
+    return `${name} axis: low confidence (${axis.confidence.toFixed(2)})`
+  }
+  return null
+}
+
 /**
  * Why `proposal` should not be applied without a person looking at it, or
  * null when both axes are usable.
@@ -103,17 +165,10 @@ export function autoDigitizeAxesProblem(
   proposal: AutoCalibrationProposal,
   minConfidence = MIN_AUTO_DIGITIZE_AXIS_CONFIDENCE,
 ): string | null {
-  const problems: string[] = []
-  for (const name of ['x', 'y'] as const) {
-    const axis = proposal[name]
-    if (!axis.ok) {
-      problems.push(`${name} axis: ${describeAxisFailure(axis.failureReason)}`)
-    } else if (axis.confidence !== null && axis.confidence < minConfidence) {
-      problems.push(
-        `${name} axis: low confidence (${axis.confidence.toFixed(2)})`,
-      )
-    }
-  }
+  const problems = (['x', 'y'] as const).flatMap((name) => {
+    const problem = axisProblem(proposal, name, minConfidence)
+    return problem ? [problem] : []
+  })
   return problems.length > 0 ? problems.join('; ') : null
 }
 
@@ -137,6 +192,7 @@ export async function runAutoDigitize(
     reason: '',
     error: null,
     appliedAxes: [],
+    axesKind: null,
     proposal: null,
     extraction: null,
     undoSteps: 0,
@@ -155,7 +211,8 @@ export async function runAutoDigitize(
   // INFO: both halves have to be allowed before anything is asked; a run
   // that could calibrate but never extract is not what the button promises
   const { autoFeatures } = ctx
-  if (!autoFeatures.canAutoPlace || !autoFeatures.has(method)) {
+  const isBar = method === 'barnet'
+  if (!canAutoDigitize(autoFeatures, method)) {
     const error = new DigitizerError(
       'AUTO_SERVICE_FAILED',
       `Auto digitize needs Auto-place and "${method}"; the service does not allow both`,
@@ -167,7 +224,7 @@ export async function runAutoDigitize(
   onStep?.('axes')
   let proposal: AutoCalibrationProposal
   try {
-    proposal = await requestAutoCalibration(ctx, signal)
+    proposal = await requestAutoCalibration(ctx, signal, isBar ? 'bar' : 'xy')
   } catch (e) {
     if (isImageChangedError(e)) {
       return end('cancelled', 'Cancelled while reading the axes.')
@@ -177,20 +234,27 @@ export async function runAutoDigitize(
   }
   outcome.proposal = proposal
 
-  const problem = autoDigitizeAxesProblem(proposal, options.minAxisConfidence)
-  if (problem) {
+  const { kind, problem } = isBar
+    ? barAxesKind(proposal, options.minAxisConfidence)
+    : {
+        kind: 'xy' as const,
+        problem: autoDigitizeAxesProblem(proposal, options.minAxisConfidence),
+      }
+  if (problem || !kind) {
     // INFO: the proposal stays pending, so Axis Auto-place shows it with its
     // ticks on the image and the person decides whether to apply it
     return end('stopped', `The axes were not applied (${problem}).`)
   }
 
   const axisSetId = ctx.axisSetRepository.activeAxisSetId
+  // INFO: a bar index x is set once the bars are known (step 2)
   outcome.appliedAxes = applyAutoCalibration(
     ctx,
     proposal,
-    ['x', 'y'],
+    kind === 'bar' ? ['y'] : ['x', 'y'],
     AUTO_DIGITIZE_ACTION,
   )
+  outcome.axesKind = kind
   outcome.undoSteps = 1
   // INFO: any capture / undo / redo / clear after ours means the drafts can
   // no longer silently join our step (see UNDO above)
@@ -236,7 +300,12 @@ export async function runAutoDigitize(
       replacedDraftCount: 0,
       hasScores: false,
     }
-    return end('no_points', 'The axes were applied, but no points were found.')
+    return end(
+      'no_points',
+      kind === 'bar'
+        ? 'The value axis was applied, but no bars were found, so the x axis (bar index) is not set.'
+        : 'The axes were applied, but no points were found.',
+    )
   }
 
   const { datasetIds, replacedDraftCount } = applyServerExtractionDrafts(
@@ -246,6 +315,11 @@ export async function runAutoDigitize(
     historyMoved ? 'extract.server' : null,
   )
   if (historyMoved) outcome.undoSteps = 2
+  // INFO: after the drafts, so the bar index joins whichever step they are in
+  if (kind === 'bar') {
+    const bars = result.series.flatMap((s) => s.points.map((p) => p.xPx))
+    if (setBarIndexXAxis(ctx, bars)) outcome.appliedAxes = ['x', 'y']
+  }
   outcome.extraction = {
     seriesCount: result.series.length,
     pointCount: result.series.reduce((n, s) => n + s.points.length, 0),

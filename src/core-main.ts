@@ -158,16 +158,22 @@ export type {
   AutoFeature,
   ExtractionMethod,
   ExtractionRequest,
+  CalibrationPlot,
+  CalibrationOptions,
 } from './application/services/autoService/autoService'
 export {
   requestAutoCalibration,
   applyAutoCalibration,
+  applyBarAutoCalibration,
+  setBarIndexXAxis,
   discardAutoCalibration,
   describeAxisFailure,
 } from './application/utils/autoCalibrationOperations'
 export {
   runAutoDigitize,
   autoDigitizeAxesProblem,
+  barAxesKind,
+  canAutoDigitize,
   AUTO_DIGITIZE_ACTION,
   MIN_AUTO_DIGITIZE_AXIS_CONFIDENCE,
 } from './application/utils/autoDigitizeOperations'
@@ -177,6 +183,7 @@ export type {
   AutoDigitizeExtraction,
   AutoDigitizeStatus,
   AutoDigitizeStep,
+  AutoAxesKind,
 } from './application/utils/autoDigitizeOperations'
 export {
   requestServerExtraction,

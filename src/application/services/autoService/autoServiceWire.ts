@@ -1,6 +1,7 @@
 import { DigitizerError } from '@/application/errors'
 import { Rect } from '@/@types/types'
 import { AxisScale } from '@/domain/services/axisTickFitter'
+import { CalibrationPlot } from './autoService'
 
 // INFO: Validation and conversion of the wpd-auto backend's response bodies
 // (backend README, "API") into the digitizer's own terms. Pure functions: no
@@ -39,6 +40,12 @@ export interface AutoAxisProposal {
 }
 
 export interface AutoCalibrationProposal {
+  /**
+   * What the answer was asked for (the backend's `plot`; missing = `xy`).
+   * A bar plot's x axis is normally not read (`not_read_bar_plot`): its x
+   * is the bar index, set from the bars (barAxisOperations.ts).
+   */
+  plot: CalibrationPlot
   /** ok = both axes, partial = one, failed = none */
   status: 'ok' | 'partial' | 'failed'
   failureReason: string | null
@@ -149,6 +156,7 @@ export function parseCalibrationResponse(
 
   const usable = Number(x.ok) + Number(y.ok)
   return {
+    plot: body.plot === 'bar' ? 'bar' : 'xy',
     status: (['failed', 'partial', 'ok'] as const)[usable],
     failureReason: calibrationFailureReason(body.failure_reason, usable),
     frame: rect,
