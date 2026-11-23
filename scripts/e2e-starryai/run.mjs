@@ -54,6 +54,21 @@ const WPD_AUTO_BACKEND =
   path.join(os.homedir(), 'research/repos/wpd-auto/backend')
 
 const WWW = path.join(OUT, 'www')
+// INFO: what deploy.sh gives a real build (VITE_APP_COMMIT / VITE_APP_BUILD
+// and VERSION.txt); the build number is raised in step 6b to see the
+// new-version bar
+const E2E_COMMIT = spawnSync('git', ['rev-parse', 'HEAD'], {
+  cwd: REPO,
+})
+  .stdout.toString()
+  .trim()
+const E2E_BUILD = '1'
+function writeVersionTxt(build) {
+  fs.writeFileSync(
+    path.join(WWW, 'VERSION.txt'),
+    `${E2E_COMMIT}\nversion=e2e\nbuild=${build}\nenvironment=staging\ndeployed=${new Date().toISOString()}\n`,
+  )
+}
 const COLLECT = path.join(OUT, 'collect')
 const SHOTS = path.join(OUT, 'shots')
 
@@ -101,6 +116,14 @@ const ALLOWED_CONSOLE = [
     why: 'extract without weights fails by design in this check',
     test: (text, url) =>
       /Failed to load resource/.test(text) && url.includes(`${API}/extract?`),
+  },
+  {
+    // a backend without the starry-digitizer project format (P1) refuses the
+    // work with 400; the page then stops sending it quietly
+    // (docs/design/starryai-auto.md §3.2(c)). Chromium logs the 400.
+    why: 'backend without the project format refuses /collect/project (400)',
+    test: (text, url) =>
+      /status of 400/.test(text) && url.endsWith(`${API}/collect/project`),
   },
   {
     // the wrong password in the login step: Chromium logs the 401
@@ -799,6 +822,25 @@ async function mainSession(browser) {
     )
   })
 
+  await step('6b a new version on the server: the Reload bar', async () => {
+    check(
+      'no bar while the served version is the running one',
+      !(await page.$('[data-cy=version-notice]')),
+    )
+    writeVersionTxt('2')
+    // INFO: the page looks again when the tab is shown (versionCheck.ts)
+    await page.evaluate(() =>
+      document.dispatchEvent(new Event('visibilitychange')),
+    )
+    const bar = await page
+      .waitForSelector('[data-cy=version-notice]', { timeout: 5000 })
+      .catch(() => null)
+    check('the bar appears after the build number changed', Boolean(bar))
+    await shot(page, 'version-notice', 'A new build was deployed: Reload bar')
+    if (bar) await page.click('[data-cy=version-notice-close]')
+    writeVersionTxt(E2E_BUILD)
+  })
+
   // INFO: closing the page sends the queued events (pagehide, keepalive)
   await sleep(1500)
   await page.close({ runBeforeUnload: true })
@@ -1214,12 +1256,8 @@ async function main() {
           STARRY_DIGITIZER_ANALYTICS: 'off',
           VITE_OCR_ASSET_DIR: 'tesseract',
           VITE_AUTO_SERVICE_URL: API,
-          VITE_APP_COMMIT: spawnSync('git', ['rev-parse', '--short', 'HEAD'], {
-            cwd: REPO,
-          })
-            .stdout.toString()
-            .trim(),
-          VITE_APP_BUILD: 'e2e',
+          VITE_APP_COMMIT: E2E_COMMIT,
+          VITE_APP_BUILD: E2E_BUILD,
         },
       },
     )
@@ -1228,6 +1266,8 @@ async function main() {
   } else if (!fs.existsSync(path.join(WWW, 'index.html'))) {
     throw new Error(`--no-build needs an earlier build in ${WWW}`)
   }
+  // INFO: as deploy/deploy.sh writes it; the page's new-version check reads it
+  writeVersionTxt(E2E_BUILD)
 
   // INFO: two names, so the page asks "Who is working?" (COLLECT.md)
   fs.writeFileSync(
