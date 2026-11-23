@@ -290,6 +290,15 @@ export default defineComponent({
       () => this.canvasHandler.uploadImageUrl,
       () => this.controller?.abort(),
     )
+    // INFO: "Applied — drag the axis markers…" is about markers that Clear
+    // XY Axes or Start over has just removed; seen standing under empty axes
+    // in a browser (2026-11-24)
+    this.$watch(
+      () => this.activeAxisSet.hasAtLeastOneAxis,
+      (hasAxis: boolean) => {
+        if (!hasAxis) this.appliedNote = ''
+      },
+    )
   },
   beforeUnmount() {
     this.controller?.abort()

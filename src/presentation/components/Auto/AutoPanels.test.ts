@@ -19,6 +19,7 @@ import {
 import type { AutoCalibrationProposal } from '@/application/services/autoService/autoServiceWire'
 import type { AutoService } from '@/application/services/autoService/autoService'
 import { configureAutoService } from '@/application/utils/autoFeatureOperations'
+import { startOver } from '@/application/utils/startOverOperations'
 
 type AnyComponent = new () => ComponentPublicInstance
 
@@ -172,6 +173,26 @@ describe('AutoPlacePanel', () => {
     expect([axisSet.x1.value, axisSet.x2.value]).toEqual([0, 1])
     expect([axisSet.x1.coord.xPx, axisSet.x2.coord.xPx]).toEqual([30, 60])
     expect([axisSet.y1.value, axisSet.y2.value]).toEqual([0, 10])
+    wrapper.unmount()
+  })
+
+  it('drops the "Applied" note when Start over removes the markers', async () => {
+    ctx.autoFeatures.setFeatures(['auto_axis'])
+    ctx.autoFeatures.setProposal(
+      proposal(),
+      ctx.axisSetRepository.activeAxisSetId,
+    )
+    const wrapper = mountWith(AutoPlacePanel, ctx)
+    await wrapper.vm.$nextTick()
+    await wrapper.get('[data-cy="auto-place-apply"]').trigger('click')
+    expect(wrapper.text()).toContain('Applied — drag the axis markers')
+
+    // INFO: seen in a browser (2026-11-24): the note stayed under the
+    // reset axes
+    expect(startOver(ctx)).toBe(true)
+    await wrapper.vm.$nextTick()
+    expect(ctx.axisSetRepository.activeAxisSet.hasAtLeastOneAxis).toBe(false)
+    expect(wrapper.text()).not.toContain('Applied — drag the axis markers')
     wrapper.unmount()
   })
 

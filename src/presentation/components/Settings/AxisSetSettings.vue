@@ -455,6 +455,17 @@ export default defineComponent({
     this.displayVal.x2 = String(this.x2Axis.value)
     this.displayVal.y1 = String(this.y1Axis.value)
     this.displayVal.y2 = String(this.y2Axis.value)
+    // INFO: the Auto-fill note ("Read by the auto service: x1, …") is about
+    // markers that Clear XY Axes or Start over has just removed; seen
+    // standing under empty axes in a browser (2026-11-24)
+    this.$watch(
+      () => this.axisSetRepository.activeAxisSet.hasAtLeastOneAxis,
+      (hasAxis: boolean) => {
+        if (hasAxis) return
+        this.autoFillNote = ''
+        this.ocrErrorMessage = ''
+      },
+    )
   },
   methods: {
     setPointMode(value: string | number | boolean) {
