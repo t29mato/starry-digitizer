@@ -1,6 +1,6 @@
 # starry-digitizer に wpd-auto の自動機能を入れ、starryai に置く（設計書の下書き）
 
-- 版: **0.0.4**（2026-11-23。合意までは 0.x.y で上げる）
+- 版: **0.0.5**（2026-11-23。合意までは 0.x.y で上げる）
 - 書いた人: Claude Code（間藤の依頼）。材料に wpd-auto のセッションの下書き
   `~/research/drafts/starryai-hosting-from-wpd-auto-session.md` を使った。
 - 置き場所: starry-digitizer の `docs/design/starryai-auto.md`（ブランチ `feat/starryai-hosting`、`origin/v4` から分けた）。
@@ -171,6 +171,57 @@ wpd-auto のセッションの報告（読んだだけ）:
   リポジトリの直下の `eng.traineddata` は由来が分からないので使わない。
 - nginx は、wpd-auto の server ブロックに `include` する location のひな形にした。**wpd-auto 側のひな形に `include` の 1 行を足す必要がある**（wpd-auto のセッションに伝える）。
 - リリースのディレクトリ名は `<commit>-<build>`（同じコミットを作り直しても前のものを壊さない）。
+
+### 2.4 軸の値の自動入力：starry-digitizer の OCR と wpd-auto の比較（2026-11-23）
+
+間藤の依頼で 2 つを比べた。
+- **SD-OCR**: starry-digitizer の「Auto-fill values (OCR)」。人が x1/x2/y1/y2 を置き、そこに一番近い数値をブラウザの tesseract.js で読む。
+- **wpd-auto**: wpd-auto の Auto-place（`/calibrate`、PlotRuler v4、重みなし・CPU）。位置も値も自動で出す。
+
+結果の数字は、この VM で**動かして確かめた**もの。
+
+**やり方**
+- 図: real-chart-bench の `data/verified_pairs`。人の校正（`tick_calibration.json`、各軸 2 目盛の画素と値）がある 94 図のうち、画像が手元にある **91 図**。
+- 物差し: real-chart-bench の `axis_agreement` と同じ。人の 2 目盛で、自動の値と図に書かれた値の差を、目盛の幅（log 軸は桁）で割る。0.5% 以内なら、その軸は合格。
+- SD-OCR は、人がクリックする点を次のように作った。
+  - x1/x2 は人の x 目盛の画素、y1/y2 は y 目盛の画素に置く。
+  - 直交する座標（x 軸の線の行・y 軸の線の列）は正解に無いので、目盛の間で暗い画素が一番多い行・列で推した（推測を含む作り方）。
+  - OCR は Node で動かした。tesseract.js 6 とデータ best_int で、ブラウザの既定と同じ。matcher は starry-digitizer のコードそのもの。
+- wpd-auto は、`feat/client-capabilities`（e6cc862。校正は main と同じ）の backend をこの VM で動かし、HTTP で画像を送った。
+  - Tesseract 5.3.4、既定の設定、同時に 4 件。
+- スクリプトと図ごとの点数は `~/research/drafts/axis-autofill-eval/` にある（リポジトリには入れていない）。
+
+**結果（91 図）**
+
+| 方式 | 両軸とも合格 | x 軸 合格／誤り／空 | y 軸 合格／誤り／空 |
+|---|---|---|---|
+| SD-OCR | **23** | 61／25／5 | 29／54／8 |
+| wpd-auto Auto-place | **76** | 84／0／7 | 79／4／8 |
+| サーバーの校正で、人が置いた点の値を出す（下の実装） | **79** | — | — |
+
+- 許容を 1%・2% にしても数は同じ。
+- wpd-auto が「ok」と言いながら 0.5% を超えて外れた軸は 4 本。答えない軸は空になるので、黙って誤る数が少ない。
+- 図ごとの内訳: 両方合格 21、wpd-auto だけ合格 55、SD-OCR だけ合格 2、どちらも不合格 13。
+- SD-OCR の値の誤り（364 値のうち）:
+  - 小数点やマイナスが落ちる 34（"1.4"→14、"-40"→40）
+  - もう一方の軸のラベルを拾う 36（原点の近く）
+  - そのほかの誤り 41
+  - 空 14
+- 1 図あたりの時間の中央値: SD-OCR 0.4 秒（Node）、wpd-auto 0.8 秒（同時 4 件）。
+
+**実装（0.0.5）**
+- auto service に `auto_axis` があるとき、「Auto-fill values」は wpd-auto の校正を使う。
+  - サーバーの目盛に当てはめた直線で、人が置いた点の値を出し、目盛の刻み（線形は目盛の間隔、log は桁）の 1/4 以内なら刻みに合わせる。
+  - サーバーが読めなかった軸の点だけ、ブラウザの OCR で埋める。
+  - 全部を 1 回の Undo にまとめる。
+  - どの値がサーバーで、どれが OCR かを画面に出す。
+  - サーバーの答えは Auto-place の提案としては残さない。
+- 上と同じ 91 図で、この形は **79 図**が合格だった（`hybrid.py`。サーバーが読めなかった軸だけ OCR に回した）。
+- auto service が無いとき（Vercel の公開版）は今までどおり「Auto-fill values (OCR)」。
+
+**残ること**
+- 公開版（Vercel）は backend が無いので、ブラウザの OCR のまま。
+- PlotRuler v4 は MIT で重みが無い。だから、ライセンスの面では公開の場所にも置ける。ただ、置く場所（NIMS の外に出すか）は別に決める（§10 Q16）。
 
 ## 3. 呼ぶ API と送る記録
 
@@ -433,6 +484,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.2 | 2026-11-23 | 間藤の「これで進めて」を受け、§10 に仮決めを書いた。置き場所を docs/design に移した |
 | 0.0.3 | 2026-11-23 | §2.3 進み具合と、作業中に決めたことを足した |
 | 0.0.4 | 2026-11-23 | wpd-auto 側の capabilities・client・管理画面の絞り込みとつないで確かめた結果を足した |
+| 0.0.5 | 2026-11-23 | §2.4 軸の値の自動入力の比較（SD-OCR 23／wpd-auto 76／サーバーで人の点の値 79、91 図）と、Auto-fill values をサーバーの校正で埋める実装。Q16 |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め
 
@@ -492,3 +544,6 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 13. **Q13 PWA**: starryai 版で PWA を切ってよいか。
 14. **Q14 capabilities**: 案 C1（backend に `/capabilities` を足す）か、案 C2（画面で組み立てる）か。
 15. **Q15 wpd-auto 側の作業の分担**: backend の変更（§3.2）は wpd-auto のセッションに頼むか、こちらでブランチを切るか。
+16. **Q16 公開版の軸の値**: Vercel の公開版でも wpd-auto の校正（PlotRuler v4、重みなし・MIT）を使えるようにするか。
+    - 使うなら、NIMS の外から届く場所に校正だけの口を置くことになる。
+    - 置かないなら、公開版はブラウザの OCR のまま（91 図で 23 図）。

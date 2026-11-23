@@ -39,6 +39,20 @@ export async function requestAutoCalibration(
   ctx: DigitizerContext,
   signal?: AbortSignal,
 ): Promise<AutoCalibrationProposal> {
+  const proposal = await calibrateCurrentImage(ctx, signal)
+  ctx.autoFeatures.setProposal(proposal, ctx.axisSetRepository.activeAxisSetId)
+  return proposal
+}
+
+/**
+ * The service's calibration of the loaded image, without keeping it as a
+ * proposal (Auto-fill values uses it for the points the person placed).
+ * Same errors as requestAutoCalibration().
+ */
+export async function calibrateCurrentImage(
+  ctx: DigitizerContext,
+  signal?: AbortSignal,
+): Promise<AutoCalibrationProposal> {
   const service = requireAutoFeature(ctx, 'auto_axis')
   const { image, settle } = bindToCurrentImage(ctx, signal)
   let body: unknown
@@ -51,9 +65,7 @@ export async function requestAutoCalibration(
     throw error
   }
   settle()
-  const proposal = parseCalibrationResponse(body)
-  ctx.autoFeatures.setProposal(proposal, ctx.axisSetRepository.activeAxisSetId)
-  return proposal
+  return parseCalibrationResponse(body)
 }
 
 // INFO: the backend's failure codes (wpd-auto backend README, MIT), in the

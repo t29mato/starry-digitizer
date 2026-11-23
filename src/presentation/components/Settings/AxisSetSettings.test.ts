@@ -121,3 +121,72 @@ describe('AxisSetSettings: expressions in the axis values', () => {
     expect(ctx.axisSetRepository.activeAxisSet.x1.value).toBe(0.001)
   })
 })
+
+// INFO: Auto-fill values with the auto service (docs/design/starryai-auto.md
+// §2.4): the service's calibration gives the value at each placed marker;
+// the browser OCR is not started when the service read every axis.
+describe('AxisSetSettings: Auto-fill values with the auto service', () => {
+  const PNG =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+
+  it('fills the placed markers from the service and says so', async () => {
+    const { ctx, wrapper } = setup()
+    const calibrate = jest.fn(async () => ({
+      status: 'ok',
+      frames: [
+        {
+          box: { x0: 0, y0: 0, x1: 10, y1: 10 },
+          y_side: 'left',
+          axes: {
+            // INFO: backend pixels (centres at integers); the digitizer's
+            // are half a pixel more
+            x: {
+              status: 'ok',
+              scale: 'linear',
+              ticks: [
+                { value: 450, px: 99.5 },
+                { value: 500, px: 199.5 },
+              ],
+            },
+            y: { status: 'failed', failure_reason: 'too_few_labels' },
+          },
+        },
+      ],
+    }))
+    ctx.autoFeatures.setService({
+      capabilities: async () => ['auto_axis'],
+      calibrate,
+      extract: jest.fn(),
+    })
+    ctx.autoFeatures.setFeatures(['auto_axis'])
+    ctx.canvasHandler.uploadImageUrl = PNG
+    const axisSet = ctx.axisSetRepository.activeAxisSet
+    axisSet.x1.coord = { xPx: 100, yPx: 400 }
+    axisSet.x2.coord = { xPx: 700, yPx: 400 }
+    await wrapper.vm.$nextTick()
+
+    const button = wrapper.get('[data-cy=auto-fill-values]')
+    expect(button.text()).toBe('Auto-fill values')
+    await button.trigger('click')
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await wrapper.vm.$nextTick()
+
+    expect(calibrate).toHaveBeenCalledTimes(1)
+    expect(axisSet.x1.value).toBe(450)
+    expect(axisSet.x2.value).toBe(750)
+    expect(wrapper.get('[data-cy=auto-fill-note]').text()).toBe(
+      'Read by the auto service: x1, x2.',
+    )
+    // INFO: kept out of Axis Auto-place: this was not a proposal
+    expect(ctx.autoFeatures.proposal).toBeNull()
+    wrapper.unmount()
+  })
+
+  it('is the OCR button, as before, without the service', () => {
+    const { wrapper } = setup()
+    expect(wrapper.get('[data-cy=auto-fill-values]').text()).toBe(
+      'Auto-fill values (OCR)',
+    )
+    wrapper.unmount()
+  })
+})

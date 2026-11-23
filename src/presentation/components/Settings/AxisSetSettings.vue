@@ -184,15 +184,20 @@
               ocrIsRunning
             "
             @click="handleOnClickAutoDetectAxisValues"
-            title="OCR the numbers near each axis marker and fill in its value"
+            :title="
+              autoFeatures.canAutoPlace
+                ? 'Read the value at each axis marker with the auto service (the browser OCR for an axis it cannot read)'
+                : 'OCR the numbers near each axis marker and fill in its value'
+            "
+            data-cy="auto-fill-values"
           >
-            {{
-              ocrIsRunning
-                ? 'Auto-fill values (OCR)…'
-                : 'Auto-fill values (OCR)'
-            }}
+            {{ autoFillLabel }}{{ ocrIsRunning ? '…' : '' }}
           </sd-button>
-          <sd-tooltip :text="ocrWarningMessage" class="ml-1">
+          <sd-tooltip
+            v-if="!autoFeatures.canAutoPlace"
+            :text="ocrWarningMessage"
+            class="ml-1"
+          >
             <sd-icon
               class="c__AxisSetRepository-settings__ocr-warning"
               :path="mdiInformationOutline"
@@ -209,6 +214,13 @@
       >
         {{ ocrErrorMessage }}
       </p>
+      <p
+        v-else-if="options.features.axisOcr && autoFillNote"
+        class="text-caption mt-1"
+        data-cy="auto-fill-note"
+      >
+        {{ autoFillNote }}
+      </p>
     </div>
   </div>
 </template>
@@ -223,8 +235,13 @@ import { POINT_MODE, MANUAL_MODE } from '@/constants'
 import { AxisOcrReader } from '@/application/services/axisOcr/axisOcrReader'
 import {
   AXIS_NAMES,
+  AxisName,
+  Coord,
   matchOcrWordsToAxisValues,
 } from '@/application/utils/axisOcrMatcher'
+import { calibrateCurrentImage } from '@/application/utils/autoCalibrationOperations'
+import { isImageChangedError } from '@/application/utils/autoFeatureOperations'
+import { axisValuesAtPoints } from '@/application/utils/axisValuesFromCalibration'
 // INFO: the axis-set use cases carry the undo snapshot, so "Clear Axes",
 // "Auto-detect" and the log-scale / calibration-mode switches stay undoable
 // whoever asks for them — a host replacing this panel included. The snapshot
@@ -262,6 +279,29 @@ let calibrationModeGroupSeq = 0
 const AXIS_VALUE_NAMES = ['x1', 'x2', 'y1', 'y2'] as const
 type AxisValueName = (typeof AXIS_VALUE_NAMES)[number]
 
+// INFO: says which values the service read and which the browser OCR did,
+// so the person knows which to double-check
+function describeAutoFill(
+  fromService: string[],
+  fromOcr: string[],
+  serviceFailed: boolean,
+): string {
+  const parts: string[] = []
+  if (fromService.length > 0) {
+    parts.push(`Read by the auto service: ${fromService.sort().join(', ')}.`)
+  }
+  if (fromOcr.length > 0) {
+    parts.push(
+      `By the browser OCR${
+        serviceFailed ? ' (the auto service failed)' : ''
+      }: ${fromOcr
+        .sort()
+        .join(', ')} — check these, decimal points are sometimes dropped.`,
+    )
+  }
+  return parts.join(' ')
+}
+
 export default defineComponent({
   components: {
     SdButton,
@@ -274,9 +314,21 @@ export default defineComponent({
     const ctx = useDigitizerContext()
     const { axisSetRepository, datasetRepository, canvasHandler } = ctx
     const options = useDigitizerOptions()
-    return { ctx, axisSetRepository, datasetRepository, canvasHandler, options }
+    return {
+      ctx,
+      axisSetRepository,
+      datasetRepository,
+      canvasHandler,
+      options,
+      autoFeatures: ctx.autoFeatures,
+    }
   },
   computed: {
+    autoFillLabel(): string {
+      return this.autoFeatures.canAutoPlace
+        ? 'Auto-fill values'
+        : 'Auto-fill values (OCR)'
+    },
     expressionErrors(): Record<AxisValueName, string> {
       const errors = { x1: '', x2: '', y1: '', y2: '' }
       for (const name of AXIS_VALUE_NAMES) {
@@ -391,6 +443,9 @@ export default defineComponent({
       typedExpressions: {} as Record<string, string>,
       ocrIsRunning: false,
       ocrErrorMessage: '',
+      // INFO: where the last Auto-fill's values came from (with the auto
+      // service only), and which ones to check
+      autoFillNote: '',
       // INFO: OCR accuracy check (real-chart-bench, 41 verified figures,
       // 2026-08-30) found ~78% per-axis accuracy but a recurring failure
       // mode: decimal points getting dropped (e.g. "0.4" read as "4").
@@ -497,6 +552,7 @@ export default defineComponent({
     },
     async handleOnClickAutoDetectAxisValues() {
       this.ocrErrorMessage = ''
+      this.autoFillNote = ''
 
       if (!this.canvasHandler.imageElement) {
         this.ocrErrorMessage = 'No image is loaded.'
@@ -506,25 +562,49 @@ export default defineComponent({
       this.ocrIsRunning = true
       try {
         const activeAxisSet = this.axisSetRepository.activeAxisSet
-        const axisCoords = Object.fromEntries(
-          AXIS_NAMES.map((axisName) => [
-            axisName,
-            activeAxisSet[axisName].coordIsFilled
-              ? activeAxisSet[axisName].coord
-              : undefined,
-          ]),
-        )
+        const placed = Object.fromEntries(
+          AXIS_NAMES.filter((name) => activeAxisSet[name].coordIsFilled).map(
+            (name) => [name, activeAxisSet[name].coord],
+          ),
+        ) as Partial<Record<AxisName, Coord>>
 
-        // INFO: docs/design/auto-axis-detection-design.md — readWords() is
-        // stateless per call (it creates and terminates its own worker), so
-        // the reader is built here rather than kept around. Building it on
-        // click also means options.assetBaseUrl is read at the moment the
-        // host's value is final.
-        const axisOcrReader = new AxisOcrReader(this.options.assetBaseUrl)
-        const words = await axisOcrReader.readWords(
-          this.canvasHandler.imageElement,
-        )
-        const matches = matchOcrWordsToAxisValues(words, axisCoords)
+        // INFO: with the auto service, its calibration (the /calibrate
+        // answer Axis Auto-place uses) gives the value at each placed marker:
+        // right on both axes for 79 of 91 benchmark figures, against 23 with
+        // the browser OCR (docs/design/starryai-auto.md §2.4). The browser
+        // OCR then fills only the markers on an axis the service could not
+        // read. Without the service: the browser OCR, as before.
+        let fromService: Partial<Record<AxisName, number>> = {}
+        let serviceFailed = false
+        if (this.autoFeatures.canAutoPlace) {
+          try {
+            fromService = axisValuesAtPoints(
+              await calibrateCurrentImage(this.ctx),
+              placed,
+            )
+          } catch (e) {
+            if (isImageChangedError(e)) throw e
+            serviceFailed = true
+          }
+        }
+        const rest = Object.fromEntries(
+          Object.entries(placed).filter(([name]) => !(name in fromService)),
+        ) as Partial<Record<AxisName, Coord>>
+
+        let fromOcr: Partial<Record<AxisName, number>> = {}
+        if (Object.keys(rest).length > 0) {
+          // INFO: docs/design/auto-axis-detection-design.md — readWords() is
+          // stateless per call (it creates and terminates its own worker), so
+          // the reader is built here rather than kept around. Building it on
+          // click also means options.assetBaseUrl is read at the moment the
+          // host's value is final.
+          const axisOcrReader = new AxisOcrReader(this.options.assetBaseUrl)
+          const words = await axisOcrReader.readWords(
+            this.canvasHandler.imageElement,
+          )
+          fromOcr = matchOcrWordsToAxisValues(words, rest)
+        }
+        const matches = { ...fromOcr, ...fromService }
 
         if (Object.keys(matches).length === 0) {
           this.ocrErrorMessage =
@@ -537,7 +617,18 @@ export default defineComponent({
         // detection has already run at this point, so a failed or empty read
         // leaves nothing on the undo stack (same order rule as extraction).
         setAxisValues(this.ctx, matches)
+        if (this.autoFeatures.canAutoPlace) {
+          this.autoFillNote = describeAutoFill(
+            Object.keys(fromService),
+            Object.keys(fromOcr),
+            serviceFailed,
+          )
+        }
       } catch (e) {
+        if (isImageChangedError(e)) {
+          this.ocrErrorMessage = 'Cancelled: the image changed.'
+          return
+        }
         console.error('failed to auto-detect axis values', { cause: e })
         this.ocrErrorMessage =
           'Auto-detection failed. Please enter the values manually.'
