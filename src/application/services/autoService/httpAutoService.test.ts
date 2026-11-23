@@ -171,6 +171,117 @@ describe('createHttpAutoService', () => {
   })
 })
 
+describe('createHttpAutoService retries', () => {
+  const withHeaders = (
+    status: number,
+    body: unknown,
+    headers: Record<string, string> = {},
+  ) =>
+    ({
+      ...jsonResponse(status, body),
+      headers: { get: (name: string) => headers[name] ?? null },
+    }) as unknown as Response
+
+  const setup = (
+    responses: Array<Response | Error>,
+    retryBudgetMs?: number,
+  ) => {
+    const fetch = jest.fn(async () => {
+      const next = responses.shift()
+      if (next instanceof Error) throw next
+      return next as Response
+    })
+    const sleep = jest.fn(async () => undefined)
+    const service = createHttpAutoService({
+      baseUrl: '/x',
+      fetch: fetch as unknown as typeof globalThis.fetch,
+      sleep,
+      retryBudgetMs,
+    })
+    return { fetch, sleep, service }
+  }
+
+  test('a restarting backend (502, unreachable, 504) is asked again with growing waits', async () => {
+    const { fetch, sleep, service } = setup([
+      withHeaders(502, null),
+      new TypeError('Failed to fetch'),
+      withHeaders(504, null),
+      withHeaders(200, { frames: [] }),
+    ])
+    await expect(service.calibrate(new Blob(['x']))).resolves.toEqual({
+      frames: [],
+    })
+    expect(fetch).toHaveBeenCalledTimes(4)
+    expect(sleep.mock.calls.map((c) => (c as unknown[])[0])).toEqual([
+      1000, 2000, 4000,
+    ])
+  })
+
+  test('busy waits as long as Retry-After says', async () => {
+    const { sleep, service } = setup([
+      withHeaders(503, { error: 'busy' }, { 'Retry-After': '5' }),
+      withHeaders(200, { series: [] }),
+    ])
+    await service.extract(new Blob(['x']), { method: 'markernet' })
+    expect((sleep.mock.calls[0] as unknown[])[0]).toBe(5000)
+  })
+
+  test('a 503 that waiting will not fix is not retried', async () => {
+    const { fetch, service } = setup([
+      withHeaders(503, {
+        error: 'method_unavailable',
+        reason: 'service_unavailable',
+      }),
+    ])
+    await expect(
+      service.extract(new Blob(['x']), { method: 'lineformer' }),
+    ).rejects.toThrow(/method_unavailable: service_unavailable/)
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  test('4xx is not retried', async () => {
+    const { fetch, service } = setup([
+      withHeaders(415, { error: 'unsupported' }),
+    ])
+    await expect(service.calibrate(new Blob(['x']))).rejects.toThrow(/HTTP 415/)
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  test('gives up once the budget is spent and reports the last answer', async () => {
+    const { fetch, sleep, service } = setup(
+      [withHeaders(502, null), withHeaders(502, null), withHeaders(502, null)],
+      3000,
+    )
+    await expect(service.calibrate(new Blob(['x']))).rejects.toThrow(/HTTP 502/)
+    expect(fetch).toHaveBeenCalledTimes(3)
+    expect(sleep.mock.calls.map((c) => (c as unknown[])[0])).toEqual([
+      1000, 2000,
+    ])
+  })
+
+  test('budget 0 = no retry', async () => {
+    const { fetch, service } = setup([new TypeError('Failed to fetch')], 0)
+    await expect(service.calibrate(new Blob(['x']))).rejects.toThrow(
+      /could not be reached/,
+    )
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  test('a cancel while waiting stops the retries', async () => {
+    const controller = new AbortController()
+    const fetch = jest.fn(async () => withHeaders(502, null))
+    const service = createHttpAutoService({
+      baseUrl: '/x',
+      fetch: fetch as unknown as typeof globalThis.fetch,
+      sleep: async () => controller.abort(),
+    })
+    await expect(
+      service.calibrate(new Blob(['x']), { signal: controller.signal }),
+    ).rejects.toThrow(/cancelled/)
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('isBlockedAsMixedContent', () => {
   test('only an http target from an https page is blocked', () => {
     expect(

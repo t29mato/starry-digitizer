@@ -40,6 +40,14 @@ export interface HttpAutoServiceConfig {
   capabilitiesTimeoutMs?: number
   /** Give up on calibrate / extract after this long. Default 120000 ms. */
   requestTimeoutMs?: number
+  /**
+   * How long calibrate / extract keep retrying while the service is
+   * restarting or busy (502/503/504, unreachable), in waits of 1, 2, 4, …
+   * seconds (a `Retry-After` wins). Default 30000 ms; 0 = no retry.
+   */
+  retryBudgetMs?: number
+  /** For tests. Default: setTimeout. */
+  sleep?: (ms: number, signal?: AbortSignal) => Promise<void>
   /** For tests and unusual hosts. Default: the global `fetch`. */
   fetch?: typeof fetch
 }
@@ -50,6 +58,24 @@ export const DEFAULT_CAPABILITIES_TIMEOUT_MS = 3000
 // INFO: the wpd-auto page waits up to 120 s too (backend README, OCR
 // upscale "費用"): a `partial` figure can take ~30 s on CPU.
 export const DEFAULT_REQUEST_TIMEOUT_MS = 120000
+// INFO: the wpd-auto page retries a restarting backend for about 30 s too
+// (a deploy restarts it and waits for /healthz); longer than that, the
+// person is better off with the error and the button.
+export const DEFAULT_RETRY_BUDGET_MS = 30000
+// INFO: 503s that say "this will not change by waiting" (backend README,
+// "API"): the engine or method is not installed or its service is down.
+const PERMANENT_503 = ['engine_unavailable', 'method_unavailable']
+
+type RequestFailure = 'cancelled' | 'timeout' | 'unreachable'
+
+class RequestFailed extends Error {
+  constructor(
+    readonly kind: RequestFailure,
+    readonly cause: unknown,
+  ) {
+    super(kind)
+  }
+}
 
 /**
  * True when a page served over https would be blocked from calling `url`
@@ -80,6 +106,8 @@ export function createHttpAutoService(
   const requestTimeoutMs = config.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS
   const capabilitiesTimeoutMs =
     config.capabilitiesTimeoutMs ?? DEFAULT_CAPABILITIES_TIMEOUT_MS
+  const retryBudgetMs = config.retryBudgetMs ?? DEFAULT_RETRY_BUDGET_MS
+  const sleep = config.sleep ?? defaultSleep
 
   const headers = (): Record<string, string> =>
     typeof config.headers === 'function'
@@ -107,13 +135,12 @@ export function createHttpAutoService(
         signal: controller?.signal,
       })
     } catch (error) {
-      throw new DigitizerError(
-        'AUTO_SERVICE_FAILED',
+      throw new RequestFailed(
         cancel?.aborted
-          ? 'The request to the auto service was cancelled'
+          ? 'cancelled'
           : controller?.signal.aborted
-          ? `The auto service did not answer within ${timeoutMs / 1000} s`
-          : 'The auto service could not be reached',
+          ? 'timeout'
+          : 'unreachable',
         error,
       )
     } finally {
@@ -133,23 +160,65 @@ export function createHttpAutoService(
         'The auto service is http and this page is https; route it through a same-origin relay',
       )
     }
-    const response = await request(
-      url,
-      {
-        method: 'POST',
-        // INFO: the body is the image bytes themselves, not multipart — the
-        // wpd-auto backend refuses multipart on purpose (backend README,
-        // "セキュリティ").
-        headers: {
-          ...headers(),
-          'Content-Type': image.type || 'application/octet-stream',
-        },
-        body: image,
+    const init: FetchInit = {
+      method: 'POST',
+      // INFO: the body is the image bytes themselves, not multipart — the
+      // wpd-auto backend refuses multipart on purpose (backend README,
+      // "セキュリティ").
+      headers: {
+        ...headers(),
+        'Content-Type': image.type || 'application/octet-stream',
       },
-      requestTimeoutMs,
-      options.signal,
-    )
-    return readJson(response)
+      body: image,
+    }
+    let waited = 0
+    for (let attempt = 0; ; attempt++) {
+      let wait: number | null
+      try {
+        const response = await request(
+          url,
+          init,
+          requestTimeoutMs,
+          options.signal,
+        )
+        wait = await retryWait(response, attempt, retryBudgetMs - waited)
+        if (wait === null) return readJson(response)
+      } catch (error) {
+        if (!(error instanceof RequestFailed)) throw error
+        // INFO: a timeout is not retried: the request may still be running
+        // on the server, and a second one would only queue behind it
+        if (error.kind !== 'unreachable')
+          throw failureError(error, requestTimeoutMs)
+        wait = backoff(attempt)
+        if (waited + wait > retryBudgetMs)
+          throw failureError(error, requestTimeoutMs)
+      }
+      waited += wait
+      await sleep(wait, options.signal)
+      if (options.signal?.aborted) {
+        throw failureError(
+          new RequestFailed('cancelled', null),
+          requestTimeoutMs,
+        )
+      }
+    }
+  }
+
+  // INFO: null = use this answer (success, or an error waiting will not fix,
+  // or the budget is spent); a number = wait that long and ask again.
+  async function retryWait(
+    response: Response,
+    attempt: number,
+    remainingMs: number,
+  ): Promise<number | null> {
+    if (![502, 503, 504].includes(response.status)) return null
+    if (response.status === 503) {
+      const code = await peekErrorCode(response)
+      if (code && PERMANENT_503.includes(code)) return null
+    }
+    const after = Number(response.headers?.get?.('Retry-After'))
+    const wait = after > 0 ? after * 1000 : backoff(attempt)
+    return wait <= remainingMs ? wait : null
   }
 
   return {
@@ -161,11 +230,18 @@ export function createHttpAutoService(
         )
         return []
       }
-      const response = await request(
-        capabilitiesUrl,
-        { method: 'GET', headers: headers() },
-        capabilitiesTimeoutMs,
-      )
+      let response: Response
+      try {
+        response = await request(
+          capabilitiesUrl,
+          { method: 'GET', headers: headers() },
+          capabilitiesTimeoutMs,
+        )
+      } catch (error) {
+        throw error instanceof RequestFailed
+          ? failureError(error, capabilitiesTimeoutMs)
+          : error
+      }
       const body = await readJson(response)
       const features =
         typeof body === 'object' && body !== null
@@ -191,6 +267,48 @@ export function createHttpAutoService(
       })
       return postImage(`${baseUrl}/extract?${query.toString()}`, image, options)
     },
+  }
+}
+
+function failureError(
+  failure: RequestFailed,
+  timeoutMs: number,
+): DigitizerError {
+  return new DigitizerError(
+    'AUTO_SERVICE_FAILED',
+    failure.kind === 'cancelled'
+      ? 'The request to the auto service was cancelled'
+      : failure.kind === 'timeout'
+      ? `The auto service did not answer within ${timeoutMs / 1000} s`
+      : 'The auto service could not be reached',
+    failure.cause,
+  )
+}
+
+function backoff(attempt: number): number {
+  return 1000 * 2 ** attempt
+}
+
+function defaultSleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(done, ms)
+    signal?.addEventListener('abort', done)
+    function done() {
+      clearTimeout(timer)
+      signal?.removeEventListener('abort', done)
+      resolve()
+    }
+  })
+}
+
+// INFO: reads the error code without consuming the body that readJson()
+// will read when the answer is used as it is
+async function peekErrorCode(response: Response): Promise<string | undefined> {
+  try {
+    const body = await (response.clone?.() ?? response).json()
+    return typeof body?.error === 'string' ? body.error : undefined
+  } catch {
+    return undefined
   }
 }
 
