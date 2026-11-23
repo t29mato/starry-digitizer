@@ -66,11 +66,24 @@ export interface CollectAppOptions {
 export interface CollectHandle {
   service: AutoService
   noteFile(file: Blob): void
+  /**
+   * The page showed an error / an information message: `ui.error` /
+   * `ui.message` (dropped when nothing is collected). `where` is a fixed id
+   * of the place, never text the person typed.
+   */
+  noteError(where: string, code: string | null, message: string): void
+  noteMessage(where: string, message: string): void
   chooseUser(user: string | null): void
   /** password mode: sign in (the password is not kept) */
   signIn(user: string, password: string): Promise<LoginResult>
   /** password mode: send what is queued, then sign out */
   signOut(): Promise<void>
+  /**
+   * Before a reload (a new version): record what waits for a debounce and
+   * send the queue now. Resolves true when nothing sendable is left; the
+   * caller bounds the wait (versionCheck.ts reloadAfterFlush).
+   */
+  flushBeforeReload(): Promise<boolean>
   stop(): void
 }
 
@@ -166,6 +179,9 @@ export function startCollect(
       calls,
     ),
     noteFile: (file) => wiring.noteFile(file),
+    noteError: (where, code, message) =>
+      wiring.noteError({ where, code, message }),
+    noteMessage: (where, message) => wiring.noteMessage({ where, message }),
     chooseUser: (user) => client.chooseUser(user),
     signIn: (user, password) => auth.login(user, password),
     async signOut() {
@@ -173,6 +189,10 @@ export function startCollect(
       // works; what fails waits for the next sign-in
       await client.flush()
       await auth.logout()
+    },
+    flushBeforeReload() {
+      wiring.recordPending()
+      return client.flushNow()
     },
     stop() {
       unsubscribe()

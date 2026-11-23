@@ -7,6 +7,9 @@ import {
   calibrationKey,
   calibrationMode,
   forwardedResearchEvent,
+  uiErrorData,
+  uiMessageData,
+  UI_MESSAGE_MAX_LENGTH,
 } from './collectEvents'
 
 function emitted(payload: Parameters<ResearchEvents['emit']>[0]) {
@@ -86,5 +89,37 @@ describe('axisSetCalibration', () => {
     expect(calibrationMode(calibrationKey(axisSet), auto)).toBe('auto')
     axisSet.setXIsLogScale(true)
     expect(calibrationMode(calibrationKey(axisSet), auto)).toBe('edit')
+  })
+})
+
+describe('ui.error / ui.message', () => {
+  const view = { sha256: null, width: 0, height: 0 }
+
+  it('carries the place, the code and the shown text only', () => {
+    expect(
+      uiErrorData(
+        { where: 'digitizer', code: 'ZIP_INVALID', message: 'Bad ZIP' },
+        view,
+      ),
+    ).toEqual({
+      where: 'digitizer',
+      code: 'ZIP_INVALID',
+      message: 'Bad ZIP',
+      view,
+    })
+    expect(
+      uiMessageData({ where: 'auto_extraction.import', message: 'ok' }, view),
+    ).toEqual({ where: 'auto_extraction.import', message: 'ok', view })
+  })
+
+  it('cuts a long message at 500 characters', () => {
+    const long = 'x'.repeat(UI_MESSAGE_MAX_LENGTH + 20)
+    expect(UI_MESSAGE_MAX_LENGTH).toBe(500)
+    expect(
+      uiErrorData({ where: 'w', code: null, message: long }, view).message,
+    ).toHaveLength(500)
+    expect(
+      uiMessageData({ where: 'w', message: long }, view).message,
+    ).toHaveLength(500)
   })
 })

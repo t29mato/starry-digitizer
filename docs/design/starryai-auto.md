@@ -1,6 +1,6 @@
 # starry-digitizer に wpd-auto の自動機能を入れ、starryai に置く（設計書の下書き）
 
-- 版: **0.0.10**（2026-11-24。合意までは 0.x.y で上げる）
+- 版: **0.0.11**（2026-11-24。合意までは 0.x.y で上げる）
 - 書いた人: Claude Code（間藤の依頼）。材料に wpd-auto のセッションの下書き
   `~/research/drafts/starryai-hosting-from-wpd-auto-session.md` を使った。
 - 置き場所: starry-digitizer の `docs/design/starryai-auto.md`（ブランチ `feat/starryai-hosting`、`origin/v4` から分けた）。
@@ -148,6 +148,41 @@ starryai に置く版を starry-digitizer 側で **`starryai-0.1.0`** のよう�
 | 0.4 | F2 Bar の Auto-place（`?plot=bar`）・F4 BarNet・F6 の Bars | 済み（ブランチ `feat/bar-charts`、ローカルだけ） | Jest（backend のコードとテストから作った答えの形）。本物の backend にも当てた（下の「Bar をつないで確かめたこと」）。BarNet・BarRulerNet の重みがないので、成功の道は本物では未確認 |
 | 0.2 | 記録を送る（§3.4）・知らせ（§5.2）・名前の選択 | 済み（ブランチ `feat/research-collect`、1bf089e・72652f1・babd869。push していない） | Jest（モックの fetch）と、本物の backend に 1 セッションを送って保存された行を見た（下の「0.2 の確かめ」）。ブラウザでは未確認 |
 | 0.2 | project（P1）を送る | まだ（backend 側が用意できていない。§10 Q8） | — |
+| 0.3 | F17 新しい版の知らせと Reload | 済み（ブランチ `feat/small-features`、ローカルだけ） | Jest（VERSION.txt の読み方・5 分ごと・タブに戻ったとき・Reload の前の送り）。ビルドして `VITE_PWA_OFF` が入ることを見た。ブラウザでは未確認 |
+| 0.5 | F18 SID / Fig. の欄と `starrydata.ref` | 済み（同じブランチ） | Jest（project の保存と読み込み・部品・記録）。本物の backend に送って保存された行を見た（下の「F17・F18・ui.* の確かめ」）。ブラウザでは未確認 |
+| 0.2 | `ui.error`・`ui.message` | 済み（同じブランチ） | Jest。本物の backend に送って保存された行を見た |
+
+**F17・F18・ui.* で決めたこと（2026-11-24、ブランチ `feat/small-features`。間藤が変えられる）**
+
+- F17（新しい版）:
+  - 動くのは starryai 版だけ。条件は 3 つ: `VITE_AUTO_SERVICE_URL` がある、PWA を切ったビルド（`STARRY_DIGITIZER_PWA=off` を `vite.config.js` が `import.meta.env.VITE_PWA_OFF` としてページに渡す）、`VITE_APP_COMMIT` か `VITE_APP_BUILD` がある。
+  - `${BASE_URL}VERSION.txt` を、開いたとき・5 分ごと・タブに戻ったときに `no-store` で読む。1 行目の commit か `build=` が今のページと違えば知らせる。
+  - 知らせは右下の小さな帯「A new version is available.」と Reload・×。自分では読み直さない。× で閉じても、さらに新しい版が出ればまた出す。
+  - Reload は、研究用の待ち行列を最長 4 秒送ってから読み直す（`flushNow`。やり直しの待ち中でも 1 回試す）。送り切れない分は、読み直しの `pagehide` の keepalive に任せる。
+  - wpd-auto は Reload の前に `project`（`reason: reload`）を送る。starry-digitizer はまだ project を送らない（§10 Q8）。作業そのものはブラウザの自動保存に残る。
+  - Vercel 版の PWA の更新の窓（`PWAUpdatePrompt.vue`）は変えていない。
+- F18（SID / Fig.）:
+  - 置き場所: 左の列の画像の欄（Choose an image）のすぐ下に、「Starrydata SID」と「Fig.」の 2 つの小さな欄を横に並べた。画像のことなので画像の隣にした。wpd-auto は左の欄のいちばん下。
+  - `features.starrydataRef`（既定 false）。starryai 版の `App.vue` が true にする。
+  - SID 32 文字・Fig. 16 文字まで（wpd-auto と同じ）。SID が数字だけでなければ「A Starrydata SID is usually a number.」を出す（拒まない）。
+  - 保存: `ProjectDTO.starrydata {sid, figure}`（前後の空白を除く。省略できる欄。値があるときだけ書く。版は上げない）。自動保存・Save Project（ZIP の `project.json`）・Load Project で残る。CSV（コピー）には載せる所がないので載せない。
+  - 新しい画像を読み込むと空にする。Start over (keep image) では残す（画像は同じなので）。Undo の対象の外（wpd-auto も Undo では送らない）。
+  - starry-digitizer は 1 つの project に画像 1 つなので、画像ごとの組は 1 つだけ。
+- ui.*: App.vue のスナックバー（エラーと知らせ）を出すたびに送る。`where` は決まった id。ライブラリの部品のエラーは、部品が `error` を出してスナックバーになるので `digitizer` に入る。部品の中にだけ出る赤い文（結果の欄など）は送っていない（推測で決めた範囲。wpd-auto の `ui.error` は状態欄の赤い文なので、意味が少し違う）。
+
+**F17・F18・ui.* の確かめ（2026-11-24、この VM の中）**
+
+wpd-auto の手元の `main`（6482ef2）の backend を `127.0.0.1:24867` で動かした（`WPD_AUTO_ENVIRONMENT=staging`、収集は scratch の一時ディレクトリ、名前なし）。読むだけで、wpd-auto には何も書いていない。
+Jest（node）から `collect.backend.test.ts` の 2 つ目のテストで送った（`COLLECT_BACKEND_URL` があるときだけ走る）。
+
+| 確かめたこと | 結果 |
+|---|---|
+| SID を 1 → 12345、Fig. を 3(b) と打ち、1.7 秒待つ | `starrydata.ref` が 1 行。`previous` は空、`sid_numeric: true`、`client: starry-digitizer` |
+| `noteError`・`noteMessage` | `ui.error`（where・code・message）・`ui.message`（where・message）が 1 行ずつ |
+| SID を 123456 にしてすぐ `flushBeforeReload()` | 1.5 秒を待たずに `starrydata.ref` が記録され、待ち行列が空になった（`previous` は 12345 / 3(b)） |
+
+- ブラウザでの表示（帯・欄の見た目）と、実際の Reload は確かめていない。この VM にはブラウザがない。
+- nginx のひな形（`deploy/nginx/starry-digitizer.conf`）は `VERSION.txt` を `expires -1` で配る（読んで確かめた）。本物の starryai の nginx を通しては確かめていない。
 
 **つないで確かめたこと（2026-11-23、この VM の中）**
 
@@ -443,7 +478,8 @@ starry-digitizer は `GET {baseUrl}/capabilities` → `{features:[…]}` を前�
 | `candidates.*` | F10 を揃えるなら同じ型を使う。揃えないなら、下書きの採否を対応する型で出す | ない |
 | `export`（何をどこへ、点の数だけ。値は送らない） | CSV／コピー／ZIP の保存 | `review.export` はある |
 | `ops`（`{f,dt,n,ms}`、操作の ID だけ） | 操作のたび | ない（`edit{action}`・`undo`・`redo` が近い） |
-| `ui.error`・`ui.message` | エラーのトースト | ない |
+| `ui.error`・`ui.message` | エラーと知らせのスナックバー | ある（0.0.11） |
+| `starrydata.ref` | SID / Fig. の欄を変えたとき | ある（0.0.11） |
 | — | `review.start/step/export/end`、`undo`・`redo`、`edit` | ある（そのまま送る） |
 
 **載せないもの**
@@ -491,8 +527,13 @@ starry-digitizer は `GET {baseUrl}/capabilities` → `{features:[…]}` を前�
 | `edit`・`undo`・`redo` | Undo できる操作のたび | フック（そのまま） | `action`（`point.add` など）・`review_t_ms`・`sd_seq`（フックの通し番号） |
 | `review.start`・`review.step`・`review.export`・`review.end` | 自動抽出の確認 | フック（そのまま） | フックの欄のまま（数だけ）と `sd_seq`。Export Edit Log は `review.export` だけ（`export` は出さない） |
 | `user.changed` | Change で名前を変えたとき | ホスト | `guest`・`was_guest` |
+| `starrydata.ref` | SID か Fig. を打ち終わって 1.5 秒後（1 回の変更につき 1 つ。読み込み・新しい画像・Undo では送らない。Reload の前とタブを隠すときは待たずに記録） | ホスト（`ctx.starrydataRef` を見る） | `file_index`（いつも 0）・`page`（いつも null）・`file_sha256`（今の画像。分からなければ null）・`sid`・`figure`（前後の空白を除く）・`previous{sid,figure}`（打ち始める前）・`sid_numeric`（空なら null）・`client_time` |
+| `ui.error` | エラーのスナックバーを出したとき | ホスト（`App.vue`） | `where`（`digitizer`／`menu.save_project`／`menu.load_project`／`menu.copy_data`／`auto_extraction.import`）・`code`（DigitizerError のコード。なければ null）・`message`（画面の文。500 文字まで） |
+| `ui.message` | 知らせのスナックバーを出したとき | ホスト（`App.vue`） | `where`・`message`（500 文字まで）。今は Auto-Extraction の取り込みの結果だけ。wpd-auto は「題」を持つが、starry-digitizer の知らせには題がないので `where` にした |
 
-- wpd-auto にある `candidates.*`・`ops`・`ui.*`・`starrydata.ref`・`project` は、まだ送らない。
+- `export` に `starrydata`（`{sid, figure}`、なければ null）を足した（0.0.11。wpd-auto の `export` と同じ）。
+- wpd-auto にある `candidates.*`・`ops`・`project` は、まだ送らない。
+- `ui.*` の `message` は画面の文そのままなので、エラーの文に含まれるファイル名などは入りうる（推測。今の文を全部は調べていない）。打った文字をほかに足すことはしない。
 - `calibration.final` は wpd-auto では「OK を押したとき」である。starry-digitizer には OK がないので、変わってから 2 秒で区切った。同じ軸を何度も直すと何本も出る（推測で決めた区切り方。間藤が変えられる）。
 
 ## 4. starryai での置き方
@@ -616,6 +657,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 - 本文（英語、we/us なし）: 「Your work (images, axes, data points) is saved on the NIMS server for research.」（`collectNoticeText.ts`）。
 - 出す所: フッター（ツールチップで中身）と、左の欄の画像の読み込みの上（折りたたみで中身）。名前の窓にも同じ本文。
 - 中身の文: 研究（自動校正・自動抽出の改善など）のため、読み込んだ画像、軸の校正（Auto-place の提案も）、データ点、自動抽出の結果、エクスポートの事実（中身は除く）、使った機能（打った文字は除く）、ブラウザ名と窓の大きさ、匿名の ID と選んだ名前。IP アドレスは保存しない。
+  - 0.0.11 で「Starrydata の SID と Fig.」「画面に出した文（エラー・知らせ）」を足した。
 - 出すのは収集が on のときだけ。Vercel の公開版と、収集のない backend では何も出ない。
 - 名前の選択: `/collect/users` に名前があれば、「Who is working?」の窓で名前か Guest を選ぶ（`guest:false` なら Guest はない）。Esc や外のクリックでは閉じない。選んだものは localStorage に残し、次からは聞かない。一覧から消えた名前ならまた聞く。フッターに「Name: …」と Change。パスワードはない（ラベル）。
 - ブラウザへの保存（IndexedDB の自動保存）は今のまま（§10 Q5）。
@@ -657,6 +699,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.7 | 2026-11-23 | 並列に進めた 5 つのブランチがそれぞれ書いた分（下の 0.0.8 でまとめた） |
 | 0.0.9 | 2026-11-24 | §1.2b 2026-11-24 の決定（棒グラフ・ライブラリを考えない・パスワード）。Q17〜Q20。凡例の名前を文字だけにした。§11 パスワード（wpd-auto と相談中） |
 | 0.0.10 | 2026-11-24 | §11.1〜11.4: ページのログイン（wpd-auto の下書き `docs/user-passwords.md` 0.0.1 の API に合わせた。ブランチ `feat/login`）。自動機能の包みが legend・components を落としていたのを直した |
+| 0.0.11 | 2026-11-24 | F17 新しい版の知らせと Reload、F18 SID / Fig. の欄と `starrydata.ref`、`ui.error`・`ui.message`（ブランチ `feat/small-features`。§2.3・§3.4） |
 | 0.0.8 | 2026-11-23 | 5 つのブランチを `feat/starryai-hosting` にまとめた: ブラウザの OCR の改善（§2.4、91 図で 23 → 69）、0.2 の記録・知らせ・名前の選択（§3.4・§5.2）、F12 Start over・F14 Components、F9 凡例の読み取り、F2・F4・F6 の棒グラフ（Q7）。棒の抽出の後は凡例を読まない（backend が marker と line だけを受けるため） |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め

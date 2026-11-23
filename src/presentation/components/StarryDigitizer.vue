@@ -10,6 +10,10 @@
           @image-replaced="onImageReplaced"
           @error="onError"
         ></image-settings>
+        <!-- INFO: the image's Starrydata paper id and figure (F18) -->
+        <starrydata-ref-settings
+          v-if="options.features.starrydataRef"
+        ></starrydata-ref-settings>
         <!-- INFO: clears axes, datasets and auto results; keeps the image -->
         <start-over-settings
           v-if="options.features.startOver"
@@ -76,6 +80,7 @@ import {
   ExtractorSettings,
   ImageSettings,
   StartOverSettings,
+  StarrydataRefSettings,
 } from './Settings'
 import { DatasetManager, ResamplePanel } from './DatasetManager'
 import { AxisSetManager } from './AxisSetManager'

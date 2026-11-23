@@ -69,6 +69,8 @@ function clearData(ctx: DigitizerContext): void {
   // the previous image
   ctx.reviewSession.clear()
   ctx.autoFeatures.clearProposal()
+  // INFO: the SID / Fig. named the previous figure
+  ctx.starrydataRef.clear()
 }
 
 /**

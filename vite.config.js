@@ -81,6 +81,11 @@ const dropAnalytics = () => ({
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // INFO: tells the page that it has no Service Worker, so the starryai
+  // build's own "new version" check (src/hosting/version) takes over
+  define: {
+    'import.meta.env.VITE_PWA_OFF': JSON.stringify(pwaDisabled ? '1' : ''),
+  },
   plugins: [
     vue(),
     versionJson(),

@@ -10,4 +10,6 @@ interface ImportMetaEnv {
   readonly VITE_APP_COMMIT?: string
   /** The deploy's build number (deploy/deploy.sh), sent with research records. */
   readonly VITE_APP_BUILD?: string
+  /** '1' when built with STARRY_DIGITIZER_PWA=off (vite.config.js define). */
+  readonly VITE_PWA_OFF?: string
 }

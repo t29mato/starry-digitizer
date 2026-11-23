@@ -18,6 +18,7 @@ import { CanvasHandlerInterface } from '@/application/services/canvasHandler/can
 import { DigitizerError } from '@/application/errors'
 import { MANUAL_MODE } from '@/constants'
 import type { ReviewSession } from '@/application/services/reviewSession/reviewSession'
+import type { StarrydataRef } from '@/application/services/starrydataRef/starrydataRef'
 import type JSZip from 'jszip'
 
 // INFO: jszip is loaded on demand, not at module scope. It is ~100 kB min and
@@ -48,6 +49,8 @@ export class ProjectService implements ProjectServiceInterface {
   // INFO: optional so the service still works on its own (tests, a host that
   // builds one by hand); the DigitizerContext always passes its session.
   private reviewSession?: ReviewSession
+  // INFO: optional for the same reason (F18, the SID / Fig. fields)
+  private starrydataRef?: StarrydataRef
 
   // INFO: the same repositories again, but as the reactive() proxies the
   // DigitizerContext hands out. `revision` is a computed, and a computed only
@@ -62,6 +65,7 @@ export class ProjectService implements ProjectServiceInterface {
   private observedAxisSetRepository: AxisSetRepositoryInterface
   private observedDatasetRepository: DatasetRepositoryInterface
   private observedCanvasHandler: CanvasHandlerInterface
+  private observedStarrydataRef?: StarrydataRef
 
   // INFO: the counter is a plain field, incremented by the computed below and
   // never read reactively — bumping it inside its own evaluation would
@@ -78,11 +82,16 @@ export class ProjectService implements ProjectServiceInterface {
     datasetRepository: DatasetRepositoryInterface,
     canvasHandler: CanvasHandlerInterface,
     reviewSession?: ReviewSession,
+    starrydataRef?: StarrydataRef,
   ) {
     this.axisSetRepository = axisSetRepository
     this.datasetRepository = datasetRepository
     this.canvasHandler = canvasHandler
     this.reviewSession = reviewSession
+    this.starrydataRef = starrydataRef
+    this.observedStarrydataRef = starrydataRef
+      ? (reactive(starrydataRef) as StarrydataRef)
+      : undefined
 
     this.observedAxisSetRepository = reactive(
       axisSetRepository,
@@ -178,6 +187,7 @@ export class ProjectService implements ProjectServiceInterface {
     })
 
     touch(canvasHandler.scale, canvasHandler.manualMode)
+    touch(this.observedStarrydataRef?.sid, this.observedStarrydataRef?.figure)
   }
 
   toProjectDTO(): ProjectDTO {
@@ -206,6 +216,10 @@ export class ProjectService implements ProjectServiceInterface {
     const reviewSessionDTO = this.reviewSession?.toDTO()
     if (reviewSessionDTO) {
       dto.reviewSession = reviewSessionDTO
+    }
+    const starrydata = this.starrydataRef?.toDTO()
+    if (starrydata) {
+      dto.starrydata = starrydata
     }
     return dto
   }
@@ -272,6 +286,8 @@ export class ProjectService implements ProjectServiceInterface {
 
     // INFO: a project saved outside a review ends any review in progress
     this.reviewSession?.restore(dto.reviewSession)
+    // INFO: a project without the fields empties them
+    this.starrydataRef?.restore(dto.starrydata)
   }
 
   async exportProject(): Promise<Blob> {

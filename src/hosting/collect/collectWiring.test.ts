@@ -249,7 +249,15 @@ describe('attachCollector', () => {
       scope: 'dataset',
       datasets: 1,
       points: 1,
+      starrydata: null,
       view: { sha256: null, width: 0, height: 0 },
+    })
+    // INFO: like wpd-auto's export record, the image's SID / Fig. (F18)
+    ctx.starrydataRef.set({ sid: '12345', figure: '3(b)' })
+    recordExport(ctx, 'project', 'project', ctx.datasetRepository.datasets)
+    expect(recorded.filter((r) => r.type === 'export')[1].data).toMatchObject({
+      kind: 'project',
+      starrydata: { sid: '12345', figure: '3(b)' },
     })
   })
 
@@ -259,6 +267,90 @@ describe('attachCollector', () => {
     ctx.historyManager.capture('point.add')
     expect(recorded.map((r) => r.type)).toEqual(['session.start'])
     expect(ctx.researchEvents.isEnabled).toBe(false)
+  })
+
+  describe('starrydata.ref (F18)', () => {
+    const NOW = new Date('2026-11-24T01:02:03.004Z')
+    const attach = (client: CollectClient) =>
+      attachCollector(ctx, client, calls, {
+        starrydataDebounceMs: 1500,
+        now: () => NOW,
+      })
+    const refs = (recorded: Recorded[]) =>
+      recorded.filter((r) => r.type === 'starrydata.ref')
+
+    it('one record 1.5 s after typing stopped, with the value before', async () => {
+      const { client, recorded } = fakeClient()
+      attach(client)
+      ctx.canvasHandler.setUploadImageUrl(PNG)
+      await nextTick()
+      jest.advanceTimersByTime(0)
+      for (const sid of ['1', '12', '123']) {
+        ctx.starrydataRef.set({ sid })
+        await nextTick()
+        jest.advanceTimersByTime(500)
+      }
+      ctx.starrydataRef.set({ figure: ' 3(b) ' })
+      await nextTick()
+      jest.advanceTimersByTime(1499)
+      expect(refs(recorded)).toHaveLength(0)
+      jest.advanceTimersByTime(1)
+      expect(refs(recorded)).toHaveLength(1)
+      expect(refs(recorded)[0].data).toEqual({
+        file_index: 0,
+        page: null,
+        file_sha256: sha256Hex(Uint8Array.from(Buffer.from('hello'))),
+        sid: '123',
+        figure: '3(b)',
+        previous: { sid: '', figure: '' },
+        sid_numeric: true,
+        client_time: '2026-11-24T01:02:03.004Z',
+        view: expect.objectContaining({ sha256: expect.any(String) }),
+      })
+
+      ctx.starrydataRef.set({ sid: 'S-9' })
+      await nextTick()
+      jest.advanceTimersByTime(1500)
+      expect(refs(recorded)[1].data).toMatchObject({
+        sid: 'S-9',
+        previous: { sid: '123', figure: '3(b)' },
+        sid_numeric: false,
+      })
+    })
+
+    it('nothing for a load, an undo, or a change taken back', async () => {
+      const { client, recorded } = fakeClient()
+      attach(client)
+      ctx.projectService.restoreProject({
+        ...ctx.projectService.toProjectDTO(),
+        starrydata: { sid: '42', figure: '1' },
+      })
+      await nextTick()
+      jest.advanceTimersByTime(2000)
+      ctx.historyManager.capture('point.add')
+      ctx.historyManager.undo()
+      await nextTick()
+      jest.advanceTimersByTime(2000)
+      ctx.starrydataRef.set({ sid: '420' })
+      await nextTick()
+      ctx.starrydataRef.set({ sid: '42' })
+      await nextTick()
+      jest.advanceTimersByTime(2000)
+      expect(ctx.starrydataRef.sid).toBe('42')
+      expect(refs(recorded)).toHaveLength(0)
+    })
+
+    it('a pending change is recorded before a reload', async () => {
+      const { client, recorded } = fakeClient()
+      const wiring = attach(client)
+      ctx.starrydataRef.set({ sid: '7' })
+      await nextTick()
+      wiring.recordPending()
+      expect(refs(recorded)).toHaveLength(1)
+      expect(refs(recorded)[0].data.file_sha256).toBeNull()
+      jest.advanceTimersByTime(2000)
+      expect(refs(recorded)).toHaveLength(1)
+    })
   })
 
   it('records the hidden tab and flushes the client', async () => {

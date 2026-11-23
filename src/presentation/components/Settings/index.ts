@@ -4,6 +4,7 @@ import MaskSettings from './MaskSettings.vue'
 import ColorSettings from './ColorSettings.vue'
 import ImageSettings from './ImageSettings.vue'
 import StartOverSettings from './StartOverSettings.vue'
+import StarrydataRefSettings from './StarrydataRefSettings.vue'
 
 export {
   AxisSetSettings,
@@ -12,4 +13,5 @@ export {
   ExtractorSettings,
   ImageSettings,
   StartOverSettings,
+  StarrydataRefSettings,
 }

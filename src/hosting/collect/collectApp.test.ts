@@ -70,6 +70,62 @@ describe('startCollect', () => {
     expect(c.pending).toBe(0)
   })
 
+  it('records ui.error / ui.message only while collecting', async () => {
+    const off = client({ enabled: false })
+    const offHandle = startCollect(createDigitizerContext(), '/api', {
+      version: '2.0.0',
+      client: off.c,
+      onChange: () => undefined,
+      afterRender: async () => undefined,
+    })
+    await settle()
+    offHandle.noteError('digitizer', 'ZIP_INVALID', 'Bad ZIP')
+    expect(off.c.pending).toBe(0)
+
+    const on = client({ enabled: true })
+    const record = jest.spyOn(on.c, 'record')
+    const handle = startCollect(createDigitizerContext(), '/api', {
+      version: '2.0.0',
+      client: on.c,
+      onChange: () => undefined,
+      afterRender: async () => undefined,
+    })
+    await settle()
+    handle.noteError('menu.save_project', null, 'No image loaded')
+    handle.noteMessage('auto_extraction.import', 'Imported 1 series')
+    expect(record).toHaveBeenCalledWith(
+      'ui.error',
+      expect.objectContaining({
+        where: 'menu.save_project',
+        code: null,
+        message: 'No image loaded',
+      }),
+    )
+    expect(record).toHaveBeenCalledWith(
+      'ui.message',
+      expect.objectContaining({
+        where: 'auto_extraction.import',
+        message: 'Imported 1 series',
+      }),
+    )
+    handle.stop()
+  })
+
+  it('sends the queue at once before a reload', async () => {
+    const { c, urls } = client({ enabled: true })
+    const handle = startCollect(createDigitizerContext(), '/api', {
+      version: '2.0.0',
+      client: c,
+      onChange: () => undefined,
+      afterRender: async () => undefined,
+    })
+    await settle()
+    expect(await handle.flushBeforeReload()).toBe(true)
+    expect(urls.filter((u) => u.endsWith('/collect/events'))).toHaveLength(1)
+    expect(c.pending).toBe(0)
+    handle.stop()
+  })
+
   it('reports the names to the page and the choice back to the client', async () => {
     const { c } = client(
       { enabled: true },

@@ -25,7 +25,12 @@ import {
   extractionResultData,
   forwardedResearchEvent,
   sessionStartData,
+  starrydataRefData,
+  uiErrorData,
+  uiMessageData,
+  type StarrydataRefValue,
 } from './collectEvents'
+import { normalizeStarrydataRef } from '@/application/services/starrydataRef/starrydataRef'
 
 // INFO: Connects one digitizer (its DigitizerContext) to a CollectClient:
 // the library's research events, the image on the canvas and the axis
@@ -122,17 +127,33 @@ export interface CollectWiringOptions {
   window?: Window
   /** wait this long after the last axis change before `calibration.final` */
   calibrationDebounceMs?: number
+  /** wait this long after the last SID / Fig. keystroke */
+  starrydataDebounceMs?: number
+  /** the page's clock, for `client_time` */
+  now?: () => Date
 }
 
 export interface CollectWiring {
   /** the person loaded this file (ImageSettings' `image-replaced`) */
   noteFile(file: Blob): void
-  /** record what is pending now (the tab is being hidden) */
+  /** the page showed an error (`ui.error`) */
+  noteError(error: {
+    where: string
+    code: string | null
+    message: string
+  }): void
+  /** the page showed an information message (`ui.message`) */
+  noteMessage(message: { where: string; message: string }): void
+  /** record what is waiting for its debounce now (before a reload) */
+  recordPending(): void
+  /** record what is pending now and send it (the tab is being hidden) */
   flushPending(): void
   detach(): void
 }
 
 export const CALIBRATION_DEBOUNCE_MS = 2000
+// INFO: wpd-auto's: one record per change, 1.5 s after typing stopped
+export const STARRYDATA_DEBOUNCE_MS = 1500
 
 export function attachCollector(
   ctx: DigitizerContext,
@@ -150,6 +171,9 @@ export function attachCollector(
   let autoPlaced = new Map<number, { key: string; requestId: string | null }>()
   let finalSent = new Map<number, string>()
   let calibrationTimer: ReturnType<typeof setTimeout> | null = null
+  const starrydataDebounceMs =
+    options.starrydataDebounceMs ?? STARRYDATA_DEBOUNCE_MS
+  const now = options.now ?? (() => new Date())
 
   if (win) client.record('session.start', sessionStartData(win))
 
@@ -183,7 +207,11 @@ export function attachCollector(
         )
         break
       case 'export':
-        client.record('export', exportData(event, view))
+        // INFO: as wpd-auto's export record, with the image's SID / Fig.
+        client.record('export', {
+          ...exportData(event, view),
+          starrydata: ctx.starrydataRef.toDTO() ?? null,
+        })
         break
     }
   }
@@ -255,7 +283,48 @@ export function attachCollector(
     },
   )
 
-  const flushPending = () => {
+  // --- the SID / Fig. (F18) ---------------------------------------------------
+  // INFO: only the person's typing (StarrydataRef.edits) is recorded; a
+  // project load or a new image changes the values without an edit, and an
+  // undo does not touch them at all. `previous` is the value before the
+  // first keystroke of the change.
+  let starrydataTimer: ReturnType<typeof setTimeout> | null = null
+  let starrydataBefore: StarrydataRefValue | null = null
+  const recordStarrydata = () => {
+    starrydataTimer = null
+    const before = starrydataBefore
+    starrydataBefore = null
+    if (!before) return
+    const current = normalizeStarrydataRef(ctx.starrydataRef)
+    // INFO: typed and taken back again: no change
+    if (current.sid === before.sid && current.figure === before.figure) return
+    client.record(
+      'starrydata.ref',
+      starrydataRefData(current, before, view, now().toISOString()),
+    )
+  }
+  const stopStarrydata = watch(
+    () => ({
+      sid: ctx.starrydataRef.sid,
+      figure: ctx.starrydataRef.figure,
+      edits: ctx.starrydataRef.edits,
+    }),
+    (next, last) => {
+      if (next.edits === last.edits) {
+        // INFO: loaded, not typed: a pending change is about another value
+        if (starrydataTimer !== null) clearTimeout(starrydataTimer)
+        starrydataTimer = null
+        starrydataBefore = null
+        return
+      }
+      if (starrydataBefore === null)
+        starrydataBefore = normalizeStarrydataRef(last)
+      if (starrydataTimer !== null) clearTimeout(starrydataTimer)
+      starrydataTimer = setTimeout(recordStarrydata, starrydataDebounceMs)
+    },
+  )
+
+  const recordPending = () => {
     if (imageTimer !== null) {
       clearTimeout(imageTimer)
       takeImage()
@@ -264,6 +333,13 @@ export function attachCollector(
       clearTimeout(calibrationTimer)
       recordCalibrations()
     }
+    if (starrydataTimer !== null) {
+      clearTimeout(starrydataTimer)
+      recordStarrydata()
+    }
+  }
+  const flushPending = () => {
+    recordPending()
     client.flushOnHide()
   }
   const onVisibility = () => {
@@ -280,11 +356,20 @@ export function attachCollector(
         type: file.type,
       }
     },
+    noteError(error) {
+      client.record('ui.error', uiErrorData(error, view))
+    },
+    noteMessage(message) {
+      client.record('ui.message', uiMessageData(message, view))
+    },
+    recordPending,
     flushPending,
     detach() {
       stopImage()
       stopCalibration()
+      stopStarrydata()
       if (imageTimer !== null) clearTimeout(imageTimer)
+      if (starrydataTimer !== null) clearTimeout(starrydataTimer)
       if (calibrationTimer !== null) clearTimeout(calibrationTimer)
       configureResearchEvents(ctx, null)
       win?.removeEventListener('pagehide', flushPending)

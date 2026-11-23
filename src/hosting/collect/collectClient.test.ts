@@ -239,6 +239,57 @@ describe('CollectClient', () => {
     expect(client.pending).toBe(0)
   })
 
+  describe('flushNow (before a reload)', () => {
+    it('sends at once, without the batch delay', async () => {
+      const { client, eventCalls, timers } = setup()
+      await client.start()
+      client.markNoticeShown()
+      client.record('a', {})
+      client.record('b', {})
+      expect(await client.flushNow()).toBe(true)
+      expect(timers).toHaveLength(0)
+      expect(eventCalls()).toHaveLength(1)
+      expect(client.pending).toBe(0)
+    })
+
+    it('tries once more while a retry waits; false when that fails too', async () => {
+      const { client, eventCalls, runTimer, timers } = setup({
+        eventStatus: [503, 503, 200],
+      })
+      await client.start()
+      client.markNoticeShown()
+      client.record('a', {})
+      await runTimer()
+      expect(timers.map((t) => t.ms)).toEqual([2000])
+      expect(await client.flushNow()).toBe(false)
+      expect(eventCalls()).toHaveLength(2)
+      expect(timers.map((t) => t.ms)).toEqual([4000])
+      expect(await client.flushNow()).toBe(true)
+      expect(client.pending).toBe(0)
+    })
+
+    it('waits for a flush in progress and sends what came after', async () => {
+      const { client, eventCalls, timers } = setup()
+      await client.start()
+      client.markNoticeShown()
+      client.record('a', {})
+      const running = client.flush()
+      client.record('b', {})
+      expect(await client.flushNow()).toBe(true)
+      await running
+      expect(eventCalls()).toHaveLength(2)
+      expect(timers).toHaveLength(0)
+    })
+
+    it('is false before the notice was shown (nothing may leave)', async () => {
+      const { client, eventCalls } = setup()
+      await client.start()
+      client.record('a', {})
+      expect(await client.flushNow()).toBe(false)
+      expect(eventCalls()).toHaveLength(0)
+    })
+  })
+
   it('waits at least Retry-After on 429', async () => {
     const { client, runTimer, timers } = setup({ eventStatus: [429] })
     await client.start()
