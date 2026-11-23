@@ -222,3 +222,20 @@ describe('<StarryDigitizer> research events', () => {
     expect(context.researchEvents.isEnabled).toBe(true)
   })
 })
+
+describe('<StarryDigitizer> features.startOver', () => {
+  it('shows the Start over button by default and hides it when off', () => {
+    const shown = mount(StarryDigitizer, {
+      props: { context: createDigitizerContext() },
+    })
+    expect(shown.find('[data-cy="start-over-button"]').exists()).toBe(true)
+
+    const hidden = mount(StarryDigitizer, {
+      props: {
+        context: createDigitizerContext(),
+        features: { startOver: false },
+      },
+    })
+    expect(hidden.find('[data-cy="start-over-button"]').exists()).toBe(false)
+  })
+})

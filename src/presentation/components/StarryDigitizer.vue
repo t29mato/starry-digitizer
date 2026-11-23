@@ -10,6 +10,10 @@
           @image-replaced="onImageReplaced"
           @error="onError"
         ></image-settings>
+        <!-- INFO: clears axes, datasets and auto results; keeps the image -->
+        <start-over-settings
+          v-if="options.features.startOver"
+        ></start-over-settings>
         <axis-set-manager v-if="options.features.axisPanel"></axis-set-manager>
         <axis-set-settings
           v-if="options.features.axisPanel"
@@ -67,7 +71,12 @@ import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import '@/presentation/styles/base.scss'
 import { MagnifierMain } from '@/presentation/components/Magnifier'
 import { CanvasHeader, CanvasFooter, CanvasMain } from './Canvas'
-import { AxisSetSettings, ExtractorSettings, ImageSettings } from './Settings'
+import {
+  AxisSetSettings,
+  ExtractorSettings,
+  ImageSettings,
+  StartOverSettings,
+} from './Settings'
 import { DatasetManager, ResamplePanel } from './DatasetManager'
 import { AxisSetManager } from './AxisSetManager'
 import ConfirmerBar from '@/presentation/components/Generals/ConfirmerBar.vue'

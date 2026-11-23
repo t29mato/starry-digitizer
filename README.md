@@ -365,8 +365,8 @@ you say which half you mean.
 
 Exported panels: `CanvasHeader`, `CanvasMain`, `CanvasFooter`, `AxisSetManager`,
 `AxisSetSettings`, `DatasetManager`, `DataTable`, `ExtractorSettings`,
-`ImageSettings`, `MaskSettings`, `ColorSettings`, `MagnifierMain`,
-`ConfirmerBar`.
+`ImageSettings`, `MaskSettings`, `ColorSettings`, `StartOverSettings`,
+`MagnifierMain`, `ConfirmerBar`.
 
 Notes:
 
@@ -893,6 +893,7 @@ is watched too and applies immediately, so a host can drive it from its own cont
 | `magnifier` | `true` | The magnifier. |
 | `dataTable` | `true` | The table of extracted values. |
 | `reviewTools` | `true` | The "Series Editing" (move / split / merge series, merge duplicate points, box or lasso selection) and "Figure Annotations" (plot / legend rectangle, marker style) panels. Even when on, they appear only once there is automatically extracted data to correct (an imported document under review, or points carrying a score), so plain manual digitising keeps its layout. The auto-extraction review and confidence review panels likewise show themselves only when there is something to review. |
+| `startOver` | `true` | The "Start over (keep image)" button: after a confirmation (`confirm`), it clears every axis set, every dataset, the auto-extraction review and the Auto-place proposal of the current image, and keeps the image. One undo step (`project.start-over`); undo brings the axes and datasets back, not the review. Also callable as `startOver(ctx)`. |
 | `keyboardShortcuts` | `true` | The default the three `keyboard*` groups below fall back to; it owns no key of its own. `false` alone still means what it always meant — the canvas listens for nothing, registers no listener, and drops out of the tab order. See [Keyboard shortcuts](#keyboard-shortcuts). |
 | `keyboardHistory` | `keyboardShortcuts` | `⌘Z` / `⇧⌘Z` (undo / redo). Turn it off in a host that owns `⌘Z`: the digitizer then neither acts on the key nor calls `preventDefault()` on it, so the host's own listener is the only one that sees it. |
 | `keyboardFile` | `keyboardShortcuts` | `⌘S` / `⌘O` (save / load project ZIP). Same nature as `keyboardHistory` — page-wide keys a host may want for its own save. `features.zipExportImport` still has to be on for either key to do anything. |

@@ -61,6 +61,12 @@ export {
   loadProject,
   reset,
 } from './application/utils/digitizerOperations'
+// INFO: "Start over" on the current image (keeps the image; one undo step)
+export {
+  startOver,
+  canStartOver,
+  START_OVER_ACTION,
+} from './application/utils/startOverOperations'
 // INFO: the dataset-list use cases. A host that replaces <DatasetManager>
 // with its own list drives it through these — they carry the call order, the
 // undo capture and the mask/axis-set clean-up a hand-written list would have
