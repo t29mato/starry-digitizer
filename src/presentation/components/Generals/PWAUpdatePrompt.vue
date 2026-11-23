@@ -46,9 +46,12 @@ export default defineComponent({
     const { needRefresh, updateServiceWorker } = useRegisterSW({
       async onNeedRefresh() {
         try {
-          const res = await fetch(`/version.json?updatedAt=${Date.now()}`, {
-            cache: 'no-store',
-          })
+          const res = await fetch(
+            `${import.meta.env.BASE_URL}version.json?updatedAt=${Date.now()}`,
+            {
+              cache: 'no-store',
+            },
+          )
           if (!res.ok) return
           const info = await res.json()
           // Same version means a redeploy without a version bump — showing

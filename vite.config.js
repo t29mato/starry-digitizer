@@ -28,11 +28,64 @@ const versionJson = () => ({
   },
 })
 
+// INFO: the OCR assets (tesseract.js worker, core, English data), served
+// from this build's own origin instead of tesseract.js's CDN: a build that
+// sets VITE_OCR_ASSET_DIR (the starryai one, behind a proxy that may not
+// reach the CDN — docs/design/starryai-auto.md §4.3) gets them in that
+// directory, and App.vue points assetBaseUrl at it. The data is the one the
+// CDN default would load (@tesseract.js-data/eng 4.0.0_best_int, LSTM).
+const OCR_ASSETS = [
+  'tesseract.js/dist/worker.min.js',
+  'tesseract.js-core/tesseract-core.wasm.js',
+  'tesseract.js-core/tesseract-core-simd.wasm.js',
+  'tesseract.js-core/tesseract-core-lstm.wasm.js',
+  'tesseract.js-core/tesseract-core-simd-lstm.wasm.js',
+  '@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz',
+]
+const ocrAssets = (dir) => ({
+  name: 'emit-ocr-assets',
+  apply: 'build',
+  generateBundle() {
+    if (!dir) return
+    for (const asset of OCR_ASSETS) {
+      this.emitFile({
+        type: 'asset',
+        fileName: `${dir}/${path.basename(asset)}`,
+        source: readFileSync(
+          new URL(`./node_modules/${asset}`, import.meta.url),
+        ),
+      })
+    }
+  },
+})
+
+// INFO: STARRY_DIGITIZER_PWA=off builds without the Service Worker (the
+// virtual:pwa-register module still resolves, to a no-op). For a build whose
+// new versions must show at once and whose API must never be cached (the
+// starryai one, docs/design/starryai-auto.md §4.4).
+const pwaDisabled = process.env.STARRY_DIGITIZER_PWA === 'off'
+
+// INFO: STARRY_DIGITIZER_ANALYTICS=off drops the Google tag from index.html,
+// so the page never loads anything from Google (the starryai build: an
+// internal research tool, docs/design/starryai-auto.md §4.3).
+const dropAnalytics = () => ({
+  name: 'drop-analytics',
+  transformIndexHtml(html) {
+    if (process.env.STARRY_DIGITIZER_ANALYTICS !== 'off') return html
+    return html.replace(
+      /[ \t]*<!-- analytics:start[\s\S]*?<!-- analytics:end -->\n?/,
+      '',
+    )
+  },
+})
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
     versionJson(),
+    dropAnalytics(),
+    ocrAssets(process.env.VITE_OCR_ASSET_DIR),
     // INFO: docs/design/pwa-design.md (HQ #59, minimal version) — precaches
     // the built static assets and generates manifest.webmanifest +
     // sw.js. No runtime caching rules needed: the app is fully
@@ -42,6 +95,7 @@ export default defineConfig({
       // the user accepts the update via PWAUpdatePrompt.vue (which then
       // calls updateServiceWorker → skipWaiting + reload).
       registerType: 'prompt',
+      disable: pwaDisabled,
       workbox: {
         // version.json must always come from the network, never from the
         // (old) Service Worker's precache — otherwise the popup would show
@@ -56,15 +110,17 @@ export default defineConfig({
         theme_color: '#1565C0',
         background_color: '#ffffff',
         display: 'standalone',
-        start_url: '/',
+        // INFO: relative to the manifest, so a build under another base
+        // (vite build --base=/starry-digitizer/) installs that one
+        start_url: '.',
         icons: [
           {
-            src: '/pwa-192.png',
+            src: 'pwa-192.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/pwa-512.png',
+            src: 'pwa-512.png',
             sizes: '512x512',
             type: 'image/png',
           },

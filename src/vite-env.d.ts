@@ -4,4 +4,6 @@
 interface ImportMetaEnv {
   /** Base URL of the auto service for the standalone app (unset = none). */
   readonly VITE_AUTO_SERVICE_URL?: string
+  /** Directory (under the base) the build put the OCR assets in (unset = CDN). */
+  readonly VITE_OCR_ASSET_DIR?: string
 }

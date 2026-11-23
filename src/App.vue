@@ -41,6 +41,7 @@
           csvExport: true,
         }"
         :confirm-image-replace="true"
+        :asset-base-url="ocrAssetBaseUrl"
         @update:project="onProjectUpdate"
         @error="onDigitizerError"
       >
@@ -119,7 +120,11 @@ type DigitizerRef = {
   loadProject: (project?: ProjectDTO, image?: ImageSource) => Promise<void>
 }
 
-const DEFAULT_IMAGE = '/sample_graph_curve.png'
+const DEFAULT_IMAGE = `${import.meta.env.BASE_URL}sample_graph_curve.png`
+// INFO: set by a build that serves the OCR assets itself (vite.config.js)
+const OCR_ASSET_BASE_URL = import.meta.env.VITE_OCR_ASSET_DIR
+  ? `${import.meta.env.BASE_URL}${import.meta.env.VITE_OCR_ASSET_DIR}`
+  : undefined
 
 // INFO: standalone-app-only auto-save (see src/appPersistence.ts). The library
 // persists nothing by itself; this app has no backend, so it keeps the work in
@@ -153,6 +158,7 @@ export default defineComponent({
     datasetRepository: appContext.datasetRepository,
     githubRunNumber: import.meta.env.VITE_APP_GITHUB_RUN_NUMBER,
     isProd: import.meta.env.MODE === 'production',
+    ocrAssetBaseUrl: OCR_ASSET_BASE_URL,
     showError: false,
     errorMessage: '',
     showKeyboardShortcuts: false,
