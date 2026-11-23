@@ -176,7 +176,8 @@ export interface StarryDigitizerProps {
   /**
    * Research record hook: called with each editing event (undoable edits by
    * name, undo / redo, auto-extraction import, Review Points steps, edit-log
-   * export, end of review). Omitted = off, and nothing is recorded. The
+   * export, end of review, Auto-place / Server Extraction / Auto digitize
+   * outcomes, data exports). Omitted = off, and nothing is recorded. The
    * digitizer never sends these anywhere itself; storing them is the host's
    * decision. Events carry operation names, counts, scores and times only —
    * no image data, coordinates, values or names. Also reachable as

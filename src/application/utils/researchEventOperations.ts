@@ -1,5 +1,6 @@
 import { DigitizerContext } from '@/application/digitizerContext'
 import { ResearchEventListener } from '@/application/services/researchEvents/researchEvents'
+import { DatasetInterface } from '@/domain/models/dataset/datasetInterface'
 
 /**
  * Hand the research events of `ctx` to `listener` (or, with null /
@@ -16,4 +17,24 @@ export function configureResearchEvents(
   listener: ResearchEventListener | null | undefined,
 ): void {
   ctx.researchEvents.setListener(listener)
+}
+
+/**
+ * Tell the research listener (if any) that data left the digitizer: `kind`
+ * of export, its `scope` and the datasets it covered — counted, never the
+ * values. Does nothing without a listener.
+ */
+export function recordExport(
+  ctx: DigitizerContext,
+  kind: string,
+  scope: 'dataset' | 'all' | 'project',
+  datasets: readonly DatasetInterface[],
+): void {
+  ctx.researchEvents.emit(() => ({
+    type: 'export',
+    kind,
+    scope,
+    datasets: datasets.length,
+    points: datasets.reduce((n, dataset) => n + dataset.points.length, 0),
+  }))
 }

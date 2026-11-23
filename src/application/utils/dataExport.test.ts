@@ -1,4 +1,5 @@
 import { expect, describe, it, beforeEach, jest } from '@jest/globals'
+import { ResearchEvents } from '@/application/services/researchEvents/researchEvents'
 import { Axis } from '@/domain/models/axis/axis'
 import { AxisSet } from '@/domain/models/axisSet/axisSet'
 import { Dataset } from '@/domain/models/dataset/dataset'
@@ -40,6 +41,7 @@ const buildContext = () => {
     axisSetRepository,
     datasetRepository,
     valueFormat: { effectiveDigits: 4 },
+    researchEvents: new ResearchEvents(),
   } as unknown as DigitizerContext
 
   return { ctx, axisSetRepository, datasetRepository }

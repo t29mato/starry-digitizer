@@ -1,6 +1,7 @@
 import { DigitizerContext } from '@/application/digitizerContext'
 import {
   AutoAxisName,
+  AutoAxisProposal,
   AutoCalibrationProposal,
   parseCalibrationResponse,
 } from '@/application/services/autoService/autoServiceWire'
@@ -12,6 +13,7 @@ import { fitAxisTicks } from '@/domain/services/axisTickFitter'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { Rect } from '@/@types/types'
 import { POINT_MODE } from '@/constants'
+import type { ResearchAutoAxisSummary } from '@/application/services/researchEvents/researchEvents'
 
 // INFO: Axis Auto-place (Starrydata2 v4 board P1): the backend reads the tick
 // labels and proposes a calibration; the user looks at it and applies it —
@@ -127,7 +129,27 @@ export function applyAutoCalibration(
     axisSet.plotArea = { ...proposal.frame }
   }
   ctx.autoFeatures.clearProposal()
+  // INFO: after the axes moved, so a research listener that wants to know
+  // where the markers went can read them off the context right away
+  ctx.researchEvents.emit(() => ({
+    type: 'auto_place.apply',
+    action,
+    axes: usable,
+    status: proposal.status,
+    x: summarizeAxis(proposal.x),
+    y: summarizeAxis(proposal.y),
+  }))
   return usable
+}
+
+function summarizeAxis(axis: AutoAxisProposal): ResearchAutoAxisSummary {
+  return {
+    ok: axis.ok,
+    scale: axis.scale,
+    ticks: axis.ticks.length,
+    confidence: axis.confidence,
+    failure: axis.failureReason,
+  }
 }
 
 // INFO: Ticks are 1-D, so the x markers still need a y to be drawn at (and

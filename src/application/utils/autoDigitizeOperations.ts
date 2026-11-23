@@ -149,6 +149,16 @@ export async function runAutoDigitize(
     outcome.status = status
     outcome.reason = reason
     outcome.error = error
+    ctx.researchEvents.emit(() => ({
+      type: 'auto_digitize.end',
+      method,
+      status,
+      stopped_at: status === 'done' ? null : outcome.stoppedAt,
+      applied_axes: outcome.appliedAxes,
+      series: outcome.extraction?.seriesCount ?? 0,
+      points: outcome.extraction?.pointCount ?? 0,
+      undo_steps: outcome.undoSteps,
+    }))
     return outcome
   }
 
@@ -244,6 +254,7 @@ export async function runAutoDigitize(
     result,
     method,
     historyMoved ? 'extract.server' : null,
+    'auto_digitize',
   )
   if (historyMoved) outcome.undoSteps = 2
   outcome.extraction = {

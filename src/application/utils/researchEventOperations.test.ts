@@ -5,6 +5,15 @@ import {
   loadAutoExtraction,
 } from './autoExtractionOperations'
 import { goToLowConfidencePoint } from './confidenceReviewOperations'
+import { applyAutoCalibration } from './autoCalibrationOperations'
+import { applyServerExtraction } from './serverExtractionOperations'
+import { runAutoDigitize } from './autoDigitizeOperations'
+import { configureAutoService } from './autoFeatureOperations'
+import { recordExport } from './researchEventOperations'
+import {
+  parseCalibrationResponse,
+  parseExtractionResponse,
+} from '@/application/services/autoService/autoServiceWire'
 import { addPoint, deletePoint } from './pointOperations'
 import {
   createDigitizerContext,
@@ -200,5 +209,111 @@ describe('research events (host hook)', () => {
     addPoint(other, { xPx: 1, yPx: 1 })
 
     expect(listener).not.toHaveBeenCalled()
+  })
+
+  // INFO: the automatic features and exports report what happened, counted
+  // — the host reads coordinates off the context itself if it wants them
+  test('Auto-place, Extract, Auto digitize and exports: counts and fixed names only', async () => {
+    configureResearchEvents(ctx, (e) => events.push(e))
+    ctx.canvasHandler.setUploadImageUrl('data:image/png;base64,aGVsbG8=')
+    const proposal = parseCalibrationResponse({
+      status: 'ok',
+      frames: [
+        {
+          box: { x0: 9.5, y0: 9.5, x1: 99.5, y1: 99.5 },
+          axes: {
+            x: {
+              status: 'ok',
+              scale: 'linear',
+              ticks: [
+                { value: 0, px: 9.5 },
+                { value: 10, px: 99.5 },
+              ],
+              confidence: 0.8,
+            },
+            y: {
+              status: 'ok',
+              scale: 'log',
+              ticks: [
+                { value: 1, px: 99.5 },
+                { value: 100, px: 9.5 },
+              ],
+            },
+          },
+        },
+      ],
+    })
+    applyAutoCalibration(ctx, proposal)
+    const ids = applyServerExtraction(
+      ctx,
+      parseExtractionResponse({
+        series: [{ label: 'Sample-yamada', points: [[20.5, 30.5]] }],
+      }),
+      'markernet',
+    )
+    recordExport(ctx, 'copy', 'dataset', ctx.datasetRepository.datasets)
+    await configureAutoService(ctx, {
+      capabilities: async () => ['auto_axis', 'markernet'],
+      calibrate: async () => {
+        throw new Error('down')
+      },
+      extract: async () => ({ series: [] }),
+    })
+    await runAutoDigitize(ctx, { method: 'markernet' })
+
+    const auto = events.filter((e) => e.type !== 'edit')
+    expect(auto).toEqual([
+      expect.objectContaining({
+        type: 'auto_place.apply',
+        action: 'axis.auto-place',
+        axes: ['x', 'y'],
+        status: 'ok',
+        x: {
+          ok: true,
+          scale: 'linear',
+          ticks: 2,
+          confidence: 0.8,
+          failure: null,
+        },
+        y: {
+          ok: true,
+          scale: 'log',
+          ticks: 2,
+          confidence: null,
+          failure: null,
+        },
+      }),
+      expect.objectContaining({
+        type: 'extraction.apply',
+        method: 'markernet',
+        source: 'extract',
+        action: 'extract.server',
+        series: 1,
+        points: 1,
+        datasets: ids,
+        replaced: 0,
+      }),
+      expect.objectContaining({
+        type: 'export',
+        kind: 'copy',
+        scope: 'dataset',
+        datasets: 1,
+        points: 1,
+      }),
+      expect.objectContaining({
+        type: 'auto_digitize.end',
+        method: 'markernet',
+        status: 'failed',
+        stopped_at: 'axes',
+        applied_axes: [],
+        series: 0,
+        points: 0,
+        undo_steps: 0,
+      }),
+    ])
+    const text = JSON.stringify(events)
+    expect(text).not.toContain('yamada')
+    expect(text).not.toContain('20.5')
+    expect(text).not.toContain('aGVsbG8')
   })
 })

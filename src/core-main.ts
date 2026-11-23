@@ -195,7 +195,10 @@ export type {
 // INFO: docs/design/auto-service.md §9. Off unless a host sets a listener —
 // the `onResearchEvent` prop of <StarryDigitizer> calls this. The digitizer
 // never sends the events anywhere itself.
-export { configureResearchEvents } from './application/utils/researchEventOperations'
+export {
+  configureResearchEvents,
+  recordExport,
+} from './application/utils/researchEventOperations'
 export {
   RESEARCH_EVENT_FORMAT,
   RESEARCH_EVENT_VERSION,
@@ -212,6 +215,11 @@ export type {
   ResearchReviewStepEvent,
   ResearchReviewExportEvent,
   ResearchReviewEndEvent,
+  ResearchAutoPlaceApplyEvent,
+  ResearchAutoAxisSummary,
+  ResearchExtractionApplyEvent,
+  ResearchAutoDigitizeEndEvent,
+  ResearchExportEvent,
 } from './application/services/researchEvents/researchEvents'
 export {
   parseCalibrationResponse,
