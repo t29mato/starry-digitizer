@@ -158,7 +158,8 @@ import { ServerExtractionResult } from '@/application/services/autoService/autoS
 import LegendNamingResult from './LegendNamingResult.vue'
 import {
   isImageChangedError,
-  outsideHoursNote,
+  supportedHoursText,
+  withOutsideHoursNote,
 } from '@/application/utils/autoFeatureOperations'
 import { DigitizerError, toErrorPayload } from '@/application/errors'
 
@@ -321,13 +322,7 @@ export default defineComponent({
       })
     },
     hoursCaption(): string {
-      const hours = this.autoFeatures.hours
-      if (!hours?.hours) return ''
-      const zone = hours.timezone ? ` (${hours.timezone})` : ''
-      return `Automatic features are supported ${hours.hours.replace(
-        '-',
-        '–',
-      )}${zone}. Manual digitizing works at any time.`
+      return supportedHoursText(this.autoFeatures.hours)
     },
   },
   created() {
@@ -461,9 +456,7 @@ export default defineComponent({
         const payload = toErrorPayload(
           DigitizerError.from(e, 'AUTO_SERVICE_FAILED'),
         )
-        this.errorMessage = [payload.message, outsideHoursNote(this.ctx)]
-          .filter(Boolean)
-          .join(' ')
+        this.errorMessage = withOutsideHoursNote(this.ctx, payload.message)
         this.$emit('error', payload)
       } finally {
         if (this.controller === controller) this.controller = null

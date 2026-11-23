@@ -179,6 +179,16 @@ describe('AxisSetSettings: Auto-fill values with the auto service', () => {
     )
     // INFO: kept out of Axis Auto-place: this was not a proposal
     expect(ctx.autoFeatures.proposal).toBeNull()
+
+    // INFO: the note is about these markers; Clear XY Axes (or Start over)
+    // removes them, so the note goes too
+    const clear = wrapper
+      .findAll('button')
+      .find((b) => b.text() === 'Clear XY Axes')
+    await clear!.trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(axisSet.hasAtLeastOneAxis).toBe(false)
+    expect(wrapper.find('[data-cy=auto-fill-note]').exists()).toBe(false)
     wrapper.unmount()
   })
 

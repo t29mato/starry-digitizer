@@ -116,7 +116,7 @@ import {
 import { DigitizerError, toErrorPayload } from '@/application/errors'
 import {
   isImageChangedError,
-  outsideHoursNote,
+  withOutsideHoursNote,
 } from '@/application/utils/autoFeatureOperations'
 
 // INFO: below this the backend's own README counts a noticeable share of
@@ -290,6 +290,15 @@ export default defineComponent({
       () => this.canvasHandler.uploadImageUrl,
       () => this.controller?.abort(),
     )
+    // INFO: "Applied — drag the axis markers…" is about markers that Clear
+    // XY Axes or Start over has just removed; seen standing under empty axes
+    // in a browser (2026-11-24)
+    this.$watch(
+      () => this.activeAxisSet.hasAtLeastOneAxis,
+      (hasAxis: boolean) => {
+        if (!hasAxis) this.appliedNote = ''
+      },
+    )
   },
   beforeUnmount() {
     this.controller?.abort()
@@ -315,9 +324,7 @@ export default defineComponent({
         const payload = toErrorPayload(
           DigitizerError.from(e, 'AUTO_SERVICE_FAILED'),
         )
-        this.errorMessage = [payload.message, outsideHoursNote(this.ctx)]
-          .filter(Boolean)
-          .join(' ')
+        this.errorMessage = withOutsideHoursNote(this.ctx, payload.message)
         this.$emit('error', payload)
       } finally {
         if (this.controller === controller) this.controller = null

@@ -1,12 +1,11 @@
 <template>
   <!-- INFO: F9, the legend reader's part of an extraction's result
        (legendOperations.ts). Quiet by design: while it reads, one muted
-       line; when it cannot, one muted caption; never an error. -->
-  <div
-    v-if="isReading || visibleOutcome"
-    class="text-caption mt-1"
-    data-cy="legend-naming"
-  >
+       line; when it cannot, one muted caption; never an error.
+       No `text-caption` of its own: both panels put it inside their result
+       line, which is one already, and the two 0.75em made it about 7px
+       (seen in a browser, 2026-11-24). -->
+  <div v-if="isReading || visibleOutcome" class="mt-1" data-cy="legend-naming">
     <div v-if="isReading" class="c__muted" data-cy="legend-naming-reading">
       Reading the legend…
     </div>

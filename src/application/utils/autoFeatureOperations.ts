@@ -11,6 +11,7 @@ import {
 } from '@/application/services/autoService/httpAutoService'
 import {
   AutoComponentsInfo,
+  AutoHours,
   parseAutoStatusResponse,
   parseComponentsResponse,
   parseExtractionMethodsResponse,
@@ -155,6 +156,37 @@ export function outsideHoursNote(ctx: DigitizerContext): string {
     '-',
     '–',
   )}${zone}; outside those hours some of them are off.`
+}
+
+/**
+ * An automatic feature's failure message with outsideHoursNote() after it.
+ * The message may be the backend's own `detail` without a full stop
+ * ("… WPD_AUTO_MARKERNET_WEIGHTS is not set"), so one is added before the
+ * note; otherwise the two run together as one sentence.
+ */
+export function withOutsideHoursNote(
+  ctx: DigitizerContext,
+  message: string,
+): string {
+  const note = outsideHoursNote(ctx)
+  const text = message.trim()
+  if (!note) return text
+  if (!text) return note
+  return `${/[.!?]$/.test(text) ? text : `${text}.`} ${note}`
+}
+
+/**
+ * The supported hours as one sentence for a caption that is always shown
+ * (the Server Extraction panel, the starryai page's footer); '' while the
+ * server has not said, or has no hours (always on).
+ */
+export function supportedHoursText(hours: AutoHours | null): string {
+  if (!hours?.hours) return ''
+  const zone = hours.timezone ? ` (${hours.timezone})` : ''
+  return `Automatic features are supported ${hours.hours.replace(
+    '-',
+    '–',
+  )}${zone}. Manual digitizing works at any time.`
 }
 
 export const AUTO_STATUS_INTERVAL_MS = 5 * 60 * 1000

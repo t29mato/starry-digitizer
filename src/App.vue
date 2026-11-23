@@ -81,6 +81,13 @@
         <br />
         <save-status :view="collect.save" />
       </template>
+      <!-- INFO: the server's supported hours, always in view on a page that
+           has an auto service (docs/design/starryai-auto.md F7, §5.1); the
+           Server Extraction panel is not there when no method is allowed -->
+      <template v-if="autoHoursCaption">
+        <br />
+        <span data-cy="auto-hours">{{ autoHoursCaption }}</span>
+      </template>
       <template v-if="collect.login.on">
         <br />
         <auth-status
@@ -183,6 +190,7 @@ import {
 import { downloadJson, timestamp } from '@/presentation/utils/jsonDownload'
 import {
   configureAutoService,
+  supportedHoursText,
   watchAutoStatus,
 } from '@/application/utils/autoFeatureOperations'
 
@@ -360,6 +368,9 @@ export default defineComponent({
         commit: import.meta.env.VITE_APP_COMMIT || undefined,
         environment: import.meta.env.MODE,
       }
+    },
+    autoHoursCaption(): string {
+      return supportedHoursText(this.appContext.autoFeatures.hours)
     },
     deviceIsSmartphone() {
       const ua = navigator.userAgent.toLowerCase()

@@ -1,6 +1,6 @@
 # starry-digitizer に wpd-auto の自動機能を入れ、starryai に置く（設計書の下書き）
 
-- 版: **0.0.13**（2026-11-24。合意までは 0.x.y で上げる）
+- 版: **0.0.14**（2026-11-24。合意までは 0.x.y で上げる）
 - 書いた人: Claude Code（間藤の依頼）。材料に wpd-auto のセッションの下書き
   `~/research/drafts/starryai-hosting-from-wpd-auto-session.md` を使った。
 - 置き場所: starry-digitizer の `docs/design/starryai-auto.md`（ブランチ `feat/starryai-hosting`、`origin/v4` から分けた）。
@@ -373,6 +373,61 @@ wpd-auto の下書き `docs/starry-digitizer-projects.md` 0.0.1（`feat/user-pas
 - ブラウザでの見た目（窓・フッター・確認）と、タブを閉じるときの keepalive。この VM にはブラウザがない。
 - サムネイル（モックは 204 を返すだけ）。
 - 2 つのタブで同じ作業を開いたとき。
+
+**ブラウザでの確かめ（2026-11-24、ブランチ `feat/e2e-browser`）**
+
+- やり方: `scripts/e2e-starryai/run.mjs`（README あり。何度でも流せる。失敗なら終了コード 1）。
+  - starryai 版を deploy.sh と同じ設定でビルドした。PWA と Google tag は off。
+  - wpd-auto の backend（`feat/user-passwords` 3bc340a の作業ツリー、読むだけ）を `127.0.0.1:24866` で動かした。staging、時間 09:00-17:00 Asia/Tokyo、users.json に alice と bob。重み・VLM・`/auth/*` はない。
+  - 同じオリジンの中継（`sameorigin.py`、`127.0.0.1:24960`）が nginx の代わり。
+  - ブラウザはヘッドレスの Chromium（arm64 の headless shell）。puppeteer で動かした。
+- 流した時刻は 07 時台（JST）で、時間外（`auto.available: false`）だった。
+- 結果: 56 の確かめがすべて通った（下の直し、3 コミットの後）。各段の画面を撮った。
+
+**本物の backend で確かめた（ブラウザで見た）**
+
+| 確かめたこと | 結果 |
+|---|---|
+| 知らせ・名前の窓 | 左の欄と窓に知らせが出る。名前を選ぶ前は `/collect/events` を送らない |
+| 名前を選ぶ | フッターに「Name: Alice Example」と Change。送り始める |
+| F1 Axis Auto-place | 本物の `/calibrate` の提案（x 5 目盛り、y 6 目盛り）→ Apply で x1..y2 が 1, 5, 4, 14 |
+| F2 Bar | 選択肢は出ない（`auto_axis_bar` がない。正しい） |
+| Auto-fill values（サービス） | 手で置いた 4 点（x 2・4、y 6・12 の目盛り）を 2, 4, 6, 12 と読んだ。文は「Read by the auto service: x1, x2, y1, y2.」。ボタンは「(OCR)」なし |
+| F14 Help > About | このページの版・build・commit。Components を開くと部品の一覧。MarkerNet は weights_missing、LineFormer は not configured、VLM は not running |
+| F12 Start over (keep image) | 軸とデータが戻り、画像は残る。Edit > Undo で軸の値が戻る |
+| 記録（F15） | `events/*.jsonl` の行はすべて `client: starry-digitizer`。`session.start`・`image`・`calibration.auto`・`calibration.final`・`edit`（`project.start-over` も）・`undo` がある。名前を選んだ回は `user: alice` |
+| console | 捕まえていないエラーはない。error は許したもの（`/auth/status` の 404 など。README に理由）だけ |
+
+**ブラウザの中で答えを差し替えて確かめた（backend に重み・VLM・`/auth/*` がないため）**
+
+| 確かめたこと | 差し替え | 結果 |
+|---|---|---|
+| F5 Server Extraction | `/capabilities` に markernet を足し、markernet を available にした | 欄が出る。「LineFormer (lines): not available now (not_configured).」と時間の文。Extract は本物の backend で 503、欄にエラーと時間外の案内 |
+| F9 凡例（VLM なし） | `/extract` の答え（見本の図から手で作った 2 系列）。`/legend` は本物 | 下書き 2 つ。「Legend not read: the legend reader is not running.」 |
+| F9 凡例（VLM あり） | 加えて `/legend` の答え | 「Legend: auto Blue」。下書きの名前は「Blue」（凡例の文字だけ）。「Red?」の候補と Use this name。押すと Red |
+| F6 Auto digitize | 上と同じ | 校正は済み、抽出は失敗、時間外の案内、Undo の文 |
+| §11 ログイン | `/auth/*` を下書き（0.0.2）どおりに答えた | Sign in の窓だけが出る。違うパスワードは「The name or password is not correct.」で欄が空になる。Enter でログイン → フッター「Signed in as Alice Example · Sign out」。`/calibrate`・`/collect/events` に token、`X-WPD-User` なし。Sign out で窓がまた出る |
+
+**ブラウザで見つけて直したこと**
+
+- 重みのない backend では Server Extraction が出ないので、サポート時間の文がどこにも出なかった。F7・§5.1 どおりフッターに常に出す（f8a9036）。
+- 失敗の文（backend の detail は句点なしで終わることがある）と時間外の案内が 1 文につながっていた。句点を足す（f8a9036）。
+- Start over・Clear XY Axes の後も、Auto-fill と Auto-place の「済み」の文が空の軸の下に残っていた。印がなくなったら消す（7d43470）。
+- 凡例の結果の文字が約 7px だった（text-caption が 2 重）。直した（3864c81）。
+
+**直していないこと（見ただけ）**
+
+- 軸を校正する前に点があると、データの表が NaN を出す（7b の画面）。今回の変更の前からか（未確認）。
+- 使えない理由が backend の符号のまま出る（「not_configured」）。エラーにも backend の detail（「WPD_AUTO_MARKERNET_WEIGHTS is not set」）がそのまま出る。
+- 抽出の失敗は、欄の中と赤い通知の両方に出る。
+- `<StarryDigitizer>` は、ホストに渡すエラーを console.error にも書く。
+
+**ブラウザでもまだ確かめていないこと**
+
+- 重みのある MarkerNet・LineFormer・BarNet の本物の答え、本物の VLM の読み、Bar の Auto-place。
+- 本物の `/auth/*` と、wpd-auto の画面との token の共有。
+- starryai の nginx を通した形。Chromium 以外のブラウザ。
+- 時間内（9〜17 時）の表示。
 
 ### 2.4 軸の値の自動入力：starry-digitizer の OCR と wpd-auto の比較（2026-11-23）
 
@@ -757,6 +812,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.11 | 2026-11-24 | F17 新しい版の知らせと Reload、F18 SID / Fig. の欄と `starrydata.ref`、`ui.error`・`ui.message`（ブランチ `feat/small-features`。§2.3・§3.4） |
 | 0.0.12 | 2026-11-24 | P1（作業をサーバーに保存）と F16 My work（ブランチ `feat/my-work`）。§2.3・§3.2(c)・§3.4・Q5・Q8 |
 | 0.0.13 | 2026-11-24 | `feat/small-features` と `feat/my-work` をまとめた。作業を送るときに SID・Fig. を `data.starrydata`（wpd-auto と同じ形）で付ける。新しい版の Reload の前に作業も送る |
+| 0.0.14 | 2026-11-24 | §2.3 にブラウザでの確かめ（`scripts/e2e-starryai`、ヘッドレスの Chromium と本物の backend。56 通り）。見つけた 4 つを直した（フッターのサポート時間、失敗の文の句点、Start over の後に残る文、凡例の文字の大きさ） |（ブランチ `feat/e2e-browser` を 0.0.13 の上にまとめた）
 | 0.0.8 | 2026-11-23 | 5 つのブランチを `feat/starryai-hosting` にまとめた: ブラウザの OCR の改善（§2.4、91 図で 23 → 69）、0.2 の記録・知らせ・名前の選択（§3.4・§5.2）、F12 Start over・F14 Components、F9 凡例の読み取り、F2・F4・F6 の棒グラフ（Q7）。棒の抽出の後は凡例を読まない（backend が marker と line だけを受けるため） |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め

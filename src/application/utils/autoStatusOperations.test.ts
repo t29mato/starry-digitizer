@@ -2,7 +2,9 @@ import {
   configureAutoService,
   outsideHoursNote,
   refreshAutoStatus,
+  supportedHoursText,
   watchAutoStatus,
+  withOutsideHoursNote,
 } from './autoFeatureOperations'
 import { createDigitizerContext } from '@/application/digitizerContext'
 import { AutoService } from '@/application/services/autoService/autoService'
@@ -144,6 +146,55 @@ describe('outsideHoursNote', () => {
       parseAutoStatusResponse({ auto: { ...OUTSIDE, available: true } }),
     )
     expect(outsideHoursNote(ctx)).toBe('')
+  })
+})
+
+describe('withOutsideHoursNote', () => {
+  test('a full stop between a bare backend detail and the note (seen in a browser, 2026-11-24)', () => {
+    const ctx = createDigitizerContext()
+    ctx.autoFeatures.setStatus(null, parseAutoStatusResponse({ auto: OUTSIDE }))
+    expect(
+      withOutsideHoursNote(
+        ctx,
+        'The auto service failed (HTTP 503, method_unavailable: weights_missing) — WPD_AUTO_MARKERNET_WEIGHTS is not set',
+      ),
+    ).toBe(
+      'The auto service failed (HTTP 503, method_unavailable: weights_missing) — WPD_AUTO_MARKERNET_WEIGHTS is not set. Automatic features are supported 09:00–17:00 (Asia/Tokyo); outside those hours some of them are off.',
+    )
+    expect(withOutsideHoursNote(ctx, 'Timed out. ')).toBe(
+      'Timed out. Automatic features are supported 09:00–17:00 (Asia/Tokyo); outside those hours some of them are off.',
+    )
+  })
+
+  test('the message alone inside the hours', () => {
+    const ctx = createDigitizerContext()
+    expect(withOutsideHoursNote(ctx, 'It failed')).toBe('It failed')
+    ctx.autoFeatures.setStatus(
+      null,
+      parseAutoStatusResponse({ auto: { ...OUTSIDE, available: true } }),
+    )
+    expect(withOutsideHoursNote(ctx, 'It failed')).toBe('It failed')
+  })
+})
+
+describe('supportedHoursText', () => {
+  test('inside and outside the hours alike; nothing without hours', () => {
+    expect(supportedHoursText(parseAutoStatusResponse({ auto: OUTSIDE }))).toBe(
+      'Automatic features are supported 09:00–17:00 (Asia/Tokyo). Manual digitizing works at any time.',
+    )
+    expect(
+      supportedHoursText(
+        parseAutoStatusResponse({ auto: { ...OUTSIDE, available: true } }),
+      ),
+    ).toBe(
+      'Automatic features are supported 09:00–17:00 (Asia/Tokyo). Manual digitizing works at any time.',
+    )
+    expect(supportedHoursText(null)).toBe('')
+    expect(
+      supportedHoursText(
+        parseAutoStatusResponse({ auto: { ...OUTSIDE, hours: null } }),
+      ),
+    ).toBe('')
   })
 })
 
