@@ -233,12 +233,7 @@ import { useDigitizerOptions } from '@/presentation/digitizerOptions'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { POINT_MODE, MANUAL_MODE } from '@/constants'
 import { AxisOcrReader } from '@/application/services/axisOcr/axisOcrReader'
-import {
-  AXIS_NAMES,
-  AxisName,
-  Coord,
-  matchOcrWordsToAxisValues,
-} from '@/application/utils/axisOcrMatcher'
+import { AXIS_NAMES, AxisName, Coord } from '@/application/utils/axisOcrMatcher'
 import { calibrateCurrentImage } from '@/application/utils/autoCalibrationOperations'
 import { isImageChangedError } from '@/application/utils/autoFeatureOperations'
 import { axisValuesAtPoints } from '@/application/utils/axisValuesFromCalibration'
@@ -294,9 +289,7 @@ function describeAutoFill(
     parts.push(
       `By the browser OCR${
         serviceFailed ? ' (the auto service failed)' : ''
-      }: ${fromOcr
-        .sort()
-        .join(', ')} — check these, decimal points are sometimes dropped.`,
+      }: ${fromOcr.sort().join(', ')} — check these against the figure.`,
     )
   }
   return parts.join(' ')
@@ -446,13 +439,15 @@ export default defineComponent({
       // INFO: where the last Auto-fill's values came from (with the auto
       // service only), and which ones to check
       autoFillNote: '',
-      // INFO: OCR accuracy check (real-chart-bench, 41 verified figures,
-      // 2026-08-30) found ~78% per-axis accuracy but a recurring failure
-      // mode: decimal points getting dropped (e.g. "0.4" read as "4").
-      // Shown as a standing hint icon next to the button (always visible,
-      // not just after a run) rather than silently trusting the numbers.
+      // INFO: the browser OCR fills a value only when the labels along the
+      // axis agree with each other (axisLabelMatcher.ts). On the benchmark
+      // (real-chart-bench, 91 figures, 2026-11-23) that left fields empty
+      // more often than it filled a wrong one (0 wrong values, 25 of 182
+      // axes empty), so the standing hint says both: fields may stay empty,
+      // and a value can still be wrong. Shown next to the button (always
+      // visible, not just after a run).
       ocrWarningMessage:
-        'Auto-filled values may be inaccurate — decimal points are sometimes misread (e.g. "0.4" detected as "4"). Please double-check each value before proceeding.',
+        'Values are read from the axis labels in your browser and filled only where the labels along the axis agree, so some fields may stay empty. OCR can still misread a label: please check each value before proceeding.',
     }
   },
   created() {
@@ -571,9 +566,10 @@ export default defineComponent({
         // INFO: with the auto service, its calibration (the /calibrate
         // answer Axis Auto-place uses) gives the value at each placed marker:
         // right on both axes for 79 of 91 benchmark figures, against 23 with
-        // the browser OCR (docs/design/starryai-auto.md §2.4). The browser
-        // OCR then fills only the markers on an axis the service could not
-        // read. Without the service: the browser OCR, as before.
+        // the old browser OCR and 69 with the current one (2026-11-23,
+        // docs/design/starryai-auto.md §2.4). The browser OCR then fills only
+        // the markers on an axis the service could not read. Without the
+        // service: the browser OCR, as before.
         let fromService: Partial<Record<AxisName, number>> = {}
         let serviceFailed = false
         if (this.autoFeatures.canAutoPlace) {
@@ -598,11 +594,25 @@ export default defineComponent({
           // the reader is built here rather than kept around. Building it on
           // click also means options.assetBaseUrl is read at the moment the
           // host's value is final.
+          //
+          // INFO: the reader and the matcher get every placed marker, not
+          // only the ones left to fill: the other axis's markers tell which
+          // side of each axis line its labels are on and which labels belong
+          // to the other axis (axisLabelMatcher.ts).
           const axisOcrReader = new AxisOcrReader(this.options.assetBaseUrl)
           const words = await axisOcrReader.readWords(
             this.canvasHandler.imageElement,
+            placed,
           )
-          fromOcr = matchOcrWordsToAxisValues(words, rest)
+          // INFO: loaded on click like tesseract.js (axisOcrReader.ts), so
+          // the matcher does not weigh on the initial bundle either
+          const { matchAxisLabels } = await import(
+            '@/application/utils/axisLabelMatcher'
+          )
+          const read = matchAxisLabels(words, placed)
+          fromOcr = Object.fromEntries(
+            Object.entries(read).filter(([name]) => name in rest),
+          ) as Partial<Record<AxisName, number>>
         }
         const matches = { ...fromOcr, ...fromService }
 
