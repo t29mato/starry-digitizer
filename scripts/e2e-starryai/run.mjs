@@ -23,7 +23,7 @@ const REPO = path.resolve(HERE, '../..')
 const BACKEND_PORT = 24866
 const PAGE_PORT = 24960
 const ORIGIN = `http://127.0.0.1:${PAGE_PORT}`
-const PAGE_URL = `${ORIGIN}/starry-digitizer/`
+const PAGE_URL = `${ORIGIN}/sd/`
 const API = '/wpd-auto/api/v1'
 const LOGIN_PASSWORD = 'e2e-only-password'
 
@@ -1238,7 +1238,7 @@ async function main() {
       [
         'vite',
         'build',
-        '--base=/starry-digitizer/',
+        '--base=/sd/',
         '--outDir',
         WWW,
         '--emptyOutDir',

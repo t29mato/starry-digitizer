@@ -5,8 +5,8 @@
 # origin; this script installs no service of its own.
 # Run as the user that owns the web dirs (not root). Idempotent.
 #
-#   deploy/deploy.sh staging [<commit>]     # <site>/starry-digitizer-staging/
-#   deploy/deploy.sh production [<commit>]  # <site>/starry-digitizer/
+#   deploy/deploy.sh staging [<commit>]     # <site>/sd-staging/
+#   deploy/deploy.sh production [<commit>]  # <site>/sd/
 #   deploy/deploy.sh production @staging    # the commit staging has, rebuilt for production
 #   deploy/deploy.sh history [<n>]          # the deploys so far (the last n)
 #   deploy/deploy.sh check                  # the site settings and the nginx locations; changes nothing
@@ -73,11 +73,11 @@ read_site() {
 set_target() {
   case $1 in
     production)
-      TARGET=production PREFIX=/starry-digitizer/
+      TARGET=production PREFIX=/sd/
       WEB_DIR=${site[STARRY_DIGITIZER_WEB_DIR]}
       API_URL=${site[STARRY_DIGITIZER_API_URL]:-/wpd-auto/api/v1} ;;
     staging)
-      TARGET=staging PREFIX=/starry-digitizer-staging/
+      TARGET=staging PREFIX=/sd-staging/
       WEB_DIR=${site[STARRY_DIGITIZER_STAGING_WEB_DIR]}
       API_URL=${site[STARRY_DIGITIZER_STAGING_API_URL]:-/wpd-auto-staging/api/v1} ;;
     *) die "unknown target: $1 (production or staging)" ;;

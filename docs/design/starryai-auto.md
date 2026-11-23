@@ -1,6 +1,6 @@
 # starry-digitizer に wpd-auto の自動機能を入れ、starryai に置く（設計書の下書き）
 
-- 版: **0.0.14**（2026-11-24。合意までは 0.x.y で上げる）
+- 版: **0.0.15**（2026-11-24。合意までは 0.x.y で上げる）
 - 書いた人: Claude Code（間藤の依頼）。材料に wpd-auto のセッションの下書き
   `~/research/drafts/starryai-hosting-from-wpd-auto-session.md` を使った。
 - 置き場所: starry-digitizer の `docs/design/starryai-auto.md`（ブランチ `feat/starryai-hosting`、`origin/v4` から分けた）。
@@ -654,18 +654,18 @@ starry-digitizer は `GET {baseUrl}/capabilities` → `{features:[…]}` を前�
 starryai（nginx :80）
 ├─ /wpd-auto/                    wpd-auto の画面（今のまま）
 ├─ /wpd-auto/api/                → 127.0.0.1:7870  wpd-auto backend（本番、共通）
-├─ /starry-digitizer/            starry-digitizer の画面（静的）  ← 新しく足す
-├─ /starry-digitizer/source/     （任意）配った版のソース tarball
+├─ /sd/                          starry-digitizer の画面（静的）  ← 新しく足す
+├─ /sd/source/                   （任意）配った版のソース tarball
 ├─ /wpd-auto-staging/            （今のまま）
 ├─ /wpd-auto-staging/api/        → 127.0.0.1:7871  backend（ステージング、共通）
-└─ /starry-digitizer-staging/    ← 新しく足す。/wpd-auto-staging/api/ を呼ぶ
+└─ /sd-staging/                  ← 新しく足す。/wpd-auto-staging/api/ を呼ぶ
 ```
 
 - **ポート**
   - starry-digitizer は静的ファイルだけなので、新しいポートは要らない。backend の 7870・7871 と、LineFormer の 7880・7881 をそのまま使う。
 - **URL**
-  - 案は `http://<starryai>/starry-digitizer/` と `/starry-digitizer-staging/`。
-  - 短い名前（`/sd/`）にするかは §10 Q9。
+  - `http://starryai.nims.go.jp/sd/` と `/sd-staging/`（2026-11-24 に間藤が短い名前に決めた。§10 Q9）。
+  - 置き場所のディレクトリ（`/srv/starry-digitizer*`）と nginx の snippet の名前（`starry-digitizer.conf`）は変えない。wpd-auto の `include /etc/nginx/snippets/starry-digitizer*.conf;` をそのまま使うため。
   - starryai に届く範囲（NIMS の中だけか）は、wpd-auto の文書には書かれていなかった（未確認）。
 - **本番とステージング**
   - wpd-auto と同じ分け方にする。同じホスト・同じオリジンで、パス・データの場所・帯の表示（STAGING）を分ける。
@@ -676,9 +676,9 @@ starryai（nginx :80）
 | もの | wpd-auto のやり方（読んだ） | starry-digitizer でやること（案） |
 |---|---|---|
 | release | `deploy.sh` が `git archive <commit>` からビルドし、`<WEB_DIR>/releases/<commit>` に置く。`www` のリンクを一度に切り替え、今と 1 つ前だけ残す。`deploy-history.log` に 1 行足す | 同じ形。置き場所は `STARRY_DIGITIZER_WEB_DIR`（例 `/srv/starry-digitizer`）と `…_STAGING_WEB_DIR`。中に `www → releases/<commit>/` を置く |
-| ビルド | `build.sh --deploy` で `config.js` を作る（`backendUrl: "."`） | `VITE_AUTO_SERVICE_URL=/wpd-auto/api/v1 vite build --base=/starry-digitizer/`（ステージングは両方を staging に）。`VERSION.txt`（commit・build 番号・環境）を書く |
+| ビルド | `build.sh --deploy` で `config.js` を作る（`backendUrl: "."`） | `VITE_AUTO_SERVICE_URL=/wpd-auto/api/v1 vite build --base=/sd/`（ステージングは両方を staging に）。`VERSION.txt`（commit・build 番号・環境）を書く |
 | systemd | backend・LineFormer・時間のタイマー・バックアップ | **足さない**（静的だけ）。backend のユニットは wpd-auto のものをそのまま使う |
-| nginx | `deploy/nginx/wpd-auto.conf` は :80 の server ブロックを丸ごと持つ（`default_server`） | 同じ server ブロックに `location /starry-digitizer/`（`alias …/www/`、`expires -1`）とステージングの分を足す。そのため、**wpd-auto のひな形を変えることになる**（§10 Q12） |
+| nginx | `deploy/nginx/wpd-auto.conf` は :80 の server ブロックを丸ごと持つ（`default_server`） | 同じ server ブロックに `location /sd/`（`alias …/www/`、`expires -1`）とステージングの分を足す。そのため、**wpd-auto のひな形を変えることになる**（§10 Q12） |
 | site.env | `~/.config/wpd-auto/site.env`（データとして読み、知らないキーは止まる） | 新しいキー `STARRY_DIGITIZER_WEB_DIR`・`…_STAGING_WEB_DIR` を足すか、別のファイルにするか（Q12） |
 | 昇格 | `staging <commit>` → 確かめる → `production @staging` | 同じ |
 | ソースの配布 | AGPL §13 のため、リポジトリ全体の tarball を `/wpd-auto/source/` で配る | starry-digitizer は MIT なので、義務はない。揃えるかは任意 |
@@ -707,7 +707,7 @@ starryai（nginx :80）
   - API への要求が service worker を通る。
 - **推す案**: starryai 版のビルドでは PWA を切る。F17 の版の知らせは、wpd-auto と同じ方式（`VERSION.txt` を 5 分ごとに見る）にする（§10 Q13）。
 - 残す場合は、次の 2 つを満たす。
-  - scope を `/starry-digitizer/` に限る。
+  - scope を `/sd/` に限る。
   - `/wpd-auto/api/` を precache と navigateFallback の対象から外す。
 
 ### 4.5 同じオリジンで気を付けること（推測）
@@ -813,6 +813,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.12 | 2026-11-24 | P1（作業をサーバーに保存）と F16 My work（ブランチ `feat/my-work`）。§2.3・§3.2(c)・§3.4・Q5・Q8 |
 | 0.0.13 | 2026-11-24 | `feat/small-features` と `feat/my-work` をまとめた。作業を送るときに SID・Fig. を `data.starrydata`（wpd-auto と同じ形）で付ける。新しい版の Reload の前に作業も送る |
 | 0.0.14 | 2026-11-24 | §2.3 にブラウザでの確かめ（`scripts/e2e-starryai`、ヘッドレスの Chromium と本物の backend。56 通り）。見つけた 4 つを直した（フッターのサポート時間、失敗の文の句点、Start over の後に残る文、凡例の文字の大きさ） |（ブランチ `feat/e2e-browser` を 0.0.13 の上にまとめた）
+| 0.0.15 | 2026-11-24 | §4.1・Q9: パスを `/sd/`・`/sd-staging/` に短くした（deploy.sh・nginx のひな形・e2e も） |
 | 0.0.8 | 2026-11-23 | 5 つのブランチを `feat/starryai-hosting` にまとめた: ブラウザの OCR の改善（§2.4、91 図で 23 → 69）、0.2 の記録・知らせ・名前の選択（§3.4・§5.2）、F12 Start over・F14 Components、F9 凡例の読み取り、F2・F4・F6 の棒グラフ（Q7）。棒の抽出の後は凡例を読まない（backend が marker と line だけを受けるため） |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め
@@ -830,7 +831,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | Q6 候補の方式 | 下書きのデータセットのまま。記録の型を対応させる（§3.4） | 既定 |
 | Q7 Bar 軸 | **x = 棒の番号（0,1,2…）の X-Y 軸セット**。軸の種類は足さない。機能の名前は `auto_axis_bar`（下の本文） | 既定（0.4 で実装） |
 | Q8 project の受け口 | 案 P1（`format` を足す）。wpd-auto の下書き 0.0.1 に合わせて実装した（backend はまだ） | 既定 |
-| Q9 版と URL | アプリの版は package.json のまま（2.0.0 系）。この文書の段の番号（0.1〜0.5）は版ではなく段の名前として使う。パスは `/starry-digitizer/` | 既定 |
+| Q9 版と URL | アプリの版は package.json のまま（2.0.0 系）。この文書の段の番号（0.1〜0.5）は版ではなく段の名前として使う。パスは `/sd/`・`/sd-staging/`（2026-11-24 に間藤が決めた） | 決定 |
 | Q10 しきい値 | starry-digitizer の 0.5 のまま | 既定 |
 | Q11 範囲 | Start over（F12）は入れる。Set up series などサーバーを使わないものは後で | 既定 |
 | Q12 デプロイ | 案 D2（starry-digitizer に小さな deploy.sh、nginx の location のひな形だけ wpd-auto に） | 推した案 |
@@ -882,7 +883,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 8. **Q8 project の受け口**: 案 P1（format を足す）／P2（WPD の形に変換）／P3（project は送らない）のどれにするか。
 9. **Q9 版と URL**:
    - starryai に置く版の数え方。starry-digitizer の package.json は `feat/auto-digitize` で 2.0.0 になっている。starryai 版を別に 0.x で数えるか。
-   - パスは `/starry-digitizer/` でよいか。
+   - パスは `/sd/`・`/sd-staging/` に決まった（2026-11-24）。
 10. **Q10 しきい値**: 点の見直しの既定のしきい値を揃えるか（wpd-auto 0.6、starry-digitizer 0.5）。
 11. **Q11 範囲**: 「auto の機能を全部」に、サーバーを使わない機能も含めるか。
     - 対象は Set up series・Start over・凡例の順の並べ替え・Reload の勧め など。

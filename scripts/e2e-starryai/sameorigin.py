@@ -1,6 +1,6 @@
 """Same origin as starryai's nginx, for the browser check (scripts/e2e-starryai).
 
-Serves the starryai build at /starry-digitizer/ and passes /wpd-auto/api/ to a
+Serves the starryai build at /sd/ and passes /wpd-auto/api/ to a
 local wpd-auto backend (like nginx's proxy_pass). Binds 127.0.0.1 only.
 Standard library only.
 
@@ -18,7 +18,7 @@ WWW, BACKEND, PORT = sys.argv[1], sys.argv[2].rstrip("/"), int(sys.argv[3])
 PASS = ("content-type", "x-wpd-app", "x-wpd-client-id", "x-wpd-session-id",
         "x-wpd-request-id", "x-wpd-user", "x-wpd-token", "authorization")
 API = "/wpd-auto/api/"
-APP = "/starry-digitizer"
+APP = "/sd"
 
 
 class Handler(SimpleHTTPRequestHandler):

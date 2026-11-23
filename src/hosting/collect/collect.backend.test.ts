@@ -37,7 +37,7 @@ const fakeWindow = {
   innerHeight: 800,
   screen: { width: 1920, height: 1080 },
   devicePixelRatio: 1,
-  location: { pathname: '/starry-digitizer-staging/' },
+  location: { pathname: '/sd-staging/' },
   addEventListener: () => undefined,
   removeEventListener: () => undefined,
   document: {

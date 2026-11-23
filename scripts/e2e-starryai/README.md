@@ -24,9 +24,9 @@ node scripts/e2e-starryai/run.mjs --out /tmp/…/e2e-run --no-build   # 前の�
 
 `--out` を省くと OS の一時ディレクトリの下に作る。流れは次のとおり。
 
-1. `deploy/deploy.sh` と同じ設定でビルドする（`--base=/starry-digitizer/`、`VITE_AUTO_SERVICE_URL=/wpd-auto/api/v1`、PWA と Google tag は off、OCR の資産は同じオリジン）。出力は `<out>/www`。
+1. `deploy/deploy.sh` と同じ設定でビルドする（`--base=/sd/`、`VITE_AUTO_SERVICE_URL=/wpd-auto/api/v1`、PWA と Google tag は off、OCR の資産は同じオリジン）。出力は `<out>/www`。
 2. `<out>/collect` を収集の場所にして（`users.json` に alice と bob）、backend を `127.0.0.1:24866` で動かす（staging、時間 09:00-17:00 Asia/Tokyo）。
-3. `sameorigin.py` を `127.0.0.1:24960` で動かす。nginx の代わりで、`/starry-digitizer/` にページ、`/wpd-auto/api/` を backend に渡す。
+3. `sameorigin.py` を `127.0.0.1:24960` で動かす。nginx の代わりで、`/sd/` にページ、`/wpd-auto/api/` を backend に渡す。
 4. ヘッドレスの Chromium で下の手順を流す。各段の画面を `<out>/shots/` に撮る。
 5. 動かしたサーバーをすべて止める。結果を `<out>/index.html` と `<out>/result.json` に書く。
 

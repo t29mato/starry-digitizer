@@ -31,7 +31,7 @@ sudo nginx -t && sudo systemctl reload nginx
 ## デプロイ
 
 ```sh
-deploy/deploy.sh staging [<commit>]      # /starry-digitizer-staging/ で確かめる
+deploy/deploy.sh staging [<commit>]      # /sd-staging/ で確かめる
 deploy/deploy.sh production @staging     # ステージングのコミットを本番用に作り直して置く
 deploy/deploy.sh history 10
 ```

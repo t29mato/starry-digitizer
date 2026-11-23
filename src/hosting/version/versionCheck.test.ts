@@ -51,7 +51,7 @@ function setup(texts: (string | number | Error)[]) {
   const doc = fakeDocument()
   const seen: unknown[] = []
   const stop = watchVersion({
-    url: '/starry-digitizer/VERSION.txt',
+    url: '/sd/VERSION.txt',
     running: { commit: COMMIT_A, build: '5' },
     onNewVersion: (served) => seen.push(served),
     fetch: fetchFn as unknown as typeof fetch,
@@ -138,7 +138,7 @@ describe('watchVersion', () => {
   it('looks at once, without the cache, and every 5 minutes', async () => {
     const { fetchFn, timers, seen, stop } = setup([versionTxt(COMMIT_A, 5)])
     await settle()
-    expect(fetchFn).toHaveBeenCalledWith('/starry-digitizer/VERSION.txt', {
+    expect(fetchFn).toHaveBeenCalledWith('/sd/VERSION.txt', {
       cache: 'no-store',
     })
     expect(timers.map((t) => t.ms)).toEqual([VERSION_CHECK_INTERVAL_MS])

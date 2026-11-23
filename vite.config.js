@@ -116,7 +116,7 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         // INFO: relative to the manifest, so a build under another base
-        // (vite build --base=/starry-digitizer/) installs that one
+        // (vite build --base=/sd/) installs that one
         start_url: '.',
         icons: [
           {
