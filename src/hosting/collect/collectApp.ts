@@ -71,6 +71,12 @@ export interface CollectHandle {
   signIn(user: string, password: string): Promise<LoginResult>
   /** password mode: send what is queued, then sign out */
   signOut(): Promise<void>
+  /**
+   * Before a reload (a new version): record what waits for a debounce and
+   * send the queue now. Resolves true when nothing sendable is left; the
+   * caller bounds the wait (versionCheck.ts reloadAfterFlush).
+   */
+  flushBeforeReload(): Promise<boolean>
   stop(): void
 }
 
@@ -173,6 +179,10 @@ export function startCollect(
       // works; what fails waits for the next sign-in
       await client.flush()
       await auth.logout()
+    },
+    flushBeforeReload() {
+      wiring.recordPending()
+      return client.flushNow()
     },
     stop() {
       unsubscribe()

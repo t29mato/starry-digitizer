@@ -117,6 +117,14 @@
     <keyboard-shortcuts-dialog v-model="showKeyboardShortcuts" />
     <about-dialog v-model="showAbout" :page="pageVersion" />
     <pwa-update-prompt />
+    <!-- INFO: the starryai build's "new version" bar (F17). That build has
+         no Service Worker, so the prompt above never shows there. -->
+    <version-notice
+      v-if="newVersionShown"
+      :busy="reloading"
+      @reload="onReloadForNewVersion"
+      @dismiss="dismissedVersion = newVersionKey"
+    />
   </div>
 </template>
 
@@ -174,6 +182,13 @@ import {
   type LoginView,
 } from '@/hosting/collect/collectApp'
 import type { CollectUser } from '@/hosting/collect/collectClient'
+import VersionNotice from '@/hosting/version/VersionNotice.vue'
+import {
+  reloadAfterFlush,
+  runningVersion,
+  versionCheckEnabled,
+  watchVersion,
+} from '@/hosting/version/versionCheck'
 
 import { version } from '../package.json'
 
@@ -221,6 +236,7 @@ export default defineComponent({
     CollectUserDialog,
     LoginDialog,
     AuthStatus,
+    VersionNotice,
   },
 
   // INFO: the same context <StarryDigitizer> is given, provided here too so
@@ -255,6 +271,12 @@ export default defineComponent({
     reviewSession: appContext.reviewSession,
     removeMessageBridge: null as null | (() => void),
     stopAutoStatus: null as null | (() => void),
+    stopVersionWatch: null as null | (() => void),
+    // INFO: F17: the newest deploy seen on the server (`<commit>#<build>`),
+    // the one the person closed the bar for, and the Reload in progress
+    newVersionKey: null as string | null,
+    dismissedVersion: null as string | null,
+    reloading: false,
     // INFO: left undefined until mounted() has looked for auto-saved work, so
     // a restored image is not preceded by a pointless fetch/decode of the
     // sample figure (and its flash on screen).
@@ -285,6 +307,12 @@ export default defineComponent({
     },
   }),
   computed: {
+    newVersionShown(): boolean {
+      return (
+        this.newVersionKey !== null &&
+        this.newVersionKey !== this.dismissedVersion
+      )
+    },
     // INFO: "v<version>#<GitHub Actions build number>"; used to be rendered
     // inside StarryDigitizer.vue.
     appVerAndBuildInfo(): string {
@@ -493,12 +521,36 @@ export default defineComponent({
       // (and LineFormer, off outside them) change under it
       this.stopAutoStatus = watchAutoStatus(this.appContext)
     }
+    // INFO: F17 — only the starryai build (an auto service, no Service
+    // Worker, a commit/build from deploy.sh); a new version is announced,
+    // never loaded by itself
+    const running = runningVersion(
+      import.meta.env.VITE_APP_COMMIT,
+      import.meta.env.VITE_APP_BUILD,
+    )
+    if (
+      versionCheckEnabled({
+        autoServiceUrl,
+        pwaOff: import.meta.env.VITE_PWA_OFF === '1',
+        running,
+      })
+    ) {
+      this.stopVersionWatch = watchVersion({
+        url: `${import.meta.env.BASE_URL}VERSION.txt`,
+        running,
+        onNewVersion: (served) => {
+          this.newVersionKey = `${served.commit}#${served.build}`
+        },
+      })
+    }
   },
   beforeUnmount() {
     this.removeMessageBridge?.()
     this.removeMessageBridge = null
     this.stopAutoStatus?.()
     this.stopAutoStatus = null
+    this.stopVersionWatch?.()
+    this.stopVersionWatch = null
     collectHandle?.stop()
     collectHandle = null
   },
@@ -594,6 +646,17 @@ export default defineComponent({
       // first-ever visit shows.
       await this.digitizerRef()?.loadProject(undefined, DEFAULT_IMAGE)
       await this.markAutoSaveBaseline()
+    },
+    async onReloadForNewVersion() {
+      if (this.reloading) return
+      this.reloading = true
+      // INFO: what the person did so far goes to the research store first
+      // (at most a few seconds); the work itself is in the auto-save
+      const handle = collectHandle
+      await reloadAfterFlush(
+        handle ? () => handle.flushBeforeReload() : null,
+        () => window.location.reload(),
+      )
     },
     onImageReplaced(payload: { blob: Blob }) {
       collectHandle?.noteFile(payload.blob)

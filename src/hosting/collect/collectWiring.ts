@@ -127,7 +127,9 @@ export interface CollectWiringOptions {
 export interface CollectWiring {
   /** the person loaded this file (ImageSettings' `image-replaced`) */
   noteFile(file: Blob): void
-  /** record what is pending now (the tab is being hidden) */
+  /** record what is waiting for its debounce now (before a reload) */
+  recordPending(): void
+  /** record what is pending now and send it (the tab is being hidden) */
   flushPending(): void
   detach(): void
 }
@@ -255,7 +257,7 @@ export function attachCollector(
     },
   )
 
-  const flushPending = () => {
+  const recordPending = () => {
     if (imageTimer !== null) {
       clearTimeout(imageTimer)
       takeImage()
@@ -264,6 +266,9 @@ export function attachCollector(
       clearTimeout(calibrationTimer)
       recordCalibrations()
     }
+  }
+  const flushPending = () => {
+    recordPending()
     client.flushOnHide()
   }
   const onVisibility = () => {
@@ -280,6 +285,7 @@ export function attachCollector(
         type: file.type,
       }
     },
+    recordPending,
     flushPending,
     detach() {
       stopImage()

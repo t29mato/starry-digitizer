@@ -133,7 +133,8 @@ export class CollectClient {
   private prefix = storagePrefix(null)
   private queue: QueuedEvent[] = []
   private seq = 0
-  private sending = false
+  /** the flush() in progress, if any */
+  private running: Promise<void> | null = null
   private batchTimer: unknown = null
   private retryTimer: unknown = null
   private failures = 0
@@ -491,26 +492,58 @@ export class CollectClient {
 
   /**
    * Send what may be sent now, batch by batch. Resolves when done or when
-   * a failure has scheduled a retry. Never rejects.
+   * a failure has scheduled a retry. Never rejects. A call while a flush is
+   * running resolves with that one.
    */
-  async flush(): Promise<void> {
-    if (!this.canSend || this.sending) return
-    this.sending = true
-    try {
-      for (;;) {
-        const batch = this.nextBatch(Math.floor(this.maxJsonBytes / 2), false)
-        if (batch.length === 0) break
-        const outcome = await this.send(batch, false)
-        if (outcome === 'held') break
-        if (outcome === 'retry') {
-          this.retryLater()
-          break
-        }
-        this.failures = 0
+  flush(): Promise<void> {
+    if (!this.canSend) return Promise.resolve()
+    if (this.running) return this.running
+    this.running = this.sendBatches().finally(() => {
+      this.running = null
+    })
+    return this.running
+  }
+
+  private async sendBatches(): Promise<void> {
+    for (;;) {
+      const batch = this.nextBatch(Math.floor(this.maxJsonBytes / 2), false)
+      if (batch.length === 0) break
+      const outcome = await this.send(batch, false)
+      if (outcome === 'held') break
+      if (outcome === 'retry') {
+        this.retryLater()
+        break
       }
-    } finally {
-      this.sending = false
+      this.failures = 0
     }
+  }
+
+  /**
+   * Send everything that may be sent, now: without the batch delay, and one
+   * more try even while a retry is waiting (the page is about to reload, a
+   * later retry would never come). Resolves true when nothing sendable is
+   * left, false when a send failed (a retry is scheduled again) or sending
+   * is not allowed. Never rejects; the caller bounds the wait.
+   */
+  async flushNow(): Promise<boolean> {
+    if (!this.canSend) return false
+    for (let round = 0; round < 20; round++) {
+      if (this.batchTimer !== null) {
+        this.opts.clearTimer(this.batchTimer)
+        this.batchTimer = null
+      }
+      if (this.retryTimer !== null) {
+        this.opts.clearTimer(this.retryTimer)
+        this.retryTimer = null
+      }
+      // INFO: a flush already running resolves first; the loop then sends
+      // what was recorded while it ran
+      await this.flush()
+      if (this.retryTimer !== null || !this.canSend) return false
+      if (this.nextBatch(Math.floor(this.maxJsonBytes / 2), false).length === 0)
+        return true
+    }
+    return false
   }
 
   /**
