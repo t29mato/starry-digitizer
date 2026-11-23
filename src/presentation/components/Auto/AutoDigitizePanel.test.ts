@@ -205,4 +205,50 @@ describe('AutoDigitizePanel', () => {
     expect(s.ctx.axisSetRepository.activeAxisSet.hasAtLeastOneAxis).toBe(true)
     expect(wrapper.emitted('error')).toBeUndefined()
   })
+
+  it('after a run, the legend names the drafts (line kind) in the result', async () => {
+    const s = await setup(['auto_axis', 'lineformer'])
+    wrapper = s.wrapper
+    const legend = jest.fn(async () => ({
+      status: 'ok',
+      reason: null,
+      legend: {
+        legend: { source: 'vlm' },
+        assignments: [
+          {
+            series_id: 's0',
+            label: 'Bi2Te3',
+            role: 'primary',
+            confidence: 0.8,
+          },
+        ],
+        draft_order: ['s0'],
+      },
+    }))
+    ;(s.service as AutoService).legend = legend
+    await wrapper.get('[data-cy="auto-digitize-run"]').trigger('click')
+    await flushPromises()
+
+    // INFO: the backend's own pixels come back as they went out (+0.5 in,
+    // −0.5 out: autoServiceWire.ts BACKEND_PIXEL_OFFSET)
+    expect(legend.mock.calls[0][0]).toMatchObject({
+      series: [
+        {
+          id: 's0',
+          kind: 'line',
+          points: [
+            [109.5, 299.5],
+            [209.5, 199.5],
+          ],
+        },
+      ],
+    })
+    expect(wrapper.get('[data-cy="legend-naming-named"]').text()).toContain(
+      'Bi2Te3',
+    )
+    expect(s.ctx.datasetRepository.datasets[0].name).toBe('Bi2Te3 (lineformer)')
+    // INFO: its own step: Undo once takes the name back, twice the run
+    s.ctx.historyManager.undo()
+    expect(s.ctx.datasetRepository.datasets[0].name).toBe('line 1 (lineformer)')
+  })
 })

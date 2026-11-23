@@ -205,7 +205,37 @@ function migrateDataset(raw: unknown, index: number): DatasetDTO {
   if (Array.isArray(raw.scoreRemovedPoints)) {
     migrated.scoreRemovedPoints = raw.scoreRemovedPoints as DatasetDTO['points']
   }
+  const legend = migrateDatasetLegend(raw.legend)
+  if (legend) {
+    migrated.legend = legend
+  }
   return migrated
+}
+
+const LEGEND_STATUSES = ['auto', 'suggestion', 'accepted']
+
+// INFO: the legend record is only a note on where a name came from; one that
+// is not the documented shape is dropped rather than failing the load
+function migrateDatasetLegend(raw: unknown): DatasetDTO['legend'] {
+  if (!isRecord(raw)) return undefined
+  const { label, confidence, source, status } = raw
+  if (
+    typeof label !== 'string' ||
+    typeof source !== 'string' ||
+    typeof status !== 'string' ||
+    !LEGEND_STATUSES.includes(status)
+  ) {
+    return undefined
+  }
+  return {
+    label,
+    confidence:
+      typeof confidence === 'number' && Number.isFinite(confidence)
+        ? confidence
+        : null,
+    source,
+    status: status as NonNullable<DatasetDTO['legend']>['status'],
+  }
 }
 
 /**

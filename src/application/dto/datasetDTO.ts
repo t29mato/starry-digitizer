@@ -1,4 +1,4 @@
-import { MarkerStyle, Point } from '@/@types/types'
+import { DatasetLegend, MarkerStyle, Point } from '@/@types/types'
 
 /**
  * DTO (Data Transfer Object) for Dataset
@@ -25,4 +25,10 @@ export interface DatasetDTO {
   // out below the threshold, so "Restore removed" can bring them back.
   marker?: MarkerStyle
   scoreRemovedPoints?: Point[]
+  /**
+   * What the legend reader said about the dataset (label, confidence,
+   * source, and whether the name was set from it). Optional and additive
+   * like `marker`: written only when set.
+   */
+  legend?: DatasetLegend
 }

@@ -40,6 +40,8 @@ export interface HttpAutoServiceConfig {
   capabilitiesTimeoutMs?: number
   /** Give up on calibrate / extract after this long. Default 120000 ms. */
   requestTimeoutMs?: number
+  /** Give up on the legend reader after this long. Default 20000 ms. */
+  legendTimeoutMs?: number
   /**
    * How long calibrate / extract keep retrying while the service is
    * restarting or busy (502/503/504, unreachable), in waits of 1, 2, 4, …
@@ -65,6 +67,11 @@ export const DEFAULT_RETRY_BUDGET_MS = 30000
 // INFO: extract/methods asks the LineFormer service's /healthz (2 s upper
 // bound, backend README) before it answers
 export const DEFAULT_STATUS_TIMEOUT_MS = 10000
+// INFO: the backend ends a legend pass within its wait (3 s) + timeout
+// (15 s) and answers `timeout` itself by 21 s (backend README, POST
+// /api/v1/legend). Giving up at 20 s loses only answers that would have been
+// a `timeout` anyway; either way the drafts just keep their names.
+export const DEFAULT_LEGEND_TIMEOUT_MS = 20000
 // INFO: 503s that say "this will not change by waiting" (backend README,
 // "API"): the engine or method is not installed or its service is down.
 const PERMANENT_503 = ['engine_unavailable', 'method_unavailable']
@@ -282,6 +289,36 @@ export function createHttpAutoService(
 
     status() {
       return getJson(`${baseUrl}/auto/status`)
+    },
+
+    // INFO: no retry: the legend only names drafts, a busy reader answers
+    // 200 `busy` by itself, and a second request would queue behind the first
+    async legend(body, options = {}) {
+      const url = `${baseUrl}/legend`
+      if (isBlockedAsMixedContent(url)) {
+        throw new DigitizerError(
+          'AUTO_SERVICE_FAILED',
+          'The auto service is http and this page is https',
+        )
+      }
+      const timeoutMs = config.legendTimeoutMs ?? DEFAULT_LEGEND_TIMEOUT_MS
+      try {
+        const response = await request(
+          url,
+          {
+            method: 'POST',
+            headers: { ...headers(), 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          },
+          timeoutMs,
+          options.signal,
+        )
+        return await readJson(response)
+      } catch (error) {
+        throw error instanceof RequestFailed
+          ? failureError(error, timeoutMs)
+          : error
+      }
     },
 
     calibrate(image, options) {

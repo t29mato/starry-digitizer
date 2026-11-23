@@ -314,3 +314,69 @@ describe('isBlockedAsMixedContent', () => {
     ).toBe(false)
   })
 })
+
+describe('legend()', () => {
+  test('posts JSON to {baseUrl}/legend and resolves with the body as is', async () => {
+    const answer = { status: 'busy', reason: 'x', legend: null }
+    const fetch = jest.fn(async () => jsonResponse(200, answer))
+    const service = createHttpAutoService({
+      baseUrl: '/wpd-auto/api/v1/',
+      fetch: fetch as unknown as typeof globalThis.fetch,
+      headers: { 'X-WPD-App': 'starry-digitizer' },
+    })
+    const body = { image: 'aGVsbG8=', series: [] }
+    await expect(service.legend?.(body)).resolves.toEqual(answer)
+    const [url, init] = fetch.mock.calls[0] as unknown as FetchCall
+    expect(url).toBe('/wpd-auto/api/v1/legend')
+    expect(init).toMatchObject({
+      method: 'POST',
+      headers: {
+        'X-WPD-App': 'starry-digitizer',
+        'Content-Type': 'application/json',
+      },
+    })
+    expect(JSON.parse(init.body as string)).toEqual(body)
+  })
+
+  test('is not retried, and gives up after legendTimeoutMs', async () => {
+    jest.useFakeTimers()
+    try {
+      const fetch = jest.fn(
+        (_url: string, init: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init.signal?.addEventListener('abort', () =>
+              reject(new Error('aborted')),
+            )
+          }),
+      )
+      const service = createHttpAutoService({
+        baseUrl: '/x',
+        legendTimeoutMs: 500,
+        fetch: fetch as unknown as typeof globalThis.fetch,
+      })
+      const failure = service.legend?.({})
+      jest.advanceTimersByTime(500)
+      await expect(failure).rejects.toMatchObject({
+        code: 'AUTO_SERVICE_FAILED',
+        message: expect.stringContaining('0.5 s'),
+      })
+      expect(fetch).toHaveBeenCalledTimes(1)
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  test('a 4xx (a body the backend does not take) rejects', async () => {
+    const fetch = jest.fn(async () =>
+      jsonResponse(400, { error: 'invalid_params', detail: 'series: a list' }),
+    )
+    const service = createHttpAutoService({
+      baseUrl: '/x',
+      fetch: fetch as unknown as typeof globalThis.fetch,
+    })
+    await expect(service.legend?.({})).rejects.toMatchObject({
+      code: 'AUTO_SERVICE_FAILED',
+      message: expect.stringContaining('HTTP 400'),
+    })
+  })
+})

@@ -104,3 +104,24 @@ describe('fromDatasetDTO', () => {
     expect(dto.points[0]).toEqual({ id: 1, xPx: 5, yPx: 6 })
   })
 })
+
+describe('the legend record of a dataset (F9)', () => {
+  it('round-trips as a copy, and is absent when never set', () => {
+    const dataset = new Dataset('100 nm (markernet)', [], 1)
+    expect('legend' in toDatasetDTO(dataset)).toBe(false)
+
+    dataset.legend = {
+      label: '100 nm',
+      confidence: 0.84,
+      source: 'vlm',
+      status: 'auto',
+    }
+    const dto = toDatasetDTO(dataset)
+    expect(dto.legend).toEqual(dataset.legend)
+    expect(dto.legend).not.toBe(dataset.legend)
+
+    const back = fromDatasetDTO(dto)
+    expect(back.legend).toEqual(dataset.legend)
+    expect(back.legend).not.toBe(dto.legend)
+  })
+})

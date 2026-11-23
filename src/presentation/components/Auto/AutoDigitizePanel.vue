@@ -99,6 +99,12 @@
       <div v-if="outcome.extraction?.hasScores" class="c__muted">
         Review Points: N (next) / ⇧N (previous) steps through low-score points.
       </div>
+      <legend-naming-result
+        v-if="legendMethod"
+        :is-reading="isReadingLegend"
+        :outcome="legendOutcome"
+        :method="legendMethod"
+      ></legend-naming-result>
     </div>
   </div>
 </template>
@@ -118,6 +124,12 @@ import {
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { toErrorPayload } from '@/application/errors'
 import { outsideHoursNote } from '@/application/utils/autoFeatureOperations'
+import {
+  canReadLegend,
+  LegendNamingOutcome,
+  readLegendNames,
+} from '@/application/utils/legendOperations'
+import LegendNamingResult from './LegendNamingResult.vue'
 
 const METHOD_CHOICES: Record<
   ExtractionMethod,
@@ -155,7 +167,7 @@ const SLOW_AFTER_S = 20
 // and one Undo step (autoDigitizeOperations.ts). The proposal of a run that
 // stopped at the axes is left to Axis Auto-place, which already shows it.
 export default defineComponent({
-  components: { SdButton },
+  components: { LegendNamingResult, SdButton },
   emits: ['error'],
   setup() {
     const ctx = useDigitizerContext()
@@ -176,6 +188,8 @@ export default defineComponent({
       STEP_MARKS,
       // INFO: not reactive state, only aborted / cleared
       controller: null as AbortController | null,
+      // INFO: the running legend reading's (F9), likewise
+      legendController: null as AbortController | null,
       timer: null as ReturnType<typeof setInterval> | null,
     }
   },
@@ -186,6 +200,9 @@ export default defineComponent({
       step: null as AutoDigitizeStep | null,
       elapsedS: 0,
       outcome: null as AutoDigitizeOutcome | null,
+      legendMethod: null as ExtractionMethod | null,
+      isReadingLegend: false,
+      legendOutcome: null as LegendNamingOutcome | null,
     }
   },
   computed: {
@@ -299,6 +316,7 @@ export default defineComponent({
   },
   beforeUnmount() {
     this.controller?.abort()
+    this.legendController?.abort()
     this.stopTimer()
   },
   methods: {
@@ -309,6 +327,37 @@ export default defineComponent({
     cancel() {
       this.controller?.abort()
     },
+    // INFO: F9 — after the drafts are made, ask the legend reader for their
+    // names, without waiting for it (the run's result is already on screen)
+    readLegend(outcome: AutoDigitizeOutcome) {
+      const extraction = outcome.extraction
+      if (
+        outcome.status !== 'done' ||
+        !extraction ||
+        extraction.datasetIds.length === 0 ||
+        !canReadLegend(this.ctx)
+      ) {
+        return
+      }
+      const controller = new AbortController()
+      this.legendController = controller
+      this.legendMethod = outcome.method
+      this.isReadingLegend = true
+      readLegendNames(
+        this.ctx,
+        {
+          result: extraction.result,
+          method: outcome.method,
+          datasetIds: extraction.datasetIds,
+        },
+        { signal: controller.signal },
+      ).then((legend) => {
+        if (this.legendController !== controller) return
+        this.legendController = null
+        this.isReadingLegend = false
+        this.legendOutcome = legend
+      })
+    },
     async run() {
       const method = this.selectedMethod
       if (!method || !this.canRun) return
@@ -316,6 +365,10 @@ export default defineComponent({
       this.controller = controller
       this.isRunning = true
       this.outcome = null
+      this.legendController?.abort()
+      this.legendMethod = null
+      this.legendOutcome = null
+      this.isReadingLegend = false
       this.step = null
       this.elapsedS = 0
       this.stopTimer()
@@ -331,6 +384,7 @@ export default defineComponent({
           },
         })
         this.outcome = outcome
+        this.readLegend(outcome)
         if (outcome.status === 'failed' && outcome.error) {
           this.$emit('error', toErrorPayload(outcome.error))
         }

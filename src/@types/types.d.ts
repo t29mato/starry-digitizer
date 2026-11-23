@@ -60,5 +60,19 @@ export type MarkerStyle = {
   sizePx?: number
 }
 
+// INFO: What the legend reader (F9, POST /legend) said about a dataset.
+// `status`: 'auto' = the name was set from it; 'suggestion' = offered (a
+// confidence of 0.3–0.5), not applied; 'accepted' = a person applied the
+// suggestion. Kept as a record of where the name came from; the name itself
+// stays the dataset's `name`, which a person may change at any time.
+export type DatasetLegend = {
+  label: string
+  /** 0..1, the reader's heuristic; null if it gave none */
+  confidence: number | null
+  /** e.g. 'vlm' */
+  source: string
+  status: 'auto' | 'suggestion' | 'accepted'
+}
+
 export type SelectionShape = 'box' | 'lasso'
 export type AnnotationTarget = 'plotArea' | 'legendArea'

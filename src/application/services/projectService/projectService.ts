@@ -159,6 +159,12 @@ export class ProjectService implements ProjectServiceInterface {
     datasetRepository.datasets.forEach((dataset) => {
       touch(dataset.id, dataset.name, dataset.axisSetId, dataset.externalId)
       touch(dataset.marker?.shape, dataset.marker?.fill, dataset.marker?.sizePx)
+      touch(
+        dataset.legend?.label,
+        dataset.legend?.confidence,
+        dataset.legend?.source,
+        dataset.legend?.status,
+      )
       dataset.points.forEach((point) => {
         touch(point.id, point.xPx, point.yPx)
       })
