@@ -78,4 +78,12 @@ export interface AutoService {
    * a service without it shows no such list.
    */
   components?(): Promise<unknown>
+  /**
+   * Optional: POST `body` (JSON `{ image: base64, series: [...] }`, built by
+   * buildLegendRequest() in autoServiceWire.ts) to the legend reader
+   * (`POST /legend`) and resolve with its JSON body as is. A service without
+   * it simply names no drafts from the legend; the digitizer treats a
+   * rejection the same way (quietly).
+   */
+  legend?(body: unknown, options?: AutoRequestOptions): Promise<unknown>
 }

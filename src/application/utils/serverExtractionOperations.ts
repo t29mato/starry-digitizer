@@ -189,6 +189,8 @@ function applyDrafts(
       target.visiblePointIds = points.map((p) => p.id)
       target.manuallyAddedPointIds = []
       target.scoreRemovedPoints = []
+      // INFO: what the legend reader said was about the series that were here
+      target.legend = undefined
       target.inactivatePoints()
       target.setAxisSetId(axisSetId)
       return target.id
@@ -239,7 +241,12 @@ function draftFingerprint(dataset: DatasetInterface): string {
   ])
 }
 
-function rememberDraft(
+/**
+ * Remember `dataset`, as it is now, as an untouched draft of `method` — for
+ * a change made on the digitizer's behalf (the legend naming it, see
+ * legendOperations.ts) that must not count as a person touching it.
+ */
+export function rememberDraft(
   ctx: DigitizerContext,
   dataset: DatasetInterface,
   method: ExtractionMethod,

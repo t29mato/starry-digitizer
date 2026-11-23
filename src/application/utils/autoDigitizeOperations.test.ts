@@ -112,7 +112,9 @@ describe('Auto digitize', () => {
       datasetIds: [1, 2],
       replacedDraftCount: 0,
       hasScores: false,
+      result: expect.objectContaining({ method: 'lineformer' }),
     })
+    expect(outcome.extraction?.result.series).toHaveLength(2)
     expect(outcome.undoSteps).toBe(1)
     expect(steps).toEqual(['axes', 'extract'])
     expect(captures).toEqual([AUTO_DIGITIZE_ACTION])

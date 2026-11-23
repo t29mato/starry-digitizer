@@ -330,3 +330,101 @@ describe('ServerExtractionPanel: methods and hours from the server', () => {
     wrapper.unmount()
   })
 })
+
+describe('ServerExtractionPanel: legend reading (F9)', () => {
+  const PNG = 'data:image/png;base64,aGVsbG8='
+  const flush = () => new Promise((r) => setTimeout(r, 0))
+  const extraction = {
+    method: 'markernet',
+    series: [
+      { label: 'circle', points: [[9.5, 9.5]] },
+      { label: 'square', points: [[19.5, 19.5]] },
+    ],
+  }
+  // INFO: the backend's 200 envelope (wpd-auto backend README, MIT)
+  const answer = {
+    status: 'ok',
+    reason: null,
+    legend: {
+      legend: { source: 'vlm' },
+      assignments: [
+        { series_id: 's0', label: '100 nm', role: 'primary', confidence: 0.9 },
+        { series_id: 's1', label: '200 nm', role: 'primary', confidence: 0.4 },
+      ],
+      draft_order: ['s0', 's1'],
+    },
+    elapsed_ms: 10,
+  }
+  const setup = async (legend: AutoService['legend']) => {
+    const ctx = createDigitizerContext()
+    const service: AutoService = {
+      capabilities: async () => ['markernet'],
+      calibrate: jest.fn(),
+      extract: jest.fn(async () => extraction),
+      legend,
+    }
+    await configureAutoService(ctx, service)
+    ctx.canvasHandler.setUploadImageUrl(PNG)
+    const wrapper = mountWith(ServerExtractionPanel, ctx)
+    await wrapper.vm.$nextTick()
+    return { ctx, wrapper }
+  }
+
+  it('the drafts come first; the names, an "auto" mark and a suggestion follow', async () => {
+    let resolve: (body: unknown) => void = () => undefined
+    const { ctx, wrapper } = await setup(
+      () => new Promise((r) => (resolve = r)),
+    )
+    await wrapper.find('[data-cy="server-extraction-run"]').trigger('click')
+    await flush()
+    expect(wrapper.text()).toContain('2 series, 2 points')
+    expect(wrapper.find('[data-cy="legend-naming-reading"]').exists()).toBe(
+      true,
+    )
+
+    resolve(answer)
+    await flush()
+    expect(wrapper.find('[data-cy="legend-naming-named"]').text()).toContain(
+      'auto 100 nm',
+    )
+    const suggestion = wrapper.find('[data-cy="legend-naming-suggestion"]')
+    expect(suggestion.text()).toContain('200 nm?')
+    expect(ctx.datasetRepository.datasets.map((d) => d.name)).toEqual([
+      '100 nm (markernet)',
+      'square (markernet)',
+    ])
+
+    await wrapper.find('[data-cy="legend-naming-accept"]').trigger('click')
+    expect(ctx.datasetRepository.datasets[1].name).toBe('200 nm (markernet)')
+    expect(wrapper.find('[data-cy="legend-naming-suggestion"]').exists()).toBe(
+      false,
+    )
+    wrapper.unmount()
+  })
+
+  it('a failure is one quiet caption, not an error', async () => {
+    const { wrapper } = await setup(async () => ({
+      status: 'vlm_unavailable',
+      reason: 'the local VLM is not running',
+      legend: null,
+    }))
+    await wrapper.find('[data-cy="server-extraction-run"]').trigger('click')
+    await flush()
+    expect(wrapper.find('[data-cy="legend-naming-caption"]').text()).toBe(
+      'Legend not read: the legend reader is not running.',
+    )
+    expect(wrapper.emitted('error')).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('not asked when the legend is turned off (MarkerNet legend=0)', async () => {
+    const legend = jest.fn(async () => answer)
+    const { wrapper } = await setup(legend)
+    await wrapper.find('[data-cy="server-extraction-legend"]').setValue(false)
+    await wrapper.find('[data-cy="server-extraction-run"]').trigger('click')
+    await flush()
+    expect(legend).not.toHaveBeenCalled()
+    expect(wrapper.find('[data-cy="legend-naming"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+})

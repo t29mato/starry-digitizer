@@ -3,6 +3,7 @@ import { ExtractionMethod } from '@/application/services/autoService/autoService
 import {
   AutoAxisName,
   AutoCalibrationProposal,
+  ServerExtractionResult,
 } from '@/application/services/autoService/autoServiceWire'
 import {
   applyAutoCalibration,
@@ -73,6 +74,8 @@ export interface AutoDigitizeExtraction {
   replacedDraftCount: number
   /** true when some point carries a score (MarkerNet): Review Points applies */
   hasScores: boolean
+  /** the extraction's answer (for the legend reader, legendOperations.ts) */
+  result: ServerExtractionResult
 }
 
 export interface AutoDigitizeOutcome {
@@ -235,6 +238,7 @@ export async function runAutoDigitize(
       datasetIds: [],
       replacedDraftCount: 0,
       hasScores: false,
+      result,
     }
     return end('no_points', 'The axes were applied, but no points were found.')
   }
@@ -254,6 +258,7 @@ export async function runAutoDigitize(
     hasScores: result.series.some((s) =>
       s.points.some((p) => p.score !== undefined),
     ),
+    result,
   }
   outcome.stoppedAt = null
   return end('done', '')

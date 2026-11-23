@@ -144,6 +144,51 @@ describe('migrateProject', () => {
 
       expect(migrateProject(input).datasets[0].externalId).toBeUndefined()
     })
+
+    it('keeps the legend record of a dataset (F9) and drops a malformed one', () => {
+      const legend = {
+        label: '100 nm',
+        confidence: 0.84,
+        source: 'vlm',
+        status: 'auto',
+      }
+      const input = {
+        ...legacyProject(),
+        version: '2.0.0',
+        datasets: [
+          { id: 1, name: 'a', axisSetId: 1, points: [], legend },
+          {
+            id: 2,
+            name: 'b',
+            axisSetId: 1,
+            points: [],
+            legend: { ...legend, confidence: 'high', status: 'suggestion' },
+          },
+          {
+            id: 3,
+            name: 'c',
+            axisSetId: 1,
+            points: [],
+            legend: { ...legend, status: 'guessed' },
+          },
+          { id: 4, name: 'd', axisSetId: 1, points: [], legend: 'x' },
+          { id: 5, name: 'e', axisSetId: 1, points: [] },
+        ],
+      }
+
+      const datasets = migrateProject(input).datasets
+      expect(datasets[0].legend).toEqual(legend)
+      expect(datasets[0].legend).not.toBe(legend)
+      // INFO: an unreadable confidence is kept as "none given"
+      expect(datasets[1].legend).toEqual({
+        ...legend,
+        confidence: null,
+        status: 'suggestion',
+      })
+      expect(datasets[2].legend).toBeUndefined()
+      expect(datasets[3].legend).toBeUndefined()
+      expect('legend' in datasets[4]).toBe(false)
+    })
   })
 
   describe('rejections', () => {

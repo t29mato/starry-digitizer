@@ -132,6 +132,7 @@ starryai に置く版を starry-digitizer 側で **`starryai-0.1.0`** のよう�
 | 0.3 | F12 Start over（画像は残す。Undo 1 段 `project.start-over`） | 済み（caea31f、ブランチ `feat/start-over-components`） | Jest（操作と部品）。ブラウザでは見ていない |
 | 0.3 | F14 Components（Help > About の折りたたみ） | 済み（6f135e7、同じブランチ） | 本物の backend の答えを Jest の fixture にした。ブラウザでは見ていない |
 | 0.2 | 記録を送る（§3.4）・知らせ（§5.2）・名前の選択 | 未着手 | — |
+| 0.3 | F9 凡例の読み取り | 済み。ブランチ `feat/legend-reader`（ローカルだけ。push していない） | Jest。本物の backend（下の「F9 凡例の読み取り」） |
 
 **つないで確かめたこと（2026-11-23、この VM の中）**
 
@@ -192,6 +193,46 @@ wpd-auto のセッションの報告（読んだだけ）:
   リポジトリの直下の `eng.traineddata` は由来が分からないので使わない。
 - nginx は、wpd-auto の server ブロックに `include` する location のひな形にした。**wpd-auto 側のひな形に `include` の 1 行を足す必要がある**（wpd-auto のセッションに伝える）。
 - リリースのディレクトリ名は `<commit>-<build>`（同じコミットを作り直しても前のものを壊さない）。
+
+**F9 凡例の読み取り（2026-11-23、ブランチ `feat/legend-reader`）**
+
+backend の形は wpd-auto `feat/client-capabilities` の `backend/README.md`・`app.py`・`legend_pass.py`・取り込んだ `legend_reader.py`（MIT）から読んだ。wpd-auto の frontend は読んでいない。
+
+- 境界: `AutoService` に省略できる `legend?(body, options)` を足した。ホストが実装したサービスはそのまま動く。無ければ凡例は読まない。
+  - `httpAutoService` は `POST {baseUrl}/legend` に JSON を送る。20 秒で諦める（`legendTimeoutMs`）。やり直しはしない。
+- 送るもの: `{"image": base64, "series": [{id: "s0"…, kind, shape?, points}]}`。
+  - `kind` は MarkerNet なら `marker`、LineFormer なら `line`。
+  - `shape` は MarkerNet の `label`（`circle` など）が短い英字の語のときだけ付ける。`line 1` のような値を送ると、要求全体が 400 になる（本物の backend で確かめた）。
+  - 点は `toBackendPx`（0.5px 引く）で送る。
+  - 上限（系列 100、1 系列 2 万点、全体 20 万点）を超える分は、系列を切り、点を等間隔に間引く。断られないため。
+- 答えの使い方（backend の規則と同じ）:
+  - `legend.source` が `vlm` で確度 0.5 以上: 下書きの名前を `<凡例の文字> (<method>)` にし、「auto」の印を出す。
+  - 0.3〜0.5: 名前は変えない。結果の欄に「"<今の名前>": <文字>?」と「Use this name」を出す。押すと名前を付ける（Undo 1 段 `extract.legend.accept`）。
+  - それ未満、または `vlm` 以外: 何もしない。
+  - 下書きを `draft_order` の順に並べ直す。動かすのはこの抽出の下書きだけで、今いる場所の中で入れ替える。
+- 呼ぶ時: Server Extraction と Auto digitize の後に、待たずに呼ぶ。抽出の結果はすぐ出る。
+  - 1 度に 1 つ。新しい抽出が始まると、前の問い合わせは取り消す。画像が替わったら答えを捨てる。
+  - MarkerNet で「Name series from the legend」を外したときは呼ばない。
+- Undo: 名前・凡例の記録・並び順をまとめて 1 段（`extract.legend`）。抽出（`extract.server`／`auto.digitize`）とは別の段。
+  - なので Auto digitize の後で凡例が名前を付けると、実行前に戻すには Undo が 2 回要る。結果の欄にそう書く。
+- 人が変えた名前は上書きしない。問い合わせたときの名前と、答えが来たときの名前が違えば、その下書きは残す（「Kept N names you changed.」）。
+- 凡例が名付けた下書きは、まだ「触っていない下書き」として扱う。次の Extract で置き換わる。置き換わると凡例の記録も消える。
+- 失敗は静かにする: `busy`・`vlm_unavailable`・`timeout`・届かない・形が違う、のどれも、結果の欄に小さな 1 行を出すだけ。`error` イベントは出さない。
+- 記録: データセットに `legend {label, confidence, source, status}` を足した（`status` は `auto`／`suggestion`／`accepted`）。
+  - `DatasetDTO.legend` は省略できる欄。書くのは値があるときだけ。版は上げない（`marker` と同じ扱い）。形が違う値は読み込みで捨てる。
+  - §2.3 の「下書きと凡例を同じ数字で比べるなら、ProjectDTO の側に同じ意味の印が要る」の一部になる（推測。wpd-auto の記録の形と突き合わせていない）。
+- ついでに直したこと: `nextDatasetId` を「最後のデータセットの id + 1」から「最大の id + 1」にした。並べ替えた後に同じ id を配らないため。
+
+つないで確かめたこと（この VM の中、backend を `127.0.0.1:24862` で動かした。読むだけで、wpd-auto には何も書いていない）:
+
+| 確かめたこと | 結果 |
+|---|---|
+| Ollama なし（既定の `127.0.0.1:11434` に何もない） | 200 `status: vlm_unavailable`、`legend: null`。下書きは変わらず、「Legend not read: the legend reader is not running.」 |
+| `shape: "line 1"` を送る（curl） | 400 `invalid_params`（`series shape: a short word or null`）。だから `shape` を選んで送る |
+| 偽の Ollama（scratch の `fake_ollama.py`、`127.0.0.1:24939`。VLM の答えだけを固定で返す）と、自作の図（赤い丸と青い四角、凡例 2 項目） | 200 `ok`、`source: vlm`。backend の照合（Tesseract で凡例を置き、色と形で結ぶ）が s1→Sample A、s0→Sample B を確度 1.0 で返した。下書きは「Sample A (markernet)」「Sample B (markernet)」になり、凡例の順に並び替わった |
+
+- VLM そのもの（qwen3.5:9b）の読みは確かめていない。偽の Ollama は答えを固定で返すだけ。
+- 呼び出しは Jest の中から本物の `fetch` で行った。**ブラウザでの確認はまだ**。
 
 ### 2.4 軸の値の自動入力：starry-digitizer の OCR と wpd-auto の比較（2026-11-23）
 
@@ -507,6 +548,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.3 | 2026-11-23 | §2.3 進み具合と、作業中に決めたことを足した |
 | 0.0.4 | 2026-11-23 | wpd-auto 側の capabilities・client・管理画面の絞り込みとつないで確かめた結果を足した |
 | 0.0.6 | 2026-11-23 | Q16: Vercel の公開版は今のまま（starryai に届かせない）と決まった |
+| 0.0.7 | 2026-11-23 | §2.3 に F9 凡例の読み取りの実装と、backend とつないで確かめた結果を足した |
 | 0.0.5 | 2026-11-23 | §2.4 軸の値の自動入力の比較（SD-OCR 23／wpd-auto 76／サーバーで人の点の値 79、91 図）と、Auto-fill values をサーバーの校正で埋める実装。Q16 |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め

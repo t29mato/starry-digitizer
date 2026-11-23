@@ -418,3 +418,147 @@ export function parseComponentsResponse(body: unknown): AutoComponentsInfo {
     digest: label(body.digest),
   }
 }
+
+// ---------------------------------------------------------------------------
+// Legend reading (`POST /legend`, F9)
+// ---------------------------------------------------------------------------
+// INFO: wpd-auto backend README "POST /api/v1/legend" and legend_pass.py
+// (MIT). The answer is ALWAYS HTTP 200 `{status, reason, legend|null,
+// elapsed_ms, components}`; busy / no VLM / timeout are a status with no
+// legend, not an error. `legend` is real-chart-bench's legend reader JSON
+// (schema legend-reader/2): `legend.source` (`vlm` / `ocr` / `none`),
+// `assignments[] {series_id, entry_order, label, role, confidence, …}` (at
+// most one per series) and `draft_order[]` (series ids in legend order, the
+// unmatched ones last in input order).
+
+/** The backend's input limits (legend_pass.py MAX_SERIES / MAX_POINTS / …). */
+export const LEGEND_MAX_SERIES = 100
+export const LEGEND_MAX_POINTS_PER_SERIES = 20000
+export const LEGEND_MAX_TOTAL_POINTS = 200000
+const LEGEND_SHAPE_RE = /^[A-Za-z_]{1,32}$/
+
+export type LegendSeriesKind = 'marker' | 'line'
+
+/** One series of a `POST /legend` request, in BACKEND pixels. */
+export interface LegendRequestSeries {
+  id: string
+  kind: LegendSeriesKind
+  shape?: string
+  points: [number, number][]
+}
+
+export interface LegendRequestBody {
+  /** the image's bytes, base64 */
+  image: string
+  series: LegendRequestSeries[]
+}
+
+// INFO: evenly spaced, first and last kept: the reader looks at colour and
+// shape around the points, so a thinned series still says what it looks like
+function thin<T>(items: T[], max: number): T[] {
+  if (items.length <= max) return items
+  if (max <= 1) return items.slice(0, Math.max(0, max))
+  const step = (items.length - 1) / (max - 1)
+  return Array.from({ length: max }, (_, i) => items[Math.round(i * step)])
+}
+
+/**
+ * The series of an extraction as a `POST /legend` body: ids `s0`, `s1`, … in
+ * series order, points converted to the backend's pixel convention, kept
+ * within the backend's limits (series beyond 100 are left out; long series
+ * are thinned evenly) so a big extraction is never refused for its size.
+ */
+export function buildLegendRequest(
+  image: string,
+  series: readonly ServerExtractionSeries[],
+  kind: LegendSeriesKind,
+): LegendRequestBody {
+  const kept = series.slice(0, LEGEND_MAX_SERIES)
+  const total = kept.reduce((n, s) => n + s.points.length, 0)
+  const share =
+    total > LEGEND_MAX_TOTAL_POINTS
+      ? Math.floor(LEGEND_MAX_TOTAL_POINTS / Math.max(1, kept.length))
+      : LEGEND_MAX_POINTS_PER_SERIES
+  const perSeries = Math.min(share, LEGEND_MAX_POINTS_PER_SERIES)
+  return {
+    image,
+    series: kept.map((s, index) => {
+      const out: LegendRequestSeries = {
+        id: legendSeriesId(index),
+        kind,
+        points: thin(s.points, perSeries).map((p) => [
+          toBackendPx(p.xPx),
+          toBackendPx(p.yPx),
+        ]),
+      }
+      // INFO: MarkerNet's label is its shape name (`circle`, `square`, …);
+      // the reader uses it, and refuses anything that is not a short word
+      if (kind === 'marker' && s.label && LEGEND_SHAPE_RE.test(s.label)) {
+        out.shape = s.label
+      }
+      return out
+    }),
+  }
+}
+
+/** The id of the `index`-th series in a legend request. */
+export const legendSeriesId = (index: number) => `s${index}`
+
+export interface LegendAssignment {
+  seriesId: string
+  label: string
+  /** 0..1; NOT a calibrated probability (the reader's heuristic) */
+  confidence: number
+  /** `primary` or `extra` (a second series on the same legend entry) */
+  role: string | null
+}
+
+export interface LegendReading {
+  /** `ok`, or why there is no legend: `busy`, `vlm_unavailable`, `timeout`, … */
+  status: string
+  reason: string | null
+  /** `vlm` / `ocr` / `none`; null when there is no legend */
+  source: string | null
+  assignments: LegendAssignment[]
+  /** series ids in legend order; [] when there is no legend */
+  draftOrder: string[]
+  elapsedMs: number | null
+}
+
+/** `POST /legend` body → the names and order it gives (odd parts dropped). */
+export function parseLegendResponse(body: unknown): LegendReading {
+  if (!isRecord(body) || typeof body.status !== 'string') {
+    throw invalid('legend has no `status`')
+  }
+  const legend = isRecord(body.legend) ? body.legend : null
+  const head = legend && isRecord(legend.legend) ? legend.legend : null
+  const seen = new Set<string>()
+  const assignments: LegendAssignment[] = []
+  const rawAssignments =
+    legend && Array.isArray(legend.assignments) ? legend.assignments : []
+  rawAssignments.forEach((raw: unknown) => {
+    if (!isRecord(raw)) return
+    const id = text(raw.series_id)
+    const label = typeof raw.label === 'string' ? raw.label.trim() : ''
+    if (!id || !label || !finite(raw.confidence) || seen.has(id)) return
+    seen.add(id)
+    assignments.push({
+      seriesId: id,
+      label,
+      confidence: Math.min(Math.max(raw.confidence, 0), 1),
+      role: text(raw.role),
+    })
+  })
+  const order =
+    legend && Array.isArray(legend.draft_order) ? legend.draft_order : []
+  return {
+    status: body.status,
+    reason: text(body.reason),
+    source: head ? text(head.source) : null,
+    assignments,
+    draftOrder: Array.from(
+      new Set(order.filter((id): id is string => typeof id === 'string')),
+    ),
+    elapsedMs: finite(body.elapsed_ms) ? body.elapsed_ms : null,
+  }
+}

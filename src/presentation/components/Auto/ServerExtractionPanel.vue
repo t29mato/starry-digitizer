@@ -103,6 +103,12 @@
       <div v-if="hasScores" class="c__muted">
         Review Points: N (next) / ⇧N (previous) steps through low-score points.
       </div>
+      <legend-naming-result
+        v-if="legendMethod"
+        :is-reading="isReadingLegend"
+        :outcome="legendOutcome"
+        :method="legendMethod"
+      ></legend-naming-result>
     </div>
     <div class="text-caption c__muted c__licence">{{ licenceNote }}</div>
     <div
@@ -133,6 +139,13 @@ import {
   ExtractionMethod,
 } from '@/application/services/autoService/autoService'
 import { runServerExtraction } from '@/application/utils/serverExtractionOperations'
+import {
+  canReadLegend,
+  LegendNamingOutcome,
+  readLegendNames,
+} from '@/application/utils/legendOperations'
+import { ServerExtractionResult } from '@/application/services/autoService/autoServiceWire'
+import LegendNamingResult from './LegendNamingResult.vue'
 import {
   isImageChangedError,
   outsideHoursNote,
@@ -176,7 +189,13 @@ const LICENCE_NOTES: Record<ExtractionMethod, string> = {
 // own axis calibration. One Extract is one undo step (board P3).
 // docs/design/auto-service.md.
 export default defineComponent({
-  components: { SdButton, SdCheckbox, SdSelect, SdTextField },
+  components: {
+    LegendNamingResult,
+    SdButton,
+    SdCheckbox,
+    SdSelect,
+    SdTextField,
+  },
   emits: ['error'],
   setup() {
     const ctx = useDigitizerContext()
@@ -198,6 +217,8 @@ export default defineComponent({
       SERIES_THRESHOLD_MAX,
       // INFO: the running Extract's; not reactive state, only aborted
       controller: null as AbortController | null,
+      // INFO: the running legend reading's (F9), likewise
+      legendController: null as AbortController | null,
     }
   },
   data() {
@@ -215,6 +236,9 @@ export default defineComponent({
       cancelMessage: '',
       resultMessage: '',
       hasScores: false,
+      legendMethod: null as ExtractionMethod | null,
+      isReadingLegend: false,
+      legendOutcome: null as LegendNamingOutcome | null,
     }
   },
   computed: {
@@ -297,6 +321,7 @@ export default defineComponent({
   },
   beforeUnmount() {
     this.controller?.abort()
+    this.legendController?.abort()
   },
   methods: {
     setMethod(value: string | number) {
@@ -337,6 +362,37 @@ export default defineComponent({
       }
       return params
     },
+    // INFO: F9 — after the drafts are made, ask the legend reader for their
+    // names, without waiting for it: the extraction's result is already on
+    // screen. Not asked when the person turned the legend off (MarkerNet's
+    // `legend=0`) or the service cannot read legends.
+    readLegend(
+      result: ServerExtractionResult,
+      method: ExtractionMethod,
+      datasetIds: number[],
+    ) {
+      if (
+        result.series.length === 0 ||
+        !canReadLegend(this.ctx) ||
+        (method === 'markernet' && !this.useLegend)
+      ) {
+        return
+      }
+      const controller = new AbortController()
+      this.legendController = controller
+      this.legendMethod = method
+      this.isReadingLegend = true
+      readLegendNames(
+        this.ctx,
+        { result, method, datasetIds },
+        { signal: controller.signal },
+      ).then((outcome) => {
+        if (this.legendController !== controller) return
+        this.legendController = null
+        this.isReadingLegend = false
+        this.legendOutcome = outcome
+      })
+    },
     async extract() {
       const method = this.selectedMethod
       if (!method) return
@@ -347,15 +403,17 @@ export default defineComponent({
       this.cancelMessage = ''
       this.resultMessage = ''
       this.hasScores = false
+      this.legendController?.abort()
+      this.legendMethod = null
+      this.legendOutcome = null
+      this.isReadingLegend = false
       try {
-        const { result, replacedDraftCount } = await runServerExtraction(
-          this.ctx,
-          {
+        const { result, replacedDraftCount, datasetIds } =
+          await runServerExtraction(this.ctx, {
             method,
             params: this.params(method),
             signal: controller.signal,
-          },
-        )
+          })
         const points = result.series.reduce(
           (sum, series) => sum + series.points.length,
           0,
@@ -373,6 +431,7 @@ export default defineComponent({
         this.hasScores = result.series.some((series) =>
           series.points.some((point) => point.score !== undefined),
         )
+        this.readLegend(result, method, datasetIds)
       } catch (e) {
         if (isImageChangedError(e)) {
           // INFO: not a failure — nothing to report to the host

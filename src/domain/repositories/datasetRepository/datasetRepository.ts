@@ -44,7 +44,10 @@ export class DatasetRepository implements DatasetRepositoryInterface {
     if (this.datasets.length === 0) {
       return 1
     }
-    return this.datasets[this.datasets.length - 1].id + 1
+    // INFO: the highest id, not the last one's: the list can be reordered
+    // (the legend's order, legendOperations.ts), and an id must never be
+    // handed out twice
+    return Math.max(...this.datasets.map((dataset) => dataset.id)) + 1
   }
 
   get lastDatasetId(): number {

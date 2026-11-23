@@ -1,4 +1,4 @@
-import { Coord, MarkerStyle, Point } from '@/@types/types'
+import { Coord, DatasetLegend, MarkerStyle, Point } from '@/@types/types'
 import { Vector } from '../axisSet/axisSetInterface'
 import { DatasetInterface } from './datasetInterface'
 import { findDuplicateClusters } from '@/domain/services/duplicatePointFinder'
@@ -17,6 +17,8 @@ export class Dataset implements DatasetInterface {
   // INFO: host-owned opaque id (see DatasetDTO.externalId); never interpreted here
   externalId?: string
   marker?: MarkerStyle
+  // INFO: the legend reader's label for this dataset (F9); see DatasetLegend
+  legend?: DatasetLegend
   // INFO: points taken out by removePointsBelowScore(), kept so that
   // restoreScoreRemovedPoints() can put them back (docs/design/
   // auto-extraction-review-design.md, "まとめて消す・戻す")

@@ -101,6 +101,9 @@ export function toDatasetDTO(dataset: DatasetInterface): DatasetDTO {
   if (dataset.scoreRemovedPoints.length > 0) {
     dto.scoreRemovedPoints = dataset.scoreRemovedPoints.map(copyPoint)
   }
+  if (dataset.legend) {
+    dto.legend = { ...dataset.legend }
+  }
   return dto
 }
 
@@ -112,6 +115,7 @@ export function fromDatasetDTO(dto: DatasetDTO): Dataset {
   dataset.externalId = dto.externalId
   dataset.marker = dto.marker ? { ...dto.marker } : undefined
   dataset.scoreRemovedPoints = (dto.scoreRemovedPoints ?? []).map(copyPoint)
+  dataset.legend = dto.legend ? { ...dto.legend } : undefined
   return dataset
 }
 

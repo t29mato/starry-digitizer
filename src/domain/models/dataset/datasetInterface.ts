@@ -1,4 +1,4 @@
-import { Coord, MarkerStyle, Point } from '@/@types/types'
+import { Coord, DatasetLegend, MarkerStyle, Point } from '@/@types/types'
 import { Vector } from '../axisSet/axisSetInterface'
 
 export type Points = Point[]
@@ -13,6 +13,8 @@ export interface DatasetInterface {
   color?: string
   axisSetId: number
   marker?: MarkerStyle
+  /** what the legend reader said about this dataset, if it was asked */
+  legend?: DatasetLegend
   scoreRemovedPoints: Point[]
   points: Point[]
   visiblePointIds: number[]

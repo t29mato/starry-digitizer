@@ -196,6 +196,30 @@ export type {
   ServerExtractionOptions,
   ServerExtractionOutcome,
 } from './application/utils/serverExtractionOperations'
+export {
+  readLegendNames,
+  applyLegendReading,
+  acceptLegendSuggestion,
+  canReadLegend,
+  LEGEND_ACTION,
+  LEGEND_ACCEPT_ACTION,
+  LEGEND_AUTO_NAME_CONFIDENCE,
+  LEGEND_SUGGESTION_CONFIDENCE,
+} from './application/utils/legendOperations'
+export type {
+  LegendNamingOutcome,
+  LegendNamingStatus,
+  LegendNamed,
+  LegendTarget,
+} from './application/utils/legendOperations'
+export {
+  buildLegendRequest,
+  parseLegendResponse,
+} from './application/services/autoService/autoServiceWire'
+export type {
+  LegendReading,
+  LegendRequestBody,
+} from './application/services/autoService/autoServiceWire'
 
 // ---------------------------------------------------------------------------
 // Research record (host hook)
@@ -333,6 +357,7 @@ export type {
   MarkerStyle,
   MarkerShape,
   MarkerFill,
+  DatasetLegend,
 } from './@types/types'
 
 // ---------------------------------------------------------------------------
