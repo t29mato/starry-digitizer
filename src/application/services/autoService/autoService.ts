@@ -71,4 +71,11 @@ export interface AutoService {
   methods?(): Promise<unknown>
   /** Optional: the body of `GET /auto/status` (`{ auto: {...} }`). */
   status?(): Promise<unknown>
+  /**
+   * Optional: the body of `GET /components` — the engines, models and tools
+   * behind the automatic features with their versions (wpd-auto
+   * docs/components.md). Read only for the developers' "Components" list;
+   * a service without it shows no such list.
+   */
+  components?(): Promise<unknown>
 }

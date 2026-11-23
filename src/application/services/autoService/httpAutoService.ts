@@ -284,6 +284,10 @@ export function createHttpAutoService(
       return getJson(`${baseUrl}/auto/status`)
     },
 
+    components() {
+      return getJson(`${baseUrl}/components`)
+    },
+
     calibrate(image, options) {
       return postImage(`${baseUrl}/calibrate`, image, options)
     },

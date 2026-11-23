@@ -148,6 +148,8 @@ export {
   refreshAutoStatus,
   watchAutoStatus,
   outsideHoursNote,
+  canListAutoComponents,
+  loadAutoComponents,
 } from './application/utils/autoFeatureOperations'
 export type { AutoServiceOption } from './application/utils/autoFeatureOperations'
 export {
@@ -224,10 +226,14 @@ export {
   parseExtractionResponse,
   parseExtractionMethodsResponse,
   parseAutoStatusResponse,
+  parseComponentsResponse,
   BACKEND_PIXEL_OFFSET,
 } from './application/services/autoService/autoServiceWire'
 export type {
   AutoHours,
+  AutoComponentsInfo,
+  AutoComponentInfo,
+  AutoBackendInfo,
   ExtractionMethodInfo,
   AutoCalibrationProposal,
   AutoAxisProposal,

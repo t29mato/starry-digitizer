@@ -10,7 +10,9 @@ import {
   HttpAutoServiceConfig,
 } from '@/application/services/autoService/httpAutoService'
 import {
+  AutoComponentsInfo,
   parseAutoStatusResponse,
+  parseComponentsResponse,
   parseExtractionMethodsResponse,
 } from '@/application/services/autoService/autoServiceWire'
 import { DigitizerError } from '@/application/errors'
@@ -109,6 +111,34 @@ export async function refreshAutoStatus(ctx: DigitizerContext): Promise<void> {
   } catch {
     // INFO: silent, as the capabilities question — see THE RULE above
   }
+}
+
+/** True when the configured service can list its components (F14). */
+export function canListAutoComponents(ctx: DigitizerContext): boolean {
+  return typeof ctx.autoFeatures.service?.components === 'function'
+}
+
+/**
+ * Ask the service which engines, models and tools it uses, with their
+ * versions (`GET /components`; docs/design/starryai-auto.md F14). Read on
+ * demand only and never stored: it is a developer's read-out, not project
+ * data. Unlike the capabilities question this one REJECTS on failure, because
+ * the person opened the list on purpose and should see why it is empty.
+ *
+ * @throws {DigitizerError} `AUTO_SERVICE_FAILED` when there is no service,
+ * it cannot list its components, the call fails or the answer has no list.
+ */
+export async function loadAutoComponents(
+  ctx: DigitizerContext,
+): Promise<AutoComponentsInfo> {
+  const service = ctx.autoFeatures.service
+  if (!service?.components) {
+    throw new DigitizerError(
+      'AUTO_SERVICE_FAILED',
+      'The auto service cannot list its components',
+    )
+  }
+  return parseComponentsResponse(await service.components())
 }
 
 /**

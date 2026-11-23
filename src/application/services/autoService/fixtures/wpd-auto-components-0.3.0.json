@@ -1,0 +1,152 @@
+{
+  "format": 2,
+  "app": {
+    "name": "wpd-auto backend",
+    "version": "0.3.0",
+    "build": null,
+    "commit": null,
+    "environment": null,
+    "deployed_at": null
+  },
+  "components": [
+    {
+      "id": "calibration",
+      "role": "calibration (axis ticks)",
+      "name": "real-chart-bench",
+      "public_name": "Starrydata PlotRuler",
+      "component_id": "rcb-axis/v4@4850d1f",
+      "version": "v4",
+      "status": "ok",
+      "details": {
+        "source_commit": "4850d1f7204e824d1c967f93e4fec627c2ee8c54",
+        "vendored_sha256": "8a6f7fb6a6bbf82db8441034ea7e8ffc6f6ffdd25dd0006723f4503f20d97512",
+        "vendored_status": "as vendored",
+        "wpd_change": null
+      }
+    },
+    {
+      "id": "ocr",
+      "role": "OCR (tick labels, legend text)",
+      "name": "Tesseract",
+      "public_name": null,
+      "component_id": "tesseract/5.3.4",
+      "version": "5.3.4",
+      "status": "ok",
+      "details": {
+        "leptonica": "1.82.0",
+        "language": "eng",
+        "eng_package": "1:4.1.0-2",
+        "eng_traineddata_sha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"
+      }
+    },
+    {
+      "id": "upscale",
+      "role": "upscaling before calibration",
+      "name": "wpd-auto OCR upscale",
+      "public_name": null,
+      "component_id": "wpd-auto/upscale@local",
+      "version": "0.3.0",
+      "status": "ok",
+      "details": {
+        "mode": "auto",
+        "min_long_side": 1000,
+        "max_scale": 4,
+        "max_pixels": 4000000,
+        "enhance": true,
+        "retry_max_pixels": 16000000,
+        "retry_budget_s": 25.0,
+        "resample": "lanczos",
+        "unsharp_percent": 300
+      }
+    },
+    {
+      "id": "legend",
+      "role": "legend reading in a MarkerNet answer (OCR; the fallback without the VLM)",
+      "name": "wpd-auto legend reading",
+      "public_name": null,
+      "component_id": "wpd-auto/legend@local",
+      "version": "0.3.0",
+      "status": "ok",
+      "details": {
+        "min_conf": 40.0,
+        "min_score": 0.5,
+        "ocr": "tesseract/5.3.4"
+      }
+    },
+    {
+      "id": "markernet",
+      "role": "marker extraction",
+      "name": "MarkerNet",
+      "public_name": "Starrydata PlotMarker",
+      "component_id": null,
+      "version": null,
+      "status": "weights_missing",
+      "details": {
+        "torch": "2.14.1+cpu"
+      }
+    },
+    {
+      "id": "lineformer",
+      "role": "line extraction",
+      "name": "LineFormer (Lal et al., ICDAR 2023)",
+      "public_name": null,
+      "component_id": null,
+      "version": null,
+      "status": "not configured",
+      "details": {}
+    },
+    {
+      "id": "legend_reader",
+      "role": "legend reader (names and orders the drafts)",
+      "name": "real-chart-bench legend reader",
+      "public_name": null,
+      "component_id": "rcb-legend/v2@4850d1f",
+      "version": "v2",
+      "status": "ok",
+      "details": {
+        "component": "rcb-legend",
+        "schema": "legend-reader/2",
+        "source_commit": "4850d1f7204e824d1c967f93e4fec627c2ee8c54",
+        "vendored_sha256": "ce7604fce0a876107664c19e98e9c25b20fdf102d1a2054acd179e1a227b0754",
+        "vendored_status": "as vendored",
+        "wpd_change": null,
+        "ocr": "tesseract/5.3.4",
+        "auto_name_confidence": 0.5,
+        "candidate_confidence": 0.3
+      }
+    },
+    {
+      "id": "vlm",
+      "role": "vision-language model (reads the legend; local only, the image never leaves this server)",
+      "name": "Ollama qwen3.5:9b",
+      "public_name": null,
+      "component_id": "vlm/qwen3.5-9b@unknown",
+      "version": "qwen3.5:9b",
+      "status": "not running",
+      "details": {
+        "component": "vlm",
+        "model": "qwen3.5:9b",
+        "digest": null,
+        "local_only": true
+      }
+    },
+    {
+      "id": "runtime",
+      "role": "runtime",
+      "name": "Python",
+      "public_name": null,
+      "component_id": null,
+      "version": "3.11.17",
+      "status": "ok",
+      "details": {
+        "numpy": "2.4.6",
+        "pillow": "12.3.0",
+        "torch": "2.14.1+cpu",
+        "fastapi": "0.165.0",
+        "uvicorn": "0.54.0",
+        "anyio": "4.16.0"
+      }
+    }
+  ],
+  "digest": "eec65e64f004"
+}

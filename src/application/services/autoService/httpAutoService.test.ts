@@ -300,6 +300,35 @@ describe('createHttpAutoService methods / status', () => {
   })
 })
 
+describe('createHttpAutoService components', () => {
+  test('GET {baseUrl}/components with the configured headers', async () => {
+    const fetch = jest.fn(async () => jsonResponse(200, { components: [] }))
+    const service = createHttpAutoService({
+      baseUrl: '/wpd-auto/api/v1',
+      headers: { 'X-WPD-App': 'starry-digitizer' },
+      fetch: fetch as unknown as typeof globalThis.fetch,
+    })
+    await expect(service.components?.()).resolves.toEqual({ components: [] })
+    const [url, init] = fetch.mock.calls[0] as unknown as FetchCall
+    expect(url).toBe('/wpd-auto/api/v1/components')
+    expect(init.method).toBe('GET')
+    expect((init.headers as Record<string, string>)['X-WPD-App']).toBe(
+      'starry-digitizer',
+    )
+  })
+
+  test('an HTTP error rejects with AUTO_SERVICE_FAILED', async () => {
+    const fetch = jest.fn(async () => jsonResponse(404, { error: 'not_found' }))
+    const service = createHttpAutoService({
+      baseUrl: '/api',
+      fetch: fetch as unknown as typeof globalThis.fetch,
+    })
+    await expect(service.components?.()).rejects.toMatchObject({
+      code: 'AUTO_SERVICE_FAILED',
+    })
+  })
+})
+
 describe('isBlockedAsMixedContent', () => {
   test('only an http target from an https page is blocked', () => {
     expect(

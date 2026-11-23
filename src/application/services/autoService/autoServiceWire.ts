@@ -310,3 +310,111 @@ export function parseExtractionMethodsResponse(body: unknown): {
   })
   return { methods, hours: parseAutoHours(body.auto) }
 }
+
+/**
+ * One entry of `GET /components` (wpd-auto docs/components.md): an engine,
+ * model or tool the automatic features use. Every field may be null — the
+ * list is for developers, so an entry is kept even when it says little.
+ */
+export interface AutoComponentInfo {
+  /** the slot, e.g. `calibration`, `markernet`, `lineformer` */
+  id: string | null
+  role: string | null
+  name: string | null
+  /** e.g. `Starrydata PlotRuler` */
+  publicName: string | null
+  /** e.g. `markernet/real-b1@18f21c15`, `tesseract/5.3.4` */
+  componentId: string | null
+  version: string | null
+  /** `ok`, `off`, `not configured`, `weights_missing`, … (shown as is) */
+  status: string | null
+  /**
+   * The flat (text / number / true-false) part of `details`, e.g.
+   * `weights_sha256`, `source_commit`, `torch`. Nested values are dropped.
+   */
+  details: Record<string, string | number | boolean | null>
+}
+
+/** The backend itself, as `GET /components` names it. */
+export interface AutoBackendInfo {
+  name: string | null
+  version: string | null
+  build: string | null
+  commit: string | null
+  environment: string | null
+  deployedAt: string | null
+}
+
+/** `GET /components`, as far as the digitizer reads it. */
+export interface AutoComponentsInfo {
+  /** the shape's version (2 in wpd-auto 0.3.0); null = not given */
+  format: number | null
+  app: AutoBackendInfo | null
+  components: AutoComponentInfo[]
+  /** a short digest of `components`, to tell two lists apart at a glance */
+  digest: string | null
+}
+
+// INFO: a build number may come as a number; everything shown is text
+const label = (v: unknown): string | null => (finite(v) ? String(v) : text(v))
+
+function flatDetails(
+  raw: unknown,
+): Record<string, string | number | boolean | null> {
+  if (!isRecord(raw)) return {}
+  const out: Record<string, string | number | boolean | null> = {}
+  Object.entries(raw).forEach(([key, value]) => {
+    if (
+      value === null ||
+      typeof value === 'string' ||
+      typeof value === 'boolean' ||
+      finite(value)
+    ) {
+      out[key] = value
+    }
+  })
+  return out
+}
+
+/**
+ * `GET /components` body → what the Components list shows. TOLERANT on
+ * purpose: it is a developer's read-out, so an odd entry is dropped (or kept
+ * with nulls) rather than failing the whole list; only a body without a
+ * `components` array is refused.
+ */
+export function parseComponentsResponse(body: unknown): AutoComponentsInfo {
+  if (!isRecord(body) || !Array.isArray(body.components)) {
+    throw invalid('components has no `components` array')
+  }
+  const app = isRecord(body.app)
+    ? {
+        name: label(body.app.name),
+        version: label(body.app.version),
+        build: label(body.app.build),
+        commit: label(body.app.commit),
+        environment: label(body.app.environment),
+        deployedAt: label(body.app.deployed_at),
+      }
+    : null
+  const components = body.components.flatMap((raw: unknown) => {
+    if (!isRecord(raw)) return []
+    const entry: AutoComponentInfo = {
+      id: label(raw.id),
+      role: label(raw.role),
+      name: label(raw.name),
+      publicName: label(raw.public_name),
+      componentId: label(raw.component_id),
+      version: label(raw.version),
+      status: label(raw.status),
+      details: flatDetails(raw.details),
+    }
+    // INFO: an entry that names nothing cannot be shown as anything
+    return entry.id || entry.name || entry.componentId ? [entry] : []
+  })
+  return {
+    format: finite(body.format) ? body.format : null,
+    app,
+    components,
+    digest: label(body.digest),
+  }
+}

@@ -1446,6 +1446,14 @@ pixel convention and what a host has to provide:
 - Composing the panels yourself: call `configureAutoService(ctx, config)` from
   `starry-digitizer/core` and place `<AutoDigitizePanel>` / `<AutoPlacePanel>` /
   `<ServerExtractionPanel>` from `starry-digitizer/vue`.
+- **Components** (for developers): `AutoService.components()` (optional;
+  the built-in client calls `GET {baseUrl}/components`) lists the engines,
+  models and tools behind the features with their versions and hashes.
+  `<AutoComponentsPanel>` shows it as a folded "Components" section that asks
+  only when opened and stores nothing; it renders nothing unless the service
+  has `components()`. `<StarryDigitizer>` does not place it — the standalone
+  app shows it under Help > About. `loadAutoComponents(ctx)` /
+  `parseComponentsResponse(body)` are the same without the panel.
 
 ### Research record hook (`onResearchEvent`)
 

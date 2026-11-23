@@ -64,6 +64,7 @@
       <span data-cy="info-snackbar">{{ infoMessage }}</span>
     </sd-snackbar>
     <keyboard-shortcuts-dialog v-model="showKeyboardShortcuts" />
+    <about-dialog v-model="showAbout" :page="pageVersion" />
     <pwa-update-prompt />
   </div>
 </template>
@@ -73,6 +74,10 @@ import { defineComponent } from 'vue'
 import StarryDigitizer from '@/presentation/components/StarryDigitizer.vue'
 import PwaUpdatePrompt from '@/presentation/components/Generals/PWAUpdatePrompt.vue'
 import KeyboardShortcutsDialog from '@/presentation/components/Generals/KeyboardShortcutsDialog.vue'
+import AboutDialog, {
+  type PageVersionInfo,
+} from '@/presentation/components/Generals/AboutDialog.vue'
+import { provideDigitizerContext } from '@/presentation/digitizerContextProvider'
 import logo from '@/assets/logo-mark-white.svg'
 import { SdMenu, SdSnackbar, type SdMenuItem } from '@/presentation/ui'
 import { appContext } from '@/appContext'
@@ -139,8 +144,16 @@ export default defineComponent({
     StarryDigitizer,
     PwaUpdatePrompt,
     KeyboardShortcutsDialog,
+    AboutDialog,
     SdMenu,
     SdSnackbar,
+  },
+
+  // INFO: the same context <StarryDigitizer> is given, provided here too so
+  // the app's own dialogs (Help > About, its Components list) can read it
+  setup() {
+    provideDigitizerContext(appContext)
+    return {}
   },
 
   // INFO: appContext is a reactive() object, so spreading its members into
@@ -162,6 +175,7 @@ export default defineComponent({
     showError: false,
     errorMessage: '',
     showKeyboardShortcuts: false,
+    showAbout: false,
     showInfo: false,
     infoMessage: '',
     reviewSession: appContext.reviewSession,
@@ -184,6 +198,18 @@ export default defineComponent({
       const buildNumber = this.githubRunNumber ? `#${this.githubRunNumber}` : ''
 
       return appVer + buildNumber
+    },
+    // INFO: Help > About. The starryai build is given its commit and build
+    // number by deploy/deploy.sh (the same values as its VERSION.txt); the
+    // Vercel builds have the GitHub Actions run number only.
+    pageVersion(): PageVersionInfo {
+      return {
+        version: this.version,
+        build:
+          import.meta.env.VITE_APP_BUILD || this.githubRunNumber || undefined,
+        commit: import.meta.env.VITE_APP_COMMIT || undefined,
+        environment: import.meta.env.MODE,
+      }
     },
     deviceIsSmartphone() {
       const ua = navigator.userAgent.toLowerCase()
@@ -303,6 +329,12 @@ export default defineComponent({
               text: 'Keyboard Shortcuts',
               action: () => {
                 this.showKeyboardShortcuts = true
+              },
+            },
+            {
+              text: 'About',
+              action: () => {
+                this.showAbout = true
               },
             },
           ],
