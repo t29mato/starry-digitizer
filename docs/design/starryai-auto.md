@@ -811,3 +811,12 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 3. `/collect/status` と `/auth/status` は token なしでも 401 にならないか（ページは token を付けずに送る）。無効な token が付いていても、`/auth/login`・`/auth/logout` は 401 にしないでほしい（ページは login に token を付けない。logout は付ける。下書きどおり「もう無効でも 204」を前提にした）。
 4. `GET /capabilities` は人によって答えが変わるか。ページは人が変わったら聞き直す。
 5. 429 の `Retry-After` は秒でよいか。
+
+**答え（2026-11-24、wpd-auto のセッション。wpd-auto `docs/user-passwords.md` 0.0.2、feat/user-passwords 95a3a7c に反映済み）**: どれもページの作りのままでよい。
+1. 本番は `starrydata-auth`、ほかの環境は `starrydata-auth--<environment>`（staging・development など）。
+2. `login: password` のときも `/collect/users` は一覧を返す（id は秘密ではない）。パスワードのまだない人は一覧に出ない。guest は今と同じ。
+3. token を見ない経路（401 にならない）: `/healthz`、`/auth/status`、`/auth/login`、`/auth/logout`（無効な token でも 204）、`/collect/status`、`/collect/users`、`/capabilities`、`/extract/methods`、`/auto/status`、`/components`。ほかは token が無効なら 401 `invalid_token`。
+4. `/capabilities` の答えは人によって変わらない（聞き直しても害はない）。
+5. `Retry-After` は秒の整数だけ。
+
+backend の `/auth/*` は、間藤が wpd-auto の設計の §7 を決めてから作る。できたら `auth.backend.test.ts` で結合を確かめる。
