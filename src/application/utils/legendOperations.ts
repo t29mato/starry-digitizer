@@ -92,7 +92,9 @@ export interface LegendNamingOptions {
   signal?: AbortSignal
 }
 
-const KIND_OF_METHOD: Record<ExtractionMethod, LegendSeriesKind> = {
+// INFO: the reader takes marker and line series only (wpd-auto
+// legend_pass.py KINDS); a bar chart's BarNet series is not sent
+const KIND_OF_METHOD: Partial<Record<ExtractionMethod, LegendSeriesKind>> = {
   markernet: 'marker',
   lineformer: 'line',
 }
@@ -139,6 +141,13 @@ export async function readLegendNames(
   if (!service?.legend) {
     return outcomeOf('unsupported', 'This service does not read legends.')
   }
+  const kind = KIND_OF_METHOD[target.method]
+  if (!kind) {
+    return outcomeOf(
+      'unsupported',
+      'The legend reader does not read this kind of chart.',
+    )
+  }
   if (target.result.series.length === 0 || target.datasetIds.length === 0) {
     return outcomeOf('no_legend', 'No series to name.')
   }
@@ -166,11 +175,7 @@ export async function readLegendNames(
     ctx.autoFeatures.service !== service
 
   try {
-    const body = buildLegendRequest(
-      image,
-      target.result.series,
-      KIND_OF_METHOD[target.method],
-    )
+    const body = buildLegendRequest(image, target.result.series, kind)
     let answer: unknown
     try {
       answer = await service.legend(body, { signal: controller.signal })

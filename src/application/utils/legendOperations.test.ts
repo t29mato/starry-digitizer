@@ -116,6 +116,15 @@ describe('legend reading (F9)', () => {
     )
   })
 
+  test('a BarNet extraction is not sent (the reader takes markers and lines only)', async () => {
+    const legend = jest.fn(async () => standard)
+    const { ctx } = await setup(legend)
+    const target = await extract(ctx)
+    const outcome = await readLegendNames(ctx, { ...target, method: 'barnet' })
+    expect(outcome.status).toBe('unsupported')
+    expect(legend).not.toHaveBeenCalled()
+  })
+
   test('>= 0.5 names the draft (auto), 0.3–0.5 suggests, below nothing; legend order', async () => {
     const { ctx } = await setup(async () => standard)
     const target = await extract(ctx)

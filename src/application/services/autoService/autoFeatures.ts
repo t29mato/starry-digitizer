@@ -41,8 +41,13 @@ export class AutoFeatures {
     return this.has('auto_axis')
   }
 
+  /** Auto-place of a bar plot's value axis (`calibrate?plot=bar`) */
+  get canAutoPlaceBar(): boolean {
+    return this.has('auto_axis_bar')
+  }
+
   get canExtract(): boolean {
-    return this.has('markernet') || this.has('lineformer')
+    return this.has('markernet') || this.has('lineformer') || this.has('barnet')
   }
 
   /** True when the server says it is outside the supported hours now. */

@@ -9,6 +9,8 @@ import {
   requireAutoFeature,
 } from '@/application/utils/autoFeatureOperations'
 import { fitAxisTicks } from '@/domain/services/axisTickFitter'
+import { barIndexReferences } from '@/domain/services/barIndexAxis'
+import { CalibrationPlot } from '@/application/services/autoService/autoService'
 import { AxisSetInterface } from '@/domain/models/axisSet/axisSetInterface'
 import { Rect } from '@/@types/types'
 import { POINT_MODE } from '@/constants'
@@ -38,8 +40,9 @@ import { POINT_MODE } from '@/constants'
 export async function requestAutoCalibration(
   ctx: DigitizerContext,
   signal?: AbortSignal,
+  plot: CalibrationPlot = 'xy',
 ): Promise<AutoCalibrationProposal> {
-  const proposal = await calibrateCurrentImage(ctx, signal)
+  const proposal = await calibrateCurrentImage(ctx, signal, plot)
   ctx.autoFeatures.setProposal(proposal, ctx.axisSetRepository.activeAxisSetId)
   return proposal
 }
@@ -48,17 +51,29 @@ export async function requestAutoCalibration(
  * The service's calibration of the loaded image, without keeping it as a
  * proposal (Auto-fill values uses it for the points the person placed).
  * Same errors as requestAutoCalibration().
+ *
+ * `plot: 'bar'` asks for a bar plot's value axis (`?plot=bar`, feature
+ * `auto_axis_bar`).
  */
 export async function calibrateCurrentImage(
   ctx: DigitizerContext,
   signal?: AbortSignal,
+  plot: CalibrationPlot = 'xy',
 ): Promise<AutoCalibrationProposal> {
-  const service = requireAutoFeature(ctx, 'auto_axis')
+  const service = requireAutoFeature(
+    ctx,
+    plot === 'bar' ? 'auto_axis_bar' : 'auto_axis',
+  )
   const { image, settle } = bindToCurrentImage(ctx, signal)
+  // INFO: an X-Y request is made exactly as before bar plots existed
+  const options = {
+    ...(signal ? { signal } : {}),
+    ...(plot === 'bar' ? { plot } : {}),
+  }
   let body: unknown
   try {
-    body = await (signal
-      ? service.calibrate(image, { signal })
+    body = await (Object.keys(options).length > 0
+      ? service.calibrate(image, options)
       : service.calibrate(image))
   } catch (error) {
     settle()
@@ -76,6 +91,9 @@ const AXIS_FAILURE_TEXT: Record<string, string> = {
   no_labels_read: 'no tick labels could be read',
   too_few_labels: 'too few tick labels read',
   no_consistent_fit: 'tick labels do not fit a scale',
+  // INFO: a bar plot's x is not read (BarRulerNet); it becomes the bar index
+  not_read_bar_plot: 'not read on a bar plot (x = bar index)',
+  no_value_axis_read: 'no value axis could be read',
 }
 
 /** A failure code of the calibration answer, in words. */
@@ -112,10 +130,19 @@ export function applyAutoCalibration(
   const usable = axes.filter((name) => proposal[name].ok)
   if (usable.length === 0) return []
 
-  const { axisSetRepository, historyManager } = ctx
-  historyManager.capture(action)
-  const axisSet = axisSetRepository.activeAxisSet
+  ctx.historyManager.capture(action)
+  placeAxes(ctx, proposal, usable)
+  return usable
+}
 
+// INFO: the part of an Apply after its capture: the axes, four-points mode,
+// the plot area, and the proposal is done with
+function placeAxes(
+  ctx: DigitizerContext,
+  proposal: AutoCalibrationProposal,
+  usable: AutoAxisName[],
+): void {
+  const axisSet = ctx.axisSetRepository.activeAxisSet
   if (usable.includes('x')) applyXAxis(axisSet, proposal)
   if (usable.includes('y')) applyYAxis(axisSet, proposal)
 
@@ -127,7 +154,64 @@ export function applyAutoCalibration(
     axisSet.plotArea = { ...proposal.frame }
   }
   ctx.autoFeatures.clearProposal()
-  return usable
+}
+
+/**
+ * Apply a BAR plot's proposal to the active axis set: its value (y) axis
+ * from the ticks, and its x axis as the bar index (0, 1, 2, … from the
+ * left; docs/design/starryai-auto.md §10 Q7) through `barCentresPx`, the
+ * bars' x positions. Without bars the x axis is left as it is. One undo
+ * step, as applyAutoCalibration(); nothing happens when the value axis is
+ * not usable.
+ *
+ * @returns the axes that were applied ('x' only when there were bars)
+ */
+export function applyBarAutoCalibration(
+  ctx: DigitizerContext,
+  barCentresPx: number[],
+  proposal: AutoCalibrationProposal | null = ctx.autoFeatures.proposal,
+  action = 'axis.auto-place',
+): AutoAxisName[] {
+  if (!proposal || !proposal.y.ok) return []
+  ctx.historyManager.capture(action)
+  placeAxes(ctx, proposal, ['y'])
+  const placed = setBarIndexXAxis(ctx, barCentresPx, proposal.frame)
+  return placed ? ['x', 'y'] : ['y']
+}
+
+/**
+ * Make the active axis set's x axis the bar index through `barCentresPx`.
+ * Captures NOTHING: the caller's undo step owns it (Auto digitize sets it
+ * after the drafts, in the run's one step).
+ *
+ * @returns false (and changes nothing) when there is no bar
+ */
+export function setBarIndexXAxis(
+  ctx: DigitizerContext,
+  barCentresPx: number[],
+  frame: Rect | null = ctx.axisSetRepository.activeAxisSet.plotArea,
+): boolean {
+  const axisSet = ctx.axisSetRepository.activeAxisSet
+  // INFO: one bar: x2 a quarter of the frame to its right (see barIndexAxis)
+  const reference = barIndexReferences(
+    barCentresPx,
+    frame ? frame.widthPx / 4 : undefined,
+  )
+  if (!reference) return false
+  // INFO: without a frame (and no x marker yet), at the value axis's low
+  // reference — near the bars' base rather than the top of the image
+  const yPx =
+    frame || axisSet.x1.coordIsFilled || !axisSet.y1.coordIsFilled
+      ? xAxisLineY(axisSet, frame)
+      : axisSet.y1.coord.yPx
+  axisSet.x1.coord = { xPx: reference.low.px, yPx }
+  axisSet.x2.coord = { xPx: reference.high.px, yPx }
+  axisSet.setX1Value(reference.low.value)
+  axisSet.setX2Value(reference.high.value)
+  axisSet.setXIsLogScale(false)
+  axisSet.pointMode = POINT_MODE.FOUR_POINTS
+  axisSet.inactivateAxis()
+  return true
 }
 
 // INFO: Ticks are 1-D, so the x markers still need a y to be drawn at (and

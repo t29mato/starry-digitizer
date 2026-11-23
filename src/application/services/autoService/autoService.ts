@@ -14,12 +14,25 @@
 // therefore implements this interface by forwarding those bodies verbatim;
 // it does not need to know anything about the digitizer's coordinates.
 
-/** What a backend may allow. Unknown names in a capabilities answer are ignored. */
-export const AUTO_FEATURES = ['auto_axis', 'markernet', 'lineformer'] as const
+/**
+ * What a backend may allow. Unknown names in a capabilities answer are ignored.
+ *
+ * INFO: `auto_axis_bar` (Auto-place of a bar plot, `POST /calibrate?plot=bar`)
+ * is this digitizer's name; the wpd-auto backend does not send it yet
+ * (docs/design/starryai-auto.md §10 Q7). `barnet` is the extraction method's
+ * id, which the backend already lists when BarNet can run.
+ */
+export const AUTO_FEATURES = [
+  'auto_axis',
+  'auto_axis_bar',
+  'markernet',
+  'lineformer',
+  'barnet',
+] as const
 export type AutoFeature = (typeof AUTO_FEATURES)[number]
 
 /** The extraction methods Server Extraction can ask for (wpd-auto `method`). */
-export const EXTRACTION_METHODS = ['markernet', 'lineformer'] as const
+export const EXTRACTION_METHODS = ['markernet', 'lineformer', 'barnet'] as const
 export type ExtractionMethod = (typeof EXTRACTION_METHODS)[number]
 
 export function isAutoFeature(value: unknown): value is AutoFeature {
@@ -48,6 +61,18 @@ export interface AutoRequestOptions {
   signal?: AbortSignal
 }
 
+/**
+ * What kind of plot the image is (wpd-auto `POST /calibrate?plot=`). `bar`:
+ * the backend reads the value (y) axis of a bar plot (BarRulerNet when it
+ * has the weights, else the X-Y engine); `xy` (the default) sends no `plot`.
+ */
+export type CalibrationPlot = 'xy' | 'bar'
+
+export interface CalibrationOptions extends AutoRequestOptions {
+  /** default `xy`. A service that relays the request passes it on as `?plot=` */
+  plot?: CalibrationPlot
+}
+
 export interface AutoService {
   /**
    * The features this user may see. Resolve `[]` (or reject) for "none":
@@ -56,7 +81,7 @@ export interface AutoService {
    */
   capabilities(): Promise<readonly string[]>
   /** POST the image to the calibration endpoint; resolve with its JSON body. */
-  calibrate(image: Blob, options?: AutoRequestOptions): Promise<unknown>
+  calibrate(image: Blob, options?: CalibrationOptions): Promise<unknown>
   /** POST the image to the extraction endpoint; resolve with its JSON body. */
   extract(
     image: Blob,

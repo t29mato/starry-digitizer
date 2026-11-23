@@ -326,7 +326,11 @@ export function createHttpAutoService(
     },
 
     calibrate(image, options) {
-      return postImage(`${baseUrl}/calibrate`, image, options)
+      // INFO: an X-Y plot sends no `plot`, so the request is the same as
+      // before bar plots existed (and an older backend is not asked a
+      // question it does not know)
+      const query = options?.plot === 'bar' ? '?plot=bar' : ''
+      return postImage(`${baseUrl}/calibrate${query}`, image, options)
     },
 
     extract(image, extraction: ExtractionRequest, options) {
