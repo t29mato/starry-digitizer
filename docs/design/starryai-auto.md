@@ -1,6 +1,6 @@
 # starry-digitizer に wpd-auto の自動機能を入れ、starryai に置く（設計書の下書き）
 
-- 版: **0.0.3**（2026-11-23。合意までは 0.x.y で上げる）
+- 版: **0.0.4**（2026-11-23。合意までは 0.x.y で上げる）
 - 書いた人: Claude Code（間藤の依頼）。材料に wpd-auto のセッションの下書き
   `~/research/drafts/starryai-hosting-from-wpd-auto-session.md` を使った。
 - 置き場所: starry-digitizer の `docs/design/starryai-auto.md`（ブランチ `feat/starryai-hosting`、`origin/v4` から分けた）。
@@ -125,9 +125,43 @@ starryai に置く版を starry-digitizer 側で **`starryai-0.1.0`** のよう�
 | 0.1 | F5・F7 `/extract/methods`・`/auto/status`、時間外の案内、読み直し（`watchAutoStatus`） | 済み（2c50932） | Jest（部品の表示も）。本物の backend には未接続 |
 | 0.1 | starryai 向けのビルド（§4.3・§4.4） | 済み（e731f6f） | ビルドして中身を見た（base・API の URL・tesseract の資産・SW と Google tag がないこと） |
 | 0.1 | `deploy/deploy.sh`・nginx のひな形（§4.2、案 D2） | 済み（fde3156） | この VM の一時ディレクトリに staging → production @staging → 古いリリースの削除まで流した。nginx は通していない |
-| 0.1 | capabilities（C1、wpd-auto 側） | wpd-auto のセッションに頼んだ（返事待ち） | — |
+| 0.1 | capabilities（C1、wpd-auto 側） | 済み。wpd-auto のローカルのブランチ `feat/client-capabilities`（f37c630・393f5f5・e6cc862、push していない） | 下の「つないで確かめたこと」 |
+| 0.2 | `client`（wpd-auto 側：`X-WPD-App` → 記録の `client`、管理画面の `?client=`）と nginx の `include` | 済み（同じブランチ） | 同上（nginx は未確認） |
+| 0.2 | starryai 版が `X-WPD-App: starry-digitizer` を付ける | 済み（2c54247） | 同上 |
 | 0.1 | starryai に実際に置く | まだ | starryai に入れるのは間藤の確認の後 |
-| 0.2 | `client`・記録・知らせ | wpd-auto 側は頼んだ。こちらは未着手 | — |
+| 0.2 | 記録を送る（§3.4）・知らせ（§5.2）・名前の選択 | 未着手 | — |
+
+**つないで確かめたこと（2026-11-23、この VM の中）**
+
+wpd-auto の `feat/client-capabilities` の backend を、この VM の中で `127.0.0.1:24860` で動かした。
+- 設定: 時間 09:00-17:00 Asia/Tokyo、収集は一時ディレクトリ、重みなし、LineFormer なし。
+- starryai 版のビルド（2c54247）は、小さな中継で同じオリジンにして `127.0.0.1:24001/starry-digitizer/` で配った。中継は nginx の代わりで、`/wpd-auto/api/` を backend に渡す。
+- 呼び出しは curl で行った。**ブラウザでの確認はまだ**。
+
+| 確かめたこと | 結果 |
+|---|---|
+| `GET /capabilities` | `{"features":["auto_axis"]}`（重みがないので MarkerNet は載らない。LineFormer は not_configured） |
+| `GET /extract/methods` | markernet `weights_missing`、lineformer `not_configured`、`auto.available:false`（17 時台で時間外） |
+| `POST /calibrate`（`sample_graph_curve.png`、時間外） | 200、約 2.3 秒。x・y とも ok（目盛り 5・6） |
+| `X-WPD-App: other` | 400 `invalid_params` |
+| 記録 `server.calibrate` の `client` | ヘッダー `starry-digitizer` → `starry-digitizer`、ヘッダーなし → `wpd-auto` |
+| 管理画面 `?since=all`／`&client=starry-digitizer`／`&client=wpd-auto`／`&client=x` | Sessions 4／3／1、`x` は 400 |
+
+wpd-auto のセッションの報告（読んだだけ）:
+- backend の単体テストは 898 通り、1 つ落ちる。落ちるのは `test_no_tracked_file_names_the_host` で、main でも落ちる。
+- 画面の node テストで落ちる 20 件は、変更前と同じ。
+- capabilities は calibrate のエンジンと各方法の check() から作る。LineFormer の確認は 5 秒キャッシュ、最長 1 秒。
+- 収集が無効のとき、wpd-auto の画面はヘッダーを付けない（「なし = wpd-auto」に頼る）。
+
+**残り・決めること**
+- Bar の Auto-place（BarRulerNet）の capabilities の名前は、まだ入れていない。0.4 の段（Bar 軸）で決める。仮の名前は `auto_axis_bar`。
+- P1（project を ProjectDTO で受ける）について、wpd-auto のセッションの見立て（推測を含む）:
+  - 無理はない。
+  - ただし、wpd.json の形を前提にした所が 3 つある。`collect.work_summary`、`admin_stats._work_counts`・`_points_table`、`admin_points.index`。
+  - ProjectDTO から axes・datasets・points を数える summary が別に要る。
+  - 下書きと凡例を同じ数字で比べるなら、ProjectDTO の側に同じ意味の印（どの抽出から来たか、人が触ったか）が要る。
+  - works に `format` を持たせ、My work の一覧は wpd のものだけにするのが安全。
+- starryai の実際の `WPD_AUTO_AUTO_TIMEZONE` は、まだ分からない。所内から `/wpd-auto/healthz` の `auto.timezone` を見れば分かる。
 
 作業中に決めたこと（間藤が変えられる）:
 
@@ -398,6 +432,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.1 | 2026-11-23 | 最初の下書き |
 | 0.0.2 | 2026-11-23 | 間藤の「これで進めて」を受け、§10 に仮決めを書いた。置き場所を docs/design に移した |
 | 0.0.3 | 2026-11-23 | §2.3 進み具合と、作業中に決めたことを足した |
+| 0.0.4 | 2026-11-23 | wpd-auto 側の capabilities・client・管理画面の絞り込みとつないで確かめた結果を足した |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め
 
