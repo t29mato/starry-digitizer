@@ -13,7 +13,7 @@ starry-digitizer と wpd-auto をつなぐのは HTTP と JSON の形だけ。
 ```ts
 interface AutoService {
   capabilities(): Promise<readonly string[]>          // 出してよい機能
-  calibrate(image: Blob): Promise<unknown>             // POST /calibrate の応答本文そのまま
+  calibrate(image: Blob, opts?: { plot?: 'xy' | 'bar' }): Promise<unknown> // POST /calibrate[?plot=bar] の応答本文そのまま
   extract(image: Blob, req: ExtractionRequest): Promise<unknown> // POST /extract の応答本文そのまま
 }
 ```
@@ -35,6 +35,14 @@ interface AutoService {
 
 `auto_axis`（軸の Auto-place）、`markernet`、`lineformer`。v4 の設計メモ
 （Starrydata2 `docs/starrydata3/auto-features-gating.md` §3.1）の `{"features": [...]}` と同じ名前。知らない名前は無視する。
+
+棒グラフ用に 2 つ足した（2026-11-23、`starryai-auto.md` §10 Q7）。
+- `auto_axis_bar`: 棒グラフの値の軸の Auto-place（`POST /calibrate?plot=bar`）。**starry-digitizer が決めた仮の名前**。
+  wpd-auto の backend はまだ返さない。`?plot=bar` に答えられるとき（BarRulerNet の `check()` が通る、
+  または BarRulerNet がなく X-Y のエンジンが動く）に返すよう、backend に頼む。
+- `barnet`: 抽出の方法 BarNet。backend は BarNet が動くときにすでに返す。
+- `calibrate` の `plot` は `bar` のときだけ `?plot=bar` を付ける。`xy` は何も付けない（前と同じ要求）。
+  中継するホストは `opts.plot` を `?plot=` として渡すこと。
 
 ## 2. 出し分け（P5）
 
@@ -116,6 +124,21 @@ interface AutoService {
   軸まで進んでいれば軸は残る（Undo 1 回で消える）。
 - Cancel（実行中だけ出る）、画像の差し替え、パネルの破棄で中断する。遅れて来た答えは使わない。
   実行中は経過秒を出し、20 秒を過ぎたら「サービスが混んでいるかもしれない」と添える。
+
+### Bars（棒グラフ、2026-11-23）
+
+- 出し分け: `auto_axis_bar` と `barnet` の両方があるときだけ **Bars**（BarNet）を出す。
+- 手順:
+  1. `calibrate(画像, { plot: 'bar' })`。値の軸（y）が使えて、信頼度 0.5 以上（null は可）のときだけ次へ。
+  2. x も数値で読めて信頼度 0.5 以上なら、X-Y として両方の軸を置く（Lines・Markers と同じ）。
+     そうでなければ y だけ置き、x は後で「棒の番号」にする。
+  3. BarNet で抽出する（範囲は枠）。答えは系列 1 つ、棒 1 本に 1 点（値の端）。
+  4. 下書きを作り、続けて x を棒の番号にする（`setBarIndexXAxis`）。左から 0, 1, 2…（wpd-auto の Bar0, Bar1…）。
+     棒の中心に最小二乗で合わせ、x1 = 0、x2 = n−1 の位置に置く。どちらも 2. と同じ 1 手順。
+  5. 棒が 0 本なら x は置かない（`no_points`）。
+- **棒の軸を別の種類にはしない**。x が棒の番号の、ふつうの X-Y 軸セットで表す（理由は `starryai-auto.md` §10 Q7）。
+- Axis Auto-place にも **X-Y / Bar** の切り替えを出す（`auto_axis_bar` があるとき）。Bar の Apply は、
+  値の軸と、今のデータセット（この軸セットのもの）の点から棒の番号の x を置く。点がなければ x はそのまま。
 
 ## 5. Undo/Redo（P3）
 

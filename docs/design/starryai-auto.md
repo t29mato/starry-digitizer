@@ -130,6 +130,7 @@ starryai に置く版を starry-digitizer 側で **`starryai-0.1.0`** のよう�
 | 0.2 | starryai 版が `X-WPD-App: starry-digitizer` を付ける | 済み（2c54247） | 同上 |
 | 0.1 | starryai に実際に置く | まだ | starryai に入れるのは間藤の確認の後 |
 | 0.2 | 記録を送る（§3.4）・知らせ（§5.2）・名前の選択 | 未着手 | — |
+| 0.4 | F2 Bar の Auto-place（`?plot=bar`）・F4 BarNet・F6 の Bars | 済み（ブランチ `feat/bar-charts`、ローカルだけ） | Jest（backend のコードとテストから作った答えの形）。本物の backend にも当てた（下の「Bar をつないで確かめたこと」）。BarNet・BarRulerNet の重みがないので、成功の道は本物では未確認 |
 
 **つないで確かめたこと（2026-11-23、この VM の中）**
 
@@ -153,8 +154,25 @@ wpd-auto のセッションの報告（読んだだけ）:
 - capabilities は calibrate のエンジンと各方法の check() から作る。LineFormer の確認は 5 秒キャッシュ、最長 1 秒。
 - 収集が無効のとき、wpd-auto の画面はヘッダーを付けない（「なし = wpd-auto」に頼る）。
 
+**Bar をつないで確かめたこと（2026-11-23、この VM の中）**
+
+wpd-auto の `feat/client-capabilities`（e6cc862）の backend を `127.0.0.1:24863` で動かした。重みはない。
+図は PIL で描いた縦棒の図 2 枚（x のラベルが文字 `Al…Zn` のものと、数字 `1…5` のもの）。real-chart-bench の手元の checkout には棒の図が見つからなかった。
+
+| 確かめたこと | 結果 |
+|---|---|
+| `GET /capabilities` | `["auto_axis"]`。`auto_axis_bar`・`barnet` は来ない。よって画面には Bar も Bars も出ない（重みがないので正しい） |
+| `calibrate`（`{ plot: 'bar' }`、starry-digitizer の `createHttpAutoService` から） | `?plot=bar` が受け付けられ、答えに `"plot": "bar"`。BarRulerNet がないので X-Y のエンジンが答えた |
+| 文字ラベルの図 | y ok、x `no_labels_read` → Bars の判定は「棒の番号」 |
+| 数字ラベルの図 | y ok、x ok だが信頼度 0.2 → 判定は「棒の番号」（0.5 未満なので X-Y にしない） |
+| `?plot=pie` | 400 `invalid_params` |
+| `extract?method=barnet` | 404 `unknown_method`（重みがないと方法の一覧にも載らない）。画面は `HTTP 404, unknown_method` のエラーを出す |
+
+ブラウザでの確認はまだ。
+
 **残り・決めること**
-- Bar の Auto-place（BarRulerNet）の capabilities の名前は、まだ入れていない。0.4 の段（Bar 軸）で決める。仮の名前は `auto_axis_bar`。
+- Bar の Auto-place の capabilities の名前は、starry-digitizer 側で `auto_axis_bar` にした（§10 Q7）。**wpd-auto の backend に足してもらう必要がある**。
+  返す条件の案: `?plot=bar` に答えられるとき（BarRulerNet の `check()` が通る、または BarRulerNet がなく X-Y のエンジンの `check()` が通る）。
 - P1（project を ProjectDTO で受ける）について、wpd-auto のセッションの見立て（推測を含む）:
   - 無理はない。
   - ただし、wpd.json の形を前提にした所が 3 つある。`collect.work_summary`、`admin_stats._work_counts`・`_points_table`、`admin_points.index`。
@@ -487,6 +505,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | 0.0.4 | 2026-11-23 | wpd-auto 側の capabilities・client・管理画面の絞り込みとつないで確かめた結果を足した |
 | 0.0.6 | 2026-11-23 | Q16: Vercel の公開版は今のまま（starryai に届かせない）と決まった |
 | 0.0.5 | 2026-11-23 | §2.4 軸の値の自動入力の比較（SD-OCR 23／wpd-auto 76／サーバーで人の点の値 79、91 図）と、Auto-fill values をサーバーの校正で埋める実装。Q16 |
+| 0.0.7 | 2026-11-23 | 0.4 の段（F2・F4・F6 の Bars）を `feat/bar-charts` に入れた。Q7 を決めた（棒の軸は種類を足さず、x = 棒の番号の X-Y） |
 
 ## 10. 決めてほしいこと（間藤への質問）と、仮決め
 
@@ -501,7 +520,7 @@ wpd-auto のしくみ（読んだ）は次のとおり。
 | Q4 管理画面 | まず `?client=` の絞り込みだけ。内訳の列は後で | 既定 |
 | Q5 名前の選択・My work | 名前の選択は 0.2 で入れる（記録を揃えるため）。My work とサーバーだけへの保存は 0.5 で決め直す。それまでブラウザへの保存は今のまま | 既定 |
 | Q6 候補の方式 | 下書きのデータセットのまま。記録の型を対応させる（§3.4） | 既定 |
-| Q7 Bar 軸 | 0.4 の段で決める。仮に「項目番号を X にした X-Y」 | 既定 |
+| Q7 Bar 軸 | **x = 棒の番号（0,1,2…）の X-Y 軸セット**。軸の種類は足さない。機能の名前は `auto_axis_bar`（下の本文） | 既定（0.4 で実装） |
 | Q8 project の受け口 | 案 P1（`format` を足す）。0.2 の段で wpd-auto 側と詰める | 既定 |
 | Q9 版と URL | アプリの版は package.json のまま（2.0.0 系）。この文書の段の番号（0.1〜0.5）は版ではなく段の名前として使う。パスは `/starry-digitizer/` | 既定 |
 | Q10 しきい値 | starry-digitizer の 0.5 のまま | 既定 |
@@ -534,6 +553,20 @@ wpd-auto のしくみ（読んだ）は次のとおり。
    - 管理画面で「足した候補の数」を 2 つの画面で比べられるかに効く。
 7. **Q7 Bar 軸**: starry-digitizer の軸セットで、Bar 軸をどう表すか。
    - 項目番号を X にした X-Y で代用するか、軸の種類を足すか。
+   - **0.4 で選んだこと（2026-11-23）: X-Y で代用する。** 軸の種類は足さない。
+     - x は棒の番号。左から 0, 1, 2…（wpd-auto の Bar0, Bar1…）。BarNet の点（棒の値の端の中央）の x に、最小二乗で合わせる（`domain/services/barIndexAxis.ts`）。
+     - 理由 1: 値の計算・傾き・log・書き出し・Resample・保存の形（DTO）が、どれもそのまま動く。DTO の移行が要らない。
+     - 理由 2: BarNet は棒 1 本に 1 点を返す。だから「点の x → 棒の番号」で足りる。種類を足すと、値を出す所（`AxisSetCalculator`・`calibratedSpace`・書き出し）を全部分ける必要がある。
+     - 弱いところ:
+       - 棒の間隔が等しくないと（グループの棒など）、x は整数からずれる。
+       - 棒の名前（文字のラベル）は持たない。x の番号 i が Bar{i} に当たる。
+       - 人が棒を足すと、番号は付け直されない。x の軸の点を動かすか、Auto-place（Bar）をもう一度 Apply する。
+     - 名前のラベル（`Bar0` などの文字）を書き出しに出したくなったら、軸セットに任意の欄（`plotArea` と同じく省略できる形）を足すのが小さい（推測）。
+   - capabilities の名前は `auto_axis_bar`（仮。wpd-auto の backend に足してもらう）。Bars は `auto_axis_bar` と `barnet` の両方が要る。
+   - x も数値で読めて信頼度 0.5 以上なら、Bars でも X-Y にする。
+     - wpd-auto の CHANGELOG（MIT の文書）は「x も数値で読めたら X-Y」とだけ書く。画面のコードは読んでいない。
+     - 信頼度 0.5 の線は、Lines・Markers の止まる線に揃えるため、こちらで足した。wpd-auto が同じ線を使うかは未確認。
+   - 「別の軸に切り替える」（wpd-auto の Use bar axes / Use X-Y axes）と「別の方法でやり直す」は、まだ入れていない。
 8. **Q8 project の受け口**: 案 P1（format を足す）／P2（WPD の形に変換）／P3（project は送らない）のどれにするか。
 9. **Q9 版と URL**:
    - starryai に置く版の数え方。starry-digitizer の package.json は `feat/auto-digitize` で 2.0.0 になっている。starryai 版を別に 0.x で数えるか。
