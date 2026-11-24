@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# The forced command of the deploy account on starryai (starryai-apps): runs
+# only the forms below, never a shell. In ~/.ssh/authorized_keys:
+#
+#   restrict,command="/home/starryai-apps/bin/agent-gate" ssh-ed25519 ... research-deploy@...
+#   restrict,command="/home/starryai-apps/bin/agent-gate --operator" ssh-ed25519 ... <間藤>
+#
+# The role comes from that line, never from the client: only --operator may
+# deploy to production. A guard against mistakes, not against malice: the
+# code a deploy builds runs with this account's rights.
+#
+#   bundle-in <repo>                     stdin: a git bundle -> ~/deploy/<repo> (clone or fetch)
+#   deploy <repo> staging <commit>       checkout --detach <commit>, deploy/deploy.sh staging
+#   deploy <repo> production @staging    --operator only: the commit staging runs
+#   history <repo> [<n>]                 deploy/deploy.sh history
+#   check <repo>                         deploy/deploy.sh check, and the proxy's reach
+#   status                               the user units and timers, and each page's answer
+#   logs <unit> [<n>]                    journalctl --user -u <unit>
+#
+# <repo> is wpd-auto or starry-digitizer. The site's proxy
+# (~/.config/starryai-apps/proxy.env, http_proxy https_proxy no_proxy, mode
+# 600) is read as data for deploy and check only. Every call is logged to
+# ~/.local/state/agent-gate.log.
+set -euo pipefail
+
+die() { echo "agent-gate: $*" >&2; exit 2; }
+
+ROLE=agent
+[ "${1:-}" != --operator ] || ROLE=operator
+REPOS=(wpd-auto starry-digitizer)
+BUNDLE_MAX=$((1024 * 1024 * 1024))
+PAGES=(/wpd-auto/healthz /wpd-auto-staging/healthz /sd/VERSION.txt /sd-staging/VERSION.txt)
+export PATH="$HOME/opt/node/bin:/usr/local/bin:/usr/bin:/bin"
+# only proxy.env sets the proxy, never what the caller's environment brings
+unset http_proxy https_proxy no_proxy HTTP_PROXY HTTPS_PROXY NO_PROXY
+
+# INFO: read -a splits on blanks and does not expand globs; each word is then
+# checked, so no quote, $, ;, | or newline gets through
+[[ ${SSH_ORIGINAL_COMMAND:-} != *$'\n'* ]] || die "one line only"
+read -r -a args <<<"${SSH_ORIGINAL_COMMAND:-}"
+[ "${#args[@]}" -ge 1 ] && [ "${#args[@]}" -le 4 ] || die "usage: see the head of agent-gate"
+for w in "${args[@]}"; do
+  [[ $w =~ ^[A-Za-z0-9@._/-]{1,64}$ ]] || die "not allowed: $w"
+done
+
+mkdir -p "$HOME/.local/state"
+printf '%s %s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ROLE" "${args[*]}" >>"$HOME/.local/state/agent-gate.log"
+
+repo_dir() {
+  [[ " ${REPOS[*]} " == *" $1 "* ]] || die "unknown repo: $1 (${REPOS[*]})"
+  echo "$HOME/deploy/$1"
+}
+
+count() { local n=${1:-20}; [[ $n =~ ^[0-9]{1,4}$ ]] || die "not a count: $n"; echo "$n"; }
+
+# proxy.env as data: the three proxy keys only, an optional export
+load_proxy() {
+  local f=$HOME/.config/starryai-apps/proxy.env line
+  [ -e "$f" ] || return 0
+  [[ $(stat -c %a "$f") =~ ^[0-7]00$ ]] || die "$f: readable by others (chmod 600)"
+  while IFS= read -r line || [ -n "$line" ]; do
+    [[ $line =~ ^[[:space:]]*(#.*)?$ ]] && continue
+    [[ $line =~ ^(export[[:space:]]+)?(https?_proxy|no_proxy|HTTPS?_PROXY|NO_PROXY)=\"?([A-Za-z0-9._:/@,%*-]*)\"?$ ]] ||
+      die "$f: not a proxy line: $line"
+    export "${BASH_REMATCH[2],,}=${BASH_REMATCH[3]}" "${BASH_REMATCH[2]^^}=${BASH_REMATCH[3]}"
+  done <"$f"
+}
+
+case ${args[0]}:${#args[@]} in
+  bundle-in:2)
+    dir=$(repo_dir "${args[1]}")
+    mkdir -p "$HOME/incoming"
+    b=$HOME/incoming/${args[1]}.bundle
+    head -c $((BUNDLE_MAX + 1)) >"$b"
+    [ "$(stat -c %s "$b")" -le "$BUNDLE_MAX" ] || { rm -f "$b"; die "bundle over $BUNDLE_MAX bytes"; }
+    if [ -d "$dir/.git" ]; then
+      git -C "$dir" bundle verify -q "$b"
+      git -C "$dir" fetch -q "$b" '+refs/heads/*:refs/remotes/bundle/*'
+    else
+      git clone -q --no-checkout "$b" "$dir"
+      git -C "$dir" fetch -q "$b" '+refs/heads/*:refs/remotes/bundle/*'
+    fi
+    git -C "$dir" for-each-ref --format='%(objectname:short) %(refname:short)' refs/remotes/bundle ;;
+  deploy:4)
+    dir=$(repo_dir "${args[1]}")
+    case ${args[2]}:${args[3]} in
+      staging:@staging) die "staging takes a commit" ;;
+      staging:*)
+        [[ ${args[3]} =~ ^[0-9a-f]{7,40}$ ]] || die "not a commit: ${args[3]} (hex, 7 to 40)"
+        git -C "$dir" checkout -q --detach "${args[3]}^{commit}" ;;
+      production:@staging)
+        [ "$ROLE" = operator ] || die "production is deployed by the operator (間藤)" ;;
+      *) die "deploy <repo> staging <commit> | deploy <repo> production @staging" ;;
+    esac
+    load_proxy
+    cd "$dir"
+    exec deploy/deploy.sh "${args[2]}" "${args[3]}" ;;
+  history:2 | history:3)
+    dir=$(repo_dir "${args[1]}")
+    n=$(count "${args[2]:-}")
+    cd "$dir"
+    exec deploy/deploy.sh history "$n" ;;
+  check:2)
+    dir=$(repo_dir "${args[1]}")
+    load_proxy
+    for u in https://pypi.org/simple/pip/ https://registry.npmjs.org/yarn; do
+      printf '%s %s\n' "$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "$u" 2>/dev/null || true)" "$u"
+    done
+    cd "$dir"
+    exec deploy/deploy.sh check ;;
+  status:1)
+    systemctl --user list-units --all --no-pager --plain 'wpd-auto*' 'starry-digitizer*' || true
+    systemctl --user list-timers --all --no-pager || true
+    for p in "${PAGES[@]}"; do
+      printf '%s %s\n' "$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1$p" 2>/dev/null || true)" "$p"
+    done ;;
+  logs:2 | logs:3)
+    [[ ${args[1]} =~ ^(wpd-auto|starry-digitizer)[A-Za-z0-9@._-]*$ ]] || die "not our unit: ${args[1]}"
+    n=$(count "${args[2]:-}")
+    exec journalctl --user -u "${args[1]}" -n "$n" --no-pager ;;
+  *) die "not allowed: ${args[*]} (see the head of agent-gate)" ;;
+esac
