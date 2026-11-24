@@ -37,3 +37,9 @@ deploy/deploy.sh history 10
 ```
 
 要るもの: Node 22 以上、`flock`、`curl`、`git`。yarn は `npx yarn@1.22.22` で使う（npm のレジストリに届くこと）。
+
+starryai では（2026-11-24 に確かめた）:
+
+- システムの Node は 18 なので、Node 22 をデプロイするユーザーのホームに入れる（`~/opt/node`、`~/.profile` で PATH に足す）。
+- `registry.npmjs.org` には届くが、`registry.yarnpkg.com`・`github.com`・`nodejs.org` には届かない。yarn.lock の `registry.yarnpkg.com` は `deploy.sh` がビルドの前に `registry.npmjs.org` に置き換える（integrity はそのまま照らされる）。
+- GitHub から取れないので、リポジトリは `git bundle` で運び、そこから clone・fetch する。

@@ -120,6 +120,10 @@ deploy() {
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' EXIT
   git -C "$REPO" archive "$commit" | tar -x -C "$tmp"
+  # INFO: yarn writes registry.yarnpkg.com into yarn.lock, which starryai
+  # cannot reach (registry.npmjs.org it can). Both serve the same tarballs and
+  # yarn still checks each one against the lockfile's integrity hash.
+  sed -i 's#https://registry\.yarnpkg\.com/#https://registry.npmjs.org/#g' "$tmp/yarn.lock"
   version=$(node -p "require('$tmp/package.json').version")
   echo "deploy: $TARGET, $commit (version $version, build $build)"
   (
@@ -174,7 +178,11 @@ case $cmd in
     read_site
     for k in "${KEYS[@]}"; do printf '%-34s %s\n' "$k" "${site[$k]:-(default)}"; done
     echo "app dir: $APP_DIR"
-    command -v node >/dev/null || echo "missing: node (22 or later)"
+    if command -v node >/dev/null; then
+      [ "$(node -p 'process.versions.node.split(".")[0]')" -ge 22 ] || echo "too old: node $(node --version) (22 or later)"
+    else
+      echo "missing: node (22 or later)"
+    fi
     command -v flock >/dev/null || echo "missing: flock"
     tmp=$(mktemp -d)
     render_nginx "$tmp" && cat "$tmp/nginx/starry-digitizer.conf" && rm -rf "$tmp" ;;
