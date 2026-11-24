@@ -78,7 +78,7 @@ HTTPS_PROXY="http://proxy.example:8080"
 no_proxy=localhost,127.0.0.1,.example.jp
 EOF
 chmod 600 "$HOME/.config/starryai-apps/proxy.env"
-CMD="deploy wpd-auto staging ${c1:0:7}" run "staging: old commit, proxy" 0 "deploy.sh staging ${c1:0:7} http_proxy=http://proxy.example:8080 HTTPS_PROXY=http://proxy.example:8080"
+CMD="deploy wpd-auto staging ${c1:0:7}" run "staging: old commit, proxy" 0 "deploy.sh staging $c1 http_proxy=http://proxy.example:8080 HTTPS_PROXY=http://proxy.example:8080"
 [ "$(git -C "$HOME/deploy/wpd-auto" rev-parse HEAD)" = "$c1" ] && echo "ok   checkout is the commit" || { echo "FAIL checkout"; fails=$((fails + 1)); }
 CMD="deploy wpd-auto staging $c2"      run "staging: new commit" 0 "deploy.sh staging $c2 http_proxy=http"
 CMD="deploy wpd-auto production @staging" run "operator: production" 0 "deploy.sh production @staging http_proxy=http" --operator
@@ -87,7 +87,18 @@ CMD="history wpd-auto 5"               run "history n" 0 "deploy.sh history 5 "
 CMD="check wpd-auto"                   run "check, proxy" 0 "deploy.sh check http_proxy=http://proxy"
 CMD="status"                           run "status" 0 "curl .*http://127.0.0.1/sd-staging/VERSION.txt"
 CMD="logs wpd-auto-backend-staging 50" run "logs" 0 "journalctl --user -u wpd-auto-backend-staging -n 50 --no-pager"
-CMD="deploy starry-digitizer staging $c2" run "unknown checkout" 128 "."
+CMD="deploy starry-digitizer staging $c2" run "unknown checkout" 2 "no such commit"
+CMD="deploy wpd-auto staging deadbeef"  run "unknown commit" 2 "no such commit"
+
+# ---- a tag named like a short commit id does not redirect a deploy ----
+git -C "$src" tag "${c2:0:7}" "$c1"
+git -C "$src" bundle create -q "$T/tag.bundle" --all
+SSH_ORIGINAL_COMMAND="bundle-in wpd-auto" "$GATE" <"$T/tag.bundle" >/dev/null 2>&1
+[ -z "$(git -C "$HOME/deploy/wpd-auto" tag)" ] && echo "ok   bundle-in takes no tags" || { echo "FAIL tags fetched"; fails=$((fails + 1)); }
+[ -z "$(ls "$HOME/incoming")" ] && echo "ok   bundle removed after fetch" || { echo "FAIL bundle left"; fails=$((fails + 1)); }
+CMD="deploy wpd-auto staging ${c2:0:7}" run "short id is the commit" 0 "deploy.sh staging $c2 "
+git -C "$HOME/deploy/wpd-auto" tag "${c2:0:8}" "$c1"
+CMD="deploy wpd-auto staging ${c2:0:8}" run "a ref of that name is refused" 2 "not a commit id here"
 
 # ---- proxy.env: refused when bad, never read outside deploy and check ----
 echo 'http_proxy=$(id)' >"$HOME/.config/starryai-apps/proxy.env"
@@ -100,7 +111,9 @@ CMD="deploy wpd-auto staging $c2"      run "proxy.env readable by others" 2 "chm
 # ---- the log ----
 grep -q "operator deploy wpd-auto production @staging" "$HOME/.local/state/agent-gate.log" &&
   grep -q "agent deploy wpd-auto production @staging" "$HOME/.local/state/agent-gate.log" &&
-  echo "ok   log has role and command" || { echo "FAIL log"; fails=$((fails + 1)); }
+  grep -q "agent status;id" "$HOME/.local/state/agent-gate.log" &&
+  grep -q 'agent status?id' "$HOME/.local/state/agent-gate.log" &&
+  echo "ok   log has role and command, refused ones too" || { echo "FAIL log"; fails=$((fails + 1)); }
 
 echo "$fails failed"
 [ "$fails" = 0 ]

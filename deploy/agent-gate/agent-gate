@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 # The forced command of the deploy account on starryai (starryai-apps): runs
-# only the forms below, never a shell. In ~/.ssh/authorized_keys:
+# only the forms below, never a shell. In /etc/ssh/authorized_keys/starryai-apps
+# (root's, 644; sshd_config: Match User starryai-apps / AuthorizedKeysFile):
 #
-#   restrict,command="/home/starryai-apps/bin/agent-gate" ssh-ed25519 ... research-deploy@...
-#   restrict,command="/home/starryai-apps/bin/agent-gate --operator" ssh-ed25519 ... <間藤>
+#   restrict,command="/usr/local/bin/agent-gate" ssh-ed25519 ... research-deploy@...
+#   restrict,command="/usr/local/bin/agent-gate --operator" ssh-ed25519 ... <間藤>
 #
 # The role comes from that line, never from the client: only --operator may
-# deploy to production. A guard against mistakes, not against malice: the
-# code a deploy builds runs with this account's rights.
+# deploy to production. The gate, the key file and the account's shell
+# (/bin/sh: bash would read the account's own ~/.bashrc first) are out of the
+# account's reach. A guard against mistakes, not against malice: the code a
+# deploy builds runs with this account's rights.
 #
 #   bundle-in <repo>                     stdin: a git bundle -> ~/deploy/<repo> (clone or fetch)
 #   deploy <repo> staging <commit>       checkout --detach <commit>, deploy/deploy.sh staging
@@ -19,8 +22,8 @@
 #
 # <repo> is wpd-auto or starry-digitizer. The site's proxy
 # (~/.config/starryai-apps/proxy.env, http_proxy https_proxy no_proxy, mode
-# 600) is read as data for deploy and check only. Every call is logged to
-# ~/.local/state/agent-gate.log.
+# 600) is read as data for deploy and check only. Every call, refused ones
+# too, is logged to ~/.local/state/agent-gate.log.
 set -euo pipefail
 
 die() { echo "agent-gate: $*" >&2; exit 2; }
@@ -33,6 +36,13 @@ PAGES=(/wpd-auto/healthz /wpd-auto-staging/healthz /sd/VERSION.txt /sd-staging/V
 export PATH="$HOME/opt/node/bin:/usr/local/bin:/usr/bin:/bin"
 # only proxy.env sets the proxy, never what the caller's environment brings
 unset http_proxy https_proxy no_proxy HTTP_PROXY HTTPS_PROXY NO_PROXY
+# sshd passes the client's LANG and LC_*; the checks below run in a known locale
+export LC_ALL=C.UTF-8
+
+mkdir -p "$HOME/.local/state"
+raw=${SSH_ORIGINAL_COMMAND:-}
+raw=${raw//[^[:print:]]/?}
+printf '%s %s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ROLE" "${raw:0:200}" >>"$HOME/.local/state/agent-gate.log"
 
 # INFO: read -a splits on blanks and does not expand globs; each word is then
 # checked, so no quote, $, ;, | or newline gets through
@@ -42,9 +52,6 @@ read -r -a args <<<"${SSH_ORIGINAL_COMMAND:-}"
 for w in "${args[@]}"; do
   [[ $w =~ ^[A-Za-z0-9@._/-]{1,64}$ ]] || die "not allowed: $w"
 done
-
-mkdir -p "$HOME/.local/state"
-printf '%s %s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ROLE" "${args[*]}" >>"$HOME/.local/state/agent-gate.log"
 
 repo_dir() {
   [[ " ${REPOS[*]} " == *" $1 "* ]] || die "unknown repo: $1 (${REPOS[*]})"
@@ -73,13 +80,15 @@ case ${args[0]}:${#args[@]} in
     b=$HOME/incoming/${args[1]}.bundle
     head -c $((BUNDLE_MAX + 1)) >"$b"
     [ "$(stat -c %s "$b")" -le "$BUNDLE_MAX" ] || { rm -f "$b"; die "bundle over $BUNDLE_MAX bytes"; }
+    # INFO: --no-tags: a tag named like a short commit id would make
+    # `deploy ... staging <that id>` resolve to the tag's commit
     if [ -d "$dir/.git" ]; then
       git -C "$dir" bundle verify -q "$b"
-      git -C "$dir" fetch -q "$b" '+refs/heads/*:refs/remotes/bundle/*'
     else
-      git clone -q --no-checkout "$b" "$dir"
-      git -C "$dir" fetch -q "$b" '+refs/heads/*:refs/remotes/bundle/*'
+      git clone -q --no-checkout --no-tags "$b" "$dir"
     fi
+    git -C "$dir" fetch -q --no-tags "$b" '+refs/heads/*:refs/remotes/bundle/*'
+    rm -f "$b"
     git -C "$dir" for-each-ref --format='%(objectname:short) %(refname:short)' refs/remotes/bundle ;;
   deploy:4)
     dir=$(repo_dir "${args[1]}")
@@ -87,14 +96,18 @@ case ${args[0]}:${#args[@]} in
       staging:@staging) die "staging takes a commit" ;;
       staging:*)
         [[ ${args[3]} =~ ^[0-9a-f]{7,40}$ ]] || die "not a commit: ${args[3]} (hex, 7 to 40)"
-        git -C "$dir" checkout -q --detach "${args[3]}^{commit}" ;;
+        commit=$(git -C "$dir" rev-parse --verify --quiet "${args[3]}^{commit}") || die "no such commit: ${args[3]}"
+        [[ $commit == "${args[3]}"* ]] || die "${args[3]} is not a commit id here (a ref of that name?)"
+        git -C "$dir" checkout -q --detach "$commit" ;;
       production:@staging)
         [ "$ROLE" = operator ] || die "production is deployed by the operator (間藤)" ;;
       *) die "deploy <repo> staging <commit> | deploy <repo> production @staging" ;;
     esac
     load_proxy
     cd "$dir"
-    exec deploy/deploy.sh "${args[2]}" "${args[3]}" ;;
+    # INFO: for production, deploy.sh is the one of the last staging deploy's commit
+    echo "agent-gate: deploy/deploy.sh of $(git rev-parse --short HEAD)"
+    exec deploy/deploy.sh "${args[2]}" "${commit:-${args[3]}}" ;;
   history:2 | history:3)
     dir=$(repo_dir "${args[1]}")
     n=$(count "${args[2]:-}")
